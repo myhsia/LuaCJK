@@ -1,0 +1,60 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{TeX Gyre Pagella}
+\setCJKfallbackfamilyfont{\CJKrmdefault}{FandolSong-Regular.otf}
+
+\def\psname#1{%
+  \directlua{
+    local n = tex.box[#1].head
+    while n do
+      if n.id == node.id("glyph") then
+        local f = font.getfont(n.font)
+        texio.write_nl("term and log", "PSNAME " .. tostring(f and f.psname))
+        break
+      end
+      n = n.next
+    end
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{without AutoFallBack the main font is used}{
+  \setbox0=\hbox{中}
+  \psname{0}
+}
+
+\TEST{AutoFallBack switches to the fallback font}{
+  \LuaCJKsetup{AutoFallBack = true}
+  \setbox0=\hbox{中}
+  \psname{0}
+}
+
+\TEST{Latin text keeps the document font}{
+  \setbox0=\hbox{A}
+  \psname{0}
+}
+
+\TEST{AutoFallBack can be turned off again}{
+  \LuaCJKsetup{AutoFallBack = false}
+  \setbox0=\hbox{中}
+  \psname{0}
+}
+
+\TEST{a fallback with its own options}{
+  \begingroup
+    \LuaCJKsetup{AutoFallBack = true}
+    \setCJKfamilyfont{opts}{TeX Gyre Pagella}
+    \setCJKfallbackfamilyfont{opts}[Scale = 2]{FandolSong-Regular.otf}
+    \setbox0=\hbox{\CJKfamily{opts}中}
+    \TYPE{width: \the\wd0}
+  \endgroup
+}
+
+\END
+
+\end{document}

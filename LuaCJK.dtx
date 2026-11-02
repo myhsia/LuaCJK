@@ -245,6 +245,51 @@ LaTeX Project Public License, version 1.3c or later.
 %   \tn{ttfamily}.
 % \end{variable}
 
+% \subsection{Fallback fonts}
+%
+% A CJK font rarely covers every character one needs.  Fallback fonts are
+% tried in the order they were declared when the selected CJK font has no
+% glyph for a character.
+%
+% \begin{function}{\setCJKfallbackfamilyfont}
+%   \begin{syntax}
+%     \tn{setCJKfallbackfamilyfont} \marg{family} \oarg{options} \marg{font}
+%   \end{syntax}
+%   Add \meta{font} to the fallback list of \meta{family}.  The family may
+%   be given as \cs{CJKrmdefault} and friends.  Call the command several
+%   times to build a chain; the first font that has the character wins.
+% \end{function}
+%
+% \begin{keyval}
+%   \item[\keys{AutoFallBack}]\val{\TFF}
+%   Whether to use the declared fallback fonts.
+% \end{keyval}
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+\begingroup
+  \setCJKmainfont{FandolSong-Regular.otf}
+  \setCJKfallbackfamilyfont{\CJKrmdefault}{FandolKai-Regular.otf}
+  \LuaCJKsetup{AutoFallBack = true}
+  中文
+\endgroup
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
+%
+% \subsection{Loading Fandol}
+%
+% \begin{keyval}
+%   \item[\keys{LoadFandol}]\val{\TTF}
+%   When the document does not declare any CJK font, load the four Fandol
+%   faces at \tn{begin}\marg{document}: Song as the main font, Hei as the
+%   sans serif font, Fang as the monospaced font, and all of Song, Hei, Kai,
+%   and Fang as the named families.
+% \end{keyval}
+%
 % \subsection{Fake bold and slant}
 %
 % A CJK family often has no bold or italic face.  The following keys make
@@ -840,9 +885,14 @@ $ x + 中文 $ and 中文
 %     {\l_LuaCJK_punct_kinsoku_tl, \l_LuaCJK_cjk_math_tl,
 %      \l_LuaCJK_verb_mode_tl, \l_LuaCJK_local_config_tl,
 %      \g_LuaCJK_autofake_bold_tl, \g_LuaCJK_autofake_slant_tl,
-%      \g_LuaCJK_embolden_factor_tl, \g_LuaCJK_slant_factor_tl}
+%      \g_LuaCJK_embolden_factor_tl, \g_LuaCJK_slant_factor_tl,
+%      \g_LuaCJK_fallback_prop, \g_LuaCJK_auto_fallback_bool,
+%      \g_LuaCJK_load_fandol_bool,
+%      \l_LuaCJK_fallback_family_tl, \l_LuaCJK_fallback_ids_tl,
+%      \l_LuaCJK_main_fontid_int}
 %     The switches read by the Lua side, the \texttt{Verb} setting, the
-%     configuration file name, and the fake bold and slant parameters.
+%     configuration file name, the fake bold and slant parameters, and the
+%     fallback fonts.
 %    \begin{macrocode}
 \tl_new:N \l_LuaCJK_punct_kinsoku_tl
 \tl_set:Nn \l_LuaCJK_punct_kinsoku_tl { 1 }
@@ -857,6 +907,15 @@ $ x + 中文 $ and 中文
 \tl_gset:Nn \g_LuaCJK_embolden_factor_tl { 4 }
 \tl_new:N \g_LuaCJK_slant_factor_tl
 \tl_gset:Nn \g_LuaCJK_slant_factor_tl { 0.167 }
+\prop_new:N \g_LuaCJK_fallback_prop
+\bool_new:N \g_LuaCJK_auto_fallback_bool
+\bool_new:N \g_LuaCJK_load_fandol_bool
+\tl_new:N \l_LuaCJK_fallback_family_tl
+\tl_new:N \l_LuaCJK_fallback_key_tl
+\cs_generate_variant:Nn \prop_get:NnNF { NVNF }
+\cs_generate_variant:Nn \prop_gput:Nnn { NVV }
+\tl_new:N \l_LuaCJK_fallback_ids_tl
+\int_new:N \l_LuaCJK_main_fontid_int
 %    \end{macrocode}
 %   \end{variable}
 %    \begin{macrocode}
@@ -918,6 +977,26 @@ $ x + 中文 $ and 中文
         \tl_if_empty:NF \g_LuaCJK_autofake_bold_tl
           { \tl_gset:Nn \g_LuaCJK_autofake_bold_tl {#1} }
       },
+    AutoFallBack .choice:,
+    AutoFallBack / true .code:n =
+      {
+        \bool_gset_true:N \g_LuaCJK_auto_fallback_bool
+        \LuaCJK_push_fallback_switch:
+
+        \prop_map_inline:Nn \g_LuaCJK_family_prop
+          { \LuaCJK_recall_fallback:n {##1} }
+      },
+    AutoFallBack / false .code:n =
+      {
+        \bool_gset_false:N \g_LuaCJK_auto_fallback_bool
+        \LuaCJK_push_fallback_switch:
+
+      },
+    AutoFallBack .default:n = { true },
+    LoadFandol .choice:,
+    LoadFandol / true .code:n = { \bool_gset_true:N \g_LuaCJK_load_fandol_bool },
+    LoadFandol / false .code:n = { \bool_gset_false:N \g_LuaCJK_load_fandol_bool },
+    LoadFandol .default:n = { true },
     SlantFactor .code:n =
       {
         \tl_gset:Nn \g_LuaCJK_slant_factor_tl {#1}
@@ -1141,8 +1220,78 @@ $ x + 中文 $ and 中文
         \l_LuaCJK_feature_tl \l_LuaCJK_registered_name_tl
       \prop_gput:NnV \g_LuaCJK_family_prop {#1} \l_LuaCJK_fontspec_tl
     \group_end:
+    \LuaCJK_recall_fallback:n {#1}
     \prop_if_in:NVT \g_LuaCJK_family_prop \l_LuaCJK_family_tl
       { \selectfont }
+  }
+%    \end{macrocode}
+%   \end{macro}
+%
+%   \begin{macro}[internal]{\LuaCJK_recall_fallback:n}
+%     Resolve the fallback families of one CJK family to font identifiers
+%     at the current size, and hand the list to Lua together with the
+%     identifier of the family itself.  Font identifiers depend on the size,
+%     so this runs again whenever a family is registered.
+%     The variables used here are declared with the other options above.
+%      \begin{macrocode}
+%      \begin{macrocode}
+\bool_new:N \g_LuaCJK_lua_loaded_bool
+\cs_new_protected:Npn \LuaCJK_push_fallback_switch:
+  {
+    \bool_if:NT \g_LuaCJK_lua_loaded_bool
+      {
+        \bool_if:NTF \g_LuaCJK_auto_fallback_bool
+          { \lua_now:n { LuaCJK.auto_fallback = true } }
+          { \lua_now:n { LuaCJK.auto_fallback = false } }
+      }
+  }
+%      \end{macrocode}
+%     \end{variable}
+%      \begin{macrocode}
+%      \begin{macrocode}
+\cs_new_protected:Npn \LuaCJK_recall_all_fallbacks:
+  {
+    \prop_map_inline:Nn \g_LuaCJK_family_prop
+      { \LuaCJK_recall_fallback:n {##1} }
+  }
+%      \end{macrocode}
+%     \end{variable}
+%      \begin{macrocode}
+\cs_new_protected:Npn \LuaCJK_recall_fallback:n #1
+  {
+    \bool_if:NT \g_LuaCJK_auto_fallback_bool
+      {
+        \prop_get:NnNF \g_LuaCJK_fallback_prop {#1} \l_LuaCJK_tmpa_tl
+          { \tl_clear:N \l_LuaCJK_tmpa_tl }
+        \group_begin:
+          \tl_clear:N \l_LuaCJK_fallback_ids_tl
+          \prop_get:NnNF \g_LuaCJK_family_prop {#1}
+            \l_LuaCJK_family_name_tl
+            { \tl_clear:N \l_LuaCJK_family_name_tl }
+          \exp_args:NV \fontfamily \l_LuaCJK_family_name_tl
+          \selectfont
+          \int_set:Nn \l_LuaCJK_main_fontid_int
+            { \tex_fontid:D \tex_font:D }
+          \clist_map_inline:Nn \l_LuaCJK_tmpa_tl
+            {
+              \fontfamily {##1} \selectfont
+              \tl_put_right:Nx \l_LuaCJK_fallback_ids_tl
+                { \int_eval:n { \tex_fontid:D \tex_font:D } , }
+            }
+          \bool_if:NT \g_LuaCJK_lua_loaded_bool
+            {
+              \tl_if_empty:NF \l_LuaCJK_fallback_ids_tl
+                {
+                  \lua_now:e
+                    {
+                      LuaCJK.set_fallback
+                        ( \int_use:N \l_LuaCJK_main_fontid_int ,
+                          { \l_LuaCJK_fallback_ids_tl } )
+                    }
+                }
+            }
+        \group_end:
+      }
   }
 %    \end{macrocode}
 %   \end{macro}
@@ -1322,6 +1471,17 @@ $ x + 中文 $ and 中文
   }
 \NewDocumentCommand \setCJKfamilyfont { m o m o }
   { \LuaCJK_set_family_with_options:nnnn {#1} {#2} {#3} {#4} }
+\NewDocumentCommand \setCJKfallbackfamilyfont { m o m o }
+  {
+    \tl_set:Ne \l_LuaCJK_fallback_key_tl {#1}
+    \tl_if_novalue:nTF {#2}
+      {
+        \tl_if_novalue:nTF {#4}
+          { \LuaCJK_add_fallback:nn { } {#3} }
+          { \LuaCJK_add_fallback:nn {#4} {#3} }
+      }
+      { \LuaCJK_add_fallback:nn {#2} {#3} }
+  }
 %    \end{macrocode}
 %   \begin{macro}[internal]{\LuaCJK_set_family_with_options:nnnn}
 %     Accept the options before or after the font name.
@@ -1335,6 +1495,25 @@ $ x + 中文 $ and 中文
           { \LuaCJK_set_family:nnn {#1} {#4} {#3} }
       }
       { \LuaCJK_set_family:nnn {#1} {#2} {#3} }
+  }
+%    \end{macrocode}
+%   \end{macro}
+%   \begin{macro}[internal]{\LuaCJK_add_fallback:nn}
+%     Register one fallback font for a CJK family, keeping the order in
+%     which the fonts were declared.
+%    \begin{macrocode}
+\cs_new_protected:Npn \LuaCJK_add_fallback:nn #1#2
+  {
+    \group_begin:
+      \fontspec_gset_family:Nnn \l_LuaCJK_fallback_family_tl {#1} {#2}
+      \prop_get:NVNF \g_LuaCJK_fallback_prop
+        \l_LuaCJK_fallback_key_tl \l_LuaCJK_tmpa_tl
+        { \tl_clear:N \l_LuaCJK_tmpa_tl }
+      \clist_put_right:NV \l_LuaCJK_tmpa_tl \l_LuaCJK_fallback_family_tl
+      \prop_gput:NVV \g_LuaCJK_fallback_prop
+        \l_LuaCJK_fallback_key_tl \l_LuaCJK_tmpa_tl
+    \group_end:
+    \exp_args:NV \LuaCJK_recall_fallback:n \l_LuaCJK_fallback_key_tl
   }
 %    \end{macrocode}
 %   \end{macro}
@@ -1480,6 +1659,31 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
+% \subsection{Loading Fandol}
+%
+% \begin{macro}{\LuaCJK_load_fandol:}
+%   When the \texttt{LoadFandol} option is on and the document did not
+%   declare any CJK font, fall back to the four Fandol faces.  This runs at
+%   \tn{begin}\marg{document} so that a family declared anywhere in the
+%   preamble still wins.
+%    \begin{macrocode}
+\cs_new_protected:Npn \LuaCJK_load_fandol:
+  {
+    \setCJKmainfont{FandolSong-Regular.otf}
+      [ BoldFont = FandolSong-Bold.otf ]
+    \setCJKsansfont{FandolHei-Regular.otf}
+      [ BoldFont = FandolHei-Bold.otf ]
+    \setCJKmonofont{FandolFang-Regular.otf}
+    \setCJKfamilyfont{zhsong}{FandolSong-Regular.otf}
+      [ BoldFont = FandolSong-Bold.otf ]
+    \setCJKfamilyfont{zhhei}{FandolHei-Regular.otf}
+      [ BoldFont = FandolHei-Bold.otf ]
+    \setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
+    \setCJKfamilyfont{zhfs}{FandolFang-Regular.otf}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
 % \subsection{Loading the Lua core}
 %
 % The Lua module reads the attribute numbers and installs its callbacks.
@@ -1493,11 +1697,19 @@ $ x + 中文 $ and 中文
     LuaCJK.attr_xecglue = \int_use:N \c_LuaCJK_xecglue_attr_int ;
     LuaCJK.attr_inserted = \int_use:N \c_LuaCJK_inserted_attr_int ;
     LuaCJK.attr_math_font = \int_use:N \c_LuaCJK_math_font_attr_int ;
-    LuaCJK.attr_disabled = \int_use:N \c_LuaCJK_disabled_attr_int
+    LuaCJK.attr_disabled = \int_use:N \c_LuaCJK_disabled_attr_int ;
+    LuaCJK.auto_fallback = \bool_if:NTF \g_LuaCJK_auto_fallback_bool
+      { true } { false }
   }
+\bool_gset_true:N \g_LuaCJK_lua_loaded_bool
 \LuaCJK_set_normal_spaced_chars:
 \AtBeginDocument
   {
+    \bool_if:NT \g_LuaCJK_load_fandol_bool
+      {
+        \prop_if_empty:NT \g_LuaCJK_family_prop
+          { \LuaCJK_load_fandol: }
+      }
     \LuaCJK_update_font:
     \g_LuaCJK_font_attr = \g_LuaCJK_fontid_int
   }
@@ -1793,6 +2005,43 @@ end
 %   \begin{macro}[internal]{copy_glyph}
 %     Copy a glyph node, changing only its font.
 %    \begin{macrocode}
+M.fallback = {}
+M.auto_fallback = M.auto_fallback or false
+
+function M.set_fallback (main, list)
+  M.fallback[main] = list
+end
+
+local has_char_cache = {}
+
+local function has_char (fid, char)
+  local key = fid * 0x200000 + char
+  local cached = has_char_cache[key]
+  if cached ~= nil then
+    return cached
+  end
+  local f = font.getfont(fid)
+  local ok = f and f.characters and f.characters[char] ~= nil
+  has_char_cache[key] = ok
+  return ok
+end
+
+-- Pick the first fallback font that has the character.
+local function fallback_font (fid, char)
+  if not M.auto_fallback then
+    return nil
+  end
+  local list = M.fallback[fid]
+  if not list then
+    return nil
+  end
+  for _, candidate in ipairs(list) do
+    if has_char(candidate, char) then
+      return candidate
+    end
+  end
+end
+
 local function copy_glyph (n, fid)
   local g = new_node("glyph")
   g.font = fid
@@ -1820,6 +2069,9 @@ local function rewrite_fonts (head)
     local nxt = cur.next
     if cur.id == GLYPH and is_cjk(cur.char) and M.attr_font then
       local target = has_attribute(cur, M.attr_font)
+      if target and target > 0 and not has_char(target, cur.char) then
+        target = fallback_font(target, cur.char) or target
+      end
       if target and target > 0 and target ~= cur.font then
         -- A font without the character leaves a placeholder glyph behind:
         -- luaotfload uses either the private-use range or a .notdef glyph

@@ -1,0 +1,43 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: without AutoFallBack the main font is used
+============================================================
+Missing character: There is no 中 (U+4E2D) in font "name:TeX Gyre Pagella:mode=node;script=hani;language=dflt;"!
+PSNAME TeXGyrePagella-Regular
+============================================================
+============================================================
+TEST 2: AutoFallBack switches to the fallback font
+============================================================
+PSNAME FandolSong-Regular
+============================================================
+============================================================
+TEST 3: Latin text keeps the document font
+============================================================
+PSNAME LMRoman10-Regular
+============================================================
+============================================================
+TEST 4: AutoFallBack can be turned off again
+============================================================
+Missing character: There is no 中 (U+4E2D) in font "name:TeX Gyre Pagella:mode=node;script=hani;language=dflt;"!
+PSNAME TeXGyrePagella-Regular
+============================================================
+============================================================
+TEST 5: a fallback with its own options
+============================================================
+Package fontspec Info: 
+(fontspec)             Script 'CJK' not explicitly supported within font 'TeX Gyre Pagella'. Check the typeset output, and if it is okay then ignore this warning. Otherwise a different font should be chosen.
+Package fontspec Info: 
+(fontspec)             FandolSong-Regular scale = 2.
+Package fontspec Info: 
+(fontspec)             FandolSong-Regular scale = 2.
+Package fontspec Info: 
+(fontspec)             Font family 'FandolSong-Regular.otf(1)' created for font 'FandolSong-Regular.otf' with options [Scale = 2].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->s*[2]"[FandolSong-Regular.otf]:mode=node;script=latn;language=dflt;"
+LaTeX Font Info:    Font shape `TU/FandolSong-Regular.otf(1)/m/n' will be
+(Font)              scaled to size 20.0pt on input line ....
+width: 20.0pt
+============================================================

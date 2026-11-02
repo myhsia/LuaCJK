@@ -1,0 +1,51 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage[LoadFandol = true]{LuaCJK}
+
+\def\psname#1{%
+  \directlua{
+    local n = tex.box[#1].head
+    while n do
+      if n.id == node.id("glyph") then
+        local f = font.getfont(n.font)
+        texio.write_nl("term and log", "PSNAME " .. tostring(f and f.psname))
+        break
+      end
+      n = n.next
+    end
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{the main CJK font is Fandol Song}{
+  \setbox0=\hbox{中}
+  \psname{0}
+}
+
+\TEST{the bold shape is Fandol Song Bold}{
+  \setbox0=\hbox{\bfseries 中}
+  \psname{0}
+}
+
+\TEST{the heiti shortcut is Fandol Hei}{
+  \setbox2=\hbox{\heiti 中}
+  \psname{2}
+}
+
+\TEST{the kaiti shortcut is Fandol Kai}{
+  \setbox4=\hbox{\kaishu 中}
+  \psname{4}
+}
+
+\TEST{the fangsong shortcut is Fandol Fang}{
+  \setbox6=\hbox{\fangsong 中}
+  \psname{6}
+}
+
+\END
+
+\end{document}

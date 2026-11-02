@@ -1,0 +1,29 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: the main CJK font is Fandol Song
+============================================================
+PSNAME FandolSong-Regular
+============================================================
+============================================================
+TEST 2: the bold shape is Fandol Song Bold
+============================================================
+LaTeX Font Info:    Font shape `TU/FandolSong-Regular.otf(0)/bx/n' in size <10> not available
+(Font)              Font shape `TU/FandolSong-Regular.otf(0)/b/n' tried instead on input line ....
+PSNAME FandolSong-Bold
+============================================================
+============================================================
+TEST 3: the heiti shortcut is Fandol Hei
+============================================================
+PSNAME FandolHei-Regular
+============================================================
+============================================================
+TEST 4: the kaiti shortcut is Fandol Kai
+============================================================
+PSNAME FandolKai-Regular
+============================================================
+============================================================
+TEST 5: the fangsong shortcut is Fandol Fang
+============================================================
+PSNAME FandolFang-Regular
+============================================================
