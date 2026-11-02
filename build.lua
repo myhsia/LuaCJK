@@ -60,8 +60,16 @@ end
 
 -- `l3build doc` unpacks the sources first; copy the README generated from the
 -- `<readme>` block back to the repository root so the two stay in sync.
+-- Trailing blank lines are trimmed so that repeated runs are idempotent.
 function docinit_hook()
   cp(ctanreadme, unpackdir, currentdir)
+  local path = currentdir .. "/" .. ctanreadme
+  local file = assert(io.open(path, "r"))
+  local content = file:read("*a")
+  file:close()
+  file = assert(io.open(path, "w"))
+  file:write((content:gsub("%s+$", "")) .. "\n")
+  file:close()
   return 0
 end
 

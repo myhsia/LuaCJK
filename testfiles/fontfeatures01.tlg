@@ -1,0 +1,81 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: the initial default is Script=CJK
+============================================================
+width: 10.0pt
+============================================================
+============================================================
+TEST 2: defaultCJKfontfeatures applies to a newly registered family
+============================================================
+Package fontspec Info: 
+(fontspec)             FandolSong-Regular scale = 0.9.
+Package fontspec Info: 
+(fontspec)             FandolSong-Regular scale = 0.9.
+Package fontspec Info: 
+(fontspec)             Font family 'FandolSong-Regular.otf(1)' created for font 'FandolSong-Regular.otf' with options [Script = CJK,Scale = 0.9].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->s*[0.9]"[FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;"
+LaTeX Font Info:    Font shape `TU/FandolSong-Regular.otf(1)/m/n' will be
+(Font)              scaled to size 8.99994pt on input line ....
+width: 8.99994pt
+============================================================
+============================================================
+TEST 3: a family registered earlier keeps its features
+============================================================
+width: 10.0pt
+============================================================
+============================================================
+TEST 4: addCJKfontfeatures changes the current family
+============================================================
+Package fontspec Info: 
+(fontspec)             FandolSong-Regular scale = 0.9.
+Package fontspec Info: 
+(fontspec)             FandolSong-Regular scale = 1.2.
+Package fontspec Info: 
+(fontspec)             FandolSong-Regular scale = 0.9.
+Package fontspec Info: 
+(fontspec)             FandolSong-Regular scale = 1.2.
+Package fontspec Info: 
+(fontspec)             Font family 'FandolSong-Regular.otf(2)' created for font 'FandolSong-Regular.otf' with options [Script = CJK,Scale = 0.9,Scale = 1.2].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->s*[1.2]"[FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;"
+LaTeX Font Info:    Font shape `TU/FandolSong-Regular.otf(2)/m/n' will be
+(Font)              scaled to size 11.99997pt on input line ....
+width: 11.99997pt
+============================================================
+============================================================
+TEST 5: the star form is accepted
+============================================================
+Package fontspec Info: 
+(fontspec)             FandolSong-Regular scale = 0.9.
+Package fontspec Info: 
+(fontspec)             FandolSong-Regular scale = 1.2.
+width: 11.99997pt
+============================================================
+============================================================
+TEST 6: addCJKfontfeatures is local to the group
+============================================================
+Package fontspec Info: 
+(fontspec)             FandolSong-Regular scale = 0.9.
+Package fontspec Info: 
+(fontspec)             FandolSong-Regular scale = 2.
+Package fontspec Info: 
+(fontspec)             FandolSong-Regular scale = 0.9.
+Package fontspec Info: 
+(fontspec)             FandolSong-Regular scale = 2.
+Package fontspec Info: 
+(fontspec)             Font family 'FandolSong-Regular.otf(3)' created for font 'FandolSong-Regular.otf' with options [Script = CJK,Scale = 0.9,Scale = 2].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->s*[2]"[FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;"
+LaTeX Font Info:    Font shape `TU/FandolSong-Regular.otf(3)/m/n' will be
+(Font)              scaled to size 20.0pt on input line ....
+inside: 20.0pt
+outside: 10.0pt
+============================================================

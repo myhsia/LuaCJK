@@ -1,0 +1,55 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKfamilyfont{zhhei}{FandolHei-Regular.otf}
+
+\begin{document}
+
+\START
+
+\TEST{the initial default is Script=CJK}{
+  \setbox0=\hbox{中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{defaultCJKfontfeatures applies to a newly registered family}{
+  \begingroup
+    \defaultCJKfontfeatures{Script = CJK, Scale = 0.9}
+    \setCJKfamilyfont{zhsong}{FandolSong-Regular.otf}
+    \setbox0=\hbox{中}
+    \TYPE{width: \the\wd0}
+  \endgroup
+}
+
+\TEST{a family registered earlier keeps its features}{
+  \setbox0=\hbox{\CJKfamily{zhhei}中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{addCJKfontfeatures changes the current family}{
+  \addCJKfontfeatures{Scale = 1.2}
+  \setbox0=\hbox{中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{the star form is accepted}{
+  \addCJKfontfeatures*{Scale = 1.2}
+  \setbox0=\hbox{中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{addCJKfontfeatures is local to the group}{
+  \begingroup
+    \addCJKfontfeatures{Scale = 2}
+    \setbox0=\hbox{中}
+    \TYPE{inside: \the\wd0}
+  \endgroup
+  \setbox2=\hbox{中}
+  \TYPE{outside: \the\wd2}
+}
+
+\END
+
+\end{document}

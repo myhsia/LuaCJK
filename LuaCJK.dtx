@@ -244,6 +244,25 @@ LaTeX Project Public License, version 1.3c or later.
 %   The CJK families selected by \tn{rmfamily}, \tn{sffamily}, and
 %   \tn{ttfamily}.
 % \end{variable}
+
+% \begin{function}{\defaultCJKfontfeatures}
+%   \begin{syntax}
+%     \tn{defaultCJKfontfeatures} \marg{font features}
+%   \end{syntax}
+%   Set the features prepended to every CJK family registered afterwards.
+%   The initial value is |Script = CJK|.  Families registered before the
+%   call keep the features they were given.
+% \end{function}
+%
+% \begin{function}{\addCJKfontfeatures}
+%   \begin{syntax}
+%     \tn{addCJKfontfeatures} \oarg{ignored} \marg{font features}
+%   \end{syntax}
+%   Add features to the current CJK family for the rest of the group, for
+%   example |\addCJKfontfeatures{Scale = 1.2}|.  A leading \texttt{*} is
+%   accepted for compatibility with \pkg{xeCJK}, where it also covers the
+%   sub-blocks; LuaCJK has no blocks, so both forms act on the same font.
+% \end{function}
 %
 % \section{Options}
 %
@@ -758,19 +777,57 @@ $ x + 中文 $ and 中文
 \tl_new:N \l_LuaCJK_fontspec_tl
 \tl_new:N \l_LuaCJK_family_name_tl
 \tl_new:N \l_LuaCJK_tmpa_tl
+\tl_new:N \l_LuaCJK_registered_name_tl
+%    \end{macrocode}
+%   \end{variable}
+%   \begin{variable}[internal]
+%     {\g_LuaCJK_font_name_prop, \g_LuaCJK_font_feature_prop,
+%      \l_LuaCJK_default_feature_tl}
+%     The font name and the explicit options of each family, kept so that
+%     \cs{addCJKfontfeatures} can register the family again, and the
+%     features prepended to every family.
+%    \begin{macrocode}
+\prop_new:N \g_LuaCJK_font_name_prop
+\prop_new:N \g_LuaCJK_font_feature_prop
+\tl_new:N \l_LuaCJK_default_feature_tl
+\tl_set:Nn \l_LuaCJK_default_feature_tl { Script = CJK }
+\tl_new:N \l_LuaCJK_feature_tl
+\cs_generate_variant:Nn \fontspec_gset_family:Nnn { NVV }
 %    \end{macrocode}
 %   \end{variable}
 %    \begin{macrocode}
 \cs_new_protected:Npn \LuaCJK_set_family:nnn #1#2#3
   {
+    \tl_set:Ne \l_LuaCJK_feature_tl
+      {
+        \exp_not:V \l_LuaCJK_default_feature_tl
+        \tl_if_blank:nF {#2} { , \exp_not:n {#2} }
+      }
+    \prop_gput:NnV \g_LuaCJK_font_feature_prop {#1} \l_LuaCJK_feature_tl
+    \prop_gput:Nnn \g_LuaCJK_font_name_prop {#1} {#3}
+    \LuaCJK_register_family:n {#1}
+  }
+%    \end{macrocode}
+%   \begin{macro}[internal]{\LuaCJK_register_family:n}
+%     Build the \pkg{fontspec} family from the stored font name and
+%     features, and re-select it if it is the current one.
+%    \begin{macrocode}
+\cs_new_protected:Npn \LuaCJK_register_family:n #1
+  {
+    \prop_get:NnNF \g_LuaCJK_font_name_prop {#1} \l_LuaCJK_registered_name_tl
+      { \tl_clear:N \l_LuaCJK_registered_name_tl }
+    \prop_get:NnNF \g_LuaCJK_font_feature_prop {#1} \l_LuaCJK_feature_tl
+      { \tl_clear:N \l_LuaCJK_feature_tl }
     \group_begin:
-      \fontspec_gset_family:Nnn \l_LuaCJK_fontspec_tl {#2} {#3}
+      \fontspec_gset_family:NVV \l_LuaCJK_fontspec_tl
+        \l_LuaCJK_feature_tl \l_LuaCJK_registered_name_tl
       \prop_gput:NnV \g_LuaCJK_family_prop {#1} \l_LuaCJK_fontspec_tl
     \group_end:
     \prop_if_in:NVT \g_LuaCJK_family_prop \l_LuaCJK_family_tl
       { \selectfont }
   }
 %    \end{macrocode}
+%   \end{macro}
 % \end{macro}
 %
 % \begin{macro}[internal]{\LuaCJK_switch_family:n}
@@ -874,6 +931,56 @@ $ x + 中文 $ and 中文
 \tl_set:Nn \CJKfamilydefault { zhsong }
 %    \end{macrocode}
 % \end{variable}
+%
+% \begin{macro}{\defaultCJKfontfeatures}
+%   Set the features prepended to every CJK family, replacing the initial
+%   \texttt{Script = CJK}.  Families registered earlier keep the value they
+%   were given; call \cs{setCJKmainfont} again to apply a new default.
+%    \begin{macrocode}
+\NewDocumentCommand \defaultCJKfontfeatures { m }
+  { \tl_set:Nn \l_LuaCJK_default_feature_tl {#1} }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\addCJKfontfeatures}
+%   Add features to the current family for the rest of the group.  The star
+%   form is accepted for compatibility; LuaCJK has no concept of blocks, so
+%   both forms act on the same font.
+%    \begin{macrocode}
+\NewDocumentCommand \addCJKfontfeatures { s o m }
+  {
+    \exp_args:NV \LuaCJK_add_family_features:n
+      \l_LuaCJK_family_tl {#3}
+  }
+%    \end{macrocode}
+%   \begin{macro}[internal]{\LuaCJK_add_family_features:n}
+%     Append features to the stored ones of a family and register it again.
+%    \begin{macrocode}
+\cs_new_protected:Npn \LuaCJK_add_family_features:n #1#2
+  {
+    \prop_get:NnNTF \g_LuaCJK_font_feature_prop {#1} \l_LuaCJK_feature_tl
+      {
+        \tl_set:Ne \l_LuaCJK_feature_tl
+          {
+            \exp_not:V \l_LuaCJK_feature_tl
+            \tl_if_blank:nF {#2} { , \exp_not:n {#2} }
+          }
+        \prop_get:NnNF \g_LuaCJK_font_name_prop {#1} \l_LuaCJK_registered_name_tl
+          { \tl_clear:N \l_LuaCJK_registered_name_tl }
+        \group_begin:
+          \fontspec_gset_family:NVV \l_LuaCJK_fontspec_tl
+            \l_LuaCJK_feature_tl \l_LuaCJK_registered_name_tl
+        \group_end:
+        \prop_put:NnV \g_LuaCJK_family_prop {#1} \l_LuaCJK_fontspec_tl
+        \prop_put:NnV \g_LuaCJK_font_feature_prop {#1}
+          \l_LuaCJK_feature_tl
+        \selectfont
+      }
+      { \msg_warning:nnn { LuaCJK } { family-unknown } {#1} }
+  }
+%    \end{macrocode}
+%   \end{macro}
+% \end{macro}
 %
 % \begin{macro}
 %   {\setCJKmainfont, \setCJKsansfont, \setCJKmonofont, \setCJKfamilyfont}

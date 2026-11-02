@@ -41,6 +41,9 @@
 - Inserted glue, kerns, and penalties now inherit the attributes of the
   neighbouring node, so attribute-based decorations such as
   `\CJKunderdot` stay in one piece across CJK/CJK and CJK/Latin boundaries.
+- Only `luatexja` is rejected now; `xeCJK` already refuses to run outside
+  XeTeX, so LuaCJK no longer duplicates that check.
+- Add `\defaultCJKfontfeatures` and `\addCJKfontfeatures`.
 - Drop the placeholder glyph that a font without the character leaves behind
   (one `.notdef` glyph in some fonts, a private-use glyph in others).
 - Move the manual driver into `LuaCJK.dtx` and use the same fonts as

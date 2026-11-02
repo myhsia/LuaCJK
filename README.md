@@ -30,5 +30,3 @@ LuaCJK requires LuaLaTeX. It must not be loaded together with `luatexja`.
 
 This work may be distributed and/or modified under the conditions of the
 LaTeX Project Public License, version 1.3c or later.
-
-
