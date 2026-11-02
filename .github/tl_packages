@@ -6,10 +6,6 @@ makeindex
 #
 # l3doc
 alphalph
-amssymb
-pifont
-textcomp
-trace
 l3kernel
 l3packages
 #
