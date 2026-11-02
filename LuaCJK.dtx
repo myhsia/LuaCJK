@@ -356,6 +356,16 @@ LaTeX Project Public License, version 1.3c or later.
 % \fi
 %
 % \begin{keyval}
+%   \item[\keys{LocalConfig}]\val{\TTF \textbar{} \meta{name} \textbar{}
+%     \texttt{false}}
+%   Read local settings from a configuration file.  \texttt{true} loads
+%   \file{luacjk.cfg}, \meta{name} loads \file{luacjk-\meta{name}.cfg}, and
+%   \texttt{false} (the initial value) loads nothing.  The file is read at
+%   the end of the package, so it may use every command LuaCJK defines.  A
+%   missing file only warns.
+% \end{keyval}
+%
+% \begin{keyval}
 %   \item[\keys{Verb}]\val{\TTF \textbar{} \texttt{env} \textbar{}
 %     \texttt{env+}}
 %   What to do inside \tn{verb} and the verbatim-like environments
@@ -764,6 +774,7 @@ $ x + 中文 $ and 中文
 \tl_set:Nn \l_LuaCJK_cjk_math_tl { 0 }
 \tl_new:N \l_LuaCJK_verb_mode_tl
 \tl_set:Nn \l_LuaCJK_verb_mode_tl { true }
+\tl_new:N \l_LuaCJK_local_config_tl
 %    \end{macrocode}
 %   \end{variable}
 %    \begin{macrocode}
@@ -803,6 +814,16 @@ $ x + 中文 $ and 中文
     Verb / env+  .code:n = { \tl_set:Nn \l_LuaCJK_verb_mode_tl { env+ } },
     Verb / false .code:n = { \tl_set:Nn \l_LuaCJK_verb_mode_tl { false } },
     Verb .default:n = { true },
+    LocalConfig .code:n =
+      {
+        \str_case:nnF {#1}
+          {
+            { true }  { \tl_set:Nn \l_LuaCJK_local_config_tl { luacjk.cfg } }
+            { false } { \tl_clear:N \l_LuaCJK_local_config_tl }
+          }
+          { \tl_set:Nn \l_LuaCJK_local_config_tl { luacjk-#1.cfg } }
+      },
+    LocalConfig .default:n = { true },
     unknown .code:n =
       {
         \msg_warning:nne { LuaCJK } { unknown-option }
@@ -1269,6 +1290,31 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
+% \subsection{Local configuration}
+%
+% \begin{macro}{\LuaCJK_load_local_config:}
+%   Load the file chosen by the \texttt{LocalConfig} option.  The key is
+%   read while the package is being loaded, but the file is only input at
+%   the end, so that it can use everything LuaCJK defines.
+%    \begin{macrocode}
+\cs_new_protected:Npn \LuaCJK_load_local_config:
+  {
+    \tl_if_empty:NF \l_LuaCJK_local_config_tl
+      {
+        \exp_args:NV \LuaCJK_load_config_file:n \l_LuaCJK_local_config_tl
+      }
+  }
+\cs_new_protected:Npn \LuaCJK_load_config_file:n #1
+  {
+    \file_if_exist:nTF {#1}
+      { \file_input:n {#1} }
+      { \msg_warning:nnn { LuaCJK } { config-missing } {#1} }
+  }
+\msg_new:nnn { LuaCJK } { config-missing }
+  { The~configuration~file~`#1'~was~not~found. }
+%    \end{macrocode}
+% \end{macro}
+%
 % \subsection{Loading the Lua core}
 %
 % The Lua module reads the attribute numbers and installs its callbacks.
@@ -1290,6 +1336,7 @@ $ x + 中文 $ and 中文
     \LuaCJK_update_font:
     \g_LuaCJK_font_attr = \g_LuaCJK_fontid_int
   }
+\LuaCJK_load_local_config:
 %    \end{macrocode}
 %
 %    \begin{macrocode}

@@ -1,0 +1,23 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage[LocalConfig = local]{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\begin{document}
+
+\START
+
+\TEST{the local configuration was read}{
+  \setbox0=\hbox{中中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{the local configuration set the punctuation style}{
+  \setbox0=\hbox{字，，字}
+  \TYPE{width: \the\wd0}
+}
+
+\END
+
+\end{document}
