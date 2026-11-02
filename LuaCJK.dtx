@@ -33,6 +33,32 @@
 %
 % \fi
 %
+%<*internal>
+\iffalse
+%</internal>
+%
+%<*package>
+%<+!driver>\GetIdInfo $Id: LuaCJK.dtx 0.1.0 2026-11-02 myhsia<myhsia@outlook.com>$
+%<package>  {A LuaTeX CJK typesetting package}
+%<package>\ProvidesExplPackage {\ExplFileName}
+%<!driver>  {\ExplFileDate} {\ExplFileVersion} {\ExplFileDescription}
+%<package>\edef \DocFileDate        {\ExplFileDate}
+%<package>\edef \DocFileVersion     {\ExplFileVersion}
+%<package>\edef \DocFileDescription {\ExplFileDescription}
+%<package>\tl_greplace_all:Nnn \DocFileDate { / } { - }
+%</package>
+%
+%<*fntef>
+%<+!driver>\GetIdInfo $Id: LuaCJK.dtx 0.1.0 2026-11-02 myhsia<myhsia@outlook.com>$
+%<fntef>  {Font effects for LuaCJK (CTEX)}
+%<fntef>\ProvidesExplPackage {LuaCJKfntef}
+%<!driver>  {\ExplFileDate} {\ExplFileVersion} {\ExplFileDescription}
+%</fntef>
+%
+%<*internal>
+\fi
+%</internal>
+%
 % \iffalse
 %<*driver>
 \documentclass[11pt, letterpaper]{l3doc}
@@ -389,17 +415,6 @@ $ x + 中文 $ and 中文
 %
 % \begin{macrocode}
 %<@@=LuaCJK>
-%    \end{macrocode}
-%
-% \begin{macrocode}
-%<package>\GetIdInfo $Id: LuaCJK.dtx 0.1.0 2026-11-02 myhsia<myhsia@outlook.com>$
-%<package>  {A LuaTeX CJK typesetting package}
-%<package>\ProvidesExplPackage {\ExplFileName}
-%<!driver>  {\ExplFileDate} {\ExplFileVersion} {\ExplFileDescription}
-%<package>\edef \DocFileDate        {\ExplFileDate}
-%<package>\edef \DocFileVersion     {\ExplFileVersion}
-%<package>\edef \DocFileDescription {\ExplFileDescription}
-%<package>\tl_greplace_all:Nnn \DocFileDate { / } { - }
 %    \end{macrocode}
 %
 % \begin{macrocode}
@@ -1593,15 +1608,6 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
 %    \end{macrocode}
 %
 
-% \begin{macrocode}
-%<*fntef>
-%<+!driver>\GetIdInfo $Id: LuaCJK.dtx 0.1.0 2026-11-02 myhsia<myhsia@outlook.com>$
-%<fntef>  {Font effects for LuaCJK (CTEX)}
-%<fntef>\ProvidesExplPackage {LuaCJKfntef}
-%<!driver>  {\ExplFileDate} {\ExplFileVersion} {\ExplFileDescription}
-%</fntef>
-%    \end{macrocode}
-%
 % \begin{macrocode}
 %<*fntef>
 \sys_if_engine_luatex:F
