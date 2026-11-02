@@ -1,0 +1,62 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKglue=10pt, CJKecglue=5pt}
+
+\begin{document}
+
+\START
+
+% \verb and verbatim cannot appear inside a macro argument, so the measured
+% material is built at the top level and the tests only report it.
+\setbox0=\hbox{\verb|中中|}
+\setbox2=\hbox{\verb|中|}
+\setbox4=\hbox{中中}
+
+\TEST{verb turns the adjustments off}{
+  \TYPE{verb: \the\wd0}
+}
+
+\TEST{verb keeps the CJK font}{
+  \directlua{
+    local n = tex.box[2].head
+    while n do
+      if n.id == node.id("glyph") then
+        local f = font.getfont(n.font)
+        texio.write_nl("term and log",
+          "GLYPH " .. tostring(n.char) .. " " ..
+          tostring(f and (f.fullname or f.name) or "?"))
+      end
+      n = n.next
+    end
+  }
+}
+
+\TEST{the adjustments are on before verbatim}{
+  \TYPE{plain: \the\wd4}
+}
+
+\begin{verbatim}
+中中
+\end{verbatim}
+
+\TEST{the adjustments come back after verbatim}{
+  \setbox6=\hbox{中中}
+  \TYPE{plain: \the\wd6}
+}
+
+\TEST{disable inside a group is local}{
+  \begingroup
+    \LuaCJKdisable
+    \setbox8=\hbox{中中}
+    \TYPE{inside: \the\wd8}
+  \endgroup
+  \setbox10=\hbox{中中}
+  \TYPE{outside: \the\wd10}
+}
+
+\END
+
+\end{document}

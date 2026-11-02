@@ -511,12 +511,34 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 %
 % \begin{macrocode}
-\tl_new:N \l_LuaCJK_enabled_tl
-\tl_set:Nn \l_LuaCJK_enabled_tl { 1 }
+\newattribute \g_LuaCJK_disabled_attr
+\int_const:Nn \c_LuaCJK_disabled_attr_int { \the \allocationnumber }
 \NewDocumentCommand \LuaCJKdisable { }
-  { \tl_set:Nn \l_LuaCJK_enabled_tl { 0 } }
+  { \g_LuaCJK_disabled_attr = 1 }
 \NewDocumentCommand \LuaCJKenable { }
-  { \tl_set:Nn \l_LuaCJK_enabled_tl { 1 } }
+  { \g_LuaCJK_disabled_attr = 0 }
+%    \end{macrocode}
+%
+% Verbatim-like material must be left alone.  \tn{verb} opens its own group
+% and selects \tn{verbatim@font} inside it, so appending the switch there
+% covers \tn{verb} and the \env{verbatim} environment; both restore the
+% previous state when the group ends.  Environments that do not reuse
+% \tn{verbatim@font} get explicit begin and end hooks.
+%    \begin{macrocode}
+\cs_if_exist:NT \verbatim@font
+  {
+    \cs_gset_protected:Npx \verbatim@font
+      { \exp_not:o { \verbatim@font } \exp_not:N \LuaCJKdisable }
+  }
+\clist_map_inline:nn
+  {
+    verbatim , verbatim* , Verbatim , Verbatim* ,
+    BVerbatim , LVerbatim , lstlisting
+  }
+  {
+    \AddToHook { env / #1 / begin } { \LuaCJKdisable }
+    \AddToHook { env / #1 / end }   { \LuaCJKenable }
+  }
 %    \end{macrocode}
 %
 % \begin{macrocode}
@@ -553,8 +575,15 @@ $ x + 中文 $ and 中文
         \tl_set:Nn \l_LuaCJK_family_tl {#1}
         \selectfont
       }
-      { \msg_warning:nnn { LuaCJK } { family-unknown } {#1} }
+      {
+        \seq_if_in:NnF \g_LuaCJK_unknown_family_seq {#1}
+          {
+            \seq_gput_right:Nn \g_LuaCJK_unknown_family_seq {#1}
+            \msg_warning:nnn { LuaCJK } { family-unknown } {#1}
+          }
+      }
   }
+\seq_new:N \g_LuaCJK_unknown_family_seq
 \msg_new:nnn { LuaCJK } { family-unknown }
   { Unknown~CJK~family~`#1'~is~being~ignored. }
 %    \end{macrocode}
@@ -685,7 +714,8 @@ $ x + 中文 $ and 中文
     LuaCJK.attr_cjk_space = \int_use:N \c_LuaCJK_cjk_space_attr_int ;
     LuaCJK.attr_xecglue = \int_use:N \c_LuaCJK_xecglue_attr_int ;
     LuaCJK.attr_inserted = \int_use:N \c_LuaCJK_inserted_attr_int ;
-    LuaCJK.attr_math_font = \int_use:N \c_LuaCJK_math_font_attr_int
+    LuaCJK.attr_math_font = \int_use:N \c_LuaCJK_math_font_attr_int ;
+    LuaCJK.attr_disabled = \int_use:N \c_LuaCJK_disabled_attr_int
   }
 \AtBeginDocument
   {
@@ -828,8 +858,14 @@ local function kinsoku_enabled ()
   return token.get_macro("l_LuaCJK_punct_kinsoku_tl") == "1"
 end
 
-local function adjustments_enabled ()
-  return token.get_macro("l_LuaCJK_enabled_tl") == "1"
+M.attr_disabled = M.attr_disabled or nil
+
+local function disabled (n)
+  if not (M.attr_disabled and n) then
+    return false
+  end
+  local v = has_attribute(n, M.attr_disabled)
+  return v ~= nil and v ~= 0
 end
 
 local function copy_glyph (n, fid)
@@ -1077,6 +1113,9 @@ local function handle_boundary (head, prev, before, prev_visible,
   if not prev_visible then
     return head
   end
+  if disabled(prev_visible) or disabled(cur) then
+    return head
+  end
   if prev and prev.id == GLUE then
     if not is_inserted(prev) then
       return handle_source_space(head, prev, before, prev_end, cur, start_class)
@@ -1210,6 +1249,7 @@ local function apply_fixed_widths (head)
   local cur = head
   while cur do
     if cur.id == GLYPH and punct_class(cur.char)
+       and not disabled(cur)
        and not (full and full[cur.char]) then
       local f = font.getfont(cur.font)
       local size = f and f.size or 0
@@ -1243,7 +1283,8 @@ local function apply_kinsoku (head)
       last_visible = cur
     elseif is_break_point(cur) and last_visible then
       local nxt = next_visible(cur.next)
-      if nxt and forbids_break(glyph_class(last_visible), glyph_class(nxt)) then
+      if nxt and not disabled(last_visible) and not disabled(nxt)
+         and forbids_break(glyph_class(last_visible), glyph_class(nxt)) then
         if not (prev and prev.id == PENALTY and prev.penalty >= 10000) then
           local p = new_node("penalty")
           p.penalty = 10000
@@ -1309,6 +1350,9 @@ end
 local rewrite_math_list
 
 local function rewrite_noad (noad, fid)
+  if disabled(noad) then
+    return
+  end
   local nuc = noad.nucleus
   if nuc then
     if nuc.id == MATH_CHAR or nuc.id == MATH_TEXT_CHAR then
@@ -1382,9 +1426,6 @@ local function warn_disabled_cjk_math (head)
 end
 
 local function rewrite_math (head)
-  if not adjustments_enabled() then
-    return head
-  end
   if not cjk_math_enabled() then
     warn_disabled_cjk_math(head)
     return head
@@ -1424,6 +1465,12 @@ local function hang_line (line)
     return
   end
   local first, last = find_first_last_glyph(line.head)
+  if last and disabled(last) then
+    last = nil
+  end
+  if first and disabled(first) then
+    first = nil
+  end
   if last and punct_class(last.char) then
     local cls = punct_class(last.char)
     if cls == "close" or cls == "middle" then
@@ -1443,9 +1490,6 @@ local function hang_line (line)
 end
 
 local function hang_punctuation (head)
-  if not adjustments_enabled() then
-    return head
-  end
   local style = punct_style()
   if not style.hanging then
     return head
@@ -1460,9 +1504,6 @@ end
 
 local function process (head)
   head = rewrite_fonts(head)
-  if not adjustments_enabled() then
-    return head
-  end
   head = spacing(head)
   head = apply_fixed_widths(head)
   head = apply_kinsoku(head)

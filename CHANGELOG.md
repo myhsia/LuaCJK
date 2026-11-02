@@ -34,3 +34,7 @@
 - Split the Lua code into `LuaCJK.lua` (entry point) and `LuaCJK-core.lua`.
 - Add `LuaCJKfntef`, a `lua-ul` based companion package providing
   `\CJKunderline`, `\CJKunderdot`, and `\CJKsout`.
+- Suspend the adjustments automatically in `\verb`, `verbatim`, `fancyvrb`
+  and `listings` environments; `\LuaCJKdisable` now records its state per
+  node.
+- Warn only once for an unknown CJK family.
