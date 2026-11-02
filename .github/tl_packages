@@ -29,6 +29,8 @@ xcolor
 zref-clever
 #
 # Fonts and LuaTeX
+lua-ul
+luacolor
 lualatex-math
 luatex
 pdftex
