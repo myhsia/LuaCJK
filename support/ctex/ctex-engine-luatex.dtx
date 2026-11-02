@@ -171,6 +171,33 @@
 %</ctex-engine>
 %    \end{macrocode}
 %
+% Test-only shim for the LuaTeX-ja parameter interface used by some ctex
+% tests.  It is deliberately minimal: only \opt{kanjiskip} and
+% \opt{xkanjiskip} are mapped, and they read and write the LuaCJK skips.
+%    \begin{macrocode}
+%<*ctex-engine>
+\keys_define:nn { LuaCJK / ctex-shadow / ltj }
+  {
+    kanjiskip  .code:n =
+      { \skip_set:Nn \l_LuaCJK_ccglue_skip {#1} },
+    xkanjiskip .code:n =
+      { \skip_set:Nn \l_LuaCJK_ecglue_skip {#1} },
+    unknown    .code:n = { },
+  }
+\NewDocumentCommand \ltjsetparameter { m }
+  { \keys_set:nn { LuaCJK / ctex-shadow / ltj } {#1} }
+\cs_new:Npn \ltjgetparameter #1
+  {
+    \str_case:nnF {#1}
+      {
+        { kanjiskip  } { \skip_use:N \l_LuaCJK_ccglue_skip }
+        { xkanjiskip } { \skip_use:N \l_LuaCJK_ecglue_skip }
+      }
+      { 0pt }
+  }
+%</ctex-engine>
+%    \end{macrocode}
+%
 % \end{implementation}
 %
 % \endinput

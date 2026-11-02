@@ -61,6 +61,8 @@ autoindent01 autoindent02
 cjkfamily-default01 cjkfamily-default02
 ccwd-selectfont01 ccwd-zihao01
 punct
+ecglue01
+ccglue03
 ctex-package01 ctex-version01
 encoding01 engine-detect01
 fontswitch01
@@ -93,6 +95,14 @@ for name in $tests; do
     failed=$((failed + 1))
   fi
 done
+
+echo "== verifying ctex option plumbing =="
+# ecglue01: \ctexset{experiment/CJKecglue=...} must reach the LuaCJK skip.
+grep -q '5.0pt plus 2.0pt minus 1.0pt' ecglue01.log
+# ccglue03: a user-set kanjiskip survives \selectfont and \zihao.
+grep -q 'user-set-before=\[10.0pt plus 1.0pt minus 1.0pt\]' ccglue03.log
+grep -q 'user-set-after-selectfont=\[10.0pt plus 1.0pt minus 1.0pt\]' ccglue03.log
+grep -q 'user-set-after-zihao=\[10.0pt plus 1.0pt minus 1.0pt\]' ccglue03.log
 
 echo "ctex subset: $((total - failed))/$total passed"
 [ "$failed" -eq 0 ]
