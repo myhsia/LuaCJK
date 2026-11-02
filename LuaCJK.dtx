@@ -221,10 +221,11 @@ $中文$ and 中文
 %   \begin{syntax}
 %     PunctStyle = \meta{style}
 %   \end{syntax}
-%   Select a punctuation style.  The first implementation supports
-%   \texttt{quanjiao} (the default) and \texttt{plain}.  Names for the other
-%   \pkg{xeCJK} presets are recognised for compatibility, but currently issue
-%   a warning and fall back to \texttt{plain}.
+%   Select a punctuation style.  Implemented styles are
+%   \texttt{quanjiao} (the default), \texttt{plain}, \texttt{banjiao},
+%   \texttt{kaiming}, and \texttt{CCT}.  \texttt{hangmobanjiao} is recognised
+%   for compatibility, but currently issues a warning and falls back to
+%   \texttt{plain}.
 % \end{function}
 %
 % \begin{function}{PunctKinsoku}
@@ -262,9 +263,9 @@ $中文$ and 中文
 % The first release covers the font and spacing core, the
 % \texttt{quanjiao} and \texttt{plain} punctuation styles, and the basic
 % line-breaking prohibitions for punctuation, and direct CJK input in math
-% mode.  The other punctuation presets, hanging punctuation and line-end
-% compression, fallback fonts, alternate fonts, the decoration layer, and a
-% \pkg{ctex} backend are not yet implemented.
+% mode.  Hanging punctuation and line-end compression, the
+% \texttt{hangmobanjiao} preset, fallback fonts, alternate fonts, the
+% decoration layer, and a \pkg{ctex} backend are not yet implemented.
 %
 % \end{documentation}
 %
@@ -363,6 +364,9 @@ $中文$ and 中文
 \prop_new:N \g_LuaCJK_punct_style_prop
 \prop_gput:Nnn \g_LuaCJK_punct_style_prop { quanjiao } { }
 \prop_gput:Nnn \g_LuaCJK_punct_style_prop { plain } { }
+\prop_gput:Nnn \g_LuaCJK_punct_style_prop { banjiao } { }
+\prop_gput:Nnn \g_LuaCJK_punct_style_prop { kaiming } { }
+\prop_gput:Nnn \g_LuaCJK_punct_style_prop { CCT } { }
 \msg_new:nnn { LuaCJK } { punct-style-unknown }
   {
     PunctStyle~`#1'~is~not~implemented.\\
@@ -705,9 +709,23 @@ local function punct_class (c)
   return PUNCT_CLASS[c]
 end
 
+-- Characters that keep a full em width in the kaiming style.
+local KAIMING_FULL = {
+  [0xFF0E] = true,  -- ．
+  [0x3002] = true,  -- 。
+  [0xFF1F] = true,  -- ？
+  [0xFF01] = true,  -- ！
+}
+
 M.punct_styles = {
   quanjiao = { compress_adjacent = true,  ratio = 0.5, keep_open_close = true },
   plain    = { compress_adjacent = false, ratio = 0.0, keep_open_close = true },
+  banjiao  = { compress_adjacent = false, ratio = 0.0, keep_open_close = true,
+               fixed_ratio = 0.5 },
+  kaiming  = { compress_adjacent = false, ratio = 0.0, keep_open_close = true,
+               fixed_ratio = 0.5, fixed_full = KAIMING_FULL },
+  CCT      = { compress_adjacent = false, ratio = 0.0, keep_open_close = true,
+               fixed_ratio = 0.7 },
 }
 
 function M.define_punct_style (name, compress, ratio, keep)
@@ -1059,6 +1077,43 @@ local function is_break_point (n)
   return false
 end
 
+-- Fixed punctuation width.
+--
+-- Styles such as banjiao give every punctuation mark a fixed advance.  The
+-- glyph advance cannot be changed, so a compensating kern goes right after
+-- the glyph.  A penalty in front of that kern keeps TeX from treating it as
+-- an extra break opportunity.
+local function apply_fixed_widths (head)
+  local style = punct_style()
+  local ratio = style.fixed_ratio
+  if not ratio then
+    return head
+  end
+  local full = style.fixed_full
+  local cur = head
+  while cur do
+    if cur.id == GLYPH and punct_class(cur.char)
+       and not (full and full[cur.char]) then
+      local f = font.getfont(cur.font)
+      local size = f and f.size or 0
+      if size > 0 then
+        local target = math.floor(ratio * size + 0.5)
+        local delta = target - cur.width
+        if delta ~= 0 then
+          local p = new_node("penalty")
+          p.penalty = 10000
+          local k = make_kern(delta)
+          p.next = k
+          k.next = cur.next
+          cur.next = p
+        end
+      end
+    end
+    cur = cur.next
+  end
+  return head
+end
+
 local function apply_kinsoku (head)
   if not kinsoku_enabled() then
     return head
@@ -1184,6 +1239,7 @@ end
 local function process (head)
   head = rewrite_fonts(head)
   head = spacing(head)
+  head = apply_fixed_widths(head)
   head = apply_kinsoku(head)
   return head
 end

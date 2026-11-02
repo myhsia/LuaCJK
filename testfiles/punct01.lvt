@@ -49,9 +49,43 @@
 }
 
 \TEST{unimplemented punctuation style falls back}{
-  \LuaCJKsetup{PunctStyle=banjiao}
+  \LuaCJKsetup{PunctStyle=hangmobanjiao}
   \setbox0=\hbox{字，，字}
   \TYPE{width: \the\wd0}
+}
+
+\TEST{banjiao halves punctuation width}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle=banjiao}
+    \setbox0=\hbox{字，字}
+    \setbox2=\hbox{字}
+    \TYPE{comma: \the\wd0}
+    \TYPE{hanzi: \the\wd2}
+  \endgroup
+}
+
+\TEST{kaiming keeps final punctuation full width}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle=kaiming}
+    \setbox0=\hbox{字，字}
+    \setbox2=\hbox{字。字}
+    \TYPE{comma: \the\wd0}
+    \TYPE{period: \the\wd2}
+  \endgroup
+}
+
+\TEST{CCT narrows punctuation}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle=CCT}
+    \setbox0=\hbox{字，字}
+    \TYPE{comma: \the\wd0}
+  \endgroup
+}
+
+\TEST{fixed width style reports no warning}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle=banjiao}
+  \endgroup
 }
 
 \TEST{quanjiao restored after group}{

@@ -11,8 +11,9 @@
 - Add basic CJK/CJK and CJK/Latin spacing with `CJKglue`, `CJKecglue`,
   `CJKspace`, and `xCJKecglue`.
 - Add box, math, and transparent-node boundary handling.
-- Add the `PunctStyle` interface with working `quanjiao` and `plain`
-  punctuation compression; other presets currently warn and fall back.
+- Add the `PunctStyle` interface with working `quanjiao`, `plain`,
+  `banjiao`, `kaiming`, and `CCT` styles; `hangmobanjiao` still warns and
+  falls back.
 - Add `PunctKinsoku` line-breaking prohibitions: closing punctuation cannot
   start a line, opening punctuation cannot end a line, and long punctuation
   runs are kept together.
