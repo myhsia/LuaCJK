@@ -32,3 +32,5 @@
 - Add `\LuaCJKdisable` and `\LuaCJKenable` to suspend the typographic
   adjustments while keeping CJK font selection.
 - Split the Lua code into `LuaCJK.lua` (entry point) and `LuaCJK-core.lua`.
+- Add `LuaCJKfntef`, a `lua-ul` based companion package providing
+  `\CJKunderline`, `\CJKunderdot`, and `\CJKsout`.

@@ -1,0 +1,56 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: underline keeps the text width
+============================================================
+Lua-only attribute luaul1 = ...
+underlined: 62.82pt
+plain: 62.82pt
+depth difference: 1.6125pt
+============================================================
+============================================================
+TEST 2: underline accepts the star and the dash
+============================================================
+star: 20.0pt
+dash: 20.0pt
+============================================================
+============================================================
+TEST 3: strike-through keeps the text width
+============================================================
+struck: 39.49pt
+plain: 39.49pt
+============================================================
+============================================================
+TEST 4: emphasis dots keep the text width
+============================================================
+dotted: 39.49pt
+plain: 39.49pt
+depth difference: 2.37994pt
+============================================================
+============================================================
+TEST 5: nested effects
+============================================================
+Lua-only attribute luaul2 = ...
+nested: 20.0pt
+plain: 20.0pt
+============================================================
+============================================================
+TEST 6: effects in a paragraph
+============================================================
+Overfull \hbox (5.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 中 文 中
+\hbox(7.78+1.62)x40.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 文
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\glue(\rightskip) 0.0
+LINES 3
+============================================================

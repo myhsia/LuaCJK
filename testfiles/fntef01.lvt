@@ -1,0 +1,66 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\usepackage{LuaCJKfntef}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\begin{document}
+
+\START
+
+\TEST{underline keeps the text width}{
+  \setbox0=\hbox{\CJKunderline{中文 test 中文}}
+  \setbox2=\hbox{中文 test 中文}
+  \TYPE{underlined: \the\wd0}
+  \TYPE{plain: \the\wd2}
+  \TYPE{depth difference: \the\dimexpr\dp0-\dp2\relax}
+}
+
+\TEST{underline accepts the star and the dash}{
+  \setbox0=\hbox{\CJKunderline*{中文}}
+  \setbox2=\hbox{\CJKunderline-{中文}}
+  \TYPE{star: \the\wd0}
+  \TYPE{dash: \the\wd2}
+}
+
+\TEST{strike-through keeps the text width}{
+  \setbox0=\hbox{\CJKsout{中文 test}}
+  \setbox2=\hbox{中文 test}
+  \TYPE{struck: \the\wd0}
+  \TYPE{plain: \the\wd2}
+}
+
+\TEST{emphasis dots keep the text width}{
+  \setbox0=\hbox{\CJKunderdot{中文 test}}
+  \setbox2=\hbox{中文 test}
+  \TYPE{dotted: \the\wd0}
+  \TYPE{plain: \the\wd2}
+  \TYPE{depth difference: \the\dimexpr\dp0-\dp2\relax}
+}
+
+\TEST{nested effects}{
+  \setbox0=\hbox{\CJKunderline{\CJKunderdot{中文}}}
+  \setbox2=\hbox{中文}
+  \TYPE{nested: \the\wd0}
+  \TYPE{plain: \the\wd2}
+}
+
+\TEST{effects in a paragraph}{
+  \setbox0=\vbox{\hsize=4em \CJKunderline{中文中文中文中文}\par}
+  \directlua{
+    local n = tex.box[0].head
+    local c = 0
+    while n do
+      if node.type(n.id) == "hlist" then
+        c = c + 1
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "LINES " .. tostring(c))
+  }
+}
+
+\END
+
+\end{document}

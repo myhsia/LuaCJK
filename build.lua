@@ -51,7 +51,7 @@ function update_tag(file, content, tagname, tagdate)
   tagdate = date
   if string.match(file, "LuaCJK.dtx$") then
     content = string.gsub(content,
-      "(%%<package>\\GetIdInfo%s+%$Id:%s+LuaCJK%.dtx%s+)[^%$]*(%$)",
+      "(%%<[a-z]+>\\GetIdInfo%s+%$Id:%s+LuaCJK%.dtx%s+)[^%$]*(%$)",
       "%1" .. tagname .. " " .. tagdate .. " " ..
         maintainid .. "<" .. email .. ">%2")
   end

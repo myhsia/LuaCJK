@@ -269,14 +269,58 @@ $ x + 中文 $ and 中文
 %</example>
 % \fi
 
+% \section{Font effects}
+%
+% The companion package \pkg{LuaCJKfntef} provides underlining, emphasis
+% dots, and strike-through.  It builds on \pkg{lua-ul}, so the decorated text
+% may contain arbitrary commands, CJK and Latin text, and may still be
+% hyphenated and broken between lines.
+%
+% \begin{function}{\CJKunderline}
+%   \begin{syntax}
+%     \tn{CJKunderline} \oarg{options} \marg{text}
+%   \end{syntax}
+%   Underline \meta{text}.  The \meta{options} are passed to the \pkg{lua-ul}
+%   underline type, so |top| and |bottom| may be used to tune the position.
+%   A leading \texttt{*} or \texttt{-} is accepted for compatibility with
+%   \pkg{xeCJKfntef} and ignored.
+% \end{function}
+%
+% \begin{function}{\CJKunderdot}
+%   \begin{syntax}
+%     \tn{CJKunderdot} \marg{text}
+%   \end{syntax}
+%   Put emphasis dots under \meta{text}.
+% \end{function}
+%
+% \begin{function}{\CJKsout}
+%   \begin{syntax}
+%     \tn{CJKsout} \oarg{color} \marg{text}
+%   \end{syntax}
+%   Strike \meta{text} through.  The optional argument is the color of the
+%   rule.
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+\CJKunderline{中文 test 中文}\\
+\CJKunderdot{中文 test 中文}\\
+\CJKsout{中文 test 中文}
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
+%
 % \section{Current limitations}
 %
 % The first release covers the font and spacing core, the
 % \texttt{quanjiao} and \texttt{plain} punctuation styles, and the basic
 % line-breaking prohibitions for punctuation, hanging punctuation, and direct
-% CJK input in math mode.  Line-end compression, fallback fonts, alternate
-% fonts, the decoration layer, and a \pkg{ctex} backend are not yet
-% implemented.
+% CJK input in math mode, and the font effects of \pkg{LuaCJKfntef}.
+% Line-end compression, fallback fonts, alternate fonts, wave and double
+% underlines, and a \pkg{ctex} backend are not yet implemented.
 %
 % \end{documentation}
 %
@@ -1448,6 +1492,89 @@ luatexbase.add_to_callback("hpack_filter", M.hpack, "LuaCJK.spacing")
 luatexbase.add_to_callback("pre_mlist_to_hlist_filter", M.pre_mlist_to_hlist, "LuaCJK.math")
 luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.hang")
 %</lua-core>
+%    \end{macrocode}
+%
+
+% \begin{macrocode}
+%<*fntef>
+%<+!driver>\GetIdInfo $Id: LuaCJK.dtx 0.1.0 2026-11-02 myhsia<myhsia@outlook.com>$
+%<fntef>  {Font effects for LuaCJK (CTEX)}
+%<fntef>\ProvidesExplPackage {\ExplFileName}
+%<!driver>  {\ExplFileDate} {\ExplFileVersion} {\ExplFileDescription}
+%</fntef>
+%    \end{macrocode}
+%
+% \begin{macrocode}
+%<*fntef>
+\sys_if_engine_luatex:F
+  {
+    \msg_new:nnn { LuaCJKfntef } { engine }
+      { LuaCJKfntef~requires~LuaTeX. }
+    \msg_critical:nn { LuaCJKfntef } { engine }
+    \tex_endinput:D
+  }
+\RequirePackage { LuaCJK }
+\RequirePackage { lua-ul }
+%</fntef>
+%    \end{macrocode}
+%
+% \begin{macrocode}
+%<*fntef>
+\dim_new:N \l_LuaCJKfntef_dot_dim
+\dim_set:Nn \l_LuaCJKfntef_dot_dim { .06em }
+\dim_new:N \l_LuaCJKfntef_dot_gap_dim
+\dim_set:Nn \l_LuaCJKfntef_dot_gap_dim { .12em }
+\dim_new:N \l_LuaCJKfntef_dot_raise_dim
+\dim_set:Nn \l_LuaCJKfntef_dot_raise_dim { -.40em }
+\box_new:N \l_LuaCJKfntef_dots_box
+\hbox_set:Nn \l_LuaCJKfntef_dots_box
+  {
+    \skip_horizontal:n { \l_LuaCJKfntef_dot_gap_dim }
+    \raise \l_LuaCJKfntef_dot_raise_dim \tex_hbox:D
+      {
+        \vrule width \l_LuaCJKfntef_dot_dim
+               height \l_LuaCJKfntef_dot_dim
+               depth \c_zero_dim
+      }
+    \skip_horizontal:n { \l_LuaCJKfntef_dot_gap_dim }
+  }
+\newunderlinetype \LuaCJKfntef_dots
+  { \leaders \box_use_drop:N \l_LuaCJKfntef_dots_box }
+\cs_new_protected:Npn \LuaCJKfntef_underdot:n #1
+  {
+    \group_begin:
+      \LuaCJKfntef_dots
+      #1
+    \group_end:
+  }
+%</fntef>
+%    \end{macrocode}
+%
+% \begin{macrocode}
+%<*fntef>
+\NewDocumentCommand \CJKunderline { s t- o +m }
+  {
+    \IfValueTF {#3}
+      { \underLine [ #3 ] { #4 } }
+      { \underLine { #4 } }
+  }
+\NewDocumentCommand \CJKsout { s t- o +m }
+  {
+    \IfValueTF {#3}
+      { \strikeThrough [ #3 ] { #4 } }
+      { \strikeThrough { #4 } }
+  }
+\NewDocumentCommand \CJKunderdot { s t- o +m }
+  {
+    \IfValueT {#3}
+      {
+        \msg_warning:nn { LuaCJKfntef } { no-options }
+      }
+    \LuaCJKfntef_underdot:n { #4 }
+  }
+\msg_new:nnn { LuaCJKfntef } { no-options }
+  { The~optional~argument~of~`\token_to_str:N \CJKunderdot'~is~ignored. }
+%</fntef>
 %    \end{macrocode}
 %
 % \end{implementation}
