@@ -122,7 +122,7 @@
 %   Select a CJK font for the current group.
 % \end{function}
 %
-% \section{Spacing}
+% \section{Options}
 %
 % \begin{function}{\LuaCJKsetup}
 %   \begin{syntax}
@@ -131,37 +131,22 @@
 %   Configure LuaCJK.  The settings are local to the current group.
 % \end{function}
 %
-% \begin{function}{CJKglue}
-%   \begin{syntax}
-%     CJKglue = \meta{glue}
-%   \end{syntax}
-%   Glue inserted between adjacent CJK characters.  The initial value is
+% The same keys may be given as package options, for example
+% |\usepackage[PunctStyle = banjiao]{LuaCJK}|.
+%
+% \subsection{Spacing}
+%
+% \begin{keyval}
+%   \item[\keys{CJKglue}]\val{glue}: Glue inserted between adjacent CJK
+%   characters.  The initial value is
 %   \texttt{0pt plus 0.08\cs{baselineskip}}.
-% \end{function}
-%
-% \begin{function}{CJKecglue}
-%   \begin{syntax}
-%     CJKecglue = \meta{glue}
-%   \end{syntax}
-%   Glue inserted between CJK and Latin characters.  The initial value is a
-%   normal interword space.
-% \end{function}
-%
-% \begin{function}{CJKspace}
-%   \begin{syntax}
-%     CJKspace = \meta{true} \textbar{} \meta{false}
-%   \end{syntax}
-%   Whether to keep source spaces between CJK characters.  The initial value
-%   is \meta{false}.
-% \end{function}
-%
-% \begin{function}{xCJKecglue}
-%   \begin{syntax}
-%     xCJKecglue = \meta{true} \textbar{} \meta{false}
-%   \end{syntax}
-%   Whether to replace source spaces between CJK and Latin characters with
-%   \texttt{CJKecglue}.  The initial value is \meta{false}.
-% \end{function}
+%   \item[\keys{CJKecglue}]\val{glue}: Glue inserted between CJK and Latin
+%   characters.  The initial value is a normal interword space.
+%   \item[\keys{CJKspace}]\val{\TFF}: Whether to keep source spaces between
+%   CJK characters.
+%   \item[\keys{xCJKecglue}]\val{\TFF}: Whether to replace source spaces
+%   between CJK and Latin characters with \texttt{CJKecglue}.
+% \end{keyval}
 %
 % \iffalse
 %<*example>
@@ -188,17 +173,16 @@
 %
 % \section{CJK in mathematics}
 %
-% \begin{function}{CJKmath}
-%   \begin{syntax}
-%     CJKmath = \meta{true} \textbar{} \meta{false}
-%   \end{syntax}
-%   Whether CJK characters may be typed directly in math mode.  When it is
+% \begin{keyval}
+%   \item[\keys{CJKmath}]\val{\TFF}: Whether CJK characters may be typed
+%   directly in math mode.  When it is
 %   on, such a character is typeset as a box in the CJK math font instead of
-%   being looked up in the math font.  The initial value is \meta{false};
-%   enable it with \cs{LuaCJKsetup}\marg{CJKmath = true} in the preamble.
-%   Without it a CJK character in math mode is looked up in the math font and
-%   usually disappears, so LuaCJK issues a one-time warning in that case.
-% \end{function}
+%   being looked up in the math font.  Enable it with
+%   \cs{LuaCJKsetup}\marg{CJKmath = true} or with the package option
+%   |CJKmath = true|.  Without it a CJK character in math mode is looked up
+%   in the math font and usually disappears, so LuaCJK issues a one-time
+%   warning in that case.
+% \end{keyval}
 %
 % \begin{function}{\setCJKmathfont}
 %   \begin{syntax}
@@ -221,26 +205,19 @@ $ x + 中文 $ and 中文
 %
 % \section{Punctuation}
 %
-% \begin{function}{PunctStyle}
-%   \begin{syntax}
-%     PunctStyle = \meta{style}
-%   \end{syntax}
-%   Select a punctuation style.  The implemented styles are
+% \begin{keyval}
+%   \item[\keys{PunctStyle}]\val{style}: Select a punctuation style.  The
+%   implemented styles are
 %   \texttt{quanjiao} (the default), \texttt{plain}, \texttt{banjiao},
 %   \texttt{kaiming}, \texttt{CCT}, and \texttt{hangmobanjiao}.  An unknown
 %   name issues a warning and falls back to \texttt{plain}.
-% \end{function}
-%
-% \begin{function}{PunctKinsoku}
-%   \begin{syntax}
-%     PunctKinsoku = \meta{true} \textbar{} \meta{false}
-%   \end{syntax}
-%   Whether to apply line-breaking prohibitions for punctuation.  When it is
-%   on (the default), a closing or middle punctuation cannot start a line, an
-%   opening punctuation cannot end a line, and a run of long punctuation is
-%   kept together.  The prohibitions are independent of \texttt{PunctStyle},
-%   so they stay active with \texttt{PunctStyle=plain}.
-% \end{function}
+%   \item[\keys{PunctKinsoku}]\val{\TTF}: Whether to apply line-breaking
+%   prohibitions for punctuation.  A closing
+%   or middle punctuation cannot start a line, an opening punctuation cannot
+%   end a line, and a run of long punctuation is kept together.  The
+%   prohibitions are independent of \texttt{PunctStyle}, so they stay active
+%   with |PunctStyle = plain|.
+% \end{keyval}
 %
 % \begin{function}{\LuaCJKDeclarePunctStyle}
 %   \begin{syntax}
@@ -401,13 +378,14 @@ $ x + 中文 $ and 中文
     \bool_set_true:N \l_LuaCJK_punct_keep_bool
     \keys_set:nn { LuaCJK / punct-style } {#2}
     \prop_gput:Nnn \g_LuaCJK_punct_style_prop {#1} { }
-    \directlua{
-      LuaCJK.define_punct_style(
-        "\luaescapestring{#1}",
-        \bool_if:NTF \l_LuaCJK_punct_compress_bool { true } { false },
-        \fp_use:N \l_LuaCJK_punct_ratio_fp,
-        \bool_if:NTF \l_LuaCJK_punct_keep_bool { true } { false })
-    }
+    \lua_now:e
+      {
+        LuaCJK.define_punct_style(
+          "\lua_escape:e {#1}",
+          \bool_if:NTF \l_LuaCJK_punct_compress_bool { true } { false },
+          \fp_use:N \l_LuaCJK_punct_ratio_fp,
+          \bool_if:NTF \l_LuaCJK_punct_keep_bool { true } { false } )
+      }
   }
 %    \end{macrocode}
 %
@@ -442,9 +420,19 @@ $ x + 中文 $ and 中文
     CJKmath / true  .code:n = { \tl_set:Nn \l_LuaCJK_cjk_math_tl { 1 } },
     CJKmath / false .code:n = { \tl_set:Nn \l_LuaCJK_cjk_math_tl { 0 } },
     CJKmath .default:n = { true },
+    unknown .code:n =
+      {
+        \msg_warning:nne { LuaCJK } { unknown-option }
+          { \l_keys_key_str }
+      },
   }
+\msg_new:nnn { LuaCJK } { unknown-option }
+  { Unknown~option~`#1'~is~being~ignored. }
 \NewDocumentCommand \LuaCJKsetup { m }
   { \keys_set:nn { LuaCJK / options } {#1} }
+\cs_if_exist:NTF \ProcessKeyOptions
+  { \ProcessKeyOptions [ LuaCJK / options ] }
+  { \ProcessKeysOptions { LuaCJK / options } }
 %    \end{macrocode}
 %
 % \begin{macrocode}
@@ -606,24 +594,15 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 %
 % \begin{macrocode}
-\group_begin:
-\char_set_catcode_space:n { 32 }
-\directlua{
-  local f = kpse.find_file("LuaCJK.lua")
-  if f then
-    dofile(f)
-  else
-    tex.error("LuaCJK: cannot find LuaCJK.lua")
-  end
-}
-\group_end:
-\directlua{
-  LuaCJK.attr_font = \int_use:N \c_LuaCJK_font_attr_int
-  LuaCJK.attr_cjk_space = \int_use:N \c_LuaCJK_cjk_space_attr_int
-  LuaCJK.attr_xecglue = \int_use:N \c_LuaCJK_xecglue_attr_int
-  LuaCJK.attr_inserted = \int_use:N \c_LuaCJK_inserted_attr_int
-  LuaCJK.attr_math_font = \int_use:N \c_LuaCJK_math_font_attr_int
-}
+\lua_load_module:n { LuaCJK }
+\lua_now:e
+  {
+    LuaCJK.attr_font = \int_use:N \c_LuaCJK_font_attr_int ;
+    LuaCJK.attr_cjk_space = \int_use:N \c_LuaCJK_cjk_space_attr_int ;
+    LuaCJK.attr_xecglue = \int_use:N \c_LuaCJK_xecglue_attr_int ;
+    LuaCJK.attr_inserted = \int_use:N \c_LuaCJK_inserted_attr_int ;
+    LuaCJK.attr_math_font = \int_use:N \c_LuaCJK_math_font_attr_int
+  }
 \AtBeginDocument
   {
     \LuaCJK_update_font:

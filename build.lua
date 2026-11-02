@@ -66,11 +66,13 @@ function tex(file,dir,cmd)
   if os.getenv("WINDIR") ~= nil or os.getenv("COMSPEC") ~= nil then
     upretex_aux = "-usepretex=\"" .. typesetcmds .. "\""
     makeidx_aux = "-e \"$makeindex=q/makeindex -s " .. indexstyle .. " %O %S/\""
-    sandbox_aux = "set \"TEXINPUTS=../local;%TEXINPUTS%;\" &&"
+    sandbox_aux = "set \"TEXINPUTS=../local;%TEXINPUTS%;\" && " ..
+                  "set \"LUAINPUTS=../local;%LUAINPUTS%;\" &&"
   else
     upretex_aux = "-usepretex=\'" .. typesetcmds .. "\'"
     makeidx_aux = "-e \'$makeindex=q/makeindex -s " .. indexstyle .. " %O %S/\'"
-    sandbox_aux = "TEXINPUTS=\"../local:$(kpsewhich -var-value=TEXINPUTS):\""
+    sandbox_aux = "TEXINPUTS=\"../local:$(kpsewhich -var-value=TEXINPUTS):\" " ..
+                  "LUAINPUTS=\"../local:$(kpsewhich -var-value=LUAINPUTS):\""
   end
   return run(dir, sandbox_aux .. " " .. cmd         .. " " ..
                   upretex_aux .. " " .. makeidx_aux .. " " .. file)

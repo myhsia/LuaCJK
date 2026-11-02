@@ -24,3 +24,8 @@
   behaviour instead of only checking that the document compiles.
 - Document the package with `l3doc` and `docext` under LuaLaTeX.
 - Use the `LuaCJK` spelling for the package and derived files; the l3build/CTAN module stays `luacjk`.
+- Accept the same keys as package options, for example
+  `\usepackage[PunctStyle = banjiao]{LuaCJK}`.  Unknown keys warn instead of
+  raising an error.
+- Use the public LaTeX3 Lua interfaces (`\lua_now:e`, `\lua_escape:e`,
+  `\lua_load_module:n`) instead of `\directlua` and `kpse.findfile`.

@@ -1,0 +1,57 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage[PunctStyle = banjiao, CJKmath = true]{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\def\probe{%
+  \directlua{
+    local function walk(n)
+      while n do
+        if n.id == node.id("glyph") then
+          local f = font.getfont(n.font)
+          texio.write_nl("term and log",
+            "GLYPH " .. tostring(n.char) .. " " ..
+            tostring(f and (f.fullname or f.name) or "?"))
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          walk(n.head)
+        end
+        n = n.next
+      end
+    end
+    walk(tex.box[0])
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{package option PunctStyle}{
+  \setbox0=\hbox{字，字}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{package option CJKmath}{
+  \setbox0=\hbox{$中$}
+  \probe
+}
+
+\TEST{LuaCJKsetup overrides a package option}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle = plain}
+    \setbox0=\hbox{字，字}
+    \TYPE{width: \the\wd0}
+  \endgroup
+  \setbox2=\hbox{字，字}
+  \TYPE{restored: \the\wd2}
+}
+
+\TEST{unknown key warns instead of failing}{
+  \LuaCJKsetup{no-such-key = 1}
+  \TYPE{survived}
+}
+
+\END
+
+\end{document}
