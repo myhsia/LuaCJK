@@ -65,8 +65,7 @@ later releases.
 \setCJKmainfont{FandolSong-Regular.otf}
 ```
 
-LuaCJK requires LuaLaTeX. It must not be loaded together with `luatexja`
-or `xeCJK`.
+LuaCJK requires LuaLaTeX. It must not be loaded together with `luatexja`.
 
 ## License
 
@@ -174,9 +173,8 @@ LaTeX Project Public License, version 1.3c or later.
 %   \cs{usepackage}\oarg{options}"{LuaCJK}"
 % \end{quote}
 %
-% LuaCJK requires \LuaLaTeX.  It conflicts with \pkg{luatexja} and
-% \pkg{xeCJK}; loading one of these packages before or after LuaCJK raises
-% an error.
+% LuaCJK requires \LuaLaTeX.  It conflicts with \pkg{luatexja}: loading
+% either package before or after the other raises an error.
 %
 % \begin{function}{\LuaCJKversion}
 %   Print the version of LuaCJK.
@@ -497,28 +495,20 @@ $ x + 中文 $ and 中文
 %
 % \subsection{Conflicting packages}
 %
-% \pkg{luatexja} installs its own CJK font and spacing layer, and
-% \pkg{xeCJK} only works with \XeTeX.  Both are rejected, whether they are
-% loaded before or after LuaCJK.
+% \pkg{luatexja} installs its own CJK font and spacing layer and works on the
+% same callbacks as LuaCJK, so the two are rejected whatever the loading
+% order.  \pkg{xeCJK} needs no check here: it stops by itself on any engine
+% other than \XeTeX.
 %    \begin{macrocode}
 \msg_new:nnn { LuaCJK } { luatexja-conflict }
   {
     LuaCJK~and~LuaTeX-ja~must~not~be~loaded~together.\\
     Load~only~one~of~them.
   }
-\msg_new:nnn { LuaCJK } { xecjk-conflict }
-  {
-    LuaCJK~is~for~LuaTeX;~xeCJK~is~for~XeTeX.\\
-    Load~only~one~of~them.
-  }
 \cs_if_exist:cT { ver@luatexja.sty }
   { \msg_critical:nn { LuaCJK } { luatexja-conflict } }
-\cs_if_exist:cT { ver@xeCJK.sty }
-  { \msg_critical:nn { LuaCJK } { xecjk-conflict } }
 \AddToHook { package/luatexja/before }
   { \msg_critical:nn { LuaCJK } { luatexja-conflict } }
-\AddToHook { package/xeCJK/before }
-  { \msg_critical:nn { LuaCJK } { xecjk-conflict } }
 %    \end{macrocode}
 %
 % \subsection{Attributes and registers}
