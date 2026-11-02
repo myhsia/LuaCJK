@@ -32,6 +32,57 @@
 % -----------------------------------------------------------------------
 %
 % \fi
+%
+% \iffalse
+%<*driver>
+\documentclass[11pt, letterpaper]{l3doc}
+\providecommand*\LuaLaTeX{\hologo{LuaLaTeX}}
+\providecommand*\XeLaTeX{\hologo{XeLaTeX}}
+\usepackage[color = 00498F, ratio = .625]{docext}
+\usepackage{fontspec}
+\setmainfont{texgyrepagella}[
+  Extension      = .otf,
+  UprightFont    = *-regular,
+  BoldFont       = *-bold,
+  ItalicFont     = *-italic,
+  BoldItalicFont = *-bolditalic]
+\setsansfont{texgyreheros}[
+  Extension      = .otf,
+  UprightFont    = *-regular,
+  BoldFont       = *-bold,
+  ItalicFont     = *-italic,
+  BoldItalicFont = *-bolditalic]
+\setmonofont{cmun}[
+  Extension      = .otf,
+  UprightFont    = *btl,
+  BoldFont       = *tb,
+  ItalicFont     = *bto,
+  BoldItalicFont = *tx,
+  HyphenChar     = None]
+\usepackage{unicode-math}
+\setmathfont{texgyrepagella-math.otf}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}[
+  BoldFont   = FandolSong-Bold.otf,
+  ItalicFont = FandolKai-Regular.otf
+]
+\setCJKsansfont{FandolHei-Regular.otf}[BoldFont = FandolHei-Bold.otf]
+\setCJKmonofont{FandolFang-Regular.otf}
+\setCJKfamilyfont{zhsong}{FandolSong-Regular.otf}[BoldFont = FandolSong-Bold.otf]
+\setCJKfamilyfont{zhhei}{FandolHei-Regular.otf}[BoldFont = FandolHei-Bold.otf]
+\setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
+\setCJKfamilyfont{zhfs}{FandolFang-Regular.otf}
+\usepackage{LuaCJKfntef}
+\LuaCJKsetup{CJKmath=true}
+\setCJKmathfont{FandolSong-Regular.otf}
+\begin{document}
+  \DocInput{\jobname.dtx}
+  \clearpage
+  \PrintIndex
+\end{document}
+%</driver>
+% \fi
+%
 % \title{\bfseries The \pkg{LuaCJK} package}
 % \author{Mingyu Xia\thanks{\url{https://github.com/myhsia/LuaCJK}}}
 % \date{Released \DocFileDate\quad \texttt{\DocFileVersion}}
@@ -131,10 +182,12 @@
 %   Configure LuaCJK.  The settings are local to the current group.
 % \end{function}
 %
-% The same keys may be given as package options, for example
-% |\usepackage[PunctStyle = banjiao]{LuaCJK}|.
+% The same keys may be given as package options:
+% \begin{quote}
+%   |\usepackage[PunctStyle = banjiao]{LuaCJK}|
+% \end{quote}
 %
-% \subsection{Spacing}
+% \section{Spacing}
 %
 % \begin{keyval}
 %   \item[\keys{CJKglue}]\val{glue}: Glue inserted between adjacent CJK
@@ -893,10 +946,13 @@ local function rewrite_fonts (head)
     if cur.id == GLYPH and is_cjk(cur.char) and M.attr_font then
       local target = has_attribute(cur, M.attr_font)
       if target and target > 0 and target ~= cur.font then
-        -- luaotfload inserts a private-use placeholder for a missing
-        -- character.  Once the CJK glyph is replaced, that placeholder is
-        -- no longer needed and would contribute a spurious advance width.
-        if nxt and nxt.id == GLYPH and nxt.char == 0xF0000 then
+        -- A font without the character leaves a placeholder glyph behind:
+        -- luaotfload uses either the private-use range or a .notdef glyph
+        -- with character 0.  Once the CJK glyph is replaced, that
+        -- placeholder is no longer needed and would add a spurious advance.
+        if nxt and nxt.id == GLYPH and nxt.font == cur.font
+           and (nxt.char == 0
+             or (nxt.char >= 0xF0000 and nxt.char <= 0x10FFFD)) then
           local after = nxt.next
           free_node(nxt)
           nxt = after

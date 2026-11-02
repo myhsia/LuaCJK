@@ -20,10 +20,10 @@ description         = "LuaCJK provides Chinese typesetting for LuaLaTeX, inspire
     Configuration: Check, Tag, Pack, Upload     Do NOT Modify if Unnecessary
 --]==========================================================================]--
 packtdszip          = true
-sourcefiles         = {"LuaCJK.dtx", "LuaCJK.ins", "LuaCJK.tex"}
+sourcefiles         = {"LuaCJK.dtx", "LuaCJK.ins"}
 unpackfiles         = {"LuaCJK.ins"}
 installfiles        = {"*.sty", "*.lua"}
-typesetfiles        = {"LuaCJK.tex"}
+typesetfiles        = {"LuaCJK.dtx"}
 testfiledir         = "./testfiles"
 testsuppdir         = "./testsupport"
 testdir             = "./build/check"
@@ -67,13 +67,13 @@ function tex(file,dir,cmd)
   if os.getenv("WINDIR") ~= nil or os.getenv("COMSPEC") ~= nil then
     upretex_aux = "-usepretex=\"" .. typesetcmds .. "\""
     makeidx_aux = "-e \"$makeindex=q/makeindex -s " .. indexstyle .. " %O %S/\""
-    sandbox_aux = "set \"TEXINPUTS=../local;%TEXINPUTS%;\" && " ..
-                  "set \"LUAINPUTS=../local;%LUAINPUTS%;\" &&"
+    sandbox_aux = "set \"TEXINPUTS=../unpacked;%TEXINPUTS%;\" && " ..
+                  "set \"LUAINPUTS=../unpacked;%LUAINPUTS%;\" &&"
   else
     upretex_aux = "-usepretex=\'" .. typesetcmds .. "\'"
     makeidx_aux = "-e \'$makeindex=q/makeindex -s " .. indexstyle .. " %O %S/\'"
-    sandbox_aux = "TEXINPUTS=\"../local:$(kpsewhich -var-value=TEXINPUTS):\" " ..
-                  "LUAINPUTS=\"../local:$(kpsewhich -var-value=LUAINPUTS):\""
+    sandbox_aux = "TEXINPUTS=\"../unpacked:$(kpsewhich -var-value=TEXINPUTS):\" " ..
+                  "LUAINPUTS=\"../unpacked:$(kpsewhich -var-value=LUAINPUTS):\""
   end
   return run(dir, sandbox_aux .. " " .. cmd         .. " " ..
                   upretex_aux .. " " .. makeidx_aux .. " " .. file)

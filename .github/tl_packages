@@ -39,6 +39,7 @@ luaotfload
 lualibs
 adobemapping
 fandol
+cm-unicode
 tex-gyre
 tex-gyre-math
 unicode-math
