@@ -20,9 +20,12 @@ File: LuaCJK.ins
   This work consists of the files LuaCJK.dtx,                         *
                                   LuaCJK.ins,                         *
                 the derived files LuaCJK.sty,                         *
+                                  LuaCJKfntef.sty,                    *
                                   LuaCJK.lua,                         *
+                                  LuaCJK-core.lua,                    *
           the documentation files LuaCJK.pdf,                         *
-                              and README.md.                          *
+                              and README.md,                          *
+                              and LICENSE.                            *
 -----------------------------------------------------------------------
                                                                       *
   Any modification of this file should ensure that the copyright and  *
@@ -59,9 +62,12 @@ File: LuaCJK.ins
   This work consists of the files LuaCJK.dtx,                         *
                                   LuaCJK.ins,                         *
                 the derived files LuaCJK.sty,                         *
+                                  LuaCJKfntef.sty,                    *
                                   LuaCJK.lua,                         *
+                                  LuaCJK-core.lua,                    *
           the documentation files LuaCJK.pdf,                         *
-                              and README.md.                          *
+                              and README.md,                          *
+                              and LICENSE.                            *
 -----------------------------------------------------------------------
 \endpostamble
 
@@ -75,6 +81,9 @@ File: LuaCJK.ins
   \nopreamble\nopostamble
     \file{LuaCJK.lua}                     {\from{\jobname.dtx}{lua}}
     \file{LuaCJK-core.lua}                {\from{\jobname.dtx}{lua-core}}
+  \usedir{doc/latex/luacjk}
+  \nopreamble\nopostamble
+    \file{README.md}                      {\from{\jobname.dtx}{readme}}
 }
 
 \endbatchfile

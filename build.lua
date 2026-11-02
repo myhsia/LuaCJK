@@ -51,11 +51,18 @@ function update_tag(file, content, tagname, tagdate)
   tagdate = date
   if string.match(file, "LuaCJK.dtx$") then
     content = string.gsub(content,
-      "(%%<[a-z]+>\\GetIdInfo%s+%$Id:%s+LuaCJK%.dtx%s+)[^%$]*(%$)",
+      "(\\GetIdInfo%s+%$Id:%s+LuaCJK%.dtx%s+)[^%$]*(%$)",
       "%1" .. tagname .. " " .. tagdate .. " " ..
         maintainid .. "<" .. email .. ">%2")
   end
   return content
+end
+
+-- `l3build doc` unpacks the sources first; copy the README generated from the
+-- `<readme>` block back to the repository root so the two stay in sync.
+function docinit_hook()
+  cp(ctanreadme, unpackdir, currentdir)
+  return 0
 end
 
 -- `l3build` normally appends `\input <file>` to `typesetexe`.  `latexmk`

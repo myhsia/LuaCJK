@@ -21,9 +21,12 @@
 %   This work consists of the files LuaCJK.dtx,                         *
 %                                   LuaCJK.ins,                         *
 %                 the derived files LuaCJK.sty,                         *
+%                                   LuaCJKfntef.sty,                    *
 %                                   LuaCJK.lua,                         *
+%                                   LuaCJK-core.lua,                    *
 %           the documentation files LuaCJK.pdf,                         *
-%                               and README.md.                          *
+%                               and README.md,                          *
+%                               and LICENSE.                            *
 % -----------------------------------------------------------------------
 %
 %   Any modification of this file should ensure that the copyright and  *
@@ -31,35 +34,65 @@
 %                                                                       *
 % -----------------------------------------------------------------------
 %
-% \fi
-%
 %<*internal>
 \iffalse
 %</internal>
 %
-%<*package>
-%<+!driver>\GetIdInfo $Id: LuaCJK.dtx 0.1.0 2026-11-02 myhsia<myhsia@outlook.com>$
+%<*readme>
+[![CTAN Version](https://img.shields.io/ctan/v/luacjk)](https://ctan.org/pkg/luacjk)
+[![GitHub Release](https://img.shields.io/github/v/release/myhsia/LuaCJK)](https://github.com/myhsia/LuaCJK/releases/latest)
+[![GitHub Last Commit](https://img.shields.io/github/last-commit/myhsia/LuaCJK)](https://github.com/myhsia/LuaCJK/commits)
+[![Actions Status](https://github.com/myhsia/LuaCJK/workflows/Automated%20testing/badge.svg)](https://github.com/myhsia/LuaCJK/actions)
+[![GitHub Repo stars](https://img.shields.io/github/stars/myhsia/LuaCJK)](https://github.com/myhsia/LuaCJK)
+
+# LuaCJK
+
+LuaCJK is a LuaTeX package for Chinese typesetting, inspired by `xeCJK`.
+
+The project is currently at an early development stage. The first public
+release provides a CJK font family layer, basic CJK/CJK and CJK/Latin
+spacing, the `quanjiao`, `plain`, `banjiao`, `kaiming`, `CCT`, and
+`hangmobanjiao` punctuation styles, and basic punctuation line-breaking
+prohibitions on top of LuaTeX node callbacks.  The companion package
+`LuaCJKfntef` adds underlining, emphasis dots, and strike-through through
+`lua-ul`.  Fallback fonts and the remaining decoration types are planned for
+later releases.
+
+## Loading
+
+```tex
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+```
+
+LuaCJK requires LuaLaTeX. It must not be loaded together with `luatexja`
+or `xeCJK`.
+
+## License
+
+This work may be distributed and/or modified under the conditions of the
+LaTeX Project Public License, version 1.3c or later.
+%</readme>
+%
+%<*package|fntef>
+\NeedsTeXFormat{LaTeX2e}[2026/06/01]
+\RequirePackage{expl3}
+\GetIdInfo $Id: LuaCJK.dtx 0.1.0 2026-11-02 myhsia<myhsia@outlook.com>$
 %<package>  {A LuaTeX CJK typesetting package}
 %<package>\ProvidesExplPackage {\ExplFileName}
-%<!driver>  {\ExplFileDate} {\ExplFileVersion} {\ExplFileDescription}
+%<fntef>  {Font effects for LuaCJK (CTEX)}
+%<fntef>\ProvidesExplPackage {LuaCJKfntef}
+  {\ExplFileDate} {\ExplFileVersion} {\ExplFileDescription}
 %<package>\edef \DocFileDate        {\ExplFileDate}
 %<package>\edef \DocFileVersion     {\ExplFileVersion}
 %<package>\edef \DocFileDescription {\ExplFileDescription}
 %<package>\tl_greplace_all:Nnn \DocFileDate { / } { - }
-%</package>
-%
-%<*fntef>
-%<+!driver>\GetIdInfo $Id: LuaCJK.dtx 0.1.0 2026-11-02 myhsia<myhsia@outlook.com>$
-%<fntef>  {Font effects for LuaCJK (CTEX)}
-%<fntef>\ProvidesExplPackage {LuaCJKfntef}
-%<!driver>  {\ExplFileDate} {\ExplFileVersion} {\ExplFileDescription}
-%</fntef>
+%</package|fntef>
 %
 %<*internal>
 \fi
 %</internal>
 %
-% \iffalse
 %<*driver>
 \documentclass[11pt, letterpaper]{l3doc}
 \providecommand*\LuaLaTeX{\hologo{LuaLaTeX}}
@@ -444,7 +477,6 @@ $ x + 中文 $ and 中文
     \msg_critical:nn { LuaCJK } { engine }
     \tex_endinput:D
   }
-\RequirePackage { expl3 }
 \RequirePackage { l3keys2e }
 \RequirePackage { fontspec }
 \RequirePackage { xparse }

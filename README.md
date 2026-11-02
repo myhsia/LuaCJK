@@ -1,3 +1,9 @@
+[![CTAN Version](https://img.shields.io/ctan/v/luacjk)](https://ctan.org/pkg/luacjk)
+[![GitHub Release](https://img.shields.io/github/v/release/myhsia/LuaCJK)](https://github.com/myhsia/LuaCJK/releases/latest)
+[![GitHub Last Commit](https://img.shields.io/github/last-commit/myhsia/LuaCJK)](https://github.com/myhsia/LuaCJK/commits)
+[![Actions Status](https://github.com/myhsia/LuaCJK/workflows/Automated%20testing/badge.svg)](https://github.com/myhsia/LuaCJK/actions)
+[![GitHub Repo stars](https://img.shields.io/github/stars/myhsia/LuaCJK)](https://github.com/myhsia/LuaCJK)
+
 # LuaCJK
 
 LuaCJK is a LuaTeX package for Chinese typesetting, inspired by `xeCJK`.
@@ -25,3 +31,5 @@ or `xeCJK`.
 
 This work may be distributed and/or modified under the conditions of the
 LaTeX Project Public License, version 1.3c or later.
+
+
