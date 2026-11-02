@@ -1,0 +1,107 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\usepackage{xcolor,hyperref}
+\setCJKmainfont{FandolSong-Regular.otf}[
+  BoldFont   = FandolSong-Bold.otf,
+  ItalicFont = FandolKai-Regular.otf
+]
+\LuaCJKsetup{CJKglue=10pt, CJKecglue=5pt}
+
+\def\countfill#1{%
+  \directlua{
+    local n = tex.box[#1].head
+    local c = 0
+    while n do
+      if n.id == node.id("glue") and n.stretch_order == 3 then
+        c = c + 1
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "FILL=" .. tostring(c))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{adjacent CJK}{
+  \setbox0=\hbox{中中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{outer box boundary}{
+  \setbox0=\hbox{中\mbox{中}}
+  \setbox2=\hbox{中中}
+  \TYPE{box: \the\wd0}
+  \TYPE{direct: \the\wd2}
+}
+
+\TEST{nested box boundary}{
+  \setbox0=\hbox{\mbox{中}\mbox{中}}
+  \setbox2=\hbox{中中}
+  \TYPE{box: \the\wd0}
+  \TYPE{direct: \the\wd2}
+}
+
+\TEST{font-switch box boundary}{
+  \setbox0=\hbox{中\textbf{中}中}
+  \setbox2=\hbox{中中中}
+  \TYPE{box: \the\wd0}
+  \TYPE{direct: \the\wd2}
+}
+
+\TEST{color boundary}{
+  \setbox0=\hbox{中\textcolor{red}{中}中}
+  \setbox2=\hbox{中中中}
+  \TYPE{box: \the\wd0}
+  \TYPE{direct: \the\wd2}
+}
+
+\TEST{link boundary}{
+  \setbox0=\hbox{中\href{https://example.com}{中}中}
+  \setbox2=\hbox{中中中}
+  \TYPE{box: \the\wd0}
+  \TYPE{direct: \the\wd2}
+}
+
+\TEST{null boundary}{
+  \setbox0=\hbox{中\null 中}
+  \setbox2=\hbox{中中}
+  \TYPE{box: \the\wd0}
+  \TYPE{direct: \the\wd2}
+}
+
+\TEST{math boundary with CJKecglue}{
+  \setbox0=\hbox{中$x$中}
+  \begingroup
+    \LuaCJKsetup{CJKecglue=0pt}
+    \global\setbox2=\hbox{中$x$中}
+  \endgroup
+  \TYPE{with: \the\wd0}
+  \TYPE{without: \the\wd2}
+}
+
+\TEST{explicit hskip preserved}{
+  \setbox0=\hbox{中\hskip 5pt 中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{explicit hfill preserved}{
+  \setbox0=\hbox to 50pt{中\hfill 中}
+  \countfill{0}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{sbox measurement}{
+  \sbox0{中\mbox{中}}
+  \sbox2{中中}
+  \TYPE{sbox: \the\wd0}
+  \TYPE{direct: \the\wd2}
+}
+
+\END
+
+\end{document}

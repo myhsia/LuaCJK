@@ -270,6 +270,8 @@
 \int_const:Nn \c_LuaCJK_cjk_space_attr_int { \the \allocationnumber }
 \newattribute \g_LuaCJK_xecglue_attr
 \int_const:Nn \c_LuaCJK_xecglue_attr_int { \the \allocationnumber }
+\newattribute \g_LuaCJK_inserted_attr
+\int_const:Nn \c_LuaCJK_inserted_attr_int { \the \allocationnumber }
 \g_LuaCJK_cjk_space_attr = 0
 \g_LuaCJK_xecglue_attr = 0
 %    \end{macrocode}
@@ -452,6 +454,7 @@
   LuaCJK.attr_font = \int_use:N \c_LuaCJK_font_attr_int
   LuaCJK.attr_cjk_space = \int_use:N \c_LuaCJK_cjk_space_attr_int
   LuaCJK.attr_xecglue = \int_use:N \c_LuaCJK_xecglue_attr_int
+  LuaCJK.attr_inserted = \int_use:N \c_LuaCJK_inserted_attr_int
 }
 \AtBeginDocument
   {
@@ -479,13 +482,22 @@ local GLYPH = node.id("glyph")
 local GLUE = node.id("glue")
 local HLIST = node.id("hlist")
 local VLIST = node.id("vlist")
+local KERN = node.id("kern")
+local PENALTY = node.id("penalty")
+local MATH = node.id("math")
+local DISC = node.id("disc")
+local WHATSIT = node.id("whatsit")
+local LOCAL_PAR = node.id("local_par")
+local SPACESKIP = node.subtype("spaceskip") or 13
 local new_node = node.new
 local free_node = node.free
 local has_attribute = node.has_attribute
+local set_attribute = node.set_attribute
 
 M.attr_font = M.attr_font or nil
 M.attr_cjk_space = M.attr_cjk_space or nil
 M.attr_xecglue = M.attr_xecglue or nil
+M.attr_inserted = M.attr_inserted or nil
 
 local function is_cjk (c)
   return (c >= 0x2E80 and c <= 0x9FFF)
@@ -552,6 +564,71 @@ local function rewrite_fonts (head)
   return head
 end
 
+local function class_of_char (c)
+  if is_cjk(c) then
+    return "CJK"
+  end
+  return "LATIN"
+end
+
+local function first_visible_class (list)
+  local n = list
+  while n do
+    if n.id == GLYPH then
+      return class_of_char(n.char)
+    elseif n.id == HLIST or n.id == VLIST then
+      local c = first_visible_class(n.head)
+      if c then
+        return c
+      end
+    elseif n.id == MATH then
+      return "LATIN"
+    end
+    n = n.next
+  end
+  return nil
+end
+
+local function last_visible_class (list)
+  local n = list
+  local last = nil
+  while n do
+    if n.id == GLYPH then
+      last = class_of_char(n.char)
+    elseif n.id == HLIST or n.id == VLIST then
+      local c = last_visible_class(n.head)
+      if c then
+        last = c
+      end
+    elseif n.id == MATH then
+      last = "LATIN"
+    end
+    n = n.next
+  end
+  return last
+end
+
+local function class_of_node (n)
+  if n.id == GLYPH then
+    local c = class_of_char(n.char)
+    return c, c
+  elseif n.id == HLIST or n.id == VLIST then
+    local first = first_visible_class(n.head)
+    local last = last_visible_class(n.head)
+    if first and last then
+      return first, last
+    end
+  elseif n.id == MATH then
+    return "LATIN", "LATIN"
+  end
+  return nil, nil
+end
+
+local function is_inserted (n)
+  return M.attr_inserted
+    and has_attribute(n, M.attr_inserted) ~= nil
+end
+
 local function get_glue (name)
   local s = tex.skip[name]
   if not s then
@@ -571,6 +648,9 @@ local function make_glue (name)
   g.shrink = s.shrink
   g.stretch_order = 0
   g.shrink_order = 0
+  if M.attr_inserted then
+    set_attribute(g, M.attr_inserted, 1)
+  end
   return g
 end
 
@@ -582,59 +662,97 @@ local function set_glue (g, name)
   g.width = s.width
   g.stretch = s.stretch
   g.shrink = s.shrink
+  if M.attr_inserted then
+    set_attribute(g, M.attr_inserted, 1)
+  end
   return true
+end
+
+local function insert_boundary_glue (head, prev, prev_end, cur, cur_start)
+  local name = nil
+  if prev_end == "CJK" and cur_start == "CJK" then
+    name = "l_LuaCJK_ccglue_skip"
+  elseif prev_end ~= cur_start then
+    name = "l_LuaCJK_ecglue_skip"
+  end
+  if not name then
+    return head
+  end
+  local g = make_glue(name)
+  if not g then
+    return head
+  end
+  g.next = cur
+  if prev then
+    prev.next = g
+  else
+    head = g
+  end
+  return head
+end
+
+local function handle_source_space (head, glue, before, prev_end, cur, cur_start)
+  -- Only source-generated spaces are candidates.  Explicit \hskip, \hfill
+  -- and similar glue have a different subtype and must be preserved.
+  if glue.subtype ~= SPACESKIP then
+    return head
+  end
+  local prev_cjk = prev_end == "CJK"
+  local cur_cjk = cur_start == "CJK"
+  if prev_cjk and cur_cjk then
+    local cjk_space = M.attr_cjk_space
+      and (has_attribute(glue, M.attr_cjk_space) or 0) ~= 0
+    if not cjk_space then
+      if before then
+        before.next = cur
+      else
+        head = cur
+      end
+      free_node(glue)
+    end
+  elseif prev_cjk or cur_cjk then
+    local xecglue = M.attr_xecglue
+      and (has_attribute(glue, M.attr_xecglue) or 0) ~= 0
+    if xecglue then
+      set_glue(glue, "l_LuaCJK_ecglue_skip")
+    end
+  end
+  return head
 end
 
 local function spacing (head)
   local prev = nil
-  local prevprev = nil
+  local before = nil
+  local prev_visible = nil
+  local prev_end = nil
   local cur = head
   while cur do
     local nxt = cur.next
-    if cur.id == GLYPH then
-      local cur_cjk = is_cjk(cur.char)
-      if prev and prev.id == GLYPH then
-        local prev_cjk = is_cjk(prev.char)
-        local name = nil
-        if prev_cjk and cur_cjk then
-          name = "l_LuaCJK_ccglue_skip"
-        elseif prev_cjk or cur_cjk then
-          name = "l_LuaCJK_ecglue_skip"
-        end
-        if name then
-          local g = make_glue(name)
-          if g then
-            g.next = cur
-            prev.next = g
-            prevprev = prev
-            prev = g
+    local start_class, end_class = class_of_node(cur)
+    if start_class then
+      if prev_visible then
+        if prev and prev.id == GLUE then
+          if not is_inserted(prev) then
+            head = handle_source_space(
+              head, prev, before, prev_end, cur, start_class)
           end
-        end
-      elseif prev and prev.id == GLUE and prevprev and prevprev.id == GLYPH then
-        local prev_cjk = is_cjk(prevprev.char)
-        if prev_cjk and cur_cjk then
-          local cjk_space = M.attr_cjk_space
-            and (has_attribute(prev, M.attr_cjk_space) or 0) ~= 0
-          if not cjk_space then
-            prevprev.next = cur
-            free_node(prev)
-            prev = prevprev
-          end
-        elseif prev_cjk or cur_cjk then
-          local xecglue = M.attr_xecglue
-            and (has_attribute(prev, M.attr_xecglue) or 0) ~= 0
-          if xecglue then
-            set_glue(prev, "l_LuaCJK_ecglue_skip")
-          end
+        elseif prev and prev.id == PENALTY then
+          -- A penalty is an explicit barrier: do not bridge it.
+        elseif prev and prev.id == DISC then
+          -- Discretionaries are opaque in this first boundary version.
+        else
+          head = insert_boundary_glue(
+            head, prev, prev_end, cur, start_class)
         end
       end
+      prev_visible = cur
+      prev_end = end_class
+    elseif cur.id == PENALTY or cur.id == DISC then
+      prev_visible = nil
+      prev_end = nil
     end
-    if prev ~= cur then
-      prevprev = prev
-      prev = cur
-    else
-      prevprev = prevprev
-    end
+    before = prev
+    prev = cur
     cur = nxt
   end
   return head
