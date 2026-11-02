@@ -1,0 +1,53 @@
+# Shell
+l3build
+latex-bin
+latexmk
+makeindex
+#
+# l3doc
+l3kernel
+l3packages
+#
+# Base
+latex
+graphics
+tools
+psnfss
+#
+# Documentation
+hologo
+docext
+fancyvrb
+hypdoc
+hyperref
+microtype
+enumitem
+underscore
+xcolor
+zref-clever
+#
+# Fonts and LuaTeX
+lualatex-math
+luatex
+pdftex
+fontspec
+luaotfload
+lualibs
+adobemapping
+fandol
+tex-gyre
+tex-gyre-math
+unicode-math
+#
+# Preamble / examples
+amsmath
+amsfonts
+booktabs
+colortbl
+csquotes
+geometry
+lm
+manfnt
+metafont
+mfware
+oberdiek

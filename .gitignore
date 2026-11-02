@@ -1,0 +1,16 @@
+build/
+*.log
+*.aux
+*.toc
+*.idx
+*.ind
+*.glo
+*.gls
+*.out
+*.codemo.vrb
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.pdf
+*.zip
+.DS_Store

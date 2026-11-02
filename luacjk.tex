@@ -1,0 +1,22 @@
+\documentclass[11pt, letterpaper]{l3doc}
+\usepackage[color = 00498F, ratio = .625]{docext}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\setsansfont{TeX Gyre Heros}
+\setmonofont{TeX Gyre Cursor}
+\usepackage{unicode-math}
+\setmathfont{TeX Gyre Pagella Math}
+\usepackage{luacjk}
+\setCJKmainfont{FandolSong-Regular.otf}[
+  BoldFont   = FandolSong-Bold.otf,
+  ItalicFont = FandolKai-Regular.otf
+]
+\setCJKsansfont{FandolHei-Regular.otf}[BoldFont = FandolHei-Bold.otf]
+\setCJKmonofont{FandolFang-Regular.otf}
+\setCJKfamilyfont{zhsong}{FandolSong-Regular.otf}[BoldFont = FandolSong-Bold.otf]
+\setCJKfamilyfont{zhhei}{FandolHei-Regular.otf}[BoldFont = FandolHei-Bold.otf]
+\setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
+\setCJKfamilyfont{zhfs}{FandolFang-Regular.otf}
+\begin{document}
+  \DocInput{luacjk.dtx}
+\end{document}

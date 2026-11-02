@@ -1,0 +1,105 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{luacjk}
+\setCJKmainfont{FandolSong-Regular.otf}[
+  BoldFont   = FandolSong-Bold.otf,
+  ItalicFont = FandolKai-Regular.otf
+]
+\setCJKsansfont{FandolHei-Regular.otf}
+\setCJKmonofont{FandolFang-Regular.otf}
+\setCJKfamilyfont{zhsong}{FandolSong-Regular.otf}[BoldFont = FandolSong-Bold.otf]
+\setCJKfamilyfont{zhhei}{FandolHei-Regular.otf}
+\setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
+\setCJKfamilyfont{zhfs}{FandolFang-Regular.otf}
+
+\def\showglyphfont{%
+  \directlua{
+    local function walk(n)
+      while n do
+        if n.id == node.id("glyph") then
+          local f = font.getfont(n.font)
+          texio.write_nl("term and log", "GLYPH " .. tostring(n.char) .. " " .. tostring(f and (f.fullname or f.name) or "?"))
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          walk(n.head)
+        end
+        n = n.next
+      end
+    end
+    walk(tex.box[0])
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{LuaCJK version}{
+  \TYPE{version: \LuaCJKversion}
+}
+
+\TEST{main CJK font}{
+  \setbox0=\hbox{中}
+  \TYPE{width: \the\wd0}
+  \showglyphfont
+}
+
+\TEST{bold CJK font}{
+  \setbox0=\hbox{\bfseries 中}
+  \showglyphfont
+}
+
+\TEST{CJK family font}{
+  \setbox0=\hbox{\CJKfamily{zhhei}中}
+  \showglyphfont
+}
+
+
+\TEST{newCJKfontfamily}{
+  \newCJKfontfamily\testhei{FandolHei-Regular.otf}
+  \setbox0=\hbox{\testhei 中}
+  \showglyphfont
+}
+
+\TEST{CJKfontspec}{
+  \begingroup
+  \CJKfontspec{FandolKai-Regular.otf}
+  \setbox0=\hbox{中}
+  \showglyphfont
+  \endgroup
+}
+
+\TEST{CJKspace false}{
+  \setbox0=\hbox{中 中}
+  \setbox2=\hbox{中中}
+  \TYPE{with-space: \the\wd0}
+  \TYPE{without-space: \the\wd2}
+}
+
+\TEST{CJKspace true}{
+  \begingroup
+  \LuaCJKsetup{CJKspace = true}
+  \setbox0=\hbox{中 中}
+  \TYPE{with-space: \the\wd0}
+  \endgroup
+}
+
+\TEST{CJKglue}{
+  \begingroup
+  \LuaCJKsetup{CJKglue = 10pt}
+  \setbox0=\hbox{中中}
+  \TYPE{width: \the\wd0}
+  \endgroup
+}
+
+\TEST{CJKecglue}{
+  \begingroup
+  \LuaCJKsetup{CJKecglue = 5pt}
+  \setbox0=\hbox{中A}
+  \TYPE{width: \the\wd0}
+  \endgroup
+}
+
+\END
+
+\end{document}
