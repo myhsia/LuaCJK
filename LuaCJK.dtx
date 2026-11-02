@@ -355,6 +355,19 @@ LaTeX Project Public License, version 1.3c or later.
 %</example>
 % \fi
 %
+% \begin{keyval}
+%   \item[\keys{Verb}]\val{\TTF \textbar{} \texttt{env} \textbar{}
+%     \texttt{env+}}
+%   What to do inside \tn{verb} and the verbatim-like environments
+%   (\env{verbatim}, \env{Verbatim}, \env{lstlisting}, and their
+%   relatives).  \texttt{true} suspends the adjustments in both;
+%   \texttt{env} keeps them inside the environments but not in \tn{verb},
+%   which preserves column alignment when the code contains CJK text;
+%   \texttt{env+} keeps them everywhere; \texttt{false} leaves verbatim
+%   material entirely alone.  Since \texttt{env+} and \texttt{false} both
+%   leave the adjustments on, they behave the same in LuaCJK.
+% \end{keyval}
+%
 % \section{CJK in mathematics}
 %
 % \begin{keyval}
@@ -741,13 +754,16 @@ $ x + 中文 $ and 中文
 %
 % \begin{macro}{\LuaCJKsetup}
 %   The same key path serves \cs{LuaCJKsetup} and the package options.
-%   \begin{variable}[internal]{\l_LuaCJK_punct_kinsoku_tl, \l_LuaCJK_cjk_math_tl}
-%     The switches read by the Lua side.
+%   \begin{variable}[internal]
+%     {\l_LuaCJK_punct_kinsoku_tl, \l_LuaCJK_cjk_math_tl, \l_LuaCJK_verb_mode_tl}
+%     The switches read by the Lua side, plus the \texttt{Verb} setting.
 %    \begin{macrocode}
 \tl_new:N \l_LuaCJK_punct_kinsoku_tl
 \tl_set:Nn \l_LuaCJK_punct_kinsoku_tl { 1 }
 \tl_new:N \l_LuaCJK_cjk_math_tl
 \tl_set:Nn \l_LuaCJK_cjk_math_tl { 0 }
+\tl_new:N \l_LuaCJK_verb_mode_tl
+\tl_set:Nn \l_LuaCJK_verb_mode_tl { true }
 %    \end{macrocode}
 %   \end{variable}
 %    \begin{macrocode}
@@ -781,6 +797,12 @@ $ x + 中文 $ and 中文
     CJKmath / true  .code:n = { \tl_set:Nn \l_LuaCJK_cjk_math_tl { 1 } },
     CJKmath / false .code:n = { \tl_set:Nn \l_LuaCJK_cjk_math_tl { 0 } },
     CJKmath .default:n = { true },
+    Verb .choice:,
+    Verb / true  .code:n = { \tl_set:Nn \l_LuaCJK_verb_mode_tl { true } },
+    Verb / env   .code:n = { \tl_set:Nn \l_LuaCJK_verb_mode_tl { env } },
+    Verb / env+  .code:n = { \tl_set:Nn \l_LuaCJK_verb_mode_tl { env+ } },
+    Verb / false .code:n = { \tl_set:Nn \l_LuaCJK_verb_mode_tl { false } },
+    Verb .default:n = { true },
     unknown .code:n =
       {
         \msg_warning:nne { LuaCJK } { unknown-option }
@@ -810,17 +832,48 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}[internal]{\verbatim@font}
-%   Verbatim-like material must be left alone.  \tn{verb} opens its own
-%   group and selects \tn{verbatim@font} inside it, so appending the switch
-%   there covers \tn{verb} and the \env{verbatim} environment; both restore
-%   the previous state when the group ends.  Environments that do not reuse
-%   \tn{verbatim@font} get explicit begin and end hooks.
+% \begin{macro}[internal]{\LuaCJK_verbatim@font_hook:}
+%   Verbatim-like material must usually be left alone.  \tn{verb} opens its
+%   own group and selects \tn{verbatim@font} inside it, so extending that
+%   command covers \tn{verb} on its own.  The hook consults the current
+%   \texttt{Verb} setting, so that \cs{LuaCJKsetup} can change the behaviour
+%   after the package is loaded.
 %    \begin{macrocode}
+\cs_new_protected:Npn \LuaCJK_verbatim@font_hook:
+  {
+    \tl_if_eq:VnTF \l_LuaCJK_verb_mode_tl { true }
+      { \LuaCJKdisable }
+      {
+        \tl_if_eq:VnT \l_LuaCJK_verb_mode_tl { env }
+          { \LuaCJKdisable }
+      }
+  }
 \cs_if_exist:NT \verbatim@font
   {
     \cs_gset_protected:Npx \verbatim@font
-      { \exp_not:o { \verbatim@font } \exp_not:N \LuaCJKdisable }
+      {
+        \exp_not:o { \verbatim@font }
+        \exp_not:N \LuaCJK_verbatim@font_hook:
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[internal]{\LuaCJK_verbatim_env_begin:, \LuaCJK_verbatim_env_end:}
+%   Environments that do not go through \tn{verbatim@font} need their own
+%   hooks.  Only the \texttt{true} setting suspends the adjustments here:
+%   \texttt{env} and \texttt{env+} keep them, which is what keeps code
+%   columns aligned when CJK text is used inside the code.
+%    \begin{macrocode}
+\cs_new_protected:Npn \LuaCJK_verbatim_env_begin:
+  {
+    \tl_if_eq:VnT \l_LuaCJK_verb_mode_tl { true }
+      { \LuaCJKdisable }
+  }
+\cs_new_protected:Npn \LuaCJK_verbatim_env_end:
+  {
+    \tl_if_eq:VnT \l_LuaCJK_verb_mode_tl { true }
+      { \LuaCJKenable }
   }
 \clist_map_inline:nn
   {
@@ -828,8 +881,8 @@ $ x + 中文 $ and 中文
     BVerbatim , LVerbatim , lstlisting
   }
   {
-    \AddToHook { env / #1 / begin } { \LuaCJKdisable }
-    \AddToHook { env / #1 / end }   { \LuaCJKenable }
+    \AddToHook { env / #1 / begin } { \LuaCJK_verbatim_env_begin: }
+    \AddToHook { env / #1 / end }   { \LuaCJK_verbatim_env_end: }
   }
 %    \end{macrocode}
 % \end{macro}

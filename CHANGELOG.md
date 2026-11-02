@@ -48,6 +48,8 @@
   no glue on either side.
 - Add `\LuaCJKsetwidth` and `\LuaCJKsetkern` for per-mark widths and
   per-pair gaps that override the selected punctuation style.
+- Add the `Verb` option (`true`, `env`, `env+`, `false`) to control what
+  happens inside `\verb` and the verbatim-like environments.
 - Drop the placeholder glyph that a font without the character leaves behind
   (one `.notdef` glyph in some fonts, a private-use glyph in others).
 - Move the manual driver into `LuaCJK.dtx` and use the same fonts as

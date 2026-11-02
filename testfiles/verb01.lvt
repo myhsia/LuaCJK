@@ -1,0 +1,65 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKglue = 10pt, CJKecglue = 5pt}
+
+\begin{document}
+
+\START
+
+% \verb and verbatim cannot appear inside a macro argument, so all the boxes
+% are built at the top level and the tests only report them.
+\setbox0=\hbox{\verb|中中|}
+
+\begingroup
+  \LuaCJKsetup{Verb = false}
+  \global\setbox2=\hbox{\verb|中中|}
+\endgroup
+
+\begingroup
+  \LuaCJKsetup{Verb = env+}
+  \global\setbox4=\hbox{\verb|中中|}
+\endgroup
+
+\begingroup
+  \LuaCJKsetup{Verb = env}
+  \global\setbox6=\hbox{\verb|中中|}
+\endgroup
+
+\setbox8=\hbox{\verb|中中|}
+
+\begin{verbatim}
+中中
+\end{verbatim}
+
+\setbox10=\hbox{中中}
+
+\TEST{Verb=true suspends the adjustments in verb}{
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{Verb=false keeps the adjustments in verb}{
+  \TYPE{width: \the\wd2}
+}
+
+\TEST{Verb=env+ keeps the adjustments in verb}{
+  \TYPE{width: \the\wd4}
+}
+
+\TEST{Verb=env still suspends the adjustments in verb}{
+  \TYPE{width: \the\wd6}
+}
+
+\TEST{the setting is restored after the group}{
+  \TYPE{width: \the\wd8}
+}
+
+\TEST{the adjustments are back after a verbatim environment}{
+  \TYPE{width: \the\wd10}
+}
+
+\END
+
+\end{document}
