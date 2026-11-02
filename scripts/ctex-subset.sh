@@ -59,6 +59,7 @@ basic01 basic02 basic03 basic04 basic05
 autoindent01 autoindent02
 cjkfamily-default01 cjkfamily-default02
 ccwd-selectfont01 ccwd-zihao01
+punct
 ctex-package01 ctex-version01
 encoding01 engine-detect01
 fontswitch01

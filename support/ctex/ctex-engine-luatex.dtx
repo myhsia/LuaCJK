@@ -135,7 +135,10 @@
 % \begin{macrocode}
 %<*ctex-engine>
 \cs_new_protected:Npn \ctex_set_jfm:n #1
-  { \tl_set:Nn \l__ctex_jfm_tl {#1} }
+  {
+    \tl_set:Nn \l__ctex_jfm_tl {#1}
+    \LuaCJKsetup { PunctStyle = {#1} }
+  }
 \cs_generate_variant:Nn \ctex_set_jfm:n { o }
 \tl_new:N \l__ctex_jfm_tl
 \ctex_define:n

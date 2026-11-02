@@ -1,0 +1,69 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKglue=0pt, CJKecglue=0pt}
+
+\begin{document}
+
+\START
+
+\TEST{quanjiao adjacent punctuation}{
+  \setbox0=\hbox{字，，字}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{quanjiao single punctuation}{
+  \setbox0=\hbox{字。字}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{quanjiao open-close pair keeps natural blank}{
+  \setbox0=\hbox{字「」字}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{quanjiao long punctuation keeps natural width}{
+  \setbox0=\hbox{字——字}
+  \setbox2=\hbox{字……字}
+  \TYPE{dash: \the\wd0}
+  \TYPE{ellipsis: \the\wd2}
+}
+
+\TEST{plain disables punctuation compression}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle=plain}
+    \setbox0=\hbox{字，，字}
+    \TYPE{width: \the\wd0}
+  \endgroup
+}
+
+\TEST{custom punctuation style}{
+  \LuaCJKDeclarePunctStyle{mine}{adjacent-ratio=0.2}
+  \begingroup
+    \LuaCJKsetup{PunctStyle=mine}
+    \setbox0=\hbox{字，，字}
+    \TYPE{width: \the\wd0}
+  \endgroup
+}
+
+\TEST{unimplemented punctuation style falls back}{
+  \LuaCJKsetup{PunctStyle=banjiao}
+  \setbox0=\hbox{字，，字}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{quanjiao restored after group}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle=plain}
+    \setbox0=\hbox{字，，字}
+    \TYPE{plain: \the\wd0}
+  \endgroup
+  \setbox2=\hbox{字，，字}
+  \TYPE{quanjiao: \the\wd2}
+}
+
+\END
+
+\end{document}

@@ -186,11 +186,44 @@
 %</example>
 % \fi
 %
+% \section{Punctuation}
+%
+% \begin{function}{PunctStyle}
+%   \begin{syntax}
+%     PunctStyle = \meta{style}
+%   \end{syntax}
+%   Select a punctuation style.  The first implementation supports
+%   \texttt{quanjiao} (the default) and \texttt{plain}.  Names for the other
+%   \pkg{xeCJK} presets are recognised for compatibility, but currently issue
+%   a warning and fall back to \texttt{plain}.
+% \end{function}
+%
+% \begin{function}{\LuaCJKDeclarePunctStyle}
+%   \begin{syntax}
+%     \tn{LuaCJKDeclarePunctStyle} \marg{name} \marg{key-value list}
+%   \end{syntax}
+%   Define a punctuation style.  The available keys are
+%   \texttt{compress-adjacent}, \texttt{adjacent-ratio}, and
+%   \texttt{keep-open-close}.
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+字，，字
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
+
 % \section{Current limitations}
 %
-% The first release intentionally covers only the font and spacing core.
-% Punctuation compression, CJK mathematics, fallback fonts, alternate fonts,
-% the decoration layer, and a \pkg{ctex} backend are not yet implemented.
+% The first release covers the font and spacing core, plus the
+% \texttt{quanjiao} and \texttt{plain} punctuation styles.  The other
+% punctuation presets, line-end punctuation handling, CJK mathematics,
+% fallback fonts, alternate fonts, the decoration layer, and a \pkg{ctex}
+% backend are not yet implemented.
 %
 % \end{documentation}
 %
@@ -274,6 +307,50 @@
 \int_const:Nn \c_LuaCJK_inserted_attr_int { \the \allocationnumber }
 \g_LuaCJK_cjk_space_attr = 0
 \g_LuaCJK_xecglue_attr = 0
+
+\tl_new:N \l_LuaCJK_punct_style_tl
+\tl_set:Nn \l_LuaCJK_punct_style_tl { quanjiao }
+\prop_new:N \g_LuaCJK_punct_style_prop
+\prop_gput:Nnn \g_LuaCJK_punct_style_prop { quanjiao } { }
+\prop_gput:Nnn \g_LuaCJK_punct_style_prop { plain } { }
+\msg_new:nnn { LuaCJK } { punct-style-unknown }
+  {
+    PunctStyle~`#1'~is~not~implemented.\\
+    Using~`plain'~instead.
+  }
+\cs_new_protected:Npn \LuaCJK_set_punct_style:n #1
+  {
+    \prop_if_in:NnTF \g_LuaCJK_punct_style_prop {#1}
+      { \tl_set:Nn \l_LuaCJK_punct_style_tl {#1} }
+      {
+        \msg_warning:nnn { LuaCJK } { punct-style-unknown } {#1}
+        \tl_set:Nn \l_LuaCJK_punct_style_tl { plain }
+      }
+  }
+\bool_new:N \l_LuaCJK_punct_compress_bool
+\fp_new:N \l_LuaCJK_punct_ratio_fp
+\bool_new:N \l_LuaCJK_punct_keep_bool
+\keys_define:nn { LuaCJK / punct-style }
+  {
+    compress-adjacent .bool_set:N = \l_LuaCJK_punct_compress_bool,
+    adjacent-ratio .fp_set:N = \l_LuaCJK_punct_ratio_fp,
+    keep-open-close .bool_set:N = \l_LuaCJK_punct_keep_bool,
+  }
+\NewDocumentCommand \LuaCJKDeclarePunctStyle { m m }
+  {
+    \bool_set_true:N \l_LuaCJK_punct_compress_bool
+    \fp_set:Nn \l_LuaCJK_punct_ratio_fp { 0.5 }
+    \bool_set_true:N \l_LuaCJK_punct_keep_bool
+    \keys_set:nn { LuaCJK / punct-style } {#2}
+    \prop_gput:Nnn \g_LuaCJK_punct_style_prop {#1} { }
+    \directlua{
+      LuaCJK.define_punct_style(
+        "\luaescapestring{#1}",
+        \bool_if:NTF \l_LuaCJK_punct_compress_bool { true } { false },
+        \fp_use:N \l_LuaCJK_punct_ratio_fp,
+        \bool_if:NTF \l_LuaCJK_punct_keep_bool { true } { false })
+    }
+  }
 %    \end{macrocode}
 %
 % \begin{macrocode}
@@ -297,6 +374,8 @@
     xCJKecglue / false .code:n = { \g_LuaCJK_xecglue_attr = 0 },
     xCJKecglue .default:n = { true },
     xCJKecglue .initial:n = { false },
+    PunctStyle .code:n = { \LuaCJK_set_punct_style:n {#1} },
+    PunctStyle .default:n = { quanjiao },
   }
 \NewDocumentCommand \LuaCJKsetup { m }
   { \keys_set:nn { LuaCJK / options } {#1} }
@@ -424,12 +503,12 @@
 %    \end{macrocode}
 %
 % \begin{macrocode}
-\cs_new_protected:Npn \songti { } { \CJKfamily { zhsong } }
-\cs_new_protected:Npn \heiti { } { \CJKfamily { zhhei  } }
-\cs_new_protected:Npn \fangsong { } { \CJKfamily { zhfs   } }
-\cs_new_protected:Npn \kaishu { } { \CJKfamily { zhkai  } }
-\cs_new_protected:Npn \lishu { } { \CJKfamily { zhli   } }
-\cs_new_protected:Npn \youyuan { } { \CJKfamily { zhyou  } }
+\cs_new_protected:Npn \songti { \CJKfamily { zhsong } }
+\cs_new_protected:Npn \heiti { \CJKfamily { zhhei  } }
+\cs_new_protected:Npn \fangsong { \CJKfamily { zhfs   } }
+\cs_new_protected:Npn \kaishu { \CJKfamily { zhkai  } }
+\cs_new_protected:Npn \lishu { \CJKfamily { zhli   } }
+\cs_new_protected:Npn \youyuan { \CJKfamily { zhyou  } }
 \AddToHook { cmd/rmfamily/after }
   { \exp_args:NV \LuaCJK_switch_family:n \CJKrmdefault }
 \AddToHook { cmd/sffamily/after }
@@ -513,6 +592,54 @@ local function is_cjk (c)
 end
 
 M.is_cjk = is_cjk
+
+local PUNCT_CLASS = {
+  [0x2018] = "open",  [0x201C] = "open",
+  [0x3008] = "open",  [0x300A] = "open",
+  [0x300C] = "open",  [0x300E] = "open",
+  [0x3010] = "open",  [0x3014] = "open",
+  [0x3016] = "open",  [0x3018] = "open",
+  [0x301A] = "open",  [0xFF08] = "open",
+  [0xFF3B] = "open",  [0xFF5B] = "open",
+  [0x2019] = "close", [0x201D] = "close",
+  [0x3001] = "close", [0x3002] = "close",
+  [0x3009] = "close", [0x300B] = "close",
+  [0x300D] = "close", [0x300F] = "close",
+  [0x3011] = "close", [0x3015] = "close",
+  [0x3017] = "close", [0x3019] = "close",
+  [0x301B] = "close", [0xFF01] = "close",
+  [0xFF09] = "close", [0xFF0C] = "close",
+  [0xFF0E] = "close", [0xFF1A] = "close",
+  [0xFF1B] = "close", [0xFF1F] = "close",
+  [0xFF3D] = "close", [0xFF5D] = "close",
+  [0x00B7] = "middle", [0x2027] = "middle",
+  [0x30FB] = "middle",
+  [0x2013] = "dash",  [0x2014] = "dash",
+  [0x2015] = "dash",  [0xFF0D] = "dash",
+  [0x2026] = "ellipsis", [0x22EF] = "ellipsis",
+}
+
+local function punct_class (c)
+  return PUNCT_CLASS[c]
+end
+
+M.punct_styles = {
+  quanjiao = { compress_adjacent = true,  ratio = 0.5, keep_open_close = true },
+  plain    = { compress_adjacent = false, ratio = 0.0, keep_open_close = true },
+}
+
+function M.define_punct_style (name, compress, ratio, keep)
+  M.punct_styles[name] = {
+    compress_adjacent = compress,
+    ratio = ratio,
+    keep_open_close = keep,
+  }
+end
+
+local function punct_style ()
+  local name = token.get_macro("l_LuaCJK_punct_style_tl")
+  return M.punct_styles[name] or M.punct_styles.plain
+end
 
 local function copy_glyph (n, fid)
   local g = new_node("glyph")
@@ -668,6 +795,15 @@ local function set_glue (g, name)
   return true
 end
 
+local function make_kern (width)
+  local k = new_node("kern")
+  k.kern = width
+  if M.attr_inserted then
+    set_attribute(k, M.attr_inserted, 1)
+  end
+  return k
+end
+
 local function insert_boundary_glue (head, prev, prev_end, cur, cur_start)
   local name = nil
   if prev_end == "CJK" and cur_start == "CJK" then
@@ -675,6 +811,31 @@ local function insert_boundary_glue (head, prev, prev_end, cur, cur_start)
   elseif prev_end ~= cur_start then
     name = "l_LuaCJK_ecglue_skip"
   end
+
+  local style = punct_style()
+  local prev_punct = prev and prev.id == GLYPH and punct_class(prev.char)
+  local cur_punct = cur.id == GLYPH and punct_class(cur.char)
+  if prev_punct and cur_punct and style.compress_adjacent then
+    local exempt = (style.keep_open_close
+        and prev_punct == "open" and cur_punct == "close")
+      or (prev_punct == cur_punct
+        and (prev_punct == "dash" or prev_punct == "ellipsis"))
+    if not exempt and prev.width and prev.width > 0 then
+      local k = make_kern(-math.floor(style.ratio * prev.width + 0.5))
+      local g = name and make_glue(name) or nil
+      k.next = g or cur
+      if g then
+        g.next = cur
+      end
+      if prev then
+        prev.next = k
+      else
+        head = k
+      end
+      return head
+    end
+  end
+
   if not name then
     return head
   end

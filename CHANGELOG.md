@@ -10,5 +10,8 @@
   LuaTeX attribute that records the current CJK font.
 - Add basic CJK/CJK and CJK/Latin spacing with `CJKglue`, `CJKecglue`,
   `CJKspace`, and `xCJKecglue`.
+- Add box, math, and transparent-node boundary handling.
+- Add the `PunctStyle` interface with working `quanjiao` and `plain`
+  punctuation compression; other presets currently warn and fall back.
 - Document the package with `l3doc` and `docext` under LuaLaTeX.
 - Use the `LuaCJK` spelling for the package and derived files; the l3build/CTAN module stays `luacjk`.
