@@ -1114,6 +1114,62 @@ local function cjk_math_enabled ()
   return token.get_macro("l_LuaCJK_cjk_math_tl") == "1"
 end
 
+local SUB_MLIST = node.id("sub_mlist")
+
+local function cjk_noad (char, fid)
+  local g = new_node("glyph")
+  g.font = fid
+  g.char = char
+  local b = new_node("hlist")
+  b.head = g
+  b.width = g.width
+  b.height = g.height
+  b.depth = g.depth
+  local sb = new_node("sub_box")
+  sb.head = b
+  local n = new_node("noad")
+  n.nucleus = sb
+  return n
+end
+
+-- Recurse into sub lists (fractions, braces, scripts) so that nested CJK
+-- characters are rewritten too.
+local rewrite_math_list
+
+local function rewrite_noad (noad, fid)
+  local nuc = noad.nucleus
+  if nuc then
+    if nuc.id == MATH_CHAR or nuc.id == MATH_TEXT_CHAR then
+      if is_cjk(nuc.char) then
+        if M.attr_math_font then
+          local a = has_attribute(nuc, M.attr_math_font)
+          if a and a > 0 then
+            fid = a
+          end
+        end
+        noad.nucleus = cjk_noad(nuc.char, fid).nucleus
+      end
+    elseif nuc.id == SUB_MLIST then
+      rewrite_math_list(nuc.head, fid)
+    end
+  end
+  for _, field in ipairs({ "num", "denom", "sup", "sub" }) do
+    local s = noad[field]
+    if s and s.id == SUB_MLIST then
+      rewrite_math_list(s.head, fid)
+    end
+  end
+end
+
+rewrite_math_list = function (head, fid)
+  local cur = head
+  while cur do
+    rewrite_noad(cur, fid)
+    cur = cur.next
+  end
+  return head
+end
+
 local function rewrite_math (head)
   if not cjk_math_enabled() then
     return head
@@ -1122,32 +1178,7 @@ local function rewrite_math (head)
   if not fid then
     return head
   end
-  local cur = head
-  while cur do
-    local nuc = cur.nucleus
-    if nuc and (nuc.id == MATH_CHAR or nuc.id == MATH_TEXT_CHAR)
-       and is_cjk(nuc.char) then
-      if M.attr_math_font then
-        local a = has_attribute(nuc, M.attr_math_font)
-        if a and a > 0 then
-          fid = a
-        end
-      end
-      local g = new_node("glyph")
-      g.font = fid
-      g.char = nuc.char
-      local b = new_node("hlist")
-      b.head = g
-      b.width = g.width
-      b.height = g.height
-      b.depth = g.depth
-      local sb = new_node("sub_box")
-      sb.head = b
-      cur.nucleus = sb
-    end
-    cur = cur.next
-  end
-  return head
+  return rewrite_math_list(head, fid)
 end
 
 local function process (head)

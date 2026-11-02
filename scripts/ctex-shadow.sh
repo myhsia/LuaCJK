@@ -63,4 +63,15 @@ fi
 echo "== verifying CJK output =="
 grep -q 'LuaCJK ctex smoke: glyph 20013 font FandolSong' ctex-smoke.log
 
+echo "== verifying behavioural checks =="
+if grep -q 'LuaCJK ctex check FAIL' ctex-smoke.log; then
+  grep 'LuaCJK ctex check FAIL' ctex-smoke.log >&2
+  exit 1
+fi
+grep -q 'LuaCJK ctex check PASS: quanjiao compresses adjacent punctuation' ctex-smoke.log
+grep -q 'LuaCJK ctex check PASS: single punctuation is not compressed' ctex-smoke.log
+grep -q '^PENALTIES [1-9]' ctex-smoke.log
+grep -q '^LINE_START_PERIODS 0$' ctex-smoke.log
+grep -q '^GLYPH 20013$' ctex-smoke.log
+
 echo "ctex shadow test passed"

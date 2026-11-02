@@ -1,12 +1,52 @@
 \documentclass[fontset=fandol]{ctexart}
 
+\def\pass#1{\typeout{LuaCJK ctex check PASS: #1}}
+\def\fail#1{\typeout{LuaCJK ctex check FAIL: #1}}
+
+\def\countpenalties#1{%
+  \directlua{
+    local n = tex.box[#1].head
+    local c = 0
+    while n do
+      if n.id == node.id("penalty") and n.penalty >= 10000 then
+        c = c + 1
+      end
+      if n.id == node.id("hlist") or n.id == node.id("vlist") then
+        local m = n.head
+        while m do
+          if m.id == node.id("penalty") and m.penalty >= 10000 then
+            c = c + 1
+          end
+          m = m.next
+        end
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "PENALTIES " .. tostring(c))
+  }%
+}
+
+\def\countglyphs#1{%
+  \directlua{
+    local function walk(n)
+      while n do
+        if n.id == node.id("glyph") then
+          texio.write_nl("term and log", "GLYPH " .. tostring(n.char))
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          walk(n.head)
+        end
+        n = n.next
+      end
+    end
+    walk(tex.box[#1])
+  }%
+}
+
 \begin{document}
 
 \typeout{LuaCJK ctex smoke: document started}
 
 中文 English 中文
-
-{\songti 宋体} {\heiti 黑体} {\kaishu 楷体} {\fangsong 仿宋}
 
 \setbox0=\hbox{中}
 \typeout{LuaCJK ctex smoke: width of 中 = \the\wd0}
@@ -23,5 +63,56 @@
     g = g.next
   end
 }
+
+% -- Behavioural checks through the ctex interface -------------------------
+
+% Punctuation: quanjiao compresses adjacent punctuation, plain does not.
+\setbox0=\hbox{字，，字}
+\ctexset{punct=plain}
+\setbox2=\hbox{字，，字}
+\ctexset{punct=quanjiao}
+\ifdim\wd0<\wd2
+  \pass{quanjiao compresses adjacent punctuation}
+\else
+  \fail{quanjiao width \the\wd0, plain width \the\wd2}
+\fi
+
+% Punctuation: quanjiao and plain give the same width without adjacent pairs.
+\setbox0=\hbox{字。字}
+\ctexset{punct=plain}
+\setbox2=\hbox{字。字}
+\ctexset{punct=quanjiao}
+\ifdim\wd0=\wd2
+  \pass{single punctuation is not compressed}
+\else
+  \fail{single punctuation width \the\wd0 vs \the\wd2}
+\fi
+
+% Kinsoku: a closing punctuation cannot start a line.
+\setbox4=\vbox{\hsize=3em 字字字字字字字。\par}
+\countpenalties{4}
+\directlua{
+  local n = tex.box[4].head
+  local bad = 0
+  while n do
+    if node.type(n.id) == "hlist" then
+      local m = n.head
+      while m do
+        if m.id == node.id("glyph") then
+          if m.char == 12290 then bad = bad + 1 end
+          break
+        end
+        m = m.next
+      end
+    end
+    n = n.next
+  end
+  texio.write_nl("term and log", "LINE_START_PERIODS " .. tostring(bad))
+}
+
+% CJK math: a CJK character in math mode is typeset.
+\LuaCJKsetup{CJKmath=true}
+\setbox6=\hbox{$中$}
+\countglyphs{6}
 
 \end{document}

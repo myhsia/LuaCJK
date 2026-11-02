@@ -17,6 +17,8 @@
   start a line, opening punctuation cannot end a line, and long punctuation
   runs are kept together.
 - Add `CJKmath` and `\setCJKmathfont` for typing CJK characters directly in
-  math mode.
+  math mode, including nested math lists such as fractions.
+- The ctex shadow test now asserts punctuation, kinsoku, and CJK math
+  behaviour instead of only checking that the document compiles.
 - Document the package with `l3doc` and `docext` under LuaLaTeX.
 - Use the `LuaCJK` spelling for the package and derived files; the l3build/CTAN module stays `luacjk`.

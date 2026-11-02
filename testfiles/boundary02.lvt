@@ -1,0 +1,76 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\usepackage{unicode-math}
+\setmathfont{TeX Gyre Pagella Math}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmathfont{FandolKai-Regular.otf}
+\LuaCJKsetup{CJKglue=0pt, CJKecglue=0pt, CJKmath=true}
+
+\def\probe{%
+  \directlua{
+    local function walk(n, out)
+      while n do
+        if n.id == node.id("glyph") then
+          local f = font.getfont(n.font)
+          table.insert(out, tostring(n.char) .. ":" ..
+            tostring(f and (f.fullname or f.name) or "?"))
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          walk(n.head, out)
+        elseif n.id == node.id("penalty") then
+          table.insert(out, "P" .. tostring(n.penalty))
+        end
+        n = n.next
+      end
+    end
+    local out = {}
+    walk(tex.box[0], out)
+    texio.write_nl("term and log", "PROBE " .. table.concat(out, " "))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{mbox containing CJK keeps outer spacing}{
+  \setbox0=\hbox{中\mbox{中}}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{inline math between CJK}{
+  \setbox0=\hbox{中$x$中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{text command inside math}{
+  \setbox0=\hbox{$x\text{中}y$}
+  \probe
+}
+
+\TEST{CJK inside mbox inside math}{
+  \setbox0=\hbox{$\mbox{中}$}
+  \probe
+}
+
+\TEST{display math CJK}{
+  \setbox0=\hbox{$\displaystyle 中$}
+  \probe
+}
+
+\TEST{math CJK with surrounding CJK}{
+  \setbox0=\hbox{中$中$中}
+  \probe
+}
+
+\TEST{fraction containing CJK}{
+  \setbox0=\hbox{$\frac{中}{文}$}
+  \probe
+}
+
+\END
+
+\end{document}
