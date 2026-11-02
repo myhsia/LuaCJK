@@ -38,6 +38,9 @@
   and `listings` environments; `\LuaCJKdisable` now records its state per
   node.
 - Warn only once for an unknown CJK family.
+- Inserted glue, kerns, and penalties now inherit the attributes of the
+  neighbouring node, so attribute-based decorations such as
+  `\CJKunderdot` stay in one piece across CJK/CJK and CJK/Latin boundaries.
 - Drop the placeholder glyph that a font without the character leaves behind
   (one `.notdef` glyph in some fonts, a private-use glyph in others).
 - Move the manual driver into `LuaCJK.dtx` and use the same fonts as

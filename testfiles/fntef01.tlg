@@ -54,3 +54,11 @@ Overfull \hbox (5.0pt too wide) in paragraph at lines ...
 .\glue(\rightskip) 0.0
 LINES 3
 ============================================================
+============================================================
+TEST 7: each effect uses one continuous leader run
+============================================================
+RUNS underline 1
+RUNS dots 1
+RUNS strike 1
+RUNS dots-punct 1
+============================================================

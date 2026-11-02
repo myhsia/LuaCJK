@@ -1457,15 +1457,35 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}[internal]{make_glue}
-%   Create a glue node from a skip register and mark it as inserted.
+% \begin{macro}[internal]{inherit_attributes}
+%   Give a new node the attribute list of the node it is spliced next to.
+%   LuaCJK creates glue, kerns, and penalties after \TeX{} has attached the
+%   surrounding attributes to the text, so a package that marks spans with
+%   attributes, such as \pkg{lua-ul}, would otherwise read the new node as
+%   the end of its span and start a new one.  Assigning to the
+%   \meta{attr} field is reference counted, and later per-attribute changes
+%   are copy-on-write, so the source node is never modified.
 %    \begin{macrocode}
-local function make_glue (name)
+local function inherit_attributes (new, source)
+  if source and source.attr then
+    new.attr = source.attr
+  end
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[internal]{make_glue}
+%   Create a glue node from a skip register, inherit the attributes of
+%   \meta{source}, and mark the node as inserted.
+%    \begin{macrocode}
+local function make_glue (name, source)
   local s = get_glue(name)
   if not s then
     return nil
   end
   local g = new_node("glue")
+  inherit_attributes(g, source)
   g.width = s.width
   g.stretch = s.stretch
   g.shrink = s.shrink
@@ -1501,10 +1521,12 @@ end
 % \end{macro}
 %
 % \begin{macro}[internal]{make_kern}
-%   Create a kern node and mark it as inserted.
+%   Create a kern node, inherit the attributes of \meta{source}, and mark
+%   the node as inserted.
 %    \begin{macrocode}
-local function make_kern (width)
+local function make_kern (width, source)
   local k = new_node("kern")
+  inherit_attributes(k, source)
   k.kern = width
   if M.attr_inserted then
     set_attribute(k, M.attr_inserted, 1)
@@ -1546,8 +1568,8 @@ local function insert_boundary_glue (head, prev, prev_end, cur, cur_start)
       or (prev_punct == cur_punct
         and (prev_punct == "dash" or prev_punct == "ellipsis"))
     if not exempt and prev.width and prev.width > 0 then
-      local k = make_kern(-math.floor(style.ratio * prev.width + 0.5))
-      local g = name and make_glue(name) or nil
+      local k = make_kern(-math.floor(style.ratio * prev.width + 0.5), prev)
+      local g = name and make_glue(name, prev) or nil
       k.next = g or cur
       if g then
         g.next = cur
@@ -1564,7 +1586,7 @@ local function insert_boundary_glue (head, prev, prev_end, cur, cur_start)
   if not name then
     return head
   end
-  local g = make_glue(name)
+  local g = make_glue(name, prev or cur)
   if not g then
     return head
   end
@@ -1795,6 +1817,7 @@ local function apply_kinsoku (head)
          and forbids_break(glyph_class(last_visible), glyph_class(nxt)) then
         if not (prev and prev.id == PENALTY and prev.penalty >= 10000) then
           local p = new_node("penalty")
+          inherit_attributes(p, last_visible)
           p.penalty = 10000
           if M.attr_inserted then
             set_attribute(p, M.attr_inserted, 1)
@@ -1849,8 +1872,9 @@ local function apply_fixed_widths (head)
         local delta = target - cur.width
         if delta ~= 0 then
           local p = new_node("penalty")
+          inherit_attributes(p, cur)
           p.penalty = 10000
-          local k = make_kern(delta)
+          local k = make_kern(delta, cur)
           p.next = k
           k.next = cur.next
           cur.next = p

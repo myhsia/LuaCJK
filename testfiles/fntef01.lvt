@@ -61,6 +61,30 @@
   }
 }
 
+\TEST{each effect uses one continuous leader run}{
+  \setbox0=\hbox{\CJKunderline{中文 test 中文}}
+  \setbox2=\hbox{\CJKunderdot{中文 test 中文}}
+  \setbox4=\hbox{\CJKsout{中文 test 中文}}
+  \setbox6=\hbox{\CJKunderdot{中文，中文}}
+  \directlua{
+    local function leaders (box)
+      local n = tex.box[box].head
+      local c = 0
+      while n do
+        if n.id == node.id("glue") and n.subtype == 100 then
+          c = c + 1
+        end
+        n = n.next
+      end
+      return c
+    end
+    texio.write_nl("term and log", "RUNS underline " .. tostring(leaders(0)))
+    texio.write_nl("term and log", "RUNS dots " .. tostring(leaders(2)))
+    texio.write_nl("term and log", "RUNS strike " .. tostring(leaders(4)))
+    texio.write_nl("term and log", "RUNS dots-punct " .. tostring(leaders(6)))
+  }
+}
+
 \END
 
 \end{document}
