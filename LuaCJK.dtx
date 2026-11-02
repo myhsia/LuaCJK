@@ -221,11 +221,10 @@ $中文$ and 中文
 %   \begin{syntax}
 %     PunctStyle = \meta{style}
 %   \end{syntax}
-%   Select a punctuation style.  Implemented styles are
+%   Select a punctuation style.  The implemented styles are
 %   \texttt{quanjiao} (the default), \texttt{plain}, \texttt{banjiao},
-%   \texttt{kaiming}, and \texttt{CCT}.  \texttt{hangmobanjiao} is recognised
-%   for compatibility, but currently issues a warning and falls back to
-%   \texttt{plain}.
+%   \texttt{kaiming}, \texttt{CCT}, and \texttt{hangmobanjiao}.  An unknown
+%   name issues a warning and falls back to \texttt{plain}.
 % \end{function}
 %
 % \begin{function}{PunctKinsoku}
@@ -262,10 +261,10 @@ $中文$ and 中文
 %
 % The first release covers the font and spacing core, the
 % \texttt{quanjiao} and \texttt{plain} punctuation styles, and the basic
-% line-breaking prohibitions for punctuation, and direct CJK input in math
-% mode.  Hanging punctuation and line-end compression, the
-% \texttt{hangmobanjiao} preset, fallback fonts, alternate fonts, the
-% decoration layer, and a \pkg{ctex} backend are not yet implemented.
+% line-breaking prohibitions for punctuation, hanging punctuation, and direct
+% CJK input in math mode.  Line-end compression, fallback fonts, alternate
+% fonts, the decoration layer, and a \pkg{ctex} backend are not yet
+% implemented.
 %
 % \end{documentation}
 %
@@ -367,6 +366,7 @@ $中文$ and 中文
 \prop_gput:Nnn \g_LuaCJK_punct_style_prop { banjiao } { }
 \prop_gput:Nnn \g_LuaCJK_punct_style_prop { kaiming } { }
 \prop_gput:Nnn \g_LuaCJK_punct_style_prop { CCT } { }
+\prop_gput:Nnn \g_LuaCJK_punct_style_prop { hangmobanjiao } { }
 \msg_new:nnn { LuaCJK } { punct-style-unknown }
   {
     PunctStyle~`#1'~is~not~implemented.\\
@@ -726,6 +726,8 @@ M.punct_styles = {
                fixed_ratio = 0.5, fixed_full = KAIMING_FULL },
   CCT      = { compress_adjacent = false, ratio = 0.0, keep_open_close = true,
                fixed_ratio = 0.7 },
+  hangmobanjiao = { compress_adjacent = false, ratio = 0.0,
+                    keep_open_close = true, hanging = true },
 }
 
 function M.define_punct_style (name, compress, ratio, keep)
@@ -1236,6 +1238,65 @@ local function rewrite_math (head)
   return rewrite_math_list(head, fid)
 end
 
+-- Hanging punctuation (hangmobanjiao).
+--
+-- The glyph advance stays inside the line, so shifting the ink sideways lets
+-- a line-final closing punctuation hang into the margin without changing the
+-- line width.  Line-initial opening punctuation is shifted the other way.
+local function find_first_last_glyph (list)
+  local first, last
+  local n = list
+  while n do
+    if n.id == GLYPH then
+      if not first then first = n end
+      last = n
+    end
+    n = n.next
+  end
+  return first, last
+end
+
+local function shift_glyph (g, delta)
+  if delta == 0 then return end
+  g.xoffset = g.xoffset + delta
+end
+
+local function hang_line (line)
+  if line.id ~= HLIST then
+    return
+  end
+  local first, last = find_first_last_glyph(line.head)
+  if last and punct_class(last.char) then
+    local cls = punct_class(last.char)
+    if cls == "close" or cls == "middle" then
+      local f = font.getfont(last.font)
+      local size = f and f.size or 0
+      shift_glyph(last, math.floor(0.5 * size + 0.5))
+    end
+  end
+  if first and punct_class(first.char) then
+    local cls = punct_class(first.char)
+    if cls == "open" then
+      local f = font.getfont(first.font)
+      local size = f and f.size or 0
+      shift_glyph(first, -math.floor(0.5 * size + 0.5))
+    end
+  end
+end
+
+local function hang_punctuation (head)
+  local style = punct_style()
+  if not style.hanging then
+    return head
+  end
+  local n = head
+  while n do
+    hang_line(n)
+    n = n.next
+  end
+  return head
+end
+
 local function process (head)
   head = rewrite_fonts(head)
   head = spacing(head)
@@ -1258,9 +1319,14 @@ function M.pre_mlist_to_hlist (head, display, penalties)
   return rewrite_math(head)
 end
 
+function M.post_linebreak (head, groupcode)
+  return hang_punctuation(head)
+end
+
 luatexbase.add_to_callback("pre_linebreak_filter", M.pre_linebreak, "LuaCJK.spacing")
 luatexbase.add_to_callback("hpack_filter", M.hpack, "LuaCJK.spacing")
 luatexbase.add_to_callback("pre_mlist_to_hlist_filter", M.pre_mlist_to_hlist, "LuaCJK.math")
+luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.hang")
 %</lua>
 %    \end{macrocode}
 %

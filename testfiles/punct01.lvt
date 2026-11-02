@@ -49,7 +49,7 @@
 }
 
 \TEST{unimplemented punctuation style falls back}{
-  \LuaCJKsetup{PunctStyle=hangmobanjiao}
+  \LuaCJKsetup{PunctStyle=unknownstyle}
   \setbox0=\hbox{字，，字}
   \TYPE{width: \the\wd0}
 }
@@ -86,6 +86,49 @@
   \begingroup
     \LuaCJKsetup{PunctStyle=banjiao}
   \endgroup
+}
+
+\def\xoffsetof{%
+  \directlua{
+    local n = tex.box[0].head
+    while n do
+      if n.id == node.id("glyph") then
+        texio.write_nl("term and log", "XOFFSET " .. tostring(n.xoffset))
+      end
+      n = n.next
+    end
+  }%
+}
+
+\TEST{hangmobanjiao hangs line-final punctuation}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle=hangmobanjiao}
+    \setbox0=\vbox{\hsize=4em 字字字字字字字。\par}
+    \directlua{
+      local n = tex.box[0].head
+      while n do
+        if node.type(n.id) == "hlist" then
+          local m = n.head
+          local last
+          while m do
+            if m.id == node.id("glyph") then last = m end
+            m = m.next
+          end
+          if last then
+            texio.write_nl("term and log",
+              "LINE " .. tostring(last.char) .. " " ..
+              tostring(last.xoffset))
+          end
+        end
+        n = n.next
+      end
+    }
+  \endgroup
+}
+
+\TEST{quanjiao does not hang punctuation}{
+  \setbox0=\hbox{字。}
+  \xoffsetof
 }
 
 \TEST{quanjiao restored after group}{

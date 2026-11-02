@@ -34,7 +34,7 @@ width: 38.0pt
 ============================================================
 TEST 7: unimplemented punctuation style falls back
 ============================================================
-Package LuaCJK Warning: PunctStyle `hangmobanjiao' is not implemented.
+Package LuaCJK Warning: PunctStyle `unknownstyle' is not implemented.
 (LuaCJK)                Using `plain' instead.
 width: 40.0pt
 ============================================================
@@ -60,7 +60,50 @@ TEST 11: fixed width style reports no warning
 ============================================================
 ============================================================
 ============================================================
-TEST 12: quanjiao restored after group
+TEST 12: hangmobanjiao hangs line-final punctuation
+============================================================
+Overfull \hbox (5.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 字字字
+\hbox(7.69+1.75)x40.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue(\rightskip) 0.0
+Overfull \hbox (10.0pt too wide) in paragraph at lines ...
+\TU/FandolSong-Regular.otf(0)/m/n/10 字字字字。 
+\hbox(7.69+1.75)x40.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue 0.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 。
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0
+LINE 23383 0
+LINE 12290 327680
+============================================================
+============================================================
+TEST 13: quanjiao does not hang punctuation
+============================================================
+XOFFSET 0
+XOFFSET 0
+============================================================
+============================================================
+TEST 14: quanjiao restored after group
 ============================================================
 plain: 40.0pt
 quanjiao: 35.0pt
