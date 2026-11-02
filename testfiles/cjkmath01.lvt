@@ -1,0 +1,74 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\usepackage{unicode-math}
+\setmathfont{TeX Gyre Pagella Math}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmathfont{FandolKai-Regular.otf}
+\LuaCJKsetup{CJKmath=true}
+
+\def\probe{%
+  \directlua{
+    local function walk(n)
+      while n do
+        if n.id == node.id("glyph") then
+          local f = font.getfont(n.font)
+          texio.write_nl("term and log",
+            "GLYPH " .. tostring(n.char) .. " " ..
+            tostring(f and (f.fullname or f.name) or "?"))
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          walk(n.head)
+        end
+        n = n.next
+      end
+    end
+    walk(tex.box[0])
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{CJK inside math uses the CJK math font}{
+  \setbox0=\hbox{$中$}
+  \probe
+}
+
+\TEST{CJK math text uses the main CJK font}{
+  \setbox0=\hbox{中}
+  \probe
+}
+
+\TEST{CJKmath=false leaves math untouched}{
+  \begingroup
+    \LuaCJKsetup{CJKmath=false}
+    \setbox0=\hbox{$中$}
+    \probe
+  \endgroup
+}
+
+\TEST{setCJKmathfont selects another font}{
+  \begingroup
+    \setCJKmathfont{FandolSong-Regular.otf}
+    \setbox0=\hbox{$中$}
+    \probe
+  \endgroup
+}
+
+\TEST{math font restored after group}{
+  \setbox0=\hbox{$中$}
+  \probe
+}
+
+\TEST{ordinary math is not changed}{
+  \setbox0=\hbox{$x+y$}
+  \probe
+}
+
+\END
+
+\end{document}

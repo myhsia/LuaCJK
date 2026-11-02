@@ -1,0 +1,34 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: CJK inside math uses the CJK math font
+============================================================
+GLYPH 20013 FandolKai
+============================================================
+============================================================
+TEST 2: CJK math text uses the main CJK font
+============================================================
+GLYPH 20013 FandolSong
+============================================================
+============================================================
+TEST 3: CJKmath=false leaves math untouched
+============================================================
+Missing character: There is no 中 (U+4E2D) in font "name:TeX Gyre Pagella Math:mode=base;script=math;language=dflt;mathfontdimen=xetex;"!
+============================================================
+============================================================
+TEST 4: setCJKmathfont selects another font
+============================================================
+GLYPH 20013 FandolSong
+============================================================
+============================================================
+TEST 5: math font restored after group
+============================================================
+GLYPH 20013 FandolKai
+============================================================
+============================================================
+TEST 6: ordinary math is not changed
+============================================================
+GLYPH 119909 TeXGyrePagellaMath-Regular-2
+GLYPH 43 TeXGyrePagellaMath-Regular-2
+GLYPH 119910 TeXGyrePagellaMath-Regular-2
+============================================================

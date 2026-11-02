@@ -16,5 +16,7 @@
 - Add `PunctKinsoku` line-breaking prohibitions: closing punctuation cannot
   start a line, opening punctuation cannot end a line, and long punctuation
   runs are kept together.
+- Add `CJKmath` and `\setCJKmathfont` for typing CJK characters directly in
+  math mode.
 - Document the package with `l3doc` and `docext` under LuaLaTeX.
 - Use the `LuaCJK` spelling for the package and derived files; the l3build/CTAN module stays `luacjk`.

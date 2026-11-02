@@ -186,6 +186,35 @@
 %</example>
 % \fi
 %
+% \section{CJK in mathematics}
+%
+% \begin{function}{CJKmath}
+%   \begin{syntax}
+%     CJKmath = \meta{true} \textbar{} \meta{false}
+%   \end{syntax}
+%   Whether CJK characters may be typed directly in math mode.  When it is
+%   on, such a character is typeset as a box in the CJK math font instead of
+%   being looked up in the math font.  The initial value is \meta{false}.
+% \end{function}
+%
+% \begin{function}{\setCJKmathfont}
+%   \begin{syntax}
+%     \tn{setCJKmathfont} \oarg{options} \marg{font} \oarg{options}
+%   \end{syntax}
+%   Select the CJK font used for characters in math mode.  Without this
+%   command the CJK main font is used.
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+$中文$ and 中文
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
+%
 % \section{Punctuation}
 %
 % \begin{function}{PunctStyle}
@@ -232,10 +261,10 @@
 %
 % The first release covers the font and spacing core, the
 % \texttt{quanjiao} and \texttt{plain} punctuation styles, and the basic
-% line-breaking prohibitions for punctuation.  The other punctuation presets,
-% hanging punctuation and line-end compression, CJK mathematics, fallback
-% fonts, alternate fonts, the decoration layer, and a \pkg{ctex} backend are
-% not yet implemented.
+% line-breaking prohibitions for punctuation, and direct CJK input in math
+% mode.  The other punctuation presets, hanging punctuation and line-end
+% compression, fallback fonts, alternate fonts, the decoration layer, and a
+% \pkg{ctex} backend are not yet implemented.
 %
 % \end{documentation}
 %
@@ -317,6 +346,9 @@
 \int_const:Nn \c_LuaCJK_xecglue_attr_int { \the \allocationnumber }
 \newattribute \g_LuaCJK_inserted_attr
 \int_const:Nn \c_LuaCJK_inserted_attr_int { \the \allocationnumber }
+\newattribute \g_LuaCJK_math_font_attr
+\int_const:Nn \c_LuaCJK_math_font_attr_int { \the \allocationnumber }
+\g_LuaCJK_math_font_attr = 0
 \g_LuaCJK_cjk_space_attr = 0
 \g_LuaCJK_xecglue_attr = 0
 
@@ -324,6 +356,10 @@
 \tl_set:Nn \l_LuaCJK_punct_style_tl { quanjiao }
 \tl_new:N \l_LuaCJK_punct_kinsoku_tl
 \tl_set:Nn \l_LuaCJK_punct_kinsoku_tl { 1 }
+\tl_new:N \l_LuaCJK_cjk_math_tl
+\tl_set:Nn \l_LuaCJK_cjk_math_tl { 0 }
+\tl_new:N \l_LuaCJK_math_family_tl
+\int_new:N \g_LuaCJK_math_fontid_int
 \prop_new:N \g_LuaCJK_punct_style_prop
 \prop_gput:Nnn \g_LuaCJK_punct_style_prop { quanjiao } { }
 \prop_gput:Nnn \g_LuaCJK_punct_style_prop { plain } { }
@@ -394,6 +430,10 @@
     PunctKinsoku / true  .code:n = { \tl_set:Nn \l_LuaCJK_punct_kinsoku_tl { 1 } },
     PunctKinsoku / false .code:n = { \tl_set:Nn \l_LuaCJK_punct_kinsoku_tl { 0 } },
     PunctKinsoku .default:n = { true },
+    CJKmath .choice:,
+    CJKmath / true  .code:n = { \tl_set:Nn \l_LuaCJK_cjk_math_tl { 1 } },
+    CJKmath / false .code:n = { \tl_set:Nn \l_LuaCJK_cjk_math_tl { 0 } },
+    CJKmath .default:n = { true },
   }
 \NewDocumentCommand \LuaCJKsetup { m }
   { \keys_set:nn { LuaCJK / options } {#1} }
@@ -458,6 +498,22 @@
             \g_LuaCJK_font_attr = \g_LuaCJK_fontid_int
           }
           { \g_LuaCJK_font_attr = \c_zero_int }
+        \tl_if_empty:NTF \l_LuaCJK_math_family_tl
+          { \int_gset:Nn \g_LuaCJK_math_fontid_int { \int_use:N \g_LuaCJK_fontid_int } }
+          {
+            \prop_get:NVNTF \g_LuaCJK_family_prop \l_LuaCJK_math_family_tl
+              \l_LuaCJK_tmpa_tl
+              {
+                \group_begin:
+                  \exp_args:NV \fontfamily \l_LuaCJK_tmpa_tl
+                  \selectfont
+                  \int_gset:Nn \g_LuaCJK_math_fontid_int
+                    { \tex_fontid:D \tex_font:D }
+                \group_end:
+              }
+              { \int_gzero:N \g_LuaCJK_math_fontid_int }
+          }
+        \g_LuaCJK_math_font_attr = \g_LuaCJK_math_fontid_int
         \bool_set_false:N \l_LuaCJK_selectfont_bool
       }
   }
@@ -507,6 +563,12 @@
     \exp_args:NV \LuaCJK_set_family_with_options:nnnn
       \l_LuaCJK_tmpa_tl {#3} {#4} { \NoValue }
   }
+\NewDocumentCommand \setCJKmathfont { o m o }
+  {
+    \LuaCJK_set_family_with_options:nnnn { LuaCJK/math } {#1} {#2} {#3}
+    \tl_set:Nn \l_LuaCJK_math_family_tl { LuaCJK/math }
+    \LuaCJK_update_font:
+  }
 \int_new:N \g_LuaCJK_fontspec_int
 \NewDocumentCommand \CJKfontspec { o m }
   {
@@ -552,6 +614,7 @@
   LuaCJK.attr_cjk_space = \int_use:N \c_LuaCJK_cjk_space_attr_int
   LuaCJK.attr_xecglue = \int_use:N \c_LuaCJK_xecglue_attr_int
   LuaCJK.attr_inserted = \int_use:N \c_LuaCJK_inserted_attr_int
+  LuaCJK.attr_math_font = \int_use:N \c_LuaCJK_math_font_attr_int
 }
 \AtBeginDocument
   {
@@ -595,6 +658,7 @@ M.attr_font = M.attr_font or nil
 M.attr_cjk_space = M.attr_cjk_space or nil
 M.attr_xecglue = M.attr_xecglue or nil
 M.attr_inserted = M.attr_inserted or nil
+M.attr_math_font = M.attr_math_font or nil
 
 local function is_cjk (c)
   return (c >= 0x2E80 and c <= 0x9FFF)
@@ -1030,6 +1094,62 @@ local function apply_kinsoku (head)
   return head
 end
 
+-- CJK in math mode.
+--
+-- A CJK character in math mode reaches the math list as a `math_char` noad.
+-- Its family points at the math font, which usually has no CJK glyph.  We
+-- replace the nucleus by a `sub_box` holding the character in the CJK font.
+local MATH_CHAR = node.id("math_char")
+local MATH_TEXT_CHAR = node.id("math_text_char")
+
+local function math_font_id ()
+  local fid = tex.count["g_LuaCJK_math_fontid_int"]
+  if fid and fid > 0 then
+    return fid
+  end
+  return nil
+end
+
+local function cjk_math_enabled ()
+  return token.get_macro("l_LuaCJK_cjk_math_tl") == "1"
+end
+
+local function rewrite_math (head)
+  if not cjk_math_enabled() then
+    return head
+  end
+  local fid = math_font_id()
+  if not fid then
+    return head
+  end
+  local cur = head
+  while cur do
+    local nuc = cur.nucleus
+    if nuc and (nuc.id == MATH_CHAR or nuc.id == MATH_TEXT_CHAR)
+       and is_cjk(nuc.char) then
+      if M.attr_math_font then
+        local a = has_attribute(nuc, M.attr_math_font)
+        if a and a > 0 then
+          fid = a
+        end
+      end
+      local g = new_node("glyph")
+      g.font = fid
+      g.char = nuc.char
+      local b = new_node("hlist")
+      b.head = g
+      b.width = g.width
+      b.height = g.height
+      b.depth = g.depth
+      local sb = new_node("sub_box")
+      sb.head = b
+      cur.nucleus = sb
+    end
+    cur = cur.next
+  end
+  return head
+end
+
 local function process (head)
   head = rewrite_fonts(head)
   head = spacing(head)
@@ -1047,8 +1167,13 @@ function M.hpack (head, groupcode, size, packtype, direction, attributelist)
   return process(head)
 end
 
+function M.pre_mlist_to_hlist (head, display, penalties)
+  return rewrite_math(head)
+end
+
 luatexbase.add_to_callback("pre_linebreak_filter", M.pre_linebreak, "LuaCJK.spacing")
 luatexbase.add_to_callback("hpack_filter", M.hpack, "LuaCJK.spacing")
+luatexbase.add_to_callback("pre_mlist_to_hlist_filter", M.pre_mlist_to_hlist, "LuaCJK.math")
 %</lua>
 %    \end{macrocode}
 %
