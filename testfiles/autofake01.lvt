@@ -1,0 +1,93 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\def\compare#1#2{%
+  \directlua{
+    local function fid (b)
+      local n = tex.box[b].head
+      while n do
+        if n.id == node.id("glyph") then
+          return n.font
+        end
+        n = n.next
+      end
+    end
+    texio.write_nl("term and log",
+      "COMPARE " .. (fid(#1) == fid(#2) and "same" or "different"))
+  }%
+}
+
+\def\psnameof#1{%
+  \directlua{
+    local n = tex.box[#1].head
+    while n do
+      if n.id == node.id("glyph") then
+        local f = font.getfont(n.font)
+        texio.write_nl("term and log", "PSNAME " .. tostring(f and f.psname))
+        break
+      end
+      n = n.next
+    end
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{without fake bold the bold shape reuses the regular font}{
+  \setbox0=\hbox{中}
+  \setbox2=\hbox{\bfseries 中}
+  \compare{0}{2}
+}
+
+\TEST{AutoFakeBold gives the bold shape its own font}{
+  \begingroup
+    \LuaCJKsetup{AutoFakeBold = true}
+    \setCJKfamilyfont{fakebold}{FandolSong-Regular.otf}
+    \setbox0=\hbox{\CJKfamily{fakebold}中}
+    \setbox2=\hbox{\CJKfamily{fakebold}\bfseries 中}
+    \compare{0}{2}
+    \psnameof{2}
+  \endgroup
+}
+
+\TEST{an explicit BoldFont is used instead of fake bold}{
+  \begingroup
+    \LuaCJKsetup{AutoFakeBold = true}
+    \setCJKfamilyfont{realbold}{FandolSong-Regular.otf}[
+      BoldFont = FandolSong-Bold.otf
+    ]
+    \setbox0=\hbox{\CJKfamily{realbold}中}
+    \setbox2=\hbox{\CJKfamily{realbold}\bfseries 中}
+    \compare{0}{2}
+    \psnameof{2}
+  \endgroup
+}
+
+\TEST{AutoFakeSlant gives the italic shape its own font}{
+  \begingroup
+    \LuaCJKsetup{AutoFakeSlant = true}
+    \setCJKfamilyfont{fakeslant}{FandolSong-Regular.otf}
+    \setbox0=\hbox{\CJKfamily{fakeslant}中}
+    \setbox2=\hbox{\CJKfamily{fakeslant}\itshape 中}
+    \compare{0}{2}
+  \endgroup
+}
+
+\TEST{AutoFakeBold can be turned off again}{
+  \begingroup
+    \LuaCJKsetup{AutoFakeBold = true, AutoFakeBold = false}
+    \setCJKfamilyfont{off}{FandolSong-Regular.otf}
+    \setbox0=\hbox{\CJKfamily{off}中}
+    \setbox2=\hbox{\CJKfamily{off}\bfseries 中}
+    \compare{0}{2}
+  \endgroup
+}
+
+\END
+
+\end{document}

@@ -1,0 +1,67 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: without fake bold the bold shape reuses the regular font
+============================================================
+LaTeX Font Warning: Font shape `TU/FandolSong-Regular.otf(0)/bx/n' undefined
+(Font)              using `TU/FandolSong-Regular.otf(0)/m/n' instead on input line ....
+COMPARE same
+============================================================
+============================================================
+TEST 2: AutoFakeBold gives the bold shape its own font
+============================================================
+Package fontspec Info: 
+(fontspec)             Font family 'FandolSong-Regular.otf(1)' created for font 'FandolSong-Regular.otf' with options [Script=CJK,AutoFakeBold=4].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->"[FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;"
+(fontspec)             - 'bold' (b/n) with NFSS spec.: <->"[FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;embolden=4;"
+LaTeX Font Info:    Font shape `TU/FandolSong-Regular.otf(1)/bx/n' in size <10> not available
+(Font)              Font shape `TU/FandolSong-Regular.otf(1)/b/n' tried instead on input line ....
+COMPARE different
+PSNAME FandolSong-Regular
+============================================================
+============================================================
+TEST 3: an explicit BoldFont is used instead of fake bold
+============================================================
+Package fontspec Info: 
+(fontspec)             Font family 'FandolSong-Regular.otf(2)' created for font 'FandolSong-Regular.otf' with options [Script=CJK,BoldFont = FandolSong-Bold.otf].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->"[FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;"
+(fontspec)             - 'bold' (b/n) with NFSS spec.: <->"[FandolSong-Bold.otf]:mode=node;script=hani;language=dflt;"
+LaTeX Font Info:    Font shape `TU/FandolSong-Regular.otf(2)/bx/n' in size <10> not available
+(Font)              Font shape `TU/FandolSong-Regular.otf(2)/b/n' tried instead on input line ....
+COMPARE different
+PSNAME FandolSong-Bold
+============================================================
+============================================================
+TEST 4: AutoFakeSlant gives the italic shape its own font
+============================================================
+Package fontspec Info: 
+(fontspec)             Font family 'FandolSong-Regular.otf(3)' created for font 'FandolSong-Regular.otf' with options [Script=CJK,AutoFakeBold=4,AutoFakeSlant=0.167].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->"[FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;"
+(fontspec)             - 'bold' (b/n) with NFSS spec.: <->"[FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;embolden=4;"
+(fontspec)             - 'italic' (m/it) with NFSS spec.: <->"[FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;slant=0.167;"
+(fontspec)             - 'bold italic' (b/it) with NFSS spec.: <->"[FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;embolden=4;slant=0.167;"
+COMPARE different
+============================================================
+============================================================
+TEST 5: AutoFakeBold can be turned off again
+============================================================
+Package fontspec Info: 
+(fontspec)             Font family 'FandolSong-Regular.otf(4)' created for font 'FandolSong-Regular.otf' with options [Script=CJK,AutoFakeSlant=0.167].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->"[FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;"
+(fontspec)             - 'italic' (m/it) with NFSS spec.: <->"[FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;slant=0.167;"
+LaTeX Font Warning: Font shape `TU/FandolSong-Regular.otf(4)/bx/n' undefined
+(Font)              using `TU/FandolSong-Regular.otf(4)/m/n' instead on input line ....
+COMPARE same
+============================================================
