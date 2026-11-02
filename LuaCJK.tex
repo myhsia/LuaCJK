@@ -1,4 +1,6 @@
 \documentclass[11pt, letterpaper]{l3doc}
+\providecommand*\LuaLaTeX{\hologo{LuaLaTeX}}
+\providecommand*\XeLaTeX{\hologo{XeLaTeX}}
 \usepackage[color = 00498F, ratio = .625]{docext}
 \usepackage{fontspec}
 \setmainfont{TeX Gyre Pagella}
@@ -17,6 +19,8 @@
 \setCJKfamilyfont{zhhei}{FandolHei-Regular.otf}[BoldFont = FandolHei-Bold.otf]
 \setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
 \setCJKfamilyfont{zhfs}{FandolFang-Regular.otf}
+\LuaCJKsetup{CJKmath=true}
+\setCJKmathfont{FandolSong-Regular.otf}
 \begin{document}
   \DocInput{LuaCJK.dtx}
 \end{document}

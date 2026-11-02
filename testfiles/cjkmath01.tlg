@@ -13,6 +13,8 @@ GLYPH 20013 FandolSong
 ============================================================
 TEST 3: CJKmath=false leaves math untouched
 ============================================================
+Package LuaCJK Warning: CJK character in math mode, but CJKmath is not enabled.
+(LuaCJK)                Use \LuaCJKsetup{CJKmath=true} to typeset it with the CJK font.
 Missing character: There is no 中 (U+4E2D) in font "name:TeX Gyre Pagella Math:mode=base;script=math;language=dflt;mathfontdimen=xetex;"!
 ============================================================
 ============================================================

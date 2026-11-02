@@ -38,8 +38,8 @@
 % \maketitle
 %
 % \begin{abstract}
-%   \pkg{LuaCJK} provides Chinese typesetting for LuaLaTeX.  It is inspired
-%   by \pkg{xeCJK}, but uses LuaTeX node callbacks instead of XeTeX
+%   \pkg{LuaCJK} provides Chinese typesetting for \LuaLaTeX.  It is inspired
+%   by \pkg{xeCJK}, but uses \LuaTeX{} node callbacks instead of \XeTeX
 %   character classes.  This manual documents the first development release.
 % \end{abstract}
 %
@@ -49,13 +49,13 @@
 %
 % \section{Introduction}
 %
-% \pkg{LuaCJK} is a LuaTeX-only package for Chinese typesetting.  Its public
+% \pkg{LuaCJK} is a \LuaTeX-only package for Chinese typesetting.  Its public
 % interface follows the familiar \pkg{xeCJK} commands:
 % \cs{setCJKmainfont}, \cs{setCJKsansfont}, \cs{setCJKmonofont},
 % \cs{setCJKfamilyfont}, \cs{CJKfamily}, and \cs{LuaCJKsetup}.
 %
-% The implementation does not use XeTeX's inter-character token mechanism.
-% Instead, LuaCJK records the current CJK font in a LuaTeX attribute and
+% The implementation does not use \XeTeX's inter-character token mechanism.
+% Instead, LuaCJK records the current CJK font in a \LuaTeX{} attribute and
 % replaces CJK glyph nodes before line breaking and box packing.
 %
 % \section{Loading}
@@ -64,7 +64,7 @@
 %   \cs{usepackage}\oarg{options}\marg{LuaCJK}
 % \end{quote}
 %
-% LuaCJK requires LuaLaTeX.  It conflicts with \pkg{luatexja} and
+% LuaCJK requires \LuaLaTeX.  It conflicts with \pkg{luatexja} and
 % \pkg{xeCJK}; loading one of these packages before or after LuaCJK raises
 % an error.
 %
@@ -194,7 +194,10 @@
 %   \end{syntax}
 %   Whether CJK characters may be typed directly in math mode.  When it is
 %   on, such a character is typeset as a box in the CJK math font instead of
-%   being looked up in the math font.  The initial value is \meta{false}.
+%   being looked up in the math font.  The initial value is \meta{false};
+%   enable it with \cs{LuaCJKsetup}\marg{CJKmath = true} in the preamble.
+%   Without it a CJK character in math mode is looked up in the math font and
+%   usually disappears, so LuaCJK issues a one-time warning in that case.
 % \end{function}
 %
 % \begin{function}{\setCJKmathfont}
@@ -202,14 +205,15 @@
 %     \tn{setCJKmathfont} \oarg{options} \marg{font} \oarg{options}
 %   \end{syntax}
 %   Select the CJK font used for characters in math mode.  Without this
-%   command the CJK main font is used.
+%   command the CJK main font is used.  This manual enables \texttt{CJKmath}
+%   and sets this font in its preamble.
 % \end{function}
 %
 % \iffalse
 %<*example>
 % \fi
 \begin{codemo}
-$中文$ and 中文
+$ x + 中文 $ and 中文
 \end{codemo}
 % \iffalse
 %</example>
@@ -987,36 +991,66 @@ local function handle_source_space (head, glue, before, prev_end, cur, cur_start
   return head
 end
 
+local function handle_boundary (head, prev, before, prev_visible,
+                                prev_end, cur, start_class)
+  if not prev_visible then
+    return head
+  end
+  if prev and prev.id == GLUE then
+    if not is_inserted(prev) then
+      return handle_source_space(head, prev, before, prev_end, cur, start_class)
+    end
+  elseif prev and prev.id == PENALTY then
+    -- A penalty is an explicit barrier: do not bridge it.
+  elseif prev and prev.id == DISC then
+    -- Discretionaries are opaque in this first boundary version.
+  else
+    return insert_boundary_glue(head, prev, prev_end, cur, start_class)
+  end
+  return head
+end
+
 local function spacing (head)
   local prev = nil
   local before = nil
   local prev_visible = nil
   local prev_end = nil
+  local math_level = 0
   local cur = head
   while cur do
     local nxt = cur.next
-    local start_class, end_class = class_of_node(cur)
-    if start_class then
-      if prev_visible then
-        if prev and prev.id == GLUE then
-          if not is_inserted(prev) then
-            head = handle_source_space(
-              head, prev, before, prev_end, cur, start_class)
-          end
-        elseif prev and prev.id == PENALTY then
-          -- A penalty is an explicit barrier: do not bridge it.
-        elseif prev and prev.id == DISC then
-          -- Discretionaries are opaque in this first boundary version.
-        else
-          head = insert_boundary_glue(
-            head, prev, prev_end, cur, start_class)
+    if cur.id == MATH then
+      if cur.subtype == 0 then
+        if math_level == 0 then
+          -- The formula behaves like a Latin atom at its left edge.
+          head = handle_boundary(
+            head, prev, before, prev_visible, prev_end, cur, "LATIN")
+        end
+        math_level = math_level + 1
+        prev_visible = nil
+        prev_end = nil
+      else
+        if math_level > 0 then
+          math_level = math_level - 1
+        end
+        if math_level == 0 then
+          prev_visible = cur
+          prev_end = "LATIN"
         end
       end
-      prev_visible = cur
-      prev_end = end_class
-    elseif cur.id == PENALTY or cur.id == DISC then
-      prev_visible = nil
-      prev_end = nil
+    elseif math_level > 0 then
+      -- Inside a formula the boundary rules do not apply.
+    else
+      local start_class, end_class = class_of_node(cur)
+      if start_class then
+        head = handle_boundary(
+          head, prev, before, prev_visible, prev_end, cur, start_class)
+        prev_visible = cur
+        prev_end = end_class
+      elseif cur.id == PENALTY or cur.id == DISC then
+        prev_visible = nil
+        prev_end = nil
+      end
     end
     before = prev
     prev = cur
@@ -1227,8 +1261,48 @@ rewrite_math_list = function (head, fid)
   return head
 end
 
+M.warned_cjk_math = M.warned_cjk_math or false
+
+local function find_cjk_math (head)
+  local cur = head
+  while cur do
+    local nuc = cur.nucleus
+    if nuc then
+      if (nuc.id == MATH_CHAR or nuc.id == MATH_TEXT_CHAR)
+         and is_cjk(nuc.char) then
+        return true
+      elseif nuc.id == SUB_MLIST and find_cjk_math(nuc.head) then
+        return true
+      end
+    end
+    for _, field in ipairs({ "num", "denom", "sup", "sub" }) do
+      local sub = cur[field]
+      if sub and sub.id == SUB_MLIST and find_cjk_math(sub.head) then
+        return true
+      end
+    end
+    cur = cur.next
+  end
+  return false
+end
+
+local function warn_disabled_cjk_math (head)
+  if M.warned_cjk_math then
+    return
+  end
+  if find_cjk_math(head) then
+    M.warned_cjk_math = true
+    texio.write_nl("term and log",
+      "Package LuaCJK Warning: CJK character in math mode, but CJKmath is not enabled.")
+    texio.write_nl("term and log",
+      "(LuaCJK)                Use \\LuaCJKsetup{CJKmath=true} " ..
+      "to typeset it with the CJK font.")
+  end
+end
+
 local function rewrite_math (head)
   if not cjk_math_enabled() then
+    warn_disabled_cjk_math(head)
     return head
   end
   local fid = math_font_id()
