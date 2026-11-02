@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% File: luacjk.dtx
+% File: LuaCJK.dtx
 % -----------------------------------------------------------------------
 %   Copyright (C) 2026 by Mingyu Xia <myhsia@outlook.com>               *
 % -----------------------------------------------------------------------
@@ -18,11 +18,11 @@
 %                                                                       *
 %   The Current Maintainer of this work is Mingyu Xia.                  *
 % -----------------------------------------------------------------------
-%   This work consists of the files luacjk.dtx,                         *
-%                                   luacjk.ins,                         *
-%                 the derived files luacjk.sty,                         *
-%                                   luacjk.lua,                         *
-%           the documentation files luacjk.pdf,                         *
+%   This work consists of the files LuaCJK.dtx,                         *
+%                                   LuaCJK.ins,                         *
+%                 the derived files LuaCJK.sty,                         *
+%                                   LuaCJK.lua,                         *
+%           the documentation files LuaCJK.pdf,                         *
 %                               and README.md.                          *
 % -----------------------------------------------------------------------
 %
@@ -61,12 +61,12 @@
 % \section{Loading}
 %
 % \begin{quote}
-%   \cs{usepackage}\oarg{options}\marg{luacjk}
+%   \cs{usepackage}\oarg{options}\marg{LuaCJK}
 % \end{quote}
 %
-% LuaCJK requires LuaLaTeX.  It conflicts with \pkg{luatexja},
-% \pkg{luatex-cn}, and \pkg{xeCJK}; loading one of these packages before or
-% after LuaCJK raises an error.
+% LuaCJK requires LuaLaTeX.  It conflicts with \pkg{luatexja} and
+% \pkg{xeCJK}; loading one of these packages before or after LuaCJK raises
+% an error.
 %
 % \section{Font selection}
 %
@@ -205,11 +205,11 @@
 %    \end{macrocode}
 %
 % \begin{macrocode}
-%<@@=luacjk>
+%<@@=LuaCJK>
 %    \end{macrocode}
 %
 % \begin{macrocode}
-%<package>\GetIdInfo $Id: luacjk.dtx 0.1.0 2026-11-02 myhsia<myhsia@outlook.com>$
+%<package>\GetIdInfo $Id: LuaCJK.dtx 0.1.0 2026-11-02 myhsia<myhsia@outlook.com>$
 %<package>  {A LuaTeX CJK typesetting package}
 %<package>\ProvidesExplPackage {\ExplFileName}
 %<!driver>  {\ExplFileDate} {\ExplFileVersion} {\ExplFileDescription}
@@ -221,9 +221,9 @@
 % \begin{macrocode}
 \sys_if_engine_luatex:F
   {
-    \msg_new:nnn { luacjk } { engine }
+    \msg_new:nnn { LuaCJK } { engine }
       { LuaCJK~requires~LuaTeX. }
-    \msg_critical:nn { luacjk } { engine }
+    \msg_critical:nn { LuaCJK } { engine }
     \tex_endinput:D
   }
 \RequirePackage { expl3 }
@@ -233,93 +233,80 @@
 %    \end{macrocode}
 %
 % \begin{macrocode}
-\msg_new:nnn { luacjk } { luatexja-conflict }
+\msg_new:nnn { LuaCJK } { luatexja-conflict }
   {
     LuaCJK~and~LuaTeX-ja~must~not~be~loaded~together.\\
     Load~only~one~of~them.
   }
-\msg_new:nnn { luacjk } { luatexcn-conflict }
-  {
-    LuaCJK~and~LuaTeX-CN~must~not~be~loaded~together.\\
-    Load~only~one~of~them.
-  }
-\msg_new:nnn { luacjk } { xecjk-conflict }
+\msg_new:nnn { LuaCJK } { xecjk-conflict }
   {
     LuaCJK~is~for~LuaTeX;~xeCJK~is~for~XeTeX.\\
     Load~only~one~of~them.
   }
 \cs_if_exist:cT { ver@luatexja.sty }
-  { \msg_critical:nn { luacjk } { luatexja-conflict } }
-\cs_if_exist:cT { ver@luatex-cn.sty }
-  { \msg_critical:nn { luacjk } { luatexcn-conflict } }
-\cs_if_exist:cT { ver@luatex-cn-hori.sty }
-  { \msg_critical:nn { luacjk } { luatexcn-conflict } }
+  { \msg_critical:nn { LuaCJK } { luatexja-conflict } }
 \cs_if_exist:cT { ver@xeCJK.sty }
-  { \msg_critical:nn { luacjk } { xecjk-conflict } }
+  { \msg_critical:nn { LuaCJK } { xecjk-conflict } }
 \AddToHook { package/luatexja/before }
-  { \msg_critical:nn { luacjk } { luatexja-conflict } }
-\AddToHook { package/luatex-cn/before }
-  { \msg_critical:nn { luacjk } { luatexcn-conflict } }
-\AddToHook { package/luatex-cn-hori/before }
-  { \msg_critical:nn { luacjk } { luatexcn-conflict } }
+  { \msg_critical:nn { LuaCJK } { luatexja-conflict } }
 \AddToHook { package/xeCJK/before }
-  { \msg_critical:nn { luacjk } { xecjk-conflict } }
+  { \msg_critical:nn { LuaCJK } { xecjk-conflict } }
 %    \end{macrocode}
 %
 % \begin{macrocode}
-\newattribute \g_luacjk_font_attr
-\int_const:Nn \c_luacjk_font_attr_int { \the \allocationnumber }
-\tl_const:Nx \c_luacjk_version_tl { \ExplFileVersion }
-\cs_new:Npn \LuaCJKversion { \tl_use:N \c_luacjk_version_tl }
+\newattribute \g_LuaCJK_font_attr
+\int_const:Nn \c_LuaCJK_font_attr_int { \the \allocationnumber }
+\tl_const:Nx \c_LuaCJK_version_tl { \ExplFileVersion }
+\cs_new:Npn \LuaCJKversion { \tl_use:N \c_LuaCJK_version_tl }
 %    \end{macrocode}
 %
 % \begin{macrocode}
-\skip_new:N \l_luacjk_ccglue_skip
-\skip_new:N \l_luacjk_ecglue_skip
-\skip_set:Nn \l_luacjk_ccglue_skip { 0pt plus 0.08 \tex_baselineskip:D }
-\skip_set:Nn \l_luacjk_ecglue_skip
+\skip_new:N \l_LuaCJK_ccglue_skip
+\skip_new:N \l_LuaCJK_ecglue_skip
+\skip_set:Nn \l_LuaCJK_ccglue_skip { 0pt plus 0.08 \tex_baselineskip:D }
+\skip_set:Nn \l_LuaCJK_ecglue_skip
   { 0.3333em plus 0.1667em minus 0.1111em }
-\newattribute \g_luacjk_cjk_space_attr
-\int_const:Nn \c_luacjk_cjk_space_attr_int { \the \allocationnumber }
-\newattribute \g_luacjk_xecglue_attr
-\int_const:Nn \c_luacjk_xecglue_attr_int { \the \allocationnumber }
-\g_luacjk_cjk_space_attr = 0
-\g_luacjk_xecglue_attr = 0
+\newattribute \g_LuaCJK_cjk_space_attr
+\int_const:Nn \c_LuaCJK_cjk_space_attr_int { \the \allocationnumber }
+\newattribute \g_LuaCJK_xecglue_attr
+\int_const:Nn \c_LuaCJK_xecglue_attr_int { \the \allocationnumber }
+\g_LuaCJK_cjk_space_attr = 0
+\g_LuaCJK_xecglue_attr = 0
 %    \end{macrocode}
 %
 % \begin{macrocode}
-\keys_define:nn { luacjk / options }
+\keys_define:nn { LuaCJK / options }
   {
     CJKglue .code:n =
       {
-        \skip_set:Nn \l_luacjk_ccglue_skip {#1}
+        \skip_set:Nn \l_LuaCJK_ccglue_skip {#1}
       },
     CJKecglue .code:n =
       {
-        \skip_set:Nn \l_luacjk_ecglue_skip {#1}
+        \skip_set:Nn \l_LuaCJK_ecglue_skip {#1}
       },
     CJKspace .choice:,
-    CJKspace / true  .code:n = { \g_luacjk_cjk_space_attr = 1 },
-    CJKspace / false .code:n = { \g_luacjk_cjk_space_attr = 0 },
+    CJKspace / true  .code:n = { \g_LuaCJK_cjk_space_attr = 1 },
+    CJKspace / false .code:n = { \g_LuaCJK_cjk_space_attr = 0 },
     CJKspace .default:n = { true },
     CJKspace .initial:n = { false },
     xCJKecglue .choice:,
-    xCJKecglue / true  .code:n = { \g_luacjk_xecglue_attr = 1 },
-    xCJKecglue / false .code:n = { \g_luacjk_xecglue_attr = 0 },
+    xCJKecglue / true  .code:n = { \g_LuaCJK_xecglue_attr = 1 },
+    xCJKecglue / false .code:n = { \g_LuaCJK_xecglue_attr = 0 },
     xCJKecglue .default:n = { true },
     xCJKecglue .initial:n = { false },
   }
 \NewDocumentCommand \LuaCJKsetup { m }
-  { \keys_set:nn { luacjk / options } {#1} }
+  { \keys_set:nn { LuaCJK / options } {#1} }
 %    \end{macrocode}
 %
 % \begin{macrocode}
-\prop_new:N \g_luacjk_family_prop
-\tl_new:N \l_luacjk_family_tl
-\tl_set:Nn \l_luacjk_family_tl { zhsong }
-\tl_new:N \l_luacjk_tmpa_tl
-\tl_new:N \l_luacjk_fontspec_tl
-\tl_new:N \l_luacjk_family_name_tl
+\prop_new:N \g_LuaCJK_family_prop
+\tl_new:N \l_LuaCJK_family_tl
+\tl_set:Nn \l_LuaCJK_family_tl { zhsong }
+\tl_new:N \l_LuaCJK_tmpa_tl
+\tl_new:N \l_LuaCJK_fontspec_tl
+\tl_new:N \l_LuaCJK_family_name_tl
 \tl_new:N \CJKrmdefault
 \tl_new:N \CJKsfdefault
 \tl_new:N \CJKttdefault
@@ -331,105 +318,105 @@
 %    \end{macrocode}
 %
 % \begin{macrocode}
-\cs_new_protected:Npn \luacjk_set_family:nnn #1#2#3
+\cs_new_protected:Npn \LuaCJK_set_family:nnn #1#2#3
   {
     \group_begin:
-      \fontspec_gset_family:Nnn \l_luacjk_fontspec_tl {#2} {#3}
-      \prop_gput:NnV \g_luacjk_family_prop {#1} \l_luacjk_fontspec_tl
+      \fontspec_gset_family:Nnn \l_LuaCJK_fontspec_tl {#2} {#3}
+      \prop_gput:NnV \g_LuaCJK_family_prop {#1} \l_LuaCJK_fontspec_tl
     \group_end:
-    \prop_if_in:NVT \g_luacjk_family_prop \l_luacjk_family_tl
+    \prop_if_in:NVT \g_LuaCJK_family_prop \l_LuaCJK_family_tl
       { \selectfont }
   }
-\cs_new_protected:Npn \luacjk_switch_family:n #1
+\cs_new_protected:Npn \LuaCJK_switch_family:n #1
   {
-    \prop_if_in:NnTF \g_luacjk_family_prop {#1}
+    \prop_if_in:NnTF \g_LuaCJK_family_prop {#1}
       {
-        \tl_set:Nn \l_luacjk_family_tl {#1}
+        \tl_set:Nn \l_LuaCJK_family_tl {#1}
         \selectfont
       }
-      { \msg_warning:nnn { luacjk } { family-unknown } {#1} }
+      { \msg_warning:nnn { LuaCJK } { family-unknown } {#1} }
   }
-\msg_new:nnn { luacjk } { family-unknown }
+\msg_new:nnn { LuaCJK } { family-unknown }
   { Unknown~CJK~family~`#1'~is~being~ignored. }
 %    \end{macrocode}
 %
 % \begin{macrocode}
-\bool_new:N \l_luacjk_selectfont_bool
-\int_new:N \g_luacjk_fontid_int
-\cs_new_protected:Npn \luacjk_update_font:
+\bool_new:N \l_LuaCJK_selectfont_bool
+\int_new:N \g_LuaCJK_fontid_int
+\cs_new_protected:Npn \LuaCJK_update_font:
   {
-    \bool_if:NF \l_luacjk_selectfont_bool
+    \bool_if:NF \l_LuaCJK_selectfont_bool
       {
-        \bool_set_true:N \l_luacjk_selectfont_bool
-        \prop_get:NVNTF \g_luacjk_family_prop \l_luacjk_family_tl \l_luacjk_family_name_tl
+        \bool_set_true:N \l_LuaCJK_selectfont_bool
+        \prop_get:NVNTF \g_LuaCJK_family_prop \l_LuaCJK_family_tl \l_LuaCJK_family_name_tl
           {
             \group_begin:
-              \exp_args:NV \fontfamily \l_luacjk_family_name_tl
+              \exp_args:NV \fontfamily \l_LuaCJK_family_name_tl
               \selectfont
-              \int_gset:Nn \g_luacjk_fontid_int
+              \int_gset:Nn \g_LuaCJK_fontid_int
                 { \tex_fontid:D \tex_font:D }
             \group_end:
-            \g_luacjk_font_attr = \g_luacjk_fontid_int
+            \g_LuaCJK_font_attr = \g_LuaCJK_fontid_int
           }
-          { \g_luacjk_font_attr = \c_zero_int }
-        \bool_set_false:N \l_luacjk_selectfont_bool
+          { \g_LuaCJK_font_attr = \c_zero_int }
+        \bool_set_false:N \l_LuaCJK_selectfont_bool
       }
   }
-\AddToHook { selectfont } { \luacjk_update_font: }
+\AddToHook { selectfont } { \LuaCJK_update_font: }
 %    \end{macrocode}
 %
 % \begin{macrocode}
 \NewDocumentCommand \setCJKmainfont { o m o }
   {
-    \exp_args:NV \luacjk_set_family_with_options:nnnn
+    \exp_args:NV \LuaCJK_set_family_with_options:nnnn
       \CJKrmdefault {#1} {#2} {#3}
   }
 \NewDocumentCommand \setCJKsansfont { o m o }
   {
-    \exp_args:NV \luacjk_set_family_with_options:nnnn
+    \exp_args:NV \LuaCJK_set_family_with_options:nnnn
       \CJKsfdefault {#1} {#2} {#3}
   }
 \NewDocumentCommand \setCJKmonofont { o m o }
   {
-    \exp_args:NV \luacjk_set_family_with_options:nnnn
+    \exp_args:NV \LuaCJK_set_family_with_options:nnnn
       \CJKttdefault {#1} {#2} {#3}
   }
 \NewDocumentCommand \setCJKfamilyfont { m o m o }
-  { \luacjk_set_family_with_options:nnnn {#1} {#2} {#3} {#4} }
-\cs_new_protected:Npn \luacjk_set_family_with_options:nnnn #1#2#3#4
+  { \LuaCJK_set_family_with_options:nnnn {#1} {#2} {#3} {#4} }
+\cs_new_protected:Npn \LuaCJK_set_family_with_options:nnnn #1#2#3#4
   {
     \tl_if_novalue:nTF {#2}
       {
         \tl_if_novalue:nTF {#4}
-          { \luacjk_set_family:nnn {#1} { } {#3} }
-          { \luacjk_set_family:nnn {#1} {#4} {#3} }
+          { \LuaCJK_set_family:nnn {#1} { } {#3} }
+          { \LuaCJK_set_family:nnn {#1} {#4} {#3} }
       }
-      { \luacjk_set_family:nnn {#1} {#2} {#3} }
+      { \LuaCJK_set_family:nnn {#1} {#2} {#3} }
   }
 \NewDocumentCommand \CJKfamily { m }
-  { \luacjk_switch_family:n {#1} \tex_ignorespaces:D }
+  { \LuaCJK_switch_family:n {#1} \tex_ignorespaces:D }
 \NewDocumentCommand \newCJKfontfamily { o m o m }
   {
-    \tl_set:Ne \l_luacjk_tmpa_tl
+    \tl_set:Ne \l_LuaCJK_tmpa_tl
       {
         \IfNoValueTF {#1}
           { \cs_to_str:N #2 }
           {#1}
       }
     \cs_set_protected:Npx #2
-      { \exp_not:N \luacjk_switch_family:n { \exp_not:V \l_luacjk_tmpa_tl } }
-    \exp_args:NV \luacjk_set_family_with_options:nnnn
-      \l_luacjk_tmpa_tl {#3} {#4} { \NoValue }
+      { \exp_not:N \LuaCJK_switch_family:n { \exp_not:V \l_LuaCJK_tmpa_tl } }
+    \exp_args:NV \LuaCJK_set_family_with_options:nnnn
+      \l_LuaCJK_tmpa_tl {#3} {#4} { \NoValue }
   }
-\int_new:N \g_luacjk_fontspec_int
+\int_new:N \g_LuaCJK_fontspec_int
 \NewDocumentCommand \CJKfontspec { o m }
   {
-    \int_gincr:N \g_luacjk_fontspec_int
-    \tl_set:Ne \l_luacjk_tmpa_tl
-      { luacjk/fontspec/ \int_use:N \g_luacjk_fontspec_int }
-    \exp_args:NV \luacjk_set_family_with_options:nnnn
-      \l_luacjk_tmpa_tl {#1} {#2} { \NoValue }
-    \exp_args:NV \luacjk_switch_family:n \l_luacjk_tmpa_tl
+    \int_gincr:N \g_LuaCJK_fontspec_int
+    \tl_set:Ne \l_LuaCJK_tmpa_tl
+      { LuaCJK/fontspec/ \int_use:N \g_LuaCJK_fontspec_int }
+    \exp_args:NV \LuaCJK_set_family_with_options:nnnn
+      \l_LuaCJK_tmpa_tl {#1} {#2} { \NoValue }
+    \exp_args:NV \LuaCJK_switch_family:n \l_LuaCJK_tmpa_tl
     \tex_ignorespaces:D
   }
 %    \end{macrocode}
@@ -442,34 +429,34 @@
 \cs_new_protected:Npn \lishu { } { \CJKfamily { zhli   } }
 \cs_new_protected:Npn \youyuan { } { \CJKfamily { zhyou  } }
 \AddToHook { cmd/rmfamily/after }
-  { \exp_args:NV \luacjk_switch_family:n \CJKrmdefault }
+  { \exp_args:NV \LuaCJK_switch_family:n \CJKrmdefault }
 \AddToHook { cmd/sffamily/after }
-  { \exp_args:NV \luacjk_switch_family:n \CJKsfdefault }
+  { \exp_args:NV \LuaCJK_switch_family:n \CJKsfdefault }
 \AddToHook { cmd/ttfamily/after }
-  { \exp_args:NV \luacjk_switch_family:n \CJKttdefault }
+  { \exp_args:NV \LuaCJK_switch_family:n \CJKttdefault }
 %    \end{macrocode}
 %
 % \begin{macrocode}
 \group_begin:
 \char_set_catcode_space:n { 32 }
 \directlua{
-  local f = kpse.find_file("luacjk.lua")
+  local f = kpse.find_file("LuaCJK.lua")
   if f then
     dofile(f)
   else
-    tex.error("LuaCJK: cannot find luacjk.lua")
+    tex.error("LuaCJK: cannot find LuaCJK.lua")
   end
 }
 \group_end:
 \directlua{
-  luacjk.attr_font = \int_use:N \c_luacjk_font_attr_int
-  luacjk.attr_cjk_space = \int_use:N \c_luacjk_cjk_space_attr_int
-  luacjk.attr_xecglue = \int_use:N \c_luacjk_xecglue_attr_int
+  LuaCJK.attr_font = \int_use:N \c_LuaCJK_font_attr_int
+  LuaCJK.attr_cjk_space = \int_use:N \c_LuaCJK_cjk_space_attr_int
+  LuaCJK.attr_xecglue = \int_use:N \c_LuaCJK_xecglue_attr_int
 }
 \AtBeginDocument
   {
-    \luacjk_update_font:
-    \g_luacjk_font_attr = \g_luacjk_fontid_int
+    \LuaCJK_update_font:
+    \g_LuaCJK_font_attr = \g_LuaCJK_fontid_int
   }
 %    \end{macrocode}
 %
@@ -479,15 +466,15 @@
 %
 % \begin{macrocode}
 %<*lua>
--- luacjk.lua
+-- LuaCJK.lua
 -- Copyright (C) 2026 by Mingyu Xia <myhsia@outlook.com>
 -- This work may be distributed and/or modified under the conditions of the
 -- LaTeX Project Public License, version 1.3c or later.
 -- LuaCJK node processing.
 
-luacjk = luacjk or {}
+LuaCJK = LuaCJK or {}
 
-local M = luacjk
+local M = LuaCJK
 local GLYPH = node.id("glyph")
 local GLUE = node.id("glue")
 local HLIST = node.id("hlist")
@@ -610,9 +597,9 @@ local function spacing (head)
         local prev_cjk = is_cjk(prev.char)
         local name = nil
         if prev_cjk and cur_cjk then
-          name = "l_luacjk_ccglue_skip"
+          name = "l_LuaCJK_ccglue_skip"
         elseif prev_cjk or cur_cjk then
-          name = "l_luacjk_ecglue_skip"
+          name = "l_LuaCJK_ecglue_skip"
         end
         if name then
           local g = make_glue(name)
@@ -637,7 +624,7 @@ local function spacing (head)
           local xecglue = M.attr_xecglue
             and (has_attribute(prev, M.attr_xecglue) or 0) ~= 0
           if xecglue then
-            set_glue(prev, "l_luacjk_ecglue_skip")
+            set_glue(prev, "l_LuaCJK_ecglue_skip")
           end
         end
       end
@@ -669,8 +656,8 @@ function M.hpack (head, groupcode, size, packtype, direction, attributelist)
   return process(head)
 end
 
-luatexbase.add_to_callback("pre_linebreak_filter", M.pre_linebreak, "luacjk.spacing")
-luatexbase.add_to_callback("hpack_filter", M.hpack, "luacjk.spacing")
+luatexbase.add_to_callback("pre_linebreak_filter", M.pre_linebreak, "LuaCJK.spacing")
+luatexbase.add_to_callback("hpack_filter", M.hpack, "LuaCJK.spacing")
 %</lua>
 %    \end{macrocode}
 %

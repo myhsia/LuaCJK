@@ -35,12 +35,12 @@
 \typeout{LuaCJK~ctex~shadow~engine~loaded}
 \sys_if_engine_luatex:F
   {
-    \msg_new:nnn { luacjk } { ctex-engine }
+    \msg_new:nnn { LuaCJK } { ctex-engine }
       { The~LuaCJK~ctex~shadow~requires~LuaTeX. }
-    \msg_critical:nn { luacjk } { ctex-engine }
+    \msg_critical:nn { LuaCJK } { ctex-engine }
     \tex_endinput:D
   }
-\RequirePackage { luacjk }
+\RequirePackage { LuaCJK }
 \cs_undefine:N \songti
 \cs_undefine:N \heiti
 \cs_undefine:N \fangsong
@@ -85,17 +85,17 @@
 % \begin{macrocode}
 %<*ctex-engine>
 \skip_new:N \l__ctex_ccglue_skip
-\skip_set_eq:NN \l__ctex_ccglue_skip \l_luacjk_ccglue_skip
+\skip_set_eq:NN \l__ctex_ccglue_skip \l_LuaCJK_ccglue_skip
 \cs_new_protected:Npn \ctex_ltj_set_kanjiskip:N #1
-  { \skip_set_eq:NN \l_luacjk_ccglue_skip #1 }
+  { \skip_set_eq:NN \l_LuaCJK_ccglue_skip #1 }
 \cs_new_protected:Npn \ctex_ltj_set_xkanjiskip:N #1
-  { \skip_set_eq:NN \l_luacjk_ecglue_skip #1 }
+  { \skip_set_eq:NN \l_LuaCJK_ecglue_skip #1 }
 \cs_new_protected:Npn \ctex_update_ccglue:
-  { \skip_set_eq:NN \l_luacjk_ccglue_skip \l__ctex_ccglue_skip }
+  { \skip_set_eq:NN \l_LuaCJK_ccglue_skip \l__ctex_ccglue_skip }
 \prg_new_conditional:Npnn \ctex_if_ccglue_touched: { TF }
   {
     \skip_if_eq:nnTF
-      { \l__ctex_ccglue_skip } { \l_luacjk_ccglue_skip }
+      { \l__ctex_ccglue_skip } { \l_LuaCJK_ccglue_skip }
       { \prg_return_false: } { \prg_return_true: }
   }
 \ctex_at_end:n
@@ -112,19 +112,19 @@
 %
 % \begin{macrocode}
 %<*ctex-engine>
-\skip_set:Nn \l_luacjk_ecglue_skip { .25em plus 1pt minus 1pt }
+\skip_set:Nn \l_LuaCJK_ecglue_skip { .25em plus 1pt minus 1pt }
 \skip_new:N \l__ctex_xkanjiskip_skip
-\skip_set_eq:NN \l__ctex_xkanjiskip_skip \l_luacjk_ecglue_skip
+\skip_set_eq:NN \l__ctex_xkanjiskip_skip \l_LuaCJK_ecglue_skip
 \tl_new:N \l__ctex_xkanjiskip_tl
 \tl_set:Nn \l__ctex_xkanjiskip_tl { .25em plus 1pt minus 1pt }
 \cs_new_protected:Npn \ctex_update_xkanjiskip:
   {
     \skip_if_eq:nnT
-      { \l_luacjk_ecglue_skip } { \l__ctex_xkanjiskip_skip }
+      { \l_LuaCJK_ecglue_skip } { \l__ctex_xkanjiskip_skip }
       {
         \skip_set:Nn \l__ctex_xkanjiskip_skip { \l__ctex_xkanjiskip_tl }
         \skip_set_eq:NN
-          \l_luacjk_ecglue_skip \l__ctex_xkanjiskip_skip
+          \l_LuaCJK_ecglue_skip \l__ctex_xkanjiskip_skip
       }
   }
 \ctex_add_to_selectfont:n { \ctex_update_xkanjiskip: }

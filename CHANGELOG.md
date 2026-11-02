@@ -11,3 +11,4 @@
 - Add basic CJK/CJK and CJK/Latin spacing with `CJKglue`, `CJKecglue`,
   `CJKspace`, and `xCJKecglue`.
 - Document the package with `l3doc` and `docext` under LuaLaTeX.
+- Use the `LuaCJK` spelling for the package and derived files; the l3build/CTAN module stays `luacjk`.

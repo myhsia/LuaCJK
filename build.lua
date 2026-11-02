@@ -20,10 +20,10 @@ description         = "LuaCJK provides Chinese typesetting for LuaLaTeX, inspire
     Configuration: Check, Tag, Pack, Upload     Do NOT Modify if Unnecessary
 --]==========================================================================]--
 packtdszip          = true
-sourcefiles         = {"luacjk.dtx", "luacjk.ins", "luacjk.tex"}
-unpackfiles         = {"luacjk.ins"}
+sourcefiles         = {"LuaCJK.dtx", "LuaCJK.ins", "LuaCJK.tex"}
+unpackfiles         = {"LuaCJK.ins"}
 installfiles        = {"*.sty", "*.lua"}
-typesetfiles        = {"luacjk.tex"}
+typesetfiles        = {"LuaCJK.tex"}
 testfiledir         = "./testfiles"
 testsuppdir         = "./testsupport"
 testdir             = "./build/check"
@@ -39,15 +39,18 @@ cleanfiles          = {
   "*.hd", "*.fls", "*.fdb_latexmk", "*.synctex.gz"
 }
 excludefiles        = {"*~"}
-textfiles           = {"README.md", "LICENSE", "*.lua"}
+textfiles           = {"README.md", "LICENSE"}
+tdslocations        = {
+  "tex/luatex/luacjk/LuaCJK.lua"
+}
 
 --[================== "Hacks" to `l3build` | Do not Modify ==================]--
 function update_tag(file, content, tagname, tagdate)
   tagname = version
   tagdate = date
-  if string.match(file, module .. ".dtx$") then
+  if string.match(file, "LuaCJK.dtx$") then
     content = string.gsub(content,
-      "(%%<package>\\GetIdInfo%s+%$Id:%s+" .. module .. "%.dtx%s+)[^%$]*(%$)",
+      "(%%<package>\\GetIdInfo%s+%$Id:%s+LuaCJK%.dtx%s+)[^%$]*(%$)",
       "%1" .. tagname .. " " .. tagdate .. " " ..
         maintainid .. "<" .. email .. ">%2")
   end

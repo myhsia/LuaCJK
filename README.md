@@ -10,12 +10,12 @@ mathematics, and the decoration layer are planned for later releases.
 ## Loading
 
 ```tex
-\usepackage{luacjk}
+\usepackage{LuaCJK}
 \setCJKmainfont{FandolSong-Regular.otf}
 ```
 
-LuaCJK requires LuaLaTeX. It must not be loaded together with `luatexja`,
-`luatex-cn`, or `xeCJK`.
+LuaCJK requires LuaLaTeX. It must not be loaded together with `luatexja`
+or `xeCJK`.
 
 ## License
 
