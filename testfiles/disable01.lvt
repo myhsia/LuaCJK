@@ -1,0 +1,107 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKglue=10pt, CJKecglue=5pt}
+
+\def\probe{%
+  \directlua{
+    local function walk(n)
+      while n do
+        if n.id == node.id("glyph") then
+          local f = font.getfont(n.font)
+          texio.write_nl("term and log",
+            "GLYPH " .. tostring(n.char) .. " " ..
+            tostring(f and (f.fullname or f.name) or "?"))
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          walk(n.head)
+        end
+        n = n.next
+      end
+    end
+    walk(tex.box[0])
+  }%
+}
+
+\def\penalties{%
+  \directlua{
+    local n = tex.box[0].head
+    local c = 0
+    while n do
+      if n.id == node.id("penalty") and n.penalty >= 10000 then
+        c = c + 1
+      elseif n.id == node.id("hlist") then
+        local m = n.head
+        while m do
+          if m.id == node.id("penalty") and m.penalty >= 10000 then
+            c = c + 1
+          end
+          m = m.next
+        end
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "PENALTIES " .. tostring(c))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{adjustments on by default}{
+  \setbox0=\hbox{中中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{LuaCJKdisable drops the CJK glue}{
+  \LuaCJKdisable
+  \setbox0=\hbox{中中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{LuaCJKdisable keeps the CJK font}{
+  \setbox0=\hbox{中}
+  \probe
+}
+
+\TEST{LuaCJKenable restores the adjustments}{
+  \LuaCJKenable
+  \setbox0=\hbox{中中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{the switch is local to the group}{
+  \begingroup
+    \LuaCJKdisable
+    \setbox0=\hbox{中中}
+    \TYPE{inside: \the\wd0}
+  \endgroup
+  \setbox2=\hbox{中中}
+  \TYPE{outside: \the\wd2}
+}
+
+\TEST{LuaCJKdisable skips punctuation compression}{
+  \begingroup
+    \LuaCJKdisable
+    \setbox0=\hbox{字，，字}
+    \TYPE{disabled: \the\wd0}
+  \endgroup
+  \setbox2=\hbox{字，，字}
+  \TYPE{enabled: \the\wd2}
+}
+
+\TEST{LuaCJKdisable skips kinsoku penalties}{
+  \begingroup
+    \LuaCJKdisable
+    \setbox0=\hbox{字」。}
+    \penalties
+  \endgroup
+  \setbox2=\hbox{字」。}
+  \TYPE{enabled width: \the\wd2}
+}
+
+\END
+
+\end{document}

@@ -29,3 +29,6 @@
   raising an error.
 - Use the public LaTeX3 Lua interfaces (`\lua_now:e`, `\lua_escape:e`,
   `\lua_load_module:n`) instead of `\directlua` and `kpse.findfile`.
+- Add `\LuaCJKdisable` and `\LuaCJKenable` to suspend the typographic
+  adjustments while keeping CJK font selection.
+- Split the Lua code into `LuaCJK.lua` (entry point) and `LuaCJK-core.lua`.

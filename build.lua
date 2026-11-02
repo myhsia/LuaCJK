@@ -41,7 +41,8 @@ cleanfiles          = {
 excludefiles        = {"*~"}
 textfiles           = {"README.md", "LICENSE"}
 tdslocations        = {
-  "tex/luatex/luacjk/LuaCJK.lua"
+  "tex/luatex/luacjk/LuaCJK.lua",
+  "tex/luatex/luacjk/LuaCJK-core.lua"
 }
 
 --[================== "Hacks" to `l3build` | Do not Modify ==================]--

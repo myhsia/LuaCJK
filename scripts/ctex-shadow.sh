@@ -40,7 +40,8 @@ if ! (cd "$stage" &&
   exit 1
 fi
 
-cp build/unpacked/LuaCJK.sty build/unpacked/LuaCJK.lua "$run/"
+cp build/unpacked/LuaCJK.sty "$run/"
+cp build/unpacked/*.lua "$run/"
 cp "$stage/ctex-engine-luatex.def" "$run/"
 cp test/ctex/ctex-smoke.tex "$run/"
 
