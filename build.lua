@@ -30,8 +30,8 @@ testdir             = "./build/check"
 checkengines        = {"luatex"}
 stdengine           = "luatex"
 checkruns           = 2
-typesetexe          = "lualatex"
-typesetruns         = 3
+typesetexe          = "latexmk -pdflua"
+typesetruns         = 1
 typesetwarnings     = false
 cleanfiles          = {
   "*.log", "*.pdf", "*.zip", "*.codemo.vrb", "*.out",
@@ -52,4 +52,23 @@ function update_tag(file, content, tagname, tagdate)
         maintainid .. "<" .. email .. ">%2")
   end
   return content
+end
+
+-- `l3build` normally appends `\input <file>` to `typesetexe`.  `latexmk`
+-- expects a file name, so run it on the driver file directly and give it the
+-- l3doc index style.  The Windows branch follows `docext`'s build script.
+function tex(file,dir,cmd)
+  dir = dir or "."
+  cmd = cmd or typesetexe
+  if os.getenv("WINDIR") ~= nil or os.getenv("COMSPEC") ~= nil then
+    upretex_aux = "-usepretex=\"" .. typesetcmds .. "\""
+    makeidx_aux = "-e \"$makeindex=q/makeindex -s " .. indexstyle .. " %O %S/\""
+    sandbox_aux = "set \"TEXINPUTS=../local;%TEXINPUTS%;\" &&"
+  else
+    upretex_aux = "-usepretex=\'" .. typesetcmds .. "\'"
+    makeidx_aux = "-e \'$makeindex=q/makeindex -s " .. indexstyle .. " %O %S/\'"
+    sandbox_aux = "TEXINPUTS=\"../local:$(kpsewhich -var-value=TEXINPUTS):\""
+  end
+  return run(dir, sandbox_aux .. " " .. cmd         .. " " ..
+                  upretex_aux .. " " .. makeidx_aux .. " " .. file)
 end
