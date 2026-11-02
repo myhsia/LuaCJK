@@ -90,7 +90,7 @@
 %
 % \begin{abstract}
 %   \pkg{LuaCJK} provides Chinese typesetting for \LuaLaTeX.  It is inspired
-%   by \pkg{xeCJK}, but uses \LuaTeX{} node callbacks instead of \XeTeX
+%   by \pkg{xeCJK}, but uses \LuaTeX\ node callbacks instead of \XeTeX
 %   character classes.  This manual documents the first development release.
 % \end{abstract}
 %
@@ -106,13 +106,13 @@
 % \cs{setCJKfamilyfont}, \cs{CJKfamily}, and \cs{LuaCJKsetup}.
 %
 % The implementation does not use \XeTeX's inter-character token mechanism.
-% Instead, LuaCJK records the current CJK font in a \LuaTeX{} attribute and
+% Instead, LuaCJK records the current CJK font in a \LuaTeX\ attribute and
 % replaces CJK glyph nodes before line breaking and box packing.
 %
 % \section{Loading}
 %
 % \begin{quote}
-%   \cs{usepackage}\oarg{options}\marg{LuaCJK}
+%   \cs{usepackage}\oarg{options}"{LuaCJK}"
 % \end{quote}
 %
 % LuaCJK requires \LuaLaTeX.  It conflicts with \pkg{luatexja} and
@@ -135,10 +135,10 @@
 %<*example>
 % \fi
 \begin{codemo}
-{\CJKfamily{zhsong} 中文宋体} \quad
-{\CJKfamily{zhhei} 中文黑体} \quad
-{\CJKfamily{zhkai} 中文楷体} \quad
-{\CJKfamily{zhfs} 中文仿宋}
+\CJKfamily{zhsong}中文宋体\quad
+\CJKfamily {zhhei}中文黑体\\
+\CJKfamily {zhkai}中文楷体\quad
+\CJKfamily  {zhfs}中文仿宋
 \end{codemo}
 % \iffalse
 %</example>
@@ -399,6 +399,7 @@ $ x + 中文 $ and 中文
 %<package>\edef \DocFileDate        {\ExplFileDate}
 %<package>\edef \DocFileVersion     {\ExplFileVersion}
 %<package>\edef \DocFileDescription {\ExplFileDescription}
+%<package>\tl_greplace_all:Nnn \DocFileDate { / } { - }
 %    \end{macrocode}
 %
 % \begin{macrocode}
