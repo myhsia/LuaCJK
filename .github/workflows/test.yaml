@@ -49,6 +49,8 @@ jobs:
         uses: zauguin/install-texlive@v4
         with:
           package_file: .github/tl_packages
+      - name: Unpack LuaCJK
+        run: l3build unpack
       - name: Run ctex shadow test
-        run: bash scripts/ctex-shadow.sh
+        run: bash scripts/ctex-shadow.sh --skip-unpack
         shell: bash

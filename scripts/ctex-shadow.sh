@@ -7,13 +7,24 @@ set -euo pipefail
 root=$(cd "$(dirname "$0")/.." && pwd)
 cd "$root"
 
-echo "== unpacking LuaCJK =="
-if [ "${OS:-}" = "Windows_NT" ]; then
-  l3build_cmd=l3build.bat
-else
-  l3build_cmd=l3build
+skip_unpack=0
+if [ "${1:-}" = "--skip-unpack" ]; then
+  skip_unpack=1
 fi
-"$l3build_cmd" unpack >/dev/null
+
+if [ "$skip_unpack" -eq 0 ]; then
+  echo "== unpacking LuaCJK =="
+  if command -v l3build >/dev/null 2>&1; then
+    l3build unpack >/dev/null
+  elif command -v l3build.bat >/dev/null 2>&1; then
+    l3build.bat unpack >/dev/null
+  elif command -v l3build.exe >/dev/null 2>&1; then
+    l3build.exe unpack >/dev/null
+  else
+    echo "l3build not found; run 'l3build unpack' first and use --skip-unpack" >&2
+    exit 1
+  fi
+fi
 
 stage="$root/build/ctex-shadow"
 run="$root/build/ctex-shadow-run"
