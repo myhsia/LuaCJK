@@ -403,6 +403,24 @@ $ x + 中文 $ and 中文
 %   with |PunctStyle = plain|.
 % \end{keyval}
 %
+% \begin{function}{\LuaCJKsetwidth}
+%   \begin{syntax}
+%     \tn{LuaCJKsetwidth} \marg{punctuation list} \marg{length}
+%   \end{syntax}
+%   Give the listed punctuation marks a fixed advance, overriding the
+%   selected \texttt{PunctStyle}.  A leading \texttt{*} is accepted for
+%   compatibility with \pkg{xeCJK}, where it sets the width used at the
+%   start or end of a line; that case is not implemented and warns once.
+% \end{function}
+%
+% \begin{function}{\LuaCJKsetkern}
+%   \begin{syntax}
+%     \tn{LuaCJKsetkern} \marg{before} \marg{after} \marg{length}
+%   \end{syntax}
+%   Set the gap between two adjacent punctuation marks, overriding the
+%   style.  Only the first character of each argument is used.
+% \end{function}
+%
 % \begin{function}{\LuaCJKDeclarePunctStyle}
 %   \begin{syntax}
 %     \tn{LuaCJKDeclarePunctStyle} \marg{name} \marg{key-value list}
@@ -623,6 +641,58 @@ $ x + 中文 $ and 中文
       {
         \msg_warning:nnn { LuaCJK } { punct-style-unknown } {#1}
         \tl_set:Nn \l_LuaCJK_punct_style_tl { plain }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\LuaCJKsetwidth}
+%   Give specific punctuation marks a fixed advance, overriding the
+%   selected style.  The star form of \pkg{xeCJK}, which sets the width used
+%   at the start or end of a line, has no counterpart yet and only warns.
+%   \begin{variable}[internal]{\l_LuaCJK_bound_width_warned_bool}
+%     Guards the one-time warning for the star form.
+%    \begin{macrocode}
+\bool_new:N \l_LuaCJK_bound_width_warned_bool
+\msg_new:nnn { LuaCJK } { bound-width-unsupported }
+  {
+    The~star~form~of~\token_to_str:N \LuaCJKsetwidth,~which~sets~the~width~
+    at~the~start~or~end~of~a~line,~is~not~implemented.\\
+    The~width~is~applied~to~every~position~instead.
+  }
+%    \end{macrocode}
+%   \end{variable}
+%    \begin{macrocode}
+\NewDocumentCommand \LuaCJKsetwidth { s m m }
+  {
+    \IfBooleanT {#1}
+      {
+        \bool_if:NF \l_LuaCJK_bound_width_warned_bool
+          {
+            \bool_set_true:N \l_LuaCJK_bound_width_warned_bool
+            \msg_warning:nn { LuaCJK } { bound-width-unsupported }
+          }
+      }
+    \lua_now:e
+      {
+        LuaCJK.set_punct_width
+          ( "\lua_escape:e {#2}" , \dim_to_decimal_in_sp:n {#3} )
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\LuaCJKsetkern}
+%   Set the gap between two adjacent punctuation marks, overriding the
+%   selected style.  Only the first character of each argument is used.
+%    \begin{macrocode}
+\NewDocumentCommand \LuaCJKsetkern { m m m }
+  {
+    \lua_now:e
+      {
+        LuaCJK.set_punct_kern
+          ( "\lua_escape:e {#1}" , "\lua_escape:e {#2}"
+          , \dim_to_decimal_in_sp:n {#3} )
       }
   }
 %    \end{macrocode}
@@ -1377,6 +1447,38 @@ end
 %   Read the style name from the \TeX{} token list and return the matching
 %   table, falling back to \texttt{plain}.
 %    \begin{macrocode}
+M.punct_width = {}
+M.punct_kern = {}
+
+local function first_code (s)
+  for _, code in utf8.codes(s) do
+    return code
+  end
+end
+
+function M.set_punct_width (chars, sp)
+  for _, code in utf8.codes(chars) do
+    M.punct_width[code] = sp
+  end
+end
+
+function M.set_punct_kern (before, after, sp)
+  local a, b = first_code(before), first_code(after)
+  if a and b then
+    M.punct_kern[a] = M.punct_kern[a] or {}
+    M.punct_kern[a][b] = sp
+  end
+end
+
+local function user_width (char)
+  return M.punct_width[char]
+end
+
+local function user_kern (before, after)
+  local row = M.punct_kern[before]
+  return row and row[after]
+end
+
 local function punct_style ()
   local name = token.get_macro("l_LuaCJK_punct_style_tl")
   return M.punct_styles[name] or M.punct_styles.plain
@@ -1717,6 +1819,19 @@ local function insert_boundary_glue (head, prev, prev_end, cur, cur_start)
   local style = punct_style()
   local prev_punct = prev and prev.id == GLYPH and punct_class(prev.char)
   local cur_punct = cur.id == GLYPH and punct_class(cur.char)
+  if prev_punct and cur_punct then
+    local explicit = user_kern(prev.char, cur.char)
+    if explicit then
+      local k = make_kern(explicit, prev)
+      k.next = cur
+      if prev then
+        prev.next = k
+      else
+        head = k
+      end
+      return head
+    end
+  end
   if prev_punct and cur_punct and style.compress_adjacent then
     local exempt = (style.keep_open_close
         and prev_punct == "open" and cur_punct == "close")
@@ -2011,19 +2126,19 @@ end
 local function apply_fixed_widths (head)
   local style = punct_style()
   local ratio = style.fixed_ratio
-  if not ratio then
-    return head
-  end
   local full = style.fixed_full
   local cur = head
   while cur do
-    if cur.id == GLYPH and punct_class(cur.char)
-       and not disabled(cur)
-       and not (full and full[cur.char]) then
-      local f = font.getfont(cur.font)
-      local size = f and f.size or 0
-      if size > 0 then
-        local target = math.floor(ratio * size + 0.5)
+    if cur.id == GLYPH and punct_class(cur.char) and not disabled(cur) then
+      local target = user_width(cur.char)
+      if not target and ratio then
+        local f = font.getfont(cur.font)
+        local size = f and f.size or 0
+        if size > 0 and not (full and full[cur.char]) then
+          target = math.floor(ratio * size + 0.5)
+        end
+      end
+      if target then
         local delta = target - cur.width
         if delta ~= 0 then
           local p = new_node("penalty")

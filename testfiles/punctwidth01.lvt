@@ -1,0 +1,51 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKglue = 0pt, CJKecglue = 0pt}
+
+\begin{document}
+
+\START
+
+\TEST{the default punctuation width}{
+  \setbox0=\hbox{字，字}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{setwidth fixes one punctuation mark}{
+  \LuaCJKsetwidth{，}{0.8em}
+  \setbox0=\hbox{字，字}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{a user width wins over the style}{
+  \LuaCJKsetup{PunctStyle = banjiao}
+  \setbox0=\hbox{字，字}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{an explicit kern sets the gap between two marks}{
+  \LuaCJKsetkern{。}{。}{0.3em}
+  \setbox0=\hbox{字。。字}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{the star form is accepted with a warning}{
+  \LuaCJKsetwidth*{？}{0.7em}
+  \setbox0=\hbox{字？字}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{setwidth takes several characters}{
+  \LuaCJKsetwidth{；：}{0.6em}
+  \setbox0=\hbox{字；字}
+  \setbox2=\hbox{字：字}
+  \TYPE{semicolon: \the\wd0}
+  \TYPE{colon: \the\wd2}
+}
+
+\END
+
+\end{document}

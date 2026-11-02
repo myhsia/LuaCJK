@@ -46,6 +46,8 @@
 - Add `\defaultCJKfontfeatures` and `\addCJKfontfeatures`.
 - Add `\normalspacedchars` so that slashes, backslashes, and hyphens take
   no glue on either side.
+- Add `\LuaCJKsetwidth` and `\LuaCJKsetkern` for per-mark widths and
+  per-pair gaps that override the selected punctuation style.
 - Drop the placeholder glyph that a font without the character leaves behind
   (one `.notdef` glyph in some fonts, a private-use glyph in others).
 - Move the manual driver into `LuaCJK.dtx` and use the same fonts as
