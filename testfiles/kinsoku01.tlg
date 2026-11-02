@@ -1,0 +1,92 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: closing punctuation cannot start a line
+============================================================
+PROBE G P10000 g G P10000 k P10000 g G
+============================================================
+============================================================
+TEST 2: opening punctuation cannot end a line
+============================================================
+PROBE G P10000 g G
+============================================================
+============================================================
+TEST 3: long punctuation is one unit
+============================================================
+PROBE G g G P10000 g G g G
+============================================================
+============================================================
+TEST 4: single comma boundary
+============================================================
+PROBE G P10000 g G g G
+============================================================
+============================================================
+TEST 5: plain style keeps kinsoku
+============================================================
+PROBE G P10000 g G P10000 g G
+============================================================
+============================================================
+TEST 6: PunctKinsoku=false disables penalties
+============================================================
+PROBE G g G k g G
+============================================================
+============================================================
+TEST 7: PunctKinsoku restored after group
+============================================================
+PROBE G P10000 g G P10000 k P10000 g G
+============================================================
+============================================================
+TEST 8: latin boundary is not affected
+============================================================
+PROBE G g G g G
+============================================================
+============================================================
+TEST 9: no line starts with a full stop
+============================================================
+Overfull \hbox (5.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 字字
+\hbox(7.69+1.75)x30.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue(\rightskip) 0.0
+LINES 23383 23383 23383 / LAST 23383 23383 12290
+============================================================
+============================================================
+TEST 10: no line ends with an opening bracket
+============================================================
+Overfull \hbox (5.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 字字
+\hbox(7.69+1.75)x30.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue(\rightskip) 0.0
+Overfull \hbox (10.0pt too wide) in paragraph at lines ...
+\TU/FandolSong-Regular.otf(0)/m/n/10 字字「字 
+\hbox(7.69+1.75)x30.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 「
+.\penalty 10000
+.\glue 0.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0
+LINES 23383 23383 23383 / LAST 23383 23383 23383
+============================================================

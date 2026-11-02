@@ -1,0 +1,133 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKglue=0pt, CJKecglue=0pt}
+
+\def\probe{%
+  \directlua{
+    local n = tex.box[0].head
+    local out = {}
+    while n do
+      if n.id == node.id("penalty") then
+        table.insert(out, "P" .. tostring(n.penalty))
+      elseif n.id == node.id("glue") then
+        table.insert(out, "g")
+      elseif n.id == node.id("kern") then
+        table.insert(out, "k")
+      elseif n.id == node.id("glyph") then
+        table.insert(out, "G")
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "PROBE " .. table.concat(out, " "))
+  }%
+}
+
+\def\linefirsts#1{%
+  \directlua{
+    local function firstchar(n)
+      local m = n.head
+      while m do
+        if m.id == node.id("glyph") then return m.char end
+        m = m.next
+      end
+    end
+    local function lastchar(n)
+      local m = n.head
+      local last
+      while m do
+        if m.id == node.id("glyph") then last = m.char end
+        m = m.next
+      end
+      return last
+    end
+    local out = {}
+    local n = tex.box[#1].head
+    while n do
+      if node.type(n.id) == "hlist" then
+        table.insert(out, tostring(firstchar(n)))
+      end
+      n = n.next
+    end
+    local last = {}
+    n = tex.box[#1].head
+    while n do
+      if node.type(n.id) == "hlist" then
+        table.insert(last, tostring(lastchar(n)))
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log",
+      "LINES " .. table.concat(out, " ") ..
+      " / LAST " .. table.concat(last, " "))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{closing punctuation cannot start a line}{
+  \setbox0=\hbox{字」。}
+  \probe
+}
+
+\TEST{opening punctuation cannot end a line}{
+  \setbox0=\hbox{「字}
+  \probe
+}
+
+\TEST{long punctuation is one unit}{
+  \setbox0=\hbox{字——字}
+  \probe
+}
+
+\TEST{single comma boundary}{
+  \setbox0=\hbox{字，字}
+  \probe
+}
+
+\TEST{plain style keeps kinsoku}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle=plain}
+    \setbox0=\hbox{字」。}
+    \probe
+  \endgroup
+}
+
+\TEST{PunctKinsoku=false disables penalties}{
+  \begingroup
+    \LuaCJKsetup{PunctKinsoku=false}
+    \setbox0=\hbox{字」。}
+    \probe
+  \endgroup
+}
+
+\TEST{PunctKinsoku restored after group}{
+  \begingroup
+    \LuaCJKsetup{PunctKinsoku=false}
+  \endgroup
+  \setbox0=\hbox{字」。}
+  \probe
+}
+
+\TEST{latin boundary is not affected}{
+  \setbox0=\hbox{字A字}
+  \probe
+}
+
+\TEST{no line starts with a full stop}{
+  \setbox0=\vbox{\hsize=3em 字字字字字字字。\par}
+  \linefirsts{0}
+}
+
+\TEST{no line ends with an opening bracket}{
+  \setbox0=\vbox{\hsize=3em 字字字字字字字「字\par}
+  \linefirsts{0}
+}
+
+\END
+
+\end{document}

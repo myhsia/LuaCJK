@@ -4,9 +4,10 @@ LuaCJK is a LuaTeX package for Chinese typesetting, inspired by `xeCJK`.
 
 The project is currently at an early development stage. The first public
 release provides a CJK font family layer, basic CJK/CJK and CJK/Latin
-spacing, and the `quanjiao`/`plain` punctuation styles on top of LuaTeX node
-callbacks. The other punctuation presets, CJK mathematics, and the decoration
-layer are planned for later releases.
+spacing, the `quanjiao`/`plain` punctuation styles, and basic punctuation
+line-breaking prohibitions on top of LuaTeX node callbacks. The other
+punctuation presets, CJK mathematics, and the decoration layer are planned for
+later releases.
 
 ## Loading
 

@@ -198,6 +198,17 @@
 %   a warning and fall back to \texttt{plain}.
 % \end{function}
 %
+% \begin{function}{PunctKinsoku}
+%   \begin{syntax}
+%     PunctKinsoku = \meta{true} \textbar{} \meta{false}
+%   \end{syntax}
+%   Whether to apply line-breaking prohibitions for punctuation.  When it is
+%   on (the default), a closing or middle punctuation cannot start a line, an
+%   opening punctuation cannot end a line, and a run of long punctuation is
+%   kept together.  The prohibitions are independent of \texttt{PunctStyle},
+%   so they stay active with \texttt{PunctStyle=plain}.
+% \end{function}
+%
 % \begin{function}{\LuaCJKDeclarePunctStyle}
 %   \begin{syntax}
 %     \tn{LuaCJKDeclarePunctStyle} \marg{name} \marg{key-value list}
@@ -219,11 +230,12 @@
 
 % \section{Current limitations}
 %
-% The first release covers the font and spacing core, plus the
-% \texttt{quanjiao} and \texttt{plain} punctuation styles.  The other
-% punctuation presets, line-end punctuation handling, CJK mathematics,
-% fallback fonts, alternate fonts, the decoration layer, and a \pkg{ctex}
-% backend are not yet implemented.
+% The first release covers the font and spacing core, the
+% \texttt{quanjiao} and \texttt{plain} punctuation styles, and the basic
+% line-breaking prohibitions for punctuation.  The other punctuation presets,
+% hanging punctuation and line-end compression, CJK mathematics, fallback
+% fonts, alternate fonts, the decoration layer, and a \pkg{ctex} backend are
+% not yet implemented.
 %
 % \end{documentation}
 %
@@ -310,6 +322,8 @@
 
 \tl_new:N \l_LuaCJK_punct_style_tl
 \tl_set:Nn \l_LuaCJK_punct_style_tl { quanjiao }
+\tl_new:N \l_LuaCJK_punct_kinsoku_tl
+\tl_set:Nn \l_LuaCJK_punct_kinsoku_tl { 1 }
 \prop_new:N \g_LuaCJK_punct_style_prop
 \prop_gput:Nnn \g_LuaCJK_punct_style_prop { quanjiao } { }
 \prop_gput:Nnn \g_LuaCJK_punct_style_prop { plain } { }
@@ -376,6 +390,10 @@
     xCJKecglue .initial:n = { false },
     PunctStyle .code:n = { \LuaCJK_set_punct_style:n {#1} },
     PunctStyle .default:n = { quanjiao },
+    PunctKinsoku .choice:,
+    PunctKinsoku / true  .code:n = { \tl_set:Nn \l_LuaCJK_punct_kinsoku_tl { 1 } },
+    PunctKinsoku / false .code:n = { \tl_set:Nn \l_LuaCJK_punct_kinsoku_tl { 0 } },
+    PunctKinsoku .default:n = { true },
   }
 \NewDocumentCommand \LuaCJKsetup { m }
   { \keys_set:nn { LuaCJK / options } {#1} }
@@ -639,6 +657,10 @@ end
 local function punct_style ()
   local name = token.get_macro("l_LuaCJK_punct_style_tl")
   return M.punct_styles[name] or M.punct_styles.plain
+end
+
+local function kinsoku_enabled ()
+  return token.get_macro("l_LuaCJK_punct_kinsoku_tl") == "1"
 end
 
 local function copy_glyph (n, fid)
@@ -919,9 +941,99 @@ local function spacing (head)
   return head
 end
 
+-- Line-breaking prohibitions (kinsoku).
+--
+-- TeX may break at glue and at kern.  Both are the places we insert our own
+-- spacing nodes, so after building the list we walk it once more and put a
+-- penalty 10000 in front of every break opportunity that must not be used.
+local function glyph_class (n)
+  if n and n.id == GLYPH then
+    return punct_class(n.char)
+  end
+  return nil
+end
+
+local function next_visible (n)
+  while n do
+    if n.id == GLYPH then
+      return n
+    elseif n.id == HLIST or n.id == VLIST then
+      if first_visible_class(n.head) then
+        return nil
+      end
+    elseif n.id == PENALTY or n.id == DISC then
+      return nil
+    end
+    n = n.next
+  end
+  return nil
+end
+
+local function forbids_break (prev_punct, next_punct)
+  -- A closing or middle punctuation must not start a line.
+  if next_punct == "close" or next_punct == "middle" then
+    return true
+  end
+  -- An opening punctuation must not end a line.
+  if prev_punct == "open" then
+    return true
+  end
+  -- Long punctuation is one unit: no break inside a run.
+  if prev_punct == next_punct
+     and (prev_punct == "dash" or prev_punct == "ellipsis") then
+    return true
+  end
+  return false
+end
+
+local function is_break_point (n)
+  if n.id == GLUE then
+    return is_inserted(n) or n.subtype == SPACESKIP
+  elseif n.id == KERN then
+    return is_inserted(n)
+  end
+  return false
+end
+
+local function apply_kinsoku (head)
+  if not kinsoku_enabled() then
+    return head
+  end
+  local prev = nil
+  local last_visible = nil
+  local cur = head
+  while cur do
+    if cur.id == GLYPH then
+      last_visible = cur
+    elseif is_break_point(cur) and last_visible then
+      local nxt = next_visible(cur.next)
+      if nxt and forbids_break(glyph_class(last_visible), glyph_class(nxt)) then
+        if not (prev and prev.id == PENALTY and prev.penalty >= 10000) then
+          local p = new_node("penalty")
+          p.penalty = 10000
+          if M.attr_inserted then
+            set_attribute(p, M.attr_inserted, 1)
+          end
+          p.next = cur
+          if prev then
+            prev.next = p
+          else
+            head = p
+          end
+          cur = p
+        end
+      end
+    end
+    prev = cur
+    cur = cur.next
+  end
+  return head
+end
+
 local function process (head)
   head = rewrite_fonts(head)
   head = spacing(head)
+  head = apply_kinsoku(head)
   return head
 end
 
