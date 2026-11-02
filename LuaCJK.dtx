@@ -315,6 +315,15 @@ LaTeX Project Public License, version 1.3c or later.
 %</example>
 % \fi
 %
+% \begin{function}{\normalspacedchars}
+%   \begin{syntax}
+%     \tn{normalspacedchars} \marg{character list}
+%   \end{syntax}
+%   The listed characters get no glue on either side, so that a hyphen or a
+%   slash inside Latin text does not pull the surrounding text apart.  The
+%   initial list is |/|, |\|, and |-|.  The setting is global.
+% \end{function}
+%
 % \section{Suspending the adjustments}
 %
 % \begin{function}{\LuaCJKdisable, \LuaCJKenable}
@@ -1104,6 +1113,39 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
+% \subsection{Characters without CJK/Latin glue}
+%
+% \begin{macro}{\normalspacedchars}
+%   The characters in the list get no glue on either side, which is what one
+%   wants for slashes, backslashes, and hyphens inside Latin text.  The list
+%   is kept on the Lua side as a set of code points, so the setting is
+%   global: a group does not restore the previous list.
+%   \begin{variable}[internal]{\g_LuaCJK_normal_spaced_chars_tl}
+%     The list, initially \texttt{/}, \texttt{\c_backslash_str}, and
+%     \texttt{-}.
+%    \begin{macrocode}
+\tl_new:N \g_LuaCJK_normal_spaced_chars_tl
+\tl_gset:Nn \g_LuaCJK_normal_spaced_chars_tl
+  { / , \c_backslash_str , - }
+%    \end{macrocode}
+%   \end{variable}
+%    \begin{macrocode}
+\cs_new_protected:Npn \LuaCJK_set_normal_spaced_chars:
+  {
+    \lua_now:e
+      {
+        LuaCJK.set_normal_spaced_chars
+          ( "\lua_escape:e { \g_LuaCJK_normal_spaced_chars_tl } " )
+      }
+  }
+\NewDocumentCommand \normalspacedchars { m }
+  {
+    \tl_gset:Nn \g_LuaCJK_normal_spaced_chars_tl {#1}
+    \LuaCJK_set_normal_spaced_chars:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
 % \subsection{Loading the Lua core}
 %
 % The Lua module reads the attribute numbers and installs its callbacks.
@@ -1119,6 +1161,7 @@ $ x + 中文 $ and 中文
     LuaCJK.attr_math_font = \int_use:N \c_LuaCJK_math_font_attr_int ;
     LuaCJK.attr_disabled = \int_use:N \c_LuaCJK_disabled_attr_int
   }
+\LuaCJK_set_normal_spaced_chars:
 \AtBeginDocument
   {
     \LuaCJK_update_font:
@@ -1648,11 +1691,26 @@ end
 %       Insert the CJK--CJK or CJK--Latin glue, or the compression kern for
 %       two adjacent punctuation marks.
 %      \begin{macrocode}
+M.normal_spaced = {}
+
+function M.set_normal_spaced_chars (chars)
+  local set = {}
+  for _, code in utf8.codes(chars) do
+    set[code] = true
+  end
+  M.normal_spaced = set
+end
+
+local function normal_spaced (n)
+  return n and n.id == GLYPH and M.normal_spaced[n.char] == true
+end
+
 local function insert_boundary_glue (head, prev, prev_end, cur, cur_start)
   local name = nil
   if prev_end == "CJK" and cur_start == "CJK" then
     name = "l_LuaCJK_ccglue_skip"
-  elseif prev_end ~= cur_start then
+  elseif prev_end ~= cur_start
+     and not normal_spaced(prev) and not normal_spaced(cur) then
     name = "l_LuaCJK_ecglue_skip"
   end
 

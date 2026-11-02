@@ -44,6 +44,8 @@
 - Only `luatexja` is rejected now; `xeCJK` already refuses to run outside
   XeTeX, so LuaCJK no longer duplicates that check.
 - Add `\defaultCJKfontfeatures` and `\addCJKfontfeatures`.
+- Add `\normalspacedchars` so that slashes, backslashes, and hyphens take
+  no glue on either side.
 - Drop the placeholder glyph that a font without the character leaves behind
   (one `.notdef` glyph in some fonts, a private-use glyph in others).
 - Move the manual driver into `LuaCJK.dtx` and use the same fonts as

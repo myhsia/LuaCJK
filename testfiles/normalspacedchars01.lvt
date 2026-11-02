@@ -1,0 +1,42 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKecglue = 5pt}
+
+\begin{document}
+
+\START
+
+\TEST{a Latin letter gets glue on both sides}{
+  \setbox0=\hbox{中z中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{normalspacedchars suppresses the glue}{
+  \normalspacedchars{z}
+  \setbox0=\hbox{中z中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{the new list replaces the old one}{
+  \setbox0=\hbox{中q中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{an empty list disables the feature}{
+  \normalspacedchars{}
+  \setbox0=\hbox{中z中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{the initial list contains the hyphen}{
+  \normalspacedchars{/, \, , -}
+  \setbox0=\hbox{中-中}
+  \TYPE{width: \the\wd0}
+}
+
+\END
+
+\end{document}
