@@ -435,12 +435,12 @@
 %    \end{macrocode}
 %
 % \begin{macrocode}
-\NewDocumentCommand \songti   { } { \CJKfamily { zhsong } }
-\NewDocumentCommand \heiti    { } { \CJKfamily { zhhei  } }
-\NewDocumentCommand \fangsong { } { \CJKfamily { zhfs   } }
-\NewDocumentCommand \kaishu   { } { \CJKfamily { zhkai  } }
-\NewDocumentCommand \lishu    { } { \CJKfamily { zhli   } }
-\NewDocumentCommand \youyuan  { } { \CJKfamily { zhyou  } }
+\cs_new_protected:Npn \songti { } { \CJKfamily { zhsong } }
+\cs_new_protected:Npn \heiti { } { \CJKfamily { zhhei  } }
+\cs_new_protected:Npn \fangsong { } { \CJKfamily { zhfs   } }
+\cs_new_protected:Npn \kaishu { } { \CJKfamily { zhkai  } }
+\cs_new_protected:Npn \lishu { } { \CJKfamily { zhli   } }
+\cs_new_protected:Npn \youyuan { } { \CJKfamily { zhyou  } }
 \AddToHook { cmd/rmfamily/after }
   { \exp_args:NV \luacjk_switch_family:n \CJKrmdefault }
 \AddToHook { cmd/sffamily/after }

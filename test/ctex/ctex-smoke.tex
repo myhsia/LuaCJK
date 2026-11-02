@@ -1,0 +1,27 @@
+\documentclass[fontset=fandol]{ctexart}
+
+\begin{document}
+
+\typeout{LuaCJK ctex smoke: document started}
+
+中文 English 中文
+
+{\songti 宋体} {\heiti 黑体} {\kaishu 楷体} {\fangsong 仿宋}
+
+\setbox0=\hbox{中}
+\typeout{LuaCJK ctex smoke: width of 中 = \the\wd0}
+
+\directlua{
+  local g = tex.box[0].head
+  while g do
+    if g.id == node.id("glyph") then
+      local f = font.getfont(g.font)
+      texio.write_nl("term and log",
+        "LuaCJK ctex smoke: glyph " .. tostring(g.char) ..
+        " font " .. tostring(f and (f.fullname or f.name) or "?"))
+    end
+    g = g.next
+  end
+}
+
+\end{document}

@@ -1,0 +1,173 @@
+% \iffalse meta-comment
+%
+% File: ctex-engine-luatex.dtx
+% -----------------------------------------------------------------------
+%   Copyright (C) 2026 by Mingyu Xia <myhsia@outlook.com>               *
+% -----------------------------------------------------------------------
+%   This work may be distributed and/or modified under the conditions   *
+%   of the LaTeX Project Public License (LPPL), either version 1.3c of  *
+%   this license or (at your option) any later version.                 *
+%   The latest version of this license is in                            *
+%                                                                       *
+%       http://www.latex-project.org/lppl.txt                           *
+%                                                                       *
+%   and version 1.3c or later is part of all distributions of LaTeX     *
+%   version 2008 or later.                                              *
+%                                                                       *
+%   This work has the LPPL maintenance status `maintained'.             *
+%                                                                       *
+%   The Current Maintainer of this work is Mingyu Xia.                  *
+% -----------------------------------------------------------------------
+%
+%   This is a test-only shadow of ctex's LuaTeX engine file.  It is not
+%   installed into the TeX tree and is not part of the released LuaCJK
+%   package.  The integration test copies it into a temporary directory so
+%   that ctex from CTAN/TeX Live loads LuaCJK instead of LuaTeX-ja.
+%
+% \fi
+%
+% \begin{implementation}
+%
+% \begin{macrocode}
+%<*ctex-engine>
+\ProvidesExplFile{ctex-engine-luatex.def}
+  {2026/11/02}{0.1.0}{LuaCJK test shadow for ctex}
+\typeout{LuaCJK ctex shadow engine loaded}
+\sys_if_engine_luatex:F
+  {
+    \msg_new:nnn { luacjk } { ctex-engine }
+      { The~LuaCJK~ctex~shadow~requires~LuaTeX. }
+    \msg_critical:nn { luacjk } { ctex-engine }
+    \tex_endinput:D
+  }
+\RequirePackage { luacjk }
+\cs_undefine:N \songti
+\cs_undefine:N \heiti
+\cs_undefine:N \fangsong
+\cs_undefine:N \kaishu
+\cs_undefine:N \lishu
+\cs_undefine:N \youyuan
+\cs_undefine:N \yahei
+\cs_undefine:N \pingfang
+%</ctex-engine>
+%    \end{macrocode}
+%
+% \begin{macrocode}
+%<*ctex-engine>
+\cs_new_protected:Npn \ctex_add_to_selectfont:n #1
+  { \AddToHook { selectfont } {#1} }
+\cs_new_eq:NN \ctex_ltj_zero_globaldefs: \prg_do_nothing:
+\cs_new_protected:Npn \CTEX@alchar #1 {#1}
+\cs_new_eq:NN \CTEX@beginallalchar \prg_do_nothing:
+\cs_new_eq:NN \CTEX@endallalchar \prg_do_nothing:
+%</ctex-engine>
+%    \end{macrocode}
+%
+% \begin{macrocode}
+%<*ctex-engine>
+\dim_new:N \ccwd
+\dim_new:N \cht
+\dim_new:N \cdp
+\dim_new:N \cwd
+\cs_new_protected:Npn \ctex_update_ccwd:
+  { \dim_set:Nn \ccwd { \f@size \p@ } }
+\cs_new_protected:Npn \ctex_update_em_unit:
+  { \dim_set:Nn \ccwd { \f@size \p@ } }
+\cs_new_protected:Npn \ctex_update_kanjisize:
+  {
+    \dim_set:Nn \cwd { \ccwd }
+    \dim_set:Nn \cht { \f@size \p@ }
+    \dim_set:Nn \cdp { \z@ }
+  }
+%</ctex-engine>
+%    \end{macrocode}
+%
+% \begin{macrocode}
+%<*ctex-engine>
+\skip_new:N \l__ctex_ccglue_skip
+\skip_set_eq:NN \l__ctex_ccglue_skip \l_luacjk_ccglue_skip
+\cs_new_protected:Npn \ctex_ltj_set_kanjiskip:N #1
+  { \skip_set_eq:NN \l_luacjk_ccglue_skip #1 }
+\cs_new_protected:Npn \ctex_ltj_set_xkanjiskip:N #1
+  { \skip_set_eq:NN \l_luacjk_ecglue_skip #1 }
+\cs_new_protected:Npn \ctex_update_ccglue:
+  { \skip_set_eq:NN \l_luacjk_ccglue_skip \l__ctex_ccglue_skip }
+\prg_new_conditional:Npnn \ctex_if_ccglue_touched: { TF }
+  {
+    \skip_if_eq:nnTF
+      { \l__ctex_ccglue_skip } { \l_luacjk_ccglue_skip }
+      { \prg_return_false: } { \prg_return_true: }
+  }
+\ctex_at_end:n
+  {
+    \cs_set_protected:Npn \__ctex_update_stretch_auxii:
+      {
+        \ctex_if_ccglue_touched:TF
+          { \ctex_update_ccwd: }
+          { \__ctex_update_stretch_auxiii: }
+      }
+  }
+%</ctex-engine>
+%    \end{macrocode}
+%
+% \begin{macrocode}
+%<*ctex-engine>
+\skip_set:Nn \l_luacjk_ecglue_skip { .25em plus 1pt minus 1pt }
+\skip_new:N \l__ctex_xkanjiskip_skip
+\skip_set_eq:NN \l__ctex_xkanjiskip_skip \l_luacjk_ecglue_skip
+\tl_new:N \l__ctex_xkanjiskip_tl
+\tl_set:Nn \l__ctex_xkanjiskip_tl { .25em plus 1pt minus 1pt }
+\cs_new_protected:Npn \ctex_update_xkanjiskip:
+  {
+    \skip_if_eq:nnT
+      { \l_luacjk_ecglue_skip } { \l__ctex_xkanjiskip_skip }
+      {
+        \skip_set:Nn \l__ctex_xkanjiskip_skip { \l__ctex_xkanjiskip_tl }
+        \skip_set_eq:NN
+          \l_luacjk_ecglue_skip \l__ctex_xkanjiskip_skip
+      }
+  }
+\ctex_add_to_selectfont:n { \ctex_update_xkanjiskip: }
+\ctex_add_to_selectfont:n { \ctex_update_kanjisize: }
+%</ctex-engine>
+%    \end{macrocode}
+%
+% \begin{macrocode}
+%<*ctex-engine>
+\cs_new_protected:Npn \ctex_set_jfm:n #1
+  { \tl_set:Nn \l__ctex_jfm_tl {#1} }
+\cs_generate_variant:Nn \ctex_set_jfm:n { o }
+\tl_new:N \l__ctex_jfm_tl
+\ctex_define:n
+  {
+    space .code:n =
+      { \msg_warning:nn { ctex } { invalid-option } }
+  }
+\ctex_define:n
+  {
+    punct .code:n =
+      {
+        \tl_set:Ne \l__ctex_punct_tl {#1}
+        \ctex_set_jfm:o { \l__ctex_punct_tl }
+      },
+    punct .default:n = { quanjiao },
+  }
+\ctex_define:n
+  { experiment .meta:nn = { ctex / experiment } {#1} }
+\keys_define:nn { ctex / experiment }
+  {
+    CJKecglue .code:n =
+      {
+        \tl_set:Nn \l__ctex_xkanjiskip_tl {#1}
+        \skip_set:Nn \l__ctex_xkanjiskip_skip {#1}
+        \ctex_ltj_set_xkanjiskip:N \l__ctex_xkanjiskip_skip
+      },
+    CJKecglue .value_required:n = true
+  }
+\ctex_set_jfm:o { \l__ctex_punct_tl }
+%</ctex-engine>
+%    \end{macrocode}
+%
+% \end{implementation}
+%
+% \endinput
