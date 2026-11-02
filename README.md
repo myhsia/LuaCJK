@@ -24,8 +24,7 @@ later releases.
 \setCJKmainfont{FandolSong-Regular.otf}
 ```
 
-LuaCJK requires LuaLaTeX. It must not be loaded together with `luatexja`
-or `xeCJK`.
+LuaCJK requires LuaLaTeX. It must not be loaded together with `luatexja`.
 
 ## License
 
