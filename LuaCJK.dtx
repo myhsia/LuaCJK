@@ -666,7 +666,11 @@ $ x + 中文 $ and 中文
 %     \item \texttt{depth}, the distance from the baseline to the top of the
 %       rule;
 %     \item \texttt{textformat}, code applied to the text, for example
-%       |textformat=\color{blue}|.
+%       |textformat=\bfseries|;
+%     \item \texttt{format}, the colour of the rule, given as a color name,
+%       for example |format=red|.  \pkg{xeCJK} takes code here
+%       (|format=\color{red}|); a color name is all LuaCJK needs, and the
+%       color affects the rule only, not the text.
 %   \end{itemize}
 %   The default geometry is the one \pkg{lua-ul} uses.  Any other key is
 %   passed to \pkg{lua-ul}, which understands |top|, |bottom|, and |height|;
@@ -817,6 +821,9 @@ $ x + 中文 $ and 中文
 %     thirty geometry keys of \pkg{xeCJK}.
 %   \item \texttt{CJKfilltwosides*} does not compare with the natural width
 %     of its content.
+%   \item The \pkg{LuaCJKfntef} option \texttt{format} takes the colour of
+%     the rule as a name (|format=red|), not as code
+%     (|format=\color{red}|).
 % \end{itemize}
 %
 % \subsection{Not available}
@@ -837,9 +844,9 @@ $ x + 中文 $ and 中文
 %     \texttt{margin-minimum}), which describe \pkg{xeCJK}'s model of
 %     adjusting the side bearings.
 %   \item In \pkg{LuaCJKfntef}: \cs{CJKunderanyline},
-%     \cs{CJKunderanysymbol}, and the \texttt{format}, \texttt{hidden},
-%     \texttt{skip}, \texttt{subtract}, \texttt{symbol}, \texttt{boxdepth},
-%     \texttt{sep}, and \texttt{gap} options.
+%     \cs{CJKunderanysymbol}, and the \texttt{hidden}, \texttt{skip},
+%     \texttt{subtract}, \texttt{symbol}, \texttt{boxdepth}, \texttt{sep},
+%     and \texttt{gap} options.
 %   \item \cs{xeCJKVerbAddon}, \cs{xeCJKOffVerbAddon},
 %     \cs{xeCJKShipoutHook}, and the \pkg{xeCJK-listings} integration.
 %   \item A \pkg{ctex} backend.  The package is not wired into
@@ -3813,6 +3820,7 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
   }
 \RequirePackage { LuaCJK }
 \RequirePackage { lua-ul }
+\RequirePackage { luacolor }
 \RequirePackage { l3draw }
 %    \end{macrocode}
 %
@@ -3832,6 +3840,13 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
 \dim_new:N \l_LuaCJKfntef_depth_dim
 \dim_new:N \l_LuaCJKfntef_thickness_dim
 \tl_new:N \l_LuaCJKfntef_textformat_tl
+\tl_new:N \l_LuaCJKfntef_format_tl
+\dim_new:N \l_LuaCJKfntef_rule_height_dim
+\dim_new:N \l_LuaCJKfntef_rule_depth_dim
+\prop_new:N \g_LuaCJKfntef_format_prop
+\int_new:N \g_LuaCJKfntef_format_int
+\tl_new:N \l_LuaCJKfntef_cache_key_tl
+\tl_new:N \l_LuaCJKfntef_cache_name_tl
 \tl_new:N \l_LuaCJKfntef_pass_tl
 \dim_new:N \l_LuaCJKfntef_top_dim
 \dim_new:N \l_LuaCJKfntef_bottom_dim
@@ -3855,6 +3870,7 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
         \dim_set:Nn \l_LuaCJKfntef_depth_dim {#1}
       },
     textformat .tl_set:N = \l_LuaCJKfntef_textformat_tl,
+    format .tl_set:N = \l_LuaCJKfntef_format_tl,
     unknown .code:n =
       {
         \tl_put_right:Nx \l_LuaCJKfntef_pass_tl
@@ -3870,6 +3886,7 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
   {
     \tl_clear:N \l_LuaCJKfntef_pass_tl
     \tl_clear:N \l_LuaCJKfntef_textformat_tl
+    \tl_clear:N \l_LuaCJKfntef_format_tl
     \bool_set_false:N \l_LuaCJKfntef_depth_given_bool
     \bool_set_false:N \l_LuaCJKfntef_thickness_given_bool
     \keys_set:nn { LuaCJKfntef / underline } {#1}
@@ -3886,7 +3903,50 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
             bottom = \dim_use:N \l_LuaCJKfntef_bottom_dim ,
           }
       }
+    \dim_set:Nn \l_LuaCJKfntef_rule_height_dim
+      { \l_LuaCJKfntef_top_dim }
+    \dim_set:Nn \l_LuaCJKfntef_rule_depth_dim
+      { -\l_LuaCJKfntef_bottom_dim }
   }
+%    \end{macrocode}
+%   \begin{macro}[internal]{\LuaCJKfntef_formatted_underline:}
+%     A coloured rule needs its own underline type: \pkg{luacolor} colours
+%     by attribute, while \tn{color} would emit whatsits in front of
+%     \tn{leaders}.  The type is cached by colour and geometry, so a
+%     document builds one type per distinct combination.
+%    \begin{macrocode}
+\cs_new_protected:Npn \LuaCJKfntef_formatted_underline:
+  {
+    \tl_set:Ne \l_LuaCJKfntef_cache_key_tl
+      {
+        \l_LuaCJKfntef_format_tl
+        | \dim_use:N \l_LuaCJKfntef_rule_height_dim
+        | \dim_use:N \l_LuaCJKfntef_rule_depth_dim
+      }
+    \prop_get:NVNTF \g_LuaCJKfntef_format_prop
+      \l_LuaCJKfntef_cache_key_tl \l_LuaCJKfntef_cache_name_tl
+      { }
+      {
+        \int_gincr:N \g_LuaCJKfntef_format_int
+        \tl_set:Ne \l_LuaCJKfntef_cache_name_tl
+          { LuaCJKfntef/ul/ \int_use:N \g_LuaCJKfntef_format_int }
+        \exp_args:Nc \newunderlinetype { \l_LuaCJKfntef_cache_name_tl }
+          [ \dim_to_decimal_in_sp:n { 1ex } @ \luaul_context_color: ]
+          {
+            \luaul_apply_color:
+            \leaders \vrule
+              height \l_LuaCJKfntef_rule_height_dim
+              depth \l_LuaCJKfntef_rule_depth_dim
+          }
+        \prop_gput:NVV \g_LuaCJKfntef_format_prop
+          \l_LuaCJKfntef_cache_key_tl \l_LuaCJKfntef_cache_name_tl
+      }
+    \luaul_set_color:n { \l_LuaCJKfntef_format_tl }
+    \use:c { \l_LuaCJKfntef_cache_name_tl }
+  }
+%    \end{macrocode}
+%   \end{macro}
+%    \begin{macrocode}
 \cs_new_protected:Npn \LuaCJKfntef_underLine:nn #1#2
   { \underLine [ #1 ] { #2 } }
 \NewDocumentCommand \CJKunderline { s t- o +m }
@@ -3897,12 +3957,16 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
         \LuaCJKfntef_prepare_underline:n {#3}
         \group_begin:
           \l_LuaCJKfntef_textformat_tl
-          \tl_if_empty:NTF \l_LuaCJKfntef_pass_tl
-            { \underLine { #4 } }
+          \tl_if_empty:NTF \l_LuaCJKfntef_format_tl
             {
-              \exp_args:NV \LuaCJKfntef_underLine:nn
-                \l_LuaCJKfntef_pass_tl {#4}
+              \tl_if_empty:NTF \l_LuaCJKfntef_pass_tl
+                { \underLine { #4 } }
+                {
+                  \exp_args:NV \LuaCJKfntef_underLine:nn
+                    \l_LuaCJKfntef_pass_tl {#4}
+                }
             }
+            { \LuaCJKfntef_formatted_underline: #4 }
         \group_end:
       }
   }

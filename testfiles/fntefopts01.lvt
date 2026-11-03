@@ -41,6 +41,29 @@
   \TYPE{survived}
 }
 
+\TEST{format keeps the text width and draws a leader run}{
+  \setbox0=\hbox{\CJKunderline[format = red]{中文 test}}
+  \setbox2=\hbox{中文 test}
+  \TYPE{formatted: \the\wd0}
+  \TYPE{plain: \the\wd2}
+  \directlua{
+    local n = tex.box[0].head
+    local c = 0
+    while n do
+      if n.id == node.id("glue") and n.subtype == 100 then
+        c = c + 1
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "RUNS " .. tostring(c))
+  }
+}
+
+\TEST{format and textformat can be combined}{
+  \setbox0=\hbox{\CJKunderline[format = red, textformat = \bfseries]{中}}
+  \TYPE{width: \the\wd0}
+}
+
 \END
 
 \end{document}

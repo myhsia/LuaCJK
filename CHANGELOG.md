@@ -77,6 +77,8 @@
 - Document a comparison with `xeCJK` that separates what is available with
   the same meaning, what differs, and what is missing.
 - Add `\LuaCJKnobreak` and the `PunctWidth` option.
+- `\CJKunderline` accepts `format` for the colour of the rule; it takes a
+  colour name rather than code.
 - Drop the placeholder glyph that a font without the character leaves behind
   (one `.notdef` glyph in some fonts, a private-use glyph in others).
 - Move the manual driver into `LuaCJK.dtx` and use the same fonts as

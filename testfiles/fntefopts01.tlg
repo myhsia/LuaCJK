@@ -38,3 +38,17 @@ The module 'luaul/generic' does not have a key called 'luaul/generic/no-such-key
 Check that you have spelled the key name correctly.
 survived
 ============================================================
+============================================================
+TEST 7: format keeps the text width and draws a leader run
+============================================================
+formatted: 39.49pt
+plain: 39.49pt
+RUNS 1
+============================================================
+============================================================
+TEST 8: format and textformat can be combined
+============================================================
+LaTeX Font Warning: Font shape `TU/FandolSong-Regular.otf(0)/bx/n' undefined
+(Font)              using `TU/FandolSong-Regular.otf(0)/m/n' instead on input line ....
+width: 10.0pt
+============================================================
