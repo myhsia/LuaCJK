@@ -95,9 +95,13 @@
   (leave out the punctuation).  The decoration boxes of lua-ul are adjusted
   in place: the leaders width is reduced and a matching kern and negative
   glue keep the text where it was.
-- Add `PunctBoundWidth`: only the given advance of a line-final mark stays
-  inside the line and the rest hangs into the margin, replacing the fixed
-  half-em shift of `hangmobanjiao` at that end.
+- Add the fntef options `hidden`, which keeps the dimensions of the text but
+  draws no glyph, and `boxdepth`, which limits the depth the rule adds.
+- Add `\LuaCJKVerbAddon` and `\LuaCJKOffVerbAddon`, which make one CJK
+  character as wide as two spaces of the current monospaced font and forbid
+  breaks between CJK characters, so columns in code listings stay aligned.
+- Add `LatinPunct`, which keeps the shared quotation marks, the middle dot,
+  and the ellipses in the Latin font instead of the CJK font.
 - `\LuaCJKDeclareCharClass` accepts the class names of `xeCJK`
   (`FullLeft`, `FullRight`, `HalfLeft`, `HalfRight`, `NormalSpace`,
   `CJStarter`, `CM`, `Boundary`); `\LuaCJKResetCharClass` also restores the
