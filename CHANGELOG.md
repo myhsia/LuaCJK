@@ -65,6 +65,8 @@
 - Add `\CJKunderdblline`, `\CJKunderwave`, and `\CJKxout` to
   `LuaCJKfntef`; the wave and the slash are drawn with `l3draw` and
   repeated with leaders, so they stay in phase along a line.
+- Add `KaiMingPunct`, `MiddlePunct`, `LongPunct`, and `NoBreakLongPunct`,
+  each with `+` and `-` forms, to edit the punctuation character sets.
 - Drop the placeholder glyph that a font without the character leaves behind
   (one `.notdef` glyph in some fonts, a private-use glyph in others).
 - Move the manual driver into `LuaCJK.dtx` and use the same fonts as

@@ -536,6 +536,26 @@ $ x + 中文 $ and 中文
 %   with |PunctStyle = plain|.
 % \end{keyval}
 %
+% \subsection{Punctuation character sets}
+%
+% These keys replace, extend, or reduce the sets that the punctuation code
+% uses.  Each has a plain form that replaces the set, a \texttt{+} form that
+% adds characters, and a \texttt{-} form that removes them.  Ranges use the
+% same spelling as \cs{LuaCJKDeclareCharClass}.
+%
+% \begin{keyval}
+%   \item[\keys{KaiMingPunct}]\val{char list}: The marks that keep a full
+%   width in the \texttt{kaiming} style.  Initially \texttt{。}、\texttt{．}、
+%   \texttt{？}、\texttt{！}.
+%   \item[\keys{MiddlePunct}]\val{char list}: The marks centred between the
+%   two halves of their box.  A middle mark cannot start a line.
+%   \item[\keys{LongPunct}]\val{char list}: The marks that are never
+%   compressed against each other, such as dashes and ellipses.
+%   \item[\keys{NoBreakLongPunct}]\val{char list}: The long marks that must
+%   not be separated by a line break.  Initially the same as
+%   \texttt{LongPunct}.
+% \end{keyval}
+%
 % \begin{function}{\LuaCJKDeclareCharClass}
 %   \begin{syntax}
 %     \tn{LuaCJKDeclareCharClass} \marg{class} \marg{range list}
@@ -978,6 +998,25 @@ $ x + 中文 $ and 中文
 % \begin{macro}{\LuaCJKResetCharClass}
 %   Drop every override declared so far.
 %    \begin{macrocode}
+% \begin{macro}[internal]{\LuaCJK_set_charset:nnn}
+%   Replace, extend, or reduce one of the punctuation character sets.  The
+%   ranges are converted the same way as for \cs{LuaCJKDeclareCharClass}.
+%    \begin{macrocode}
+\cs_new_protected:Npn \LuaCJK_set_charset:nnn #1#2#3
+  {
+    \LuaCJK_build_ranges:n {#3}
+    \lua_now:e
+      {
+        LuaCJK.set_charset
+          ( "#1" , "#2" , { \l_LuaCJK_ranges_tl } )
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\LuaCJKResetCharClass}
+%   Drop every class and punctuation override declared so far.
+%    \begin{macrocode}
 \NewDocumentCommand \LuaCJKResetCharClass { }
   { \lua_now:n { LuaCJK.reset_classes() } }
 %    \end{macrocode}
@@ -1143,6 +1182,18 @@ $ x + 中文 $ and 中文
     Verb / env+  .code:n = { \tl_set:Nn \l_LuaCJK_verb_mode_tl { env+ } },
     Verb / false .code:n = { \tl_set:Nn \l_LuaCJK_verb_mode_tl { false } },
     Verb .default:n = { true },
+    KaiMingPunct  .code:n = { \LuaCJK_set_charset:nnn { kaiming } { set } {#1} },
+    KaiMingPunct+ .code:n = { \LuaCJK_set_charset:nnn { kaiming } { add } {#1} },
+    KaiMingPunct- .code:n = { \LuaCJK_set_charset:nnn { kaiming } { remove } {#1} },
+    MiddlePunct   .code:n = { \LuaCJK_set_charset:nnn { middle } { set } {#1} },
+    MiddlePunct+  .code:n = { \LuaCJK_set_charset:nnn { middle } { add } {#1} },
+    MiddlePunct-  .code:n = { \LuaCJK_set_charset:nnn { middle } { remove } {#1} },
+    LongPunct     .code:n = { \LuaCJK_set_charset:nnn { long } { set } {#1} },
+    LongPunct+    .code:n = { \LuaCJK_set_charset:nnn { long } { add } {#1} },
+    LongPunct-    .code:n = { \LuaCJK_set_charset:nnn { long } { remove } {#1} },
+    NoBreakLongPunct  .code:n = { \LuaCJK_set_charset:nnn { nobreak } { set } {#1} },
+    NoBreakLongPunct+ .code:n = { \LuaCJK_set_charset:nnn { nobreak } { add } {#1} },
+    NoBreakLongPunct- .code:n = { \LuaCJK_set_charset:nnn { nobreak } { remove } {#1} },
     CheckSingle .choice:,
     CheckSingle / true .code:n = { \tl_set:Nn \l_LuaCJK_check_single_tl { 1 } },
     CheckSingle / false .code:n = { \tl_set:Nn \l_LuaCJK_check_single_tl { 0 } },
@@ -2070,6 +2121,9 @@ local function punct_class (c)
   if override ~= nil then
     return override or nil
   end
+  if M.charsets.middle[c] then
+    return "middle"
+  end
   return PUNCT_CLASS[c]
 end
 
@@ -2109,13 +2163,55 @@ end
 % \begin{variable}[internal]{KAIMING_FULL}
 %   Characters that keep a full em width in the \texttt{kaiming} style.
 %    \begin{macrocode}
--- Characters that keep a full em width in the kaiming style.
-local KAIMING_FULL = {
-  [0xFF0E] = true,  -- ．
-  [0x3002] = true,  -- 。
-  [0xFF1F] = true,  -- ？
-  [0xFF01] = true,  -- ！
+-- The character sets that the punctuation options can replace.
+M.charsets = {
+  kaiming = {
+    [0xFF0E] = true,  -- ．
+    [0x3002] = true,  -- 。
+    [0xFF1F] = true,  -- ？
+    [0xFF01] = true,  -- ！
+  },
+  middle = {},
+  long = {},
+  nobreak = {},
 }
+
+for code, group in pairs(PUNCT_CLASS) do
+  if group == "middle" then
+    M.charsets.middle[code] = true
+    PUNCT_CLASS[code] = nil
+  elseif group == "dash" or group == "ellipsis" then
+    M.charsets.long[code] = true
+  end
+end
+
+for code in pairs(M.charsets.long) do
+  M.charsets.nobreak[code] = true
+end
+
+-- Replace, add to, or remove from one of the sets above.  Ranges arrive as
+-- a list of {first, last} pairs.
+function M.set_charset (kind, mode, ranges)
+  local target = M.charsets[kind]
+  if not target then
+    return
+  end
+  if mode == "set" then
+    target = {}
+    M.charsets[kind] = target
+  end
+  for _, range in ipairs(ranges) do
+    local first = range[1]
+    local last = range[2] or first
+    for code = first, last do
+      if mode == "remove" then
+        target[code] = nil
+      else
+        target[code] = true
+      end
+    end
+  end
+end
 
 %    \end{macrocode}
 % \end{variable}
@@ -2131,7 +2227,7 @@ M.punct_styles = {
   banjiao  = { compress_adjacent = false, ratio = 0.0, keep_open_close = true,
                fixed_ratio = 0.5 },
   kaiming  = { compress_adjacent = false, ratio = 0.0, keep_open_close = true,
-               fixed_ratio = 0.5, fixed_full = KAIMING_FULL },
+               fixed_ratio = 0.5, fixed_full = true },
   CCT      = { compress_adjacent = false, ratio = 0.0, keep_open_close = true,
                fixed_ratio = 0.7 },
   hangmobanjiao = { compress_adjacent = false, ratio = 0.0,
@@ -2587,8 +2683,7 @@ local function insert_boundary_glue (head, prev, prev_end, cur, cur_start)
   if prev_punct and cur_punct and style.compress_adjacent then
     local exempt = (style.keep_open_close
         and prev_punct == "open" and cur_punct == "close")
-      or (prev_punct == cur_punct
-        and (prev_punct == "dash" or prev_punct == "ellipsis"))
+      or (M.charsets.long[prev.char] and M.charsets.long[cur.char])
     if not exempt and prev.width and prev.width > 0 then
       local k = make_kern(-math.floor(style.ratio * prev.width + 0.5), prev)
       local g = name and make_glue(name, prev) or nil
@@ -2750,12 +2845,12 @@ end
 -- spacing nodes, so after building the list we walk it once more and put a
 -- penalty 10000 in front of every break opportunity that must not be used.
 %    \end{macrocode}
-%   \begin{macro}[internal]{glyph_class}
-%     The punctuation group of a glyph.
+%   \begin{macro}[internal]{class_char}
+%     The character of a glyph, or nothing for any other node.
 %    \begin{macrocode}
-local function glyph_class (n)
+local function class_char (n)
   if n and n.id == GLYPH then
-    return punct_class(n.char)
+    return n.char
   end
   return nil
 end
@@ -2788,7 +2883,16 @@ end
 %     opening punctuation must not end one, and a run of dashes or ellipses
 %     stays together.
 %    \begin{macrocode}
-local function forbids_break (prev_punct, next_punct)
+local function class_char (n)
+  if n and n.id == GLYPH then
+    return n.char
+  end
+  return nil
+end
+
+local function forbids_break (prev_char, next_char)
+  local prev_punct = prev_char and punct_class(prev_char)
+  local next_punct = next_char and punct_class(next_char)
   -- A closing or middle punctuation must not start a line.
   if next_punct == "close" or next_punct == "middle" then
     return true
@@ -2798,8 +2902,7 @@ local function forbids_break (prev_punct, next_punct)
     return true
   end
   -- Long punctuation is one unit: no break inside a run.
-  if prev_punct == next_punct
-     and (prev_punct == "dash" or prev_punct == "ellipsis") then
+  if M.charsets.nobreak[prev_char] and M.charsets.nobreak[next_char] then
     return true
   end
   return false
@@ -2836,7 +2939,7 @@ local function apply_kinsoku (head)
     elseif is_break_point(cur) and last_visible then
       local nxt = next_visible(cur.next)
       if nxt and not disabled(last_visible) and not disabled(nxt)
-         and forbids_break(glyph_class(last_visible), glyph_class(nxt)) then
+         and forbids_break(class_char(last_visible), class_char(nxt)) then
         if not (prev and prev.id == PENALTY and prev.penalty >= 10000) then
           local p = new_node("penalty")
           inherit_attributes(p, last_visible)
@@ -2878,7 +2981,7 @@ end
 local function apply_fixed_widths (head)
   local style = punct_style()
   local ratio = style.fixed_ratio
-  local full = style.fixed_full
+  local full = style.fixed_full and M.charsets.kaiming
   local cur = head
   while cur do
     if cur.id == GLYPH and punct_class(cur.char) and not disabled(cur) then
