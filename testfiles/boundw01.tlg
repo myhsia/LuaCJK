@@ -1,0 +1,145 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: without the option nothing hangs
+============================================================
+Overfull \hbox (15.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 。 
+\hbox(7.69+1.75)x30.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 。
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0
+G 23383 xoff=0
+G 23383 xoff=0
+G 12290 xoff=0
+============================================================
+============================================================
+TEST 2: a line-final mark hangs by the difference
+============================================================
+Overfull \hbox (15.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 。 
+\hbox(7.69+1.75)x30.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 。
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0
+G 23383 xoff=0
+G 23383 xoff=0
+G 12290 xoff=327680
+============================================================
+============================================================
+TEST 3: the line width is unchanged
+============================================================
+Overfull \hbox (15.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 。 
+\hbox(7.69+1.75)x30.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 。
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0
+width: 30.0pt
+============================================================
+============================================================
+TEST 4: a mark at the start of a line is not shifted
+============================================================
+Overfull \hbox (5.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 。 字
+\hbox(7.69+1.75)x30.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 。
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue(\rightskip) 0.0
+G 12290 xoff=0
+G 23383 xoff=0
+G 23383 xoff=0
+============================================================
+============================================================
+TEST 5: false turns the option off
+============================================================
+Overfull \hbox (15.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 。 
+\hbox(7.69+1.75)x30.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 。
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0
+G 23383 xoff=0
+G 23383 xoff=0
+G 12290 xoff=0
+============================================================
+============================================================
+TEST 6: the bound width replaces the hanging shift
+============================================================
+Overfull \hbox (15.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 。 
+\hbox(7.69+1.75)x30.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 。
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0
+G 23383 xoff=0
+G 23383 xoff=0
+G 12290 xoff=131070
+============================================================

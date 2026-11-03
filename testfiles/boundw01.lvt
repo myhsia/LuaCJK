@@ -1,0 +1,68 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\def\xoffsets{%
+  \directlua{
+    local function walk(n)
+      while n do
+        if n.id == node.id("glyph") then
+          texio.write_nl("term and log",
+            "G " .. tostring(n.char) .. " xoff=" .. tostring(n.xoffset))
+        elseif n.id == node.id("hlist") then
+          walk(n.head)
+        end
+        n = n.next
+      end
+    end
+    walk(tex.box[0].head)
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{without the option nothing hangs}{
+  \setbox0=\vbox{\hsize = 3em 字字。\par}
+  \xoffsets
+}
+
+\TEST{a line-final mark hangs by the difference}{
+  \LuaCJKsetup{PunctBoundWidth = 0.5em}
+  \setbox0=\vbox{\hsize = 3em 字字。\par}
+  \xoffsets
+}
+
+\TEST{the line width is unchanged}{
+  \setbox0=\vbox{\hsize = 3em 字字。\par}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{a mark at the start of a line is not shifted}{
+  \LuaCJKsetup{PunctBoundWidth = 0.5em}
+  \setbox0=\vbox{\hsize = 3em 。字字\par}
+  \xoffsets
+}
+
+\TEST{false turns the option off}{
+  \begingroup
+    \LuaCJKsetup{PunctBoundWidth = false}
+    \setbox0=\vbox{\hsize = 3em 字字。\par}
+    \xoffsets
+  \endgroup
+}
+
+\TEST{the bound width replaces the hanging shift}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle = hangmobanjiao, PunctBoundWidth = 0.8em}
+    \setbox0=\vbox{\hsize = 3em 字字。\par}
+    \xoffsets
+  \endgroup
+}
+
+\END
+
+\end{document}

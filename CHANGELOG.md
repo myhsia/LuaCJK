@@ -84,6 +84,14 @@
 - Add `\LuaCJKDeclareSubCJKBlock` with `\LuaCJKCancelSubCJKBlock` and
   `\LuaCJKRestoreSubCJKBlock`, so a range of characters can use its own
   font inside a family.
+- Add `PunctBoundWidth`, which leaves only the given advance inside the
+  line and hangs the rest of the mark into the margin; it replaces the fixed
+  half-em shift of `hangmobanjiao`.
+- Add `\LuaCJKShipoutHook`, which runs code through the standard
+  `shipout/before` hook.
+- Add `PunctBoundWidth`: only the given advance of a line-final mark stays
+  inside the line and the rest hangs into the margin, replacing the fixed
+  half-em shift of `hangmobanjiao` at that end.
 - `\LuaCJKDeclareCharClass` accepts the class names of `xeCJK`
   (`FullLeft`, `FullRight`, `HalfLeft`, `HalfRight`, `NormalSpace`,
   `CJStarter`, `CM`, `Boundary`); `\LuaCJKResetCharClass` also restores the
