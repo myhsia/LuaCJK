@@ -87,11 +87,23 @@
 \skip_new:N \l__ctex_ccglue_skip
 \skip_set_eq:NN \l__ctex_ccglue_skip \l_LuaCJK_ccglue_skip
 \cs_new_protected:Npn \ctex_ltj_set_kanjiskip:N #1
-  { \skip_set_eq:NN \l_LuaCJK_ccglue_skip #1 }
+  {
+    \skip_set_eq:NN \l_LuaCJK_ccglue_skip #1
+    \bool_set_true:N \l_LuaCJK_ccglue_touched_bool
+    \LuaCJK_settings_push:
+  }
 \cs_new_protected:Npn \ctex_ltj_set_xkanjiskip:N #1
-  { \skip_set_eq:NN \l_LuaCJK_ecglue_skip #1 }
+  {
+    \skip_set_eq:NN \l_LuaCJK_ecglue_skip #1
+    \bool_set_true:N \l_LuaCJK_ecglue_touched_bool
+    \LuaCJK_settings_push:
+  }
 \cs_new_protected:Npn \ctex_update_ccglue:
-  { \skip_set_eq:NN \l_LuaCJK_ccglue_skip \l__ctex_ccglue_skip }
+  {
+    \skip_set_eq:NN \l_LuaCJK_ccglue_skip \l__ctex_ccglue_skip
+    \bool_set_true:N \l_LuaCJK_ccglue_touched_bool
+    \LuaCJK_settings_push:
+  }
 \prg_new_conditional:Npnn \ctex_if_ccglue_touched: { TF }
   {
     \skip_if_eq:nnTF
@@ -125,6 +137,8 @@
         \skip_set:Nn \l__ctex_xkanjiskip_skip { \l__ctex_xkanjiskip_tl }
         \skip_set_eq:NN
           \l_LuaCJK_ecglue_skip \l__ctex_xkanjiskip_skip
+        \bool_set_true:N \l_LuaCJK_ecglue_touched_bool
+        \LuaCJK_settings_push:
       }
   }
 \ctex_add_to_selectfont:n { \ctex_update_xkanjiskip: }
@@ -179,9 +193,9 @@
 \keys_define:nn { LuaCJK / ctex-shadow / ltj }
   {
     kanjiskip  .code:n =
-      { \skip_set:Nn \l_LuaCJK_ccglue_skip {#1} },
+      { \LuaCJK_set_ccglue:n {#1} },
     xkanjiskip .code:n =
-      { \skip_set:Nn \l_LuaCJK_ecglue_skip {#1} },
+      { \LuaCJK_set_ecglue:n {#1} },
     unknown    .code:n = { },
   }
 \NewDocumentCommand \ltjsetparameter { m }

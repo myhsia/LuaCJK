@@ -1,0 +1,107 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+% Report the first glue of the first line of box #1.
+\def\ccglueof#1{%
+  \directlua{
+    local function firstline (head)
+      local n = head
+      while n do
+        if n.id == node.id("hlist") then
+          return n.head
+        end
+        n = n.next
+      end
+    end
+    local n = firstline(tex.box[#1].head)
+    while n do
+      if n.id == node.id("glue") and n.subtype ~= 100 then
+        texio.write_nl("term and log",
+          "GLUE " .. tostring(n.width) .. " " .. tostring(n.stretch))
+        return
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "GLUE none")
+  }%
+}
+
+% Report the kerns of the first line of box #1.
+\def\kernsof#1{%
+  \directlua{
+    local function firstline (head)
+      local n = head
+      while n do
+        if n.id == node.id("hlist") then
+          return n.head
+        end
+        n = n.next
+      end
+    end
+    local out = {}
+    local count = 0
+    local n = firstline(tex.box[#1].head)
+    while n do
+      if n.id == node.id("kern") then
+        count = count + 1
+        out[count] = tostring(n.kern)
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log",
+      "KERNS " .. tostring(count) .. ": " .. table.concat(out, " "))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{the default CJKglue follows the current size}{
+  \setbox0=\vbox{\hsize=6em 中中\par}
+  \ccglueof{0}
+  \setbox2=\vbox{\hsize=6em {\Large 中中\par}}
+  \ccglueof{2}
+}
+
+\TEST{a group that ends before the paragraph still decides}{
+  \setbox0=\vbox{\hsize=6em
+    \begingroup\LuaCJKsetup{CJKglue=10pt}中中\endgroup\par}
+  \ccglueof{0}
+}
+
+\TEST{outside the group the default is back}{
+  \setbox0=\vbox{\hsize=6em 中中\par}
+  \ccglueof{0}
+}
+
+\TEST{PunctStyle inside such a group applies to that text}{
+  \setbox0=\vbox{\hsize=6em
+    \begingroup\LuaCJKsetup{PunctStyle=plain}字，，字\endgroup\par}
+  \kernsof{0}
+  \setbox2=\vbox{\hsize=6em 字，，字\par}
+  \kernsof{2}
+}
+
+\TEST{PunctWidth inside such a group applies to that text}{
+  \setbox0=\vbox{\hsize=6em
+    \begingroup\LuaCJKsetup{PunctWidth=0.5em}字！字\endgroup\par}
+  \kernsof{0}
+  \setbox2=\vbox{\hsize=6em 字！字\par}
+  \kernsof{2}
+}
+
+\TEST{a CJKglue given by the document is kept as written}{
+  \begingroup
+    \LuaCJKsetup{CJKglue = 0pt plus 0.1\baselineskip}
+    \setbox0=\vbox{\hsize=6em 中中\par}
+    \ccglueof{0}
+  \endgroup
+}
+
+\END
+
+\end{document}

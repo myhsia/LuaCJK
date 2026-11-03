@@ -102,6 +102,15 @@
   breaks between CJK characters, so columns in code listings stay aligned.
 - Add `LatinPunct`, which keeps the shared quotation marks, the middle dot,
   and the ellipses in the Latin font instead of the CJK font.
+- Every setting now travels with the characters: a snapshot of the options is
+  stored once and recorded on the glyphs, so a group that ends before the
+  paragraph does still decides how its own text is set.  This covers
+  `CJKglue`, `CJKecglue`, `PunctStyle`, `PunctKinsoku`, `LatinPunct`,
+  `CJKmath`, `PunctWidth`, `PunctBoundWidth`, `CheckSingle`, `WidowPenalty`,
+  and `AllowBreakBetweenPuncts`.
+- The default `CJKglue` and `CJKecglue` are recomputed at every font
+  selection, so they follow `\small`, `\Large`, and `\zihao` instead of
+  staying at the value of the 10pt size.
 - The underline geometry now uses `depth=0.2em` and `thickness=0.4pt` on
   every path, so `format` works without also giving `thickness` or `depth`.
   `top` and `bottom` still override the computed values.
