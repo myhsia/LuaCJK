@@ -1,0 +1,63 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\def\countpenalties{%
+  \directlua{
+    local n = tex.box[0].head
+    local c = 0
+    while n do
+      if n.id == node.id("penalty") and n.penalty >= 10000 then
+        c = c + 1
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "PENALTIES " .. tostring(c))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{the addon widens one CJK character to two spaces}{
+  \begingroup
+    \ttfamily
+    \LuaCJKVerbAddon
+    \setbox0=\hbox{中中}
+    \TYPE{width: \the\wd0}
+    \countpenalties
+  \endgroup
+}
+
+\TEST{the addon does nothing outside a group}{
+  \LuaCJKVerbAddon
+  \ttfamily
+  \setbox0=\hbox{中中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{OffVerbAddon restores the spacing in the group}{
+  \begingroup
+    \ttfamily
+    \LuaCJKVerbAddon
+    \LuaCJKOffVerbAddon
+    \setbox0=\hbox{中中}
+    \TYPE{width: \the\wd0}
+    \countpenalties
+  \endgroup
+}
+
+\TEST{a proportional font gets no extra space}{
+  \begingroup
+    \LuaCJKVerbAddon
+    \setbox0=\hbox{中中}
+    \TYPE{width: \the\wd0}
+  \endgroup
+}
+
+\END
+
+\end{document}

@@ -501,6 +501,24 @@ LaTeX Project Public License, version 1.3c or later.
 %   marking ends with the current group.
 % \end{function}
 %
+% \begin{function}{\LuaCJKVerbAddon, \LuaCJKOffVerbAddon}
+%   \begin{syntax}
+%     \tn{LuaCJKVerbAddon} \\
+%     \tn{LuaCJKOffVerbAddon}
+%   \end{syntax}
+%   Make one CJK character as wide as two spaces of the current monospaced
+%   font, which keeps columns aligned when a code listing contains CJK text.
+%   The gap is added as \texttt{CJKglue}, so the CJK font itself is not
+%   scaled; a negative gap only raises a warning and adds nothing.  Breaks
+%   between CJK characters are forbidden until the group ends, as in Latin
+%   verbatim text.
+%
+%   The command does nothing at the outermost group level, so it is meant to
+%   be used inside the environment that needs it, for example in the
+%   \texttt{formatcom} option of \pkg{fancyvrb}.
+%   \tn{LuaCJKOffVerbAddon} cancels it again inside the same group.
+% \end{function}
+%
 % \begin{keyval}
 %   \item[\keys{Verb}]\val{\TTF, env, env+}
 %   What to do inside \tn{verb} and the verbatim-like environments
@@ -892,8 +910,8 @@ $ x + 中文 $ and 中文
 %     with their \texttt{+} and \texttt{-} forms.
 %   \item \texttt{CheckSingle} and \texttt{WidowPenalty}.
 %   \item \texttt{PunctWidth} and \texttt{PunctBoundWidth}, and
-%     \cs{xeCJKnobreak} and \cs{xeCJKShipoutHook} as the
-%     \cs{LuaCJK...} spellings.
+%     \cs{xeCJKnobreak}, \cs{xeCJKShipoutHook}, \cs{xeCJKVerbAddon}, and
+%     \cs{xeCJKOffVerbAddon} as the \cs{LuaCJK...} spellings.
 %   \item \cs{xeCJKDeclareSubCJKBlock} with its cancel and restore commands,
 %     as the \cs{LuaCJK...} spellings.
 %   \item \cs{xeCJKDeclareCharClass}, with all the class names of
@@ -945,8 +963,7 @@ $ x + 中文 $ and 中文
 %   \item In \pkg{LuaCJKfntef}: the \texttt{gap}, \texttt{height},
 %     \texttt{symbol}, and \texttt{ulem} options.  \cs{CJKsout} takes a
 %     color instead of the option list of \pkg{xeCJK}.
-%   \item \cs{xeCJKVerbAddon}, \cs{xeCJKOffVerbAddon}, and the
-%     \pkg{xeCJK-listings} integration.
+%   \item The \pkg{xeCJK-listings} integration.
 %   \item A \pkg{ctex} backend.  The package is not wired into
 %     \pkg{ctex} yet; that needs the agreement of the \pkg{ctex}
 %     maintainers.
@@ -1800,6 +1817,104 @@ $ x + 中文 $ and 中文
       \g_LuaCJK_nobreak_attr = 1
       #1
     \group_end:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\LuaCJKVerbAddon, \LuaCJKOffVerbAddon}
+%   Align CJK text in a monospaced context: one CJK character plus the glue
+%   that follows it should take the width of two spaces.  The gap therefore
+%   is twice the space of the current font minus the width of one CJK
+%   character.  The width of the character is measured after switching to
+%   the CJK family in a group, because the current font is the monospaced
+%   one.  A proportional font has no fixed space to align to, so the
+%   command adds nothing there.
+%   \begin{variable}[internal]
+%     {\l_LuaCJK_verb_space_dim, \l_LuaCJK_verb_cjk_dim,
+%      \l_LuaCJK_verb_gap_dim, \l_LuaCJK_verb_saved_ccglue_skip,
+%      \l_LuaCJK_verb_saved_ecglue_skip, \l_LuaCJK_verb_addon_bool,
+%      \l_LuaCJK_verb_box}
+%     The width of two spaces, the width of one CJK character, the gap
+%     between them, the saved glues, whether the addon is on, and the box
+%     used to measure the character.
+%    \begin{macrocode}
+\dim_new:N \l_LuaCJK_verb_space_dim
+\dim_new:N \l_LuaCJK_verb_cjk_dim
+\dim_new:N \l_LuaCJK_verb_gap_dim
+\skip_new:N \l_LuaCJK_verb_saved_ccglue_skip
+\skip_new:N \l_LuaCJK_verb_saved_ecglue_skip
+\bool_new:N \l_LuaCJK_verb_addon_bool
+\box_new:N \l_LuaCJK_verb_box
+%    \end{macrocode}
+%   \end{variable}
+%    \begin{macrocode}
+\msg_new:nnn { LuaCJK } { verb-addon-narrow }
+  {
+    The~monospaced~font~is~too~narrow~for~one~CJK~character.\\
+    `\token_to_str:N \LuaCJKVerbAddon'~adds~no~space.
+  }
+\cs_new_protected:Npn \LuaCJK_verb_addon_compute:
+  {
+    \dim_set:Nn \l_LuaCJK_verb_space_dim
+      { 2 \tex_fontdimen:D 2 \tex_font:D }
+    \dim_compare:nNnTF
+      { \tex_fontdimen:D 2 \tex_font:D }
+      = { \tex_fontcharwd:D \tex_font:D 77 }
+      {
+        \dim_set_eq:NN \l_LuaCJK_verb_cjk_dim \l_LuaCJK_verb_space_dim
+        \group_begin:
+          \prop_get:NVNTF \g_LuaCJK_family_prop \l_LuaCJK_family_tl
+            \l_LuaCJK_tmpa_tl
+            {
+              \exp_args:NV \fontfamily \l_LuaCJK_tmpa_tl
+              \selectfont
+              \hbox_set:Nn \l_LuaCJK_verb_box { 一 }
+              \dim_gset:Nn \l_LuaCJK_verb_cjk_dim
+                { \box_wd:N \l_LuaCJK_verb_box }
+            }
+            { }
+        \group_end:
+        \dim_set:Nn \l_LuaCJK_verb_gap_dim
+          { \l_LuaCJK_verb_space_dim - \l_LuaCJK_verb_cjk_dim }
+        \dim_compare:nNnTF { \l_LuaCJK_verb_gap_dim } < { 0pt }
+          {
+            \msg_warning:nn { LuaCJK } { verb-addon-narrow }
+            \LuaCJKsetup { CJKglue = 0pt, CJKecglue = 0pt }
+          }
+          {
+            \LuaCJKsetup
+              {
+                CJKglue = \dim_use:N \l_LuaCJK_verb_gap_dim ,
+                CJKecglue = \dim_eval:n { \l_LuaCJK_verb_gap_dim / 2 }
+              }
+          }
+      }
+      { \LuaCJKsetup { CJKglue = 0pt, CJKecglue = 0pt } }
+  }
+\NewDocumentCommand \LuaCJKVerbAddon { }
+  {
+    \int_compare:nNnF \tex_currentgrouplevel:D = \c_zero_int
+      {
+        \skip_set_eq:NN \l_LuaCJK_verb_saved_ccglue_skip
+          \l_LuaCJK_ccglue_skip
+        \skip_set_eq:NN \l_LuaCJK_verb_saved_ecglue_skip
+          \l_LuaCJK_ecglue_skip
+        \LuaCJK_verb_addon_compute:
+        \g_LuaCJK_nobreak_attr = 1
+        \bool_set_true:N \l_LuaCJK_verb_addon_bool
+      }
+  }
+\NewDocumentCommand \LuaCJKOffVerbAddon { }
+  {
+    \bool_if:NT \l_LuaCJK_verb_addon_bool
+      {
+        \skip_set_eq:NN \l_LuaCJK_ccglue_skip
+          \l_LuaCJK_verb_saved_ccglue_skip
+        \skip_set_eq:NN \l_LuaCJK_ecglue_skip
+          \l_LuaCJK_verb_saved_ecglue_skip
+        \g_LuaCJK_nobreak_attr = 0
+        \bool_set_false:N \l_LuaCJK_verb_addon_bool
+      }
   }
 %    \end{macrocode}
 % \end{macro}
