@@ -75,3 +75,18 @@ RUNS double 2
 RUNS wave 1
 RUNS xout 1
 ============================================================
+============================================================
+TEST 10: anyline and anysymbol keep the text width
+============================================================
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line ....
+anyline: 62.82pt
+anysymbol: 62.82pt
+plain: 62.82pt
+============================================================
+============================================================
+TEST 11: anyline and anysymbol use continuous leaders
+============================================================
+RUNS anyline 1
+RUNS anysymbol 1
+============================================================

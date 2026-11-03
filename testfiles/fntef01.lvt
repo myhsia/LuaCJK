@@ -114,6 +114,35 @@
   }
 }
 
+\TEST{anyline and anysymbol keep the text width}{
+  \setbox0=\hbox{中\CJKunderanyline{0.5ex}{\rule{1.5pt}{2.5ex}}{文 test 文}中}
+  \setbox2=\hbox{中\CJKunderanysymbol{0.2em}{\tiny$\triangle$}{文 test 文}中}
+  \setbox4=\hbox{中文 test 文中}
+  \TYPE{anyline: \the\wd0}
+  \TYPE{anysymbol: \the\wd2}
+  \TYPE{plain: \the\wd4}
+}
+
+\TEST{anyline and anysymbol use continuous leaders}{
+  \setbox0=\hbox{\CJKunderanyline{0.5ex}{\rule{1.5pt}{2.5ex}}{中文 test 中文}}
+  \setbox2=\hbox{\CJKunderanysymbol{0.2em}{\tiny$\triangle$}{中文 test 中文}}
+  \directlua{
+    local function leaders (box)
+      local n = tex.box[box].head
+      local c = 0
+      while n do
+        if n.id == node.id("glue") and n.subtype == 100 then
+          c = c + 1
+        end
+        n = n.next
+      end
+      return c
+    end
+    texio.write_nl("term and log", "RUNS anyline " .. tostring(leaders(0)))
+    texio.write_nl("term and log", "RUNS anysymbol " .. tostring(leaders(2)))
+  }
+}
+
 \END
 
 \end{document}

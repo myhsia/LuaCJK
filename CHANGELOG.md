@@ -79,6 +79,8 @@
 - Add `\LuaCJKnobreak` and the `PunctWidth` option.
 - `\CJKunderline` accepts `format` for the colour of the rule; it takes a
   colour name rather than code.
+- Add `\CJKunderanyline` and `\CJKunderanysymbol` for arbitrary rules and
+  repeated symbols; the underline type is cached by the arguments.
 - Drop the placeholder glyph that a font without the character leaves behind
   (one `.notdef` glyph in some fonts, a private-use glyph in others).
 - Move the manual driver into `LuaCJK.dtx` and use the same fonts as

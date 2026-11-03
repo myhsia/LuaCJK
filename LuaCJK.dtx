@@ -705,6 +705,25 @@ $ x + 中文 $ and 中文
 %   \tn{xout}.
 % \end{function}
 %
+% \begin{function}{\CJKunderanyline}
+%   \begin{syntax}
+%     \tn{CJKunderanyline} \marg{depth} \marg{object} \marg{text}
+%   \end{syntax}
+%   Put \meta{object} under \meta{text}, lowered by \meta{depth} and
+%   repeated by \tn{leaders}.  The type is cached, so the same arguments
+%   reuse one underline type.  For example, a highlight:
+%   |\CJKunderanyline{0.5ex}{\color{yellow}\rule{1.5pt}{2.5ex}}{...}|.
+% \end{function}
+%
+% \begin{function}{\CJKunderanysymbol}
+%   \begin{syntax}
+%     \tn{CJKunderanysymbol} \oarg{options} \marg{depth} \marg{symbol}
+%       \marg{text}
+%   \end{syntax}
+%   The same, with a gap between two symbols.  The option \texttt{sep}
+%   sets the gap; the initial value is \texttt{0.1em}.
+% \end{function}
+%
 % \begin{function}{\CJKunderdot}
 %   \begin{syntax}
 %     \tn{CJKunderdot} \marg{text}
@@ -843,10 +862,9 @@ $ x + 中文 $ and 中文
 %     \texttt{bound-*}, \texttt{kerning-*}, \texttt{optimize-*},
 %     \texttt{margin-minimum}), which describe \pkg{xeCJK}'s model of
 %     adjusting the side bearings.
-%   \item In \pkg{LuaCJKfntef}: \cs{CJKunderanyline},
-%     \cs{CJKunderanysymbol}, and the \texttt{hidden}, \texttt{skip},
-%     \texttt{subtract}, \texttt{symbol}, \texttt{boxdepth}, \texttt{sep},
-%     and \texttt{gap} options.
+%   \item In \pkg{LuaCJKfntef}: the \texttt{hidden}, \texttt{skip},
+%     \texttt{subtract}, and \texttt{boxdepth} options, and the
+%     \texttt{sep} of \cs{CJKunderanysymbol} applies only to that command.
 %   \item \cs{xeCJKVerbAddon}, \cs{xeCJKOffVerbAddon},
 %     \cs{xeCJKShipoutHook}, and the \pkg{xeCJK-listings} integration.
 %   \item A \pkg{ctex} backend.  The package is not wired into
@@ -4054,6 +4072,106 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
   {
     \group_begin:
       \LuaCJKfntef_slash
+      #4
+    \group_end:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\CJKunderanyline}
+%   Underline with an arbitrary object: the object is put in a box, lowered
+%   by \meta{depth}, and repeated by \tn{leaders}.  The underline type is
+%   cached by the object and the depth, so repeating a command with the same
+%   arguments costs nothing.
+%   \begin{variable}[internal]{\l_LuaCJKfntef_any_code_tl}
+%     The leader code being built.
+%    \begin{macrocode}
+\tl_new:N \l_LuaCJKfntef_any_code_tl
+\dim_new:N \l_LuaCJKfntef_any_depth_dim
+%    \end{macrocode}
+%   \end{variable}
+%    \begin{macrocode}
+\cs_new_protected:Npn \LuaCJKfntef_use_leader_type:nn #1#2
+  {
+    \prop_get:NnNTF \g_LuaCJKfntef_format_prop {#1}
+      \l_LuaCJKfntef_cache_name_tl
+      { }
+      {
+        \int_gincr:N \g_LuaCJKfntef_format_int
+        \tl_set:Ne \l_LuaCJKfntef_cache_name_tl
+          { LuaCJKfntef/ul/ \int_use:N \g_LuaCJKfntef_format_int }
+        \exp_args:Nc \newunderlinetype { \l_LuaCJKfntef_cache_name_tl }
+          [ \int_use:N \g_LuaCJKfntef_format_int ] {#2}
+        \prop_gput:NnV \g_LuaCJKfntef_format_prop {#1}
+          \l_LuaCJKfntef_cache_name_tl
+      }
+    \use:c { \l_LuaCJKfntef_cache_name_tl }
+  }
+\NewDocumentCommand \CJKunderanyline { m m +m }
+  {
+    \group_begin:
+      \dim_set:Nn \l_LuaCJKfntef_any_depth_dim { -#1 }
+      \tl_set:Ne \l_LuaCJKfntef_any_code_tl
+        {
+          \exp_not:N \leaders \exp_not:N \hbox
+            {
+              \exp_not:N \raise \dim_use:N \l_LuaCJKfntef_any_depth_dim
+              \exp_not:N \hbox { \exp_not:n {#2} }
+            }
+        }
+      \tl_set:Ne \l_LuaCJKfntef_cache_key_tl
+        { anyline | #1 | \tl_to_str:n {#2} }
+      \exp_args:NV \LuaCJKfntef_use_leader_type:nn
+        \l_LuaCJKfntef_cache_key_tl \l_LuaCJKfntef_any_code_tl
+      #3
+    \group_end:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\CJKunderanysymbol}
+%   The same idea with a symbol and a gap on each side, which is what one
+%   wants for a repeated mark.  \texttt{sep} sets the gap; the initial value
+%   is \texttt{0.1em}.
+%   \begin{variable}[internal]{\l_LuaCJKfntef_symbol_sep_dim}
+%     The gap between two symbols.
+%    \begin{macrocode}
+\dim_new:N \l_LuaCJKfntef_symbol_sep_dim
+\dim_set:Nn \l_LuaCJKfntef_symbol_sep_dim { .1em }
+%    \end{macrocode}
+%   \end{variable}
+%    \begin{macrocode}
+\keys_define:nn { LuaCJKfntef / anysymbol }
+  {
+    sep .dim_set:N = \l_LuaCJKfntef_symbol_sep_dim,
+    sep .value_required:n = true,
+  }
+\NewDocumentCommand \CJKunderanysymbol { O{} m m +m }
+  {
+    \group_begin:
+      \tl_clear:N \l_LuaCJKfntef_textformat_tl
+      \dim_set:Nn \l_LuaCJKfntef_symbol_sep_dim { .1em }
+      \keys_set:nn { LuaCJKfntef / anysymbol } {#1}
+      \dim_set:Nn \l_LuaCJKfntef_any_depth_dim { -#2 }
+      \tl_set:Ne \l_LuaCJKfntef_any_code_tl
+        {
+          \exp_not:N \leaders \exp_not:N \hbox
+            {
+              \exp_not:N \skip_horizontal:n
+                { \dim_use:N \l_LuaCJKfntef_symbol_sep_dim }
+              \exp_not:N \raise \dim_use:N \l_LuaCJKfntef_any_depth_dim
+              \exp_not:N \hbox { \exp_not:n {#3} }
+              \exp_not:N \skip_horizontal:n
+                { \dim_use:N \l_LuaCJKfntef_symbol_sep_dim }
+            }
+        }
+      \tl_set:Ne \l_LuaCJKfntef_cache_key_tl
+        {
+          anysymbol | \dim_use:N \l_LuaCJKfntef_symbol_sep_dim
+          | #2 | \tl_to_str:n {#3}
+        }
+      \exp_args:NV \LuaCJKfntef_use_leader_type:nn
+        \l_LuaCJKfntef_cache_key_tl \l_LuaCJKfntef_any_code_tl
       #4
     \group_end:
   }
