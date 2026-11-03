@@ -644,9 +644,18 @@ $ x + 中文 $ and 中文
 %   \begin{syntax}
 %     \tn{CJKunderline} \oarg{options} \marg{text}
 %   \end{syntax}
-%   Underline \meta{text}.  The \meta{options} are passed to the \pkg{lua-ul}
-%   underline type, so |top| and |bottom| may be used to tune the position.
-%   A leading \texttt{*} or \texttt{-} is accepted for compatibility with
+%   Underline \meta{text}.  The options are
+%   \begin{itemize}
+%     \item \texttt{thickness}, the thickness of the rule;
+%     \item \texttt{depth}, the distance from the baseline to the top of the
+%       rule;
+%     \item \texttt{textformat}, code applied to the text, for example
+%       |textformat=\color{blue}|.
+%   \end{itemize}
+%   The default geometry is the one \pkg{lua-ul} uses.  Any other key is
+%   passed to \pkg{lua-ul}, which understands |top|, |bottom|, and |height|;
+%   note that \pkg{lua-ul} expects |bottom| to be a negative length.  A
+%   leading \texttt{*} or \texttt{-} is accepted for compatibility with
 %   \pkg{xeCJKfntef} and ignored.
 % \end{function}
 %
@@ -655,7 +664,8 @@ $ x + 中文 $ and 中文
 %     \tn{CJKunderdblline} \oarg{ignored} \marg{text}
 %   \end{syntax}
 %   Put two parallel rules under \meta{text}.  A leading \texttt{*} or
-%   \texttt{-} is accepted and ignored, as for \cs{CJKunderline}.
+%   \texttt{-} is accepted and ignored, as for \cs{CJKunderline}; the
+%   optional argument is accepted and ignored as well.
 % \end{function}
 %
 % \begin{function}{\CJKunderwave}
@@ -3629,14 +3639,94 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
 %    \end{macrocode}
 %
 % \begin{macro}{\CJKunderline}
-%   Underline the argument; the optional argument is passed to
-%   \pkg{lua-ul}.
+%   Underline the argument.  The optional argument takes
+%   \texttt{thickness}, \texttt{depth}, and \texttt{textformat}, and any
+%   other key is passed on to \pkg{lua-ul}, which understands
+%   \texttt{top}, \texttt{bottom}, and \texttt{height}.
+%   \begin{variable}[internal]
+%     {\l_LuaCJKfntef_depth_dim, \l_LuaCJKfntef_thickness_dim,
+%      \l_LuaCJKfntef_textformat_tl, \l_LuaCJKfntef_pass_tl,
+%      \l_LuaCJKfntef_top_dim, \l_LuaCJKfntef_bottom_dim,
+%      \l_LuaCJKfntef_depth_given_bool, \l_LuaCJKfntef_thickness_given_bool}
+%     The requested geometry, the format of the text, the keys that
+%     \pkg{lua-ul} receives, and whether the geometry keys were given.
 %    \begin{macrocode}
+\dim_new:N \l_LuaCJKfntef_depth_dim
+\dim_new:N \l_LuaCJKfntef_thickness_dim
+\tl_new:N \l_LuaCJKfntef_textformat_tl
+\tl_new:N \l_LuaCJKfntef_pass_tl
+\dim_new:N \l_LuaCJKfntef_top_dim
+\dim_new:N \l_LuaCJKfntef_bottom_dim
+\bool_new:N \l_LuaCJKfntef_depth_given_bool
+\bool_new:N \l_LuaCJKfntef_thickness_given_bool
+\dim_set:Nn \l_LuaCJKfntef_depth_dim { .2em }
+\dim_set:Nn \l_LuaCJKfntef_thickness_dim { .4pt }
+%    \end{macrocode}
+%   \end{variable}
+%    \begin{macrocode}
+\keys_define:nn { LuaCJKfntef / underline }
+  {
+    thickness .code:n =
+      {
+        \bool_set_true:N \l_LuaCJKfntef_thickness_given_bool
+        \dim_set:Nn \l_LuaCJKfntef_thickness_dim {#1}
+      },
+    depth .code:n =
+      {
+        \bool_set_true:N \l_LuaCJKfntef_depth_given_bool
+        \dim_set:Nn \l_LuaCJKfntef_depth_dim {#1}
+      },
+    textformat .tl_set:N = \l_LuaCJKfntef_textformat_tl,
+    unknown .code:n =
+      {
+        \tl_put_right:Nx \l_LuaCJKfntef_pass_tl
+          {
+            \l_keys_key_str
+            \tl_if_empty:NF \l_keys_value_tl
+              { = \exp_not:V \l_keys_value_tl }
+            ,
+          }
+      },
+  }
+\cs_new_protected:Npn \LuaCJKfntef_prepare_underline:n #1
+  {
+    \tl_clear:N \l_LuaCJKfntef_pass_tl
+    \tl_clear:N \l_LuaCJKfntef_textformat_tl
+    \bool_set_false:N \l_LuaCJKfntef_depth_given_bool
+    \bool_set_false:N \l_LuaCJKfntef_thickness_given_bool
+    \keys_set:nn { LuaCJKfntef / underline } {#1}
+    \bool_lazy_or:nnT
+      { \l_LuaCJKfntef_depth_given_bool }
+      { \l_LuaCJKfntef_thickness_given_bool }
+      {
+        \dim_set:Nn \l_LuaCJKfntef_top_dim { -\l_LuaCJKfntef_depth_dim }
+        \dim_set:Nn \l_LuaCJKfntef_bottom_dim
+          { -\l_LuaCJKfntef_depth_dim - \l_LuaCJKfntef_thickness_dim }
+        \tl_put_right:Nx \l_LuaCJKfntef_pass_tl
+          {
+            top = \dim_use:N \l_LuaCJKfntef_top_dim ,
+            bottom = \dim_use:N \l_LuaCJKfntef_bottom_dim ,
+          }
+      }
+  }
+\cs_new_protected:Npn \LuaCJKfntef_underLine:nn #1#2
+  { \underLine [ #1 ] { #2 } }
 \NewDocumentCommand \CJKunderline { s t- o +m }
   {
-    \IfValueTF {#3}
-      { \underLine [ #3 ] { #4 } }
+    \tl_if_novalue:nTF {#3}
       { \underLine { #4 } }
+      {
+        \LuaCJKfntef_prepare_underline:n {#3}
+        \group_begin:
+          \l_LuaCJKfntef_textformat_tl
+          \tl_if_empty:NTF \l_LuaCJKfntef_pass_tl
+            { \underLine { #4 } }
+            {
+              \exp_args:NV \LuaCJKfntef_underLine:nn
+                \l_LuaCJKfntef_pass_tl {#4}
+            }
+        \group_end:
+      }
   }
 %    \end{macrocode}
 % \end{macro}

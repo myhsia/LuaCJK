@@ -70,6 +70,8 @@
 - Add `\LuaCJKEditPunctStyle` and `AllowBreakBetweenPuncts`.
 - Add `PunctFamily`, which sets a separate CJK family for the punctuation
   marks.
+- `\CJKunderline` now takes `thickness`, `depth`, and `textformat`, and
+  passes any other key on to `lua-ul`.
 - Drop the placeholder glyph that a font without the character leaves behind
   (one `.notdef` glyph in some fonts, a private-use glyph in others).
 - Move the manual driver into `LuaCJK.dtx` and use the same fonts as

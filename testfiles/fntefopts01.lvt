@@ -1,0 +1,46 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\usepackage{LuaCJKfntef}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\begin{document}
+
+\START
+
+\TEST{the default underline geometry comes from lua-ul}{
+  \setbox0=\hbox{\CJKunderline{中}}
+  \TYPE{depth: \the\dp0}
+}
+
+\TEST{depth and thickness set the geometry}{
+  \setbox0=\hbox{\CJKunderline[depth = 0.3em, thickness = 1pt]{中}}
+  \TYPE{depth: \the\dp0}
+}
+
+\TEST{thickness alone keeps the default depth}{
+  \setbox0=\hbox{\CJKunderline[thickness = 1pt]{中}}
+  \TYPE{depth: \the\dp0}
+}
+
+\TEST{textformat applies to the text, not the line}{
+  \setbox0=\hbox{\CJKunderline{中}}
+  \setbox2=\hbox{\CJKunderline[textformat = \Large]{中}}
+  \TYPE{plain: \the\wd0}
+  \TYPE{large: \the\wd2}
+}
+
+\TEST{other keys are passed to lua-ul}{
+  \setbox0=\hbox{\CJKunderline[top = -1em, bottom = -1.5em]{中}}
+  \TYPE{depth: \the\dp0}
+}
+
+\TEST{an unknown key is reported by lua-ul}{
+  \setbox0=\hbox{\CJKunderline[no-such-key = 1]{中}}
+  \TYPE{survived}
+}
+
+\END
+
+\end{document}
