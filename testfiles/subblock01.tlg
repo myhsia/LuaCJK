@@ -1,0 +1,22 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: a character in the block uses the block font
+============================================================
+PS FandolSong-Regular FandolKai-Regular
+============================================================
+============================================================
+TEST 2: CancelSubCJKBlock turns the block off
+============================================================
+PS FandolSong-Regular FandolSong-Regular
+============================================================
+============================================================
+TEST 3: RestoreSubCJKBlock turns it on again
+============================================================
+PS FandolSong-Regular FandolKai-Regular
+============================================================
+============================================================
+TEST 4: a family without the option keeps the main font
+============================================================
+PS FandolSong-Regular FandolSong-Regular
+============================================================

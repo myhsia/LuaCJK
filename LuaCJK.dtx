@@ -245,6 +245,48 @@ LaTeX Project Public License, version 1.3c or later.
 %   \tn{ttfamily}.
 % \end{variable}
 
+% \subsection{Sub-blocks}
+%
+% One CJK font rarely covers every block of \textsc{Unicode}.  A sub-block
+% gives a range of characters its own font inside a family; the block then
+% becomes an option of the font commands.
+%
+% \begin{function}{\LuaCJKDeclareSubCJKBlock}
+%   \begin{syntax}
+%     \tn{LuaCJKDeclareSubCJKBlock} \marg{block} \marg{range list}
+%   \end{syntax}
+%   Declare \meta{block} with the given ranges, in the same spelling as
+%   \cs{LuaCJKDeclareCharClass}.  The name becomes a font option:
+%   |\setCJKmainfont{SimSun}[ExtB=SimSun-ExtB]|.  A family that does not set
+%   the option leaves those characters in the main font.  Overlapping blocks
+%   are resolved in declaration order.
+% \end{function}
+%
+% \begin{function}{\LuaCJKCancelSubCJKBlock, \LuaCJKRestoreSubCJKBlock}
+%   \begin{syntax}
+%     \tn{LuaCJKCancelSubCJKBlock} \marg{block list} \\
+%     \tn{LuaCJKRestoreSubCJKBlock} \marg{block list}
+%   \end{syntax}
+%   Turn the listed blocks off or on again for the rest of the group.
+%   Because the choice of font is recorded per font identifier, two families
+%   that supply the same font share one setting: the family that selected the
+%   font last decides.
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+\begingroup
+  \LuaCJKDeclareSubCJKBlock{Kana}{3040 -> 30FF}
+  \setCJKmainfont{FandolSong-Regular.otf}[Kana = FandolKai-Regular.otf]
+  中 あ
+\endgroup
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
+%
 % \subsection{Fallback fonts}
 %
 % A CJK font rarely covers every character one needs.  Fallback fonts are
@@ -813,6 +855,8 @@ $ x + 中文 $ and 中文
 %   \item \texttt{CheckSingle} and \texttt{WidowPenalty}.
 %   \item \texttt{PunctWidth} and \cs{xeCJKnobreak}, the latter as
 %     \cs{LuaCJKnobreak}.
+%   \item \cs{xeCJKDeclareSubCJKBlock} with its cancel and restore commands,
+%     as the \cs{LuaCJK...} spellings.
 %   \item \cs{setCJKfallbackfamilyfont} and \texttt{AutoFallBack},
 %     \texttt{LoadFandol}, and \texttt{LocalConfig}.
 % \end{itemize}
@@ -852,8 +896,6 @@ $ x + 中文 $ and 中文
 %     \texttt{PlainEquation}.  They exist so that \pkg{xeCJK} can recognise
 %     \TeX{} constructs while it scans tokens; LuaCJK looks at the finished
 %     node list and needs no hint.
-%   \item \texttt{SubCJKBlock} and its two companions, which give a block of
-%     characters its own font family.
 %   \item \texttt{PunctBoundWidth},
 %     \texttt{RubberPunctSkip}, \texttt{LatinPunct}, \texttt{PoZheHaoLigature},
 %     and \texttt{CheckFullRight}.
@@ -1141,6 +1183,123 @@ $ x + 中文 $ and 中文
       }
   }
 %    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Sub-blocks}
+%
+% A single CJK font rarely covers every block of \textsc{Unicode}.  A
+% sub-block gives a range of characters its own font inside a family, named
+% by an option of the font commands.
+%
+% \begin{macro}{\LuaCJKDeclareSubCJKBlock}
+%    \begin{variable}[internal]
+%      {\g_LuaCJK_block_prop, \g_LuaCJK_block_names_clist}
+%      The ranges of each block, and the declaration order that decides
+%      which block wins when the ranges overlap.
+%     \begin{macrocode}
+\prop_new:N \g_LuaCJK_block_prop
+\clist_new:N \g_LuaCJK_block_names_clist
+\NewDocumentCommand \LuaCJKDeclareSubCJKBlock { m m }
+  {
+    \LuaCJK_build_ranges:n {#2}
+    \prop_gput:NnV \g_LuaCJK_block_prop {#1} \l_LuaCJK_ranges_tl
+    \clist_if_in:NnF \g_LuaCJK_block_names_clist {#1}
+      { \clist_gput_right:Nn \g_LuaCJK_block_names_clist {#1} }
+    \lua_now:e
+      {
+        LuaCJK.declare_block
+          ( "\lua_escape:e {#1}" , { \l_LuaCJK_ranges_tl } )
+      }
+  }
+%     \end{macrocode}
+%    \end{variable}
+% \end{macro}
+%
+% \begin{macro}{\LuaCJKCancelSubCJKBlock, \LuaCJKRestoreSubCJKBlock}
+%    Turn a block off or on again, and refresh the fonts of the current
+%    family so the change takes effect at once.
+%     \begin{macrocode}
+\cs_new_protected:Npn \LuaCJK_set_block_enabled:nn #1#2
+  {
+    \clist_map_inline:nn {#1}
+      {
+        \lua_now:e
+          {
+            LuaCJK.set_block_enabled
+              ( "\lua_escape:e {##1}" , #2 )
+          }
+      }
+    \LuaCJK_update_font:
+  }
+\NewDocumentCommand \LuaCJKCancelSubCJKBlock { m }
+  { \LuaCJK_set_block_enabled:nn {#1} { false } }
+\NewDocumentCommand \LuaCJKRestoreSubCJKBlock { m }
+  { \LuaCJK_set_block_enabled:nn {#1} { true } }
+%     \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[internal]{\LuaCJK_extract_blocks:nn}
+%    Pull the block options out of a family's option list and register one
+%    \pkg{fontspec} family per block font.  The remaining options go into
+%    \cs{l_LuaCJK_features_tl}.
+%    \begin{variable}[internal]
+%      {\g_LuaCJK_family_block_prop, \g_LuaCJK_pending_block_prop,
+%       \l_LuaCJK_features_tl, \l_LuaCJK_block_key_tl,
+%       \l_LuaCJK_option_key_tl, \l_LuaCJK_option_seq}
+%      The block font of each family and block, the blocks found in the
+%      option list being processed, the filtered options, and scratch
+%      variables for splitting one option at the equals sign.
+%     \begin{macrocode}
+\prop_new:N \g_LuaCJK_family_block_prop
+\prop_new:N \g_LuaCJK_pending_block_prop
+\tl_new:N \l_LuaCJK_features_tl
+\tl_new:N \l_LuaCJK_block_key_tl
+\tl_new:N \l_LuaCJK_option_key_tl
+\seq_new:N \l_LuaCJK_option_seq
+\bool_new:N \l_LuaCJK_is_block_bool
+\cs_new_protected:Npn \LuaCJK_block_option:nn #1#2
+  {
+    \tl_set:Nn \l_LuaCJK_option_key_tl {#1}
+    \tl_trim_spaces:N \l_LuaCJK_option_key_tl
+    \bool_set_false:N \l_LuaCJK_is_block_bool
+    \clist_map_inline:Nn \g_LuaCJK_block_names_clist
+      {
+        \str_if_eq:eeT {##1} { \l_LuaCJK_option_key_tl }
+          { \bool_set_true:N \l_LuaCJK_is_block_bool }
+      }
+    \bool_if:NTF \l_LuaCJK_is_block_bool
+      { \prop_gput:NVn \g_LuaCJK_pending_block_prop
+          \l_LuaCJK_option_key_tl {#2} }
+      { \tl_put_right:Nn \l_LuaCJK_features_tl { , ~ #1 = {#2} } }
+  }
+\cs_new_protected:Npn \LuaCJK_block_option:n #1
+  { \tl_put_right:Nn \l_LuaCJK_features_tl { , ~ #1 } }
+\cs_new_protected:Npn \LuaCJK_extract_blocks:nn #1#2
+  {
+    \clist_if_empty:NTF \g_LuaCJK_block_names_clist
+      { \tl_set:Nn \l_LuaCJK_features_tl {#2} }
+      {
+        \tl_clear:N \l_LuaCJK_features_tl
+        \prop_gclear:N \g_LuaCJK_pending_block_prop
+        \keyval_parse:NNn
+          \LuaCJK_block_option:n \LuaCJK_block_option:nn {#2}
+        \LuaCJK_register_block_fonts:n {#1}
+      }
+  }
+\cs_new_protected:Npn \LuaCJK_register_block_fonts:n #1
+  {
+    \prop_map_inline:Nn \g_LuaCJK_pending_block_prop
+      {
+        \group_begin:
+          \fontspec_gset_family:Nnn \l_LuaCJK_tmpa_tl { } {##2}
+          \tl_set:Ne \l_LuaCJK_block_key_tl { #1 | ##1 }
+          \prop_gput:NVV \g_LuaCJK_family_block_prop
+            \l_LuaCJK_block_key_tl \l_LuaCJK_tmpa_tl
+        \group_end:
+      }
+  }
+%     \end{macrocode}
+%    \end{variable}
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKDeclareCharClass}
@@ -1918,6 +2077,7 @@ $ x + 中文 $ and 中文
               }
               { \int_gzero:N \g_LuaCJK_math_fontid_int }
           }
+        \LuaCJK_push_block_fonts:
         \g_LuaCJK_math_font_attr = \g_LuaCJK_math_fontid_int
         \tl_if_empty:NTF \l_LuaCJK_punct_family_tl
           { \g_LuaCJK_punct_font_attr = \c_zero_int }
@@ -1938,9 +2098,50 @@ $ x + 中文 $ and 中文
         \bool_set_false:N \l_LuaCJK_selectfont_bool
       }
   }
-\AddToHook { selectfont } { \LuaCJK_update_font: }
 %    \end{macrocode}
 % \end{macro}
+%
+% \begin{macro}[internal]{\LuaCJK_push_block_fonts:}
+%   Resolve the block fonts of the current family at the current size and
+%   hand them to Lua, keyed by the font identifier of the family.  Font
+%   identifiers depend on the size, so this runs again whenever a font is
+%   selected.
+%    \begin{macrocode}
+\int_new:N \g_LuaCJK_block_fontid_int
+\cs_new_protected:Npn \LuaCJK_push_block_fonts:
+  {
+    \int_compare:nNnT { \g_LuaCJK_fontid_int } > { 0 }
+      {
+        \clist_map_inline:Nn \g_LuaCJK_block_names_clist
+          {
+            \tl_set:Ne \l_LuaCJK_block_key_tl { \l_LuaCJK_family_tl | ##1 }
+            \int_gzero:N \g_LuaCJK_block_fontid_int
+            \prop_get:NVNT \g_LuaCJK_family_block_prop
+              \l_LuaCJK_block_key_tl \l_LuaCJK_tmpa_tl
+              {
+                \group_begin:
+                  \exp_args:NV \fontfamily \l_LuaCJK_tmpa_tl
+                  \selectfont
+                  \int_gset:Nn \g_LuaCJK_block_fontid_int
+                    { \tex_fontid:D \tex_font:D }
+                \group_end:
+              }
+            \lua_now:e
+              {
+                LuaCJK.set_block_font
+                  ( \int_use:N \g_LuaCJK_fontid_int ,
+                    "\lua_escape:e {##1}" ,
+                    \int_use:N \g_LuaCJK_block_fontid_int )
+              }
+          }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macrocode}
+\AddToHook { selectfont } { \LuaCJK_update_font: }
+%    \end{macrocode}
 %
 % \subsection{Font selection commands}
 %
@@ -2053,10 +2254,16 @@ $ x + 中文 $ and 中文
     \tl_if_novalue:nTF {#2}
       {
         \tl_if_novalue:nTF {#4}
-          { \LuaCJK_set_family:nnn {#1} { } {#3} }
-          { \LuaCJK_set_family:nnn {#1} {#4} {#3} }
+          { \LuaCJK_set_family_with_options_aux:nnn {#1} { } {#3} }
+          { \LuaCJK_set_family_with_options_aux:nnn {#1} {#4} {#3} }
       }
-      { \LuaCJK_set_family:nnn {#1} {#2} {#3} }
+      { \LuaCJK_set_family_with_options_aux:nnn {#1} {#2} {#3} }
+  }
+\cs_generate_variant:Nn \LuaCJK_set_family:nnn { nVn }
+\cs_new_protected:Npn \LuaCJK_set_family_with_options_aux:nnn #1#2#3
+  {
+    \LuaCJK_extract_blocks:nn {#1} {#2}
+    \LuaCJK_set_family:nVn {#1} \l_LuaCJK_features_tl {#3}
   }
 %    \end{macrocode}
 %   \end{macro}
@@ -2680,6 +2887,55 @@ end
 %   \begin{macro}[internal]{copy_glyph}
 %     Copy a glyph node, changing only its font.
 %    \begin{macrocode}
+M.blocks = {}
+M.block_order = {}
+M.block_fonts = {}
+
+function M.declare_block (name, ranges)
+  if not M.blocks[name] then
+    table.insert(M.block_order, name)
+  end
+  M.blocks[name] = { ranges = ranges, enabled = true }
+end
+
+function M.set_block_enabled (name, flag)
+  local block = M.blocks[name]
+  if block then
+    block.enabled = flag
+  end
+end
+
+function M.set_block_font (main, name, fid)
+  local row = M.block_fonts[main]
+  if not row then
+    row = {}
+    M.block_fonts[main] = row
+  end
+  if fid and fid > 0 then
+    row[name] = fid
+  else
+    row[name] = nil
+  end
+end
+
+local function block_font (main, char)
+  local row = M.block_fonts[main]
+  if not row then
+    return nil
+  end
+  for _, name in ipairs(M.block_order) do
+    local block = M.blocks[name]
+    if block and block.enabled and row[name] then
+      for _, range in ipairs(block.ranges) do
+        if char >= range[1] and char <= (range[2] or range[1]) then
+          return row[name]
+        end
+      end
+    end
+  end
+  return nil
+end
+
 M.fallback = {}
 M.auto_fallback = M.auto_fallback or false
 
@@ -2744,6 +3000,12 @@ local function rewrite_fonts (head)
     local nxt = cur.next
     if cur.id == GLYPH and is_cjk(cur.char) and M.attr_font then
       local target = has_attribute(cur, M.attr_font)
+      if target and target > 0 then
+        local block = block_font(target, cur.char)
+        if block then
+          target = block
+        end
+      end
       if target and M.attr_punct_font and punct_class(cur.char) then
         local punct = has_attribute(cur, M.attr_punct_font)
         if punct and punct > 0 then

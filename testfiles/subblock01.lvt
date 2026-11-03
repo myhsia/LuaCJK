@@ -1,0 +1,52 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\LuaCJKDeclareSubCJKBlock{Kana}{"3040 -> "30FF}
+\setCJKmainfont{FandolSong-Regular.otf}[Kana = FandolKai-Regular.otf]
+
+\def\psnames{%
+  \directlua{
+    local n = tex.box[0].head
+    local out = {}
+    while n do
+      if n.id == node.id("glyph") then
+        local f = font.getfont(n.font)
+        table.insert(out, tostring(f and f.psname))
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "PS " .. table.concat(out, " "))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{a character in the block uses the block font}{
+  \setbox0=\hbox{中あ}
+  \psnames
+}
+
+\TEST{CancelSubCJKBlock turns the block off}{
+  \LuaCJKCancelSubCJKBlock{Kana}
+  \setbox0=\hbox{中あ}
+  \psnames
+}
+
+\TEST{RestoreSubCJKBlock turns it on again}{
+  \LuaCJKRestoreSubCJKBlock{Kana}
+  \setbox0=\hbox{中あ}
+  \psnames
+}
+
+\TEST{a family without the option keeps the main font}{
+  \setCJKfamilyfont{plain}{FandolSong-Regular.otf}
+  \setbox0=\hbox{\CJKfamily{plain}中あ}
+  \psnames
+}
+
+\END
+
+\end{document}
