@@ -1,0 +1,69 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKglue = 10pt, CJKecglue = 5pt}
+
+\def\countpenalties{%
+  \directlua{
+    local n = tex.box[0].head
+    local c = 0
+    while n do
+      if n.id == node.id("penalty") and n.penalty >= 10000 then
+        c = c + 1
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "PENALTIES " .. tostring(c))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{a Latin letter gets glue between two CJK characters}{
+  \setbox0=\hbox{中x中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{NormalSpace removes that glue}{
+  \LuaCJKDeclareCharClass{NormalSpace}{"0078}
+  \setbox0=\hbox{中x中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{ResetCharClass restores the normal-spaced set}{
+  \LuaCJKResetCharClass
+  \setbox0=\hbox{中x中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{FullLeft forbids a break after the letter}{
+  \LuaCJKDeclareCharClass{FullLeft}{"0071}
+  \setbox0=\hbox{q字}
+  \countpenalties
+}
+
+\TEST{FullRight forbids a break before the letter}{
+  \LuaCJKDeclareCharClass{FullRight}{"0071}
+  \setbox0=\hbox{字q}
+  \countpenalties
+}
+
+\TEST{HalfLeft behaves like FullLeft}{
+  \LuaCJKDeclareCharClass{HalfLeft}{"0071}
+  \setbox0=\hbox{q字}
+  \countpenalties
+}
+
+\TEST{CJStarter makes the letter behave like CJK}{
+  \LuaCJKDeclareCharClass{CJStarter}{"0071}
+  \setbox0=\hbox{q字}
+  \TYPE{width: \the\wd0}
+}
+
+\END
+
+\end{document}

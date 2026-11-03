@@ -84,6 +84,10 @@
 - Add `\LuaCJKDeclareSubCJKBlock` with `\LuaCJKCancelSubCJKBlock` and
   `\LuaCJKRestoreSubCJKBlock`, so a range of characters can use its own
   font inside a family.
+- `\LuaCJKDeclareCharClass` accepts the class names of `xeCJK`
+  (`FullLeft`, `FullRight`, `HalfLeft`, `HalfRight`, `NormalSpace`,
+  `CJStarter`, `CM`, `Boundary`); `\LuaCJKResetCharClass` also restores the
+  normal-spaced set.
 - Drop the placeholder glyph that a font without the character leaves behind
   (one `.notdef` glyph in some fonts, a private-use glyph in others).
 - Move the manual driver into `LuaCJK.dtx` and use the same fonts as

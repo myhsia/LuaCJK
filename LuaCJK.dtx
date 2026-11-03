@@ -602,16 +602,16 @@ $ x + 中文 $ and 中文
 % \cs{LuaCJKDeclareCharClass}.
 %
 % \begin{keyval}
-%   \item[\keys{KaiMingPunct, KaiMingPunct+, KaiMingPunct-}]\val{char list}:
+%   \item[\keys{KaiMingPunct(+-)}]\val{char list}:
 %   The marks that keep a full width in the \texttt{kaiming} style.
 %   Initially \texttt{。}、\texttt{．}、\texttt{？}、\texttt{！}.
-%   \item[\keys{MiddlePunct, MiddlePunct+, MiddlePunct-}]\val{char list}:
+%   \item[\keys{MiddlePunct(+-)}]\val{char list}:
 %   The marks centred between the two halves of their box.  A middle mark
 %   cannot start a line.
-%   \item[\keys{LongPunct, LongPunct+, LongPunct-}]\val{char list}: The
+%   \item[\keys{LongPunct(+-)}]\val{char list}: The
 %   marks that are never compressed against each other, such as dashes and
 %   ellipses.
-%   \item[\keys{NoBreakLongPunct, NoBreakLongPunct+, NoBreakLongPunct-}]
+%   \item[\keys{NoBreakLongPunct(+-)}]
 %   \val{char list}: The long marks that must not be separated by a line
 %   break.  Initially the same as \texttt{LongPunct}.
 % \end{keyval}
@@ -620,10 +620,19 @@ $ x + 中文 $ and 中文
 %   \begin{syntax}
 %     \tn{LuaCJKDeclareCharClass} \marg{class} \marg{range list}
 %   \end{syntax}
-%   Override the class of a code-point range: \texttt{CJK} makes the range
-%   behave like CJK text, \texttt{Default} like Latin text.  Ranges use the
-%   \pkg{xeCJK} spelling, hexadecimal with a leading |"| and
-%   |"START -> "END| for a range; the list is comma separated.
+%   Override the class of a code-point range.  Ranges use the \pkg{xeCJK}
+%   spelling, hexadecimal with a leading |"| and |"START -> "END| for a
+%   range; the list is comma separated.
+%
+%   The classes are the ones \pkg{xeCJK} knows, mapped onto the LuaCJK
+%   model: \texttt{CJK} and \texttt{Default} make the range behave like CJK
+%   or Latin text; \texttt{FullLeft} and \texttt{HalfLeft} treat it as an
+%   opening mark, \texttt{FullRight} and \texttt{HalfRight} as a closing
+%   mark, so the line-breaking prohibitions apply; \texttt{NormalSpace}
+%   takes the range out of the CJK/Latin glue, like
+%   \cs{normalspacedchars}; \texttt{CJStarter}, \texttt{CM}, and
+%   \texttt{Boundary} are treated as \texttt{CJK}, because \LuaTeX\ has no
+%   model of combining marks or run boundaries.
 % \end{function}
 %
 % \begin{function}{\LuaCJKDeclarePunctClass}
@@ -637,7 +646,9 @@ $ x + 中文 $ and 中文
 % \end{function}
 %
 % \begin{function}{\LuaCJKResetCharClass}
-%   Drop every class and punctuation override declared so far.
+%   Drop every class and punctuation override declared so far, and put the
+%   normal-spaced set back to the characters of
+%   \texttt{\textbackslash normalspacedchars}.
 % \end{function}
 %
 % \begin{function}{\LuaCJKEditPunctStyle}
@@ -856,6 +867,9 @@ $ x + 中文 $ and 中文
 %     \cs{LuaCJKnobreak}.
 %   \item \cs{xeCJKDeclareSubCJKBlock} with its cancel and restore commands,
 %     as the \cs{LuaCJK...} spellings.
+%   \item \cs{xeCJKDeclareCharClass}, with all the class names of
+%     \pkg{xeCJK}; \texttt{CJStarter}, \texttt{CM}, and \texttt{Boundary}
+%     are approximated, as described with the command.
 %   \item \cs{setCJKfallbackfamilyfont} and \texttt{AutoFallBack},
 %     \texttt{LoadFandol}, and \texttt{LocalConfig}.
 % \end{itemize}
@@ -875,9 +889,6 @@ $ x + 中文 $ and 中文
 %     sentence-ending marks full), or 0.7 of the current size, and the
 %     hanging shift is half an em.  \pkg{xeCJK} instead measures the real
 %     side bearings of each glyph.
-%   \item \cs{xeCJKDeclareCharClass} takes only \texttt{CJK} and
-%     \texttt{Default}; the eight classes of \pkg{xeCJK} are not modelled,
-%     because LuaCJK classifies characters in Lua rather than in \XeTeX.
 %   \item \cs{LuaCJKDeclarePunctStyle} takes \texttt{compress-adjacent},
 %     \texttt{adjacent-ratio}, and \texttt{keep-open-close} instead of the
 %     thirty geometry keys of \pkg{xeCJK}.
@@ -1353,10 +1364,24 @@ $ x + 中文 $ and 中文
   {
     \str_case:nnF {#1}
       {
-        { CJK }     { \LuaCJK_push_class:nn { true } {#2} }
-        { Default } { \LuaCJK_push_class:nn { false } {#2} }
+        { CJK }         { \LuaCJK_push_class:nn { true } {#2} }
+        { Default }     { \LuaCJK_push_class:nn { false } {#2} }
+        { FullLeft }    { \LuaCJK_push_punct:nn { "open" } {#2} }
+        { HalfLeft }    { \LuaCJK_push_punct:nn { "open" } {#2} }
+        { FullRight }   { \LuaCJK_push_punct:nn { "close" } {#2} }
+        { HalfRight }   { \LuaCJK_push_punct:nn { "close" } {#2} }
+        { NormalSpace } { \LuaCJK_push_normal_space:n {#2} }
+        { CJStarter }   { \LuaCJK_push_class:nn { true } {#2} }
+        { CM }          { \LuaCJK_push_class:nn { true } {#2} }
+        { Boundary }    { \LuaCJK_push_class:nn { true } {#2} }
       }
       { \msg_warning:nnn { LuaCJK } { unknown-char-class } {#1} }
+  }
+\cs_new_protected:Npn \LuaCJK_push_normal_space:n #1
+  {
+    \LuaCJK_build_ranges:n {#1}
+    \lua_now:e
+      { LuaCJK.add_normal_spaced ( { \l_LuaCJK_ranges_tl } ) }
   }
 \cs_new_protected:Npn \LuaCJK_push_class:nn #1#2
   {
@@ -1413,10 +1438,15 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKResetCharClass}
-%   Drop every class and punctuation override declared so far.
+%   Drop every class and punctuation override declared so far, and put the
+%   normal-spaced set back to the characters of
+%   \texttt{\textbackslash normalspacedchars}.
 %    \begin{macrocode}
 \NewDocumentCommand \LuaCJKResetCharClass { }
-  { \lua_now:n { LuaCJK.reset_classes() } }
+  {
+    \lua_now:n { LuaCJK.reset_classes() }
+    \LuaCJK_set_normal_spaced_chars:
+  }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -2682,6 +2712,7 @@ end
 function M.reset_classes ()
   M.class_override = {}
   M.punct_override = {}
+  M.normal_spaced = {}
 end
 
 %    \end{macrocode}
@@ -2800,6 +2831,16 @@ end
 function M.set_punct_width (chars, sp)
   for _, code in utf8.codes(chars) do
     M.punct_width[code] = sp
+  end
+end
+
+function M.add_normal_spaced (ranges)
+  for _, range in ipairs(ranges) do
+    local first = range[1]
+    local last = range[2] or first
+    for code = first, last do
+      M.normal_spaced[code] = true
+    end
   end
 end
 
