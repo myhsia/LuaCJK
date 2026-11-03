@@ -484,6 +484,14 @@ LaTeX Project Public License, version 1.3c or later.
 %   missing file only warns.
 % \end{keyval}
 %
+% \begin{function}{\LuaCJKShipoutHook}
+%   \begin{syntax}
+%     \tn{LuaCJKShipoutHook} \marg{code}
+%   \end{syntax}
+%   Run \meta{code} before every page is shipped out.  The code is added to
+%   the \texttt{shipout/before} hook, so it obeys the usual hook ordering.
+% \end{function}
+%
 % \begin{function}{\LuaCJKnobreak}
 %   \begin{syntax}
 %     \tn{LuaCJKnobreak} \marg{text}
@@ -863,8 +871,8 @@ $ x + 中文 $ and 中文
 %     \texttt{MiddlePunct}, \texttt{LongPunct}, and \texttt{NoBreakLongPunct}
 %     with their \texttt{+} and \texttt{-} forms.
 %   \item \texttt{CheckSingle} and \texttt{WidowPenalty}.
-%   \item \texttt{PunctWidth} and \cs{xeCJKnobreak}, the latter as
-%     \cs{LuaCJKnobreak}.
+%   \item \texttt{PunctWidth}, and \cs{xeCJKnobreak} and
+%     \cs{xeCJKShipoutHook} as the \cs{LuaCJK...} spellings.
 %   \item \cs{xeCJKDeclareSubCJKBlock} with its cancel and restore commands,
 %     as the \cs{LuaCJK...} spellings.
 %   \item \cs{xeCJKDeclareCharClass}, with all the class names of
@@ -917,8 +925,8 @@ $ x + 中文 $ and 中文
 %   \item In \pkg{LuaCJKfntef}: the \texttt{hidden}, \texttt{skip},
 %     \texttt{subtract}, and \texttt{boxdepth} options, and the
 %     \texttt{sep} of \cs{CJKunderanysymbol} applies only to that command.
-%   \item \cs{xeCJKVerbAddon}, \cs{xeCJKOffVerbAddon},
-%     \cs{xeCJKShipoutHook}, and the \pkg{xeCJK-listings} integration.
+%   \item \cs{xeCJKVerbAddon}, \cs{xeCJKOffVerbAddon}, and the
+%     \pkg{xeCJK-listings} integration.
 %   \item A \pkg{ctex} backend.  The package is not wired into
 %     \pkg{ctex} yet; that needs the agreement of the \pkg{ctex}
 %     maintainers.
@@ -1737,6 +1745,17 @@ $ x + 中文 $ and 中文
   { \g_LuaCJK_disabled_attr = 1 }
 \NewDocumentCommand \LuaCJKenable { }
   { \g_LuaCJK_disabled_attr = 0 }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\LuaCJKShipoutHook}
+%   Run code just before every page is shipped out.  This is the place for
+%   work that must see the finished page; \pkg{xeCJK} calls a macro at the
+%   same moment, so the name is kept, but the code goes into the
+%   \texttt{shipout/before} hook and therefore follows its rules.
+%    \begin{macrocode}
+\NewDocumentCommand \LuaCJKShipoutHook { m }
+  { \AddToHook { shipout/before } {#1} }
 %    \end{macrocode}
 % \end{macro}
 %

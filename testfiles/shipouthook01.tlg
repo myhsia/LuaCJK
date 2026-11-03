@@ -1,0 +1,36 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: the hook adds code to shipout/before
+============================================================
+-> The hook 'shipout/before':
+> Code chunks:
+>     ---
+> Document-level (top-level) code (executed last):
+>     ->  \typeout { SHIPOUT HOOK RAN } 
+> Extra code for next invocation:
+>     ---
+> Rules:
+>     ---
+> Execution order:
+>     ---.
+<recently read> }
+l. ...}
+============================================================
+============================================================
+TEST 2: the hook can take more than one chunk
+============================================================
+-> The hook 'shipout/before':
+> Code chunks:
+>     ---
+> Document-level (top-level) code (executed last):
+>     ->  \typeout { SHIPOUT HOOK RAN }  \typeout { SECOND } 
+> Extra code for next invocation:
+>     ---
+> Rules:
+>     ---
+> Execution order:
+>     ---.
+<recently read> }
+l. ...}
+============================================================
