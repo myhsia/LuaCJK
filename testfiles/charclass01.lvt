@@ -1,0 +1,54 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKglue = 10pt, CJKecglue = 5pt}
+
+\begin{document}
+
+\START
+
+\TEST{a Latin letter between CJK characters}{
+  \setbox0=\hbox{中x中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{declaring the letter as CJK changes the glue}{
+  \LuaCJKDeclareCharClass{CJK}{"0078}
+  \setbox0=\hbox{中x中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{reset restores the class of the letter}{
+  \LuaCJKResetCharClass
+  \setbox0=\hbox{中x中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{the default compression of two full stops}{
+  \setbox0=\hbox{字。。字}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{declaring the full stop as plain removes the compression}{
+  \LuaCJKDeclarePunctClass{none}{"3002}
+  \setbox0=\hbox{字。。字}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{a range is declared with the arrow syntax}{
+  \LuaCJKResetCharClass
+  \LuaCJKDeclareCharClass{Default}{"2460 -> "2473}
+  \setbox0=\hbox{中①中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{an unknown class only warns}{
+  \LuaCJKDeclareCharClass{NoSuchClass}{"0078}
+  \TYPE{survived}
+}
+
+\END
+
+\end{document}

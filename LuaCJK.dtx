@@ -505,6 +505,30 @@ $ x + 中文 $ and 中文
 %   with |PunctStyle = plain|.
 % \end{keyval}
 %
+% \begin{function}{\LuaCJKDeclareCharClass}
+%   \begin{syntax}
+%     \tn{LuaCJKDeclareCharClass} \marg{class} \marg{range list}
+%   \end{syntax}
+%   Override the class of a code-point range: \texttt{CJK} makes the range
+%   behave like CJK text, \texttt{Default} like Latin text.  Ranges use the
+%   \pkg{xeCJK} spelling, hexadecimal with a leading |"| and
+%   |"START -> "END| for a range; the list is comma separated.
+% \end{function}
+%
+% \begin{function}{\LuaCJKDeclarePunctClass}
+%   \begin{syntax}
+%     \tn{LuaCJKDeclarePunctClass} \marg{group} \marg{range list}
+%   \end{syntax}
+%   Override the punctuation group of a range.  The groups are
+%   \texttt{open}, \texttt{close}, \texttt{middle}, \texttt{dash}, and
+%   \texttt{ellipsis}; \texttt{none} removes the punctuation treatment, so
+%   the characters are no longer compressed or hung.
+% \end{function}
+%
+% \begin{function}{\LuaCJKResetCharClass}
+%   Drop every class and punctuation override declared so far.
+% \end{function}
+%
 % \begin{function}{\LuaCJKsetwidth}
 %   \begin{syntax}
 %     \tn{LuaCJKsetwidth} \marg{punctuation list} \marg{length}
@@ -797,6 +821,106 @@ $ x + 中文 $ and 中文
           , \dim_to_decimal_in_sp:n {#3} )
       }
   }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\LuaCJKDeclareCharClass}
+%   Override the class of a code-point range.  The range list uses the
+%   \pkg{xeCJK} spelling: hexadecimal numbers with a leading |"|, and
+%   |"START -> "END| for a range.
+%   \begin{variable}[internal]
+%     {\l_LuaCJK_ranges_tl, \l_LuaCJK_range_seq, \l_LuaCJK_range_pair_tl,
+%      \l_LuaCJK_hex_tl, \l_LuaCJK_hex_int_tl}
+%     The Lua table being built, the two halves of one range, and the
+%     current hexadecimal number and its value.
+%    \begin{macrocode}
+\tl_new:N \l_LuaCJK_ranges_tl
+\seq_new:N \l_LuaCJK_range_seq
+\tl_new:N \l_LuaCJK_range_pair_tl
+\tl_new:N \l_LuaCJK_hex_tl
+\tl_new:N \l_LuaCJK_hex_int_tl
+%    \end{macrocode}
+%   \end{variable}
+%    \begin{macrocode}
+\cs_new_protected:Npn \LuaCJK_hex_store:n #1
+  {
+    \tl_set:Nn \l_LuaCJK_hex_tl {#1}
+    \tl_replace_all:Nnn \l_LuaCJK_hex_tl { " } { }
+    \tl_trim_spaces:N \l_LuaCJK_hex_tl
+    \tl_set:Ne \l_LuaCJK_hex_int_tl
+      { \exp_args:NV \int_from_hex:n \l_LuaCJK_hex_tl }
+  }
+\cs_new_protected:Npn \LuaCJK_range_entry:n #1
+  {
+    \seq_set_split:Nnn \l_LuaCJK_range_seq { -> } {#1}
+    \tl_clear:N \l_LuaCJK_range_pair_tl
+    \seq_map_inline:Nn \l_LuaCJK_range_seq
+      {
+        \LuaCJK_hex_store:n {##1}
+        \tl_put_right:Nx \l_LuaCJK_range_pair_tl
+          { \exp_not:V \l_LuaCJK_hex_int_tl , }
+      }
+    \tl_put_right:Nx \l_LuaCJK_ranges_tl
+      { { \exp_not:V \l_LuaCJK_range_pair_tl } , }
+  }
+\cs_new_protected:Npn \LuaCJK_build_ranges:n #1
+  {
+    \tl_clear:N \l_LuaCJK_ranges_tl
+    \clist_map_inline:nn {#1} { \LuaCJK_range_entry:n {##1} }
+  }
+\msg_new:nnn { LuaCJK } { unknown-char-class }
+  { Unknown~character~class~`#1'~is~being~ignored. }
+\msg_new:nnn { LuaCJK } { unknown-punct-class }
+  { Unknown~punctuation~class~`#1'~is~being~ignored. }
+\NewDocumentCommand \LuaCJKDeclareCharClass { m m }
+  {
+    \str_case:nnF {#1}
+      {
+        { CJK }     { \LuaCJK_push_class:nn { true } {#2} }
+        { Default } { \LuaCJK_push_class:nn { false } {#2} }
+      }
+      { \msg_warning:nnn { LuaCJK } { unknown-char-class } {#1} }
+  }
+\cs_new_protected:Npn \LuaCJK_push_class:nn #1#2
+  {
+    \LuaCJK_build_ranges:n {#2}
+    \lua_now:e
+      { LuaCJK.declare_class ( { \l_LuaCJK_ranges_tl } , #1 ) }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\LuaCJKDeclarePunctClass}
+%   Override the punctuation group of a range, or with \texttt{none} remove
+%   the punctuation treatment from it.
+%    \begin{macrocode}
+\NewDocumentCommand \LuaCJKDeclarePunctClass { m m }
+  {
+    \str_case:nnF {#1}
+      {
+        { open }     { \LuaCJK_push_punct:nn { "open" } {#2} }
+        { close }    { \LuaCJK_push_punct:nn { "close" } {#2} }
+        { middle }   { \LuaCJK_push_punct:nn { "middle" } {#2} }
+        { dash }     { \LuaCJK_push_punct:nn { "dash" } {#2} }
+        { ellipsis } { \LuaCJK_push_punct:nn { "ellipsis" } {#2} }
+        { none }     { \LuaCJK_push_punct:nn { false } {#2} }
+      }
+      { \msg_warning:nnn { LuaCJK } { unknown-punct-class } {#1} }
+  }
+\cs_new_protected:Npn \LuaCJK_push_punct:nn #1#2
+  {
+    \LuaCJK_build_ranges:n {#2}
+    \lua_now:e
+      { LuaCJK.declare_punct ( { \l_LuaCJK_ranges_tl } , #1 ) }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\LuaCJKResetCharClass}
+%   Drop every override declared so far.
+%    \begin{macrocode}
+\NewDocumentCommand \LuaCJKResetCharClass { }
+  { \lua_now:n { LuaCJK.reset_classes() } }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -1807,7 +1931,14 @@ M.attr_math_font = M.attr_math_font or nil
 %   ideographs, compatibility and presentation forms, kana, Hangul, and the
 %   punctuation LuaCJK compresses or hangs.
 %    \begin{macrocode}
+M.class_override = {}
+M.punct_override = {}
+
 local function is_cjk (c)
+  local override = M.class_override[c]
+  if override ~= nil then
+    return override
+  end
   return (c >= 0x2E80 and c <= 0x9FFF)
       or (c >= 0xF900 and c <= 0xFAFF)
       or (c >= 0xFE30 and c <= 0xFE4F)
@@ -1865,7 +1996,41 @@ local PUNCT_CLASS = {
 %   Look up the group of a character.
 %    \begin{macrocode}
 local function punct_class (c)
+  local override = M.punct_override[c]
+  if override ~= nil then
+    return override or nil
+  end
   return PUNCT_CLASS[c]
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[internal]{LuaCJK.declare_ranges}
+%   Fill a table with \meta{value} over a list of code-point ranges, each
+%   given as \texttt{\{first, last\}}.
+%    \begin{macrocode}
+local function fill_ranges (target, value, ranges)
+  for _, range in ipairs(ranges) do
+    local first = range[1]
+    local last = range[2] or first
+    for code = first, last do
+      target[code] = value
+    end
+  end
+end
+
+function M.declare_class (ranges, cjk)
+  fill_ranges(M.class_override, cjk, ranges)
+end
+
+function M.declare_punct (ranges, group)
+  fill_ranges(M.punct_override, group, ranges)
+end
+
+function M.reset_classes ()
+  M.class_override = {}
+  M.punct_override = {}
 end
 
 %    \end{macrocode}
