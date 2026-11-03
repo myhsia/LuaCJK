@@ -109,6 +109,9 @@
   `\CJKunderdot`, and `height` and `thickness` to `\CJKsout`.
 - `\CJKsout` now takes the same key list as the other decorations, including
   `format` and `subtract`; a bare color name is still accepted.
+- Add `LuaCJK-listings`, which keeps CJK characters in place inside a
+  `listings` block, counts each of them as two columns, and turns the spacing
+  adjustments off.  LuaCJK loads it automatically with `listings`.
 - `\LuaCJKDeclareCharClass` accepts the class names of `xeCJK`
   (`FullLeft`, `FullRight`, `HalfLeft`, `HalfRight`, `NormalSpace`,
   `CJStarter`, `CM`, `Boundary`); `\LuaCJKResetCharClass` also restores the

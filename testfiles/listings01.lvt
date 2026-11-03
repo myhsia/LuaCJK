@@ -1,0 +1,98 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\usepackage{listings}
+\setCJKmainfont{FandolSong-Regular.otf}
+\lstset{basicstyle=\ttfamily, columns=fixed}
+
+\makeatletter
+\def\listingorder#1{%
+  \directlua{
+    local function walk (n, out)
+      while n do
+        if n.id == node.id("glyph") then
+          table.insert(out, n.char)
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          walk(n.head, out)
+        end
+        n = n.next
+      end
+      return out
+    end
+    local out = {}
+    walk(tex.box[#1].head, out)
+    texio.write_nl("term and log", "ORDER " .. table.concat(out, ","))
+  }%
+}
+\def\listingcontent#1{%
+  \directlua{
+    local function hasglyph (n)
+      while n do
+        if n.id == node.id("glyph") then
+          return true
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          if hasglyph(n.head) then
+            return true
+          end
+        end
+        n = n.next
+      end
+      return false
+    end
+    local line = tex.box[#1].head
+    while line and line.id ~= node.id("hlist") do
+      line = line.next
+    end
+    local total = 0
+    local n = line and line.head
+    while n do
+      if (n.id == node.id("hlist") or n.id == node.id("vlist"))
+         and hasglyph(n.head) then
+        total = total + n.width
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "CONTENT " .. tostring(total))
+  }%
+}
+\makeatother
+
+\begin{document}
+
+\setbox0=\vbox{\begin{lstlisting}
+printf("中文");
+\end{lstlisting}}
+
+\setbox2=\vbox{\begin{lstlisting}
+a中b
+\end{lstlisting}}
+
+\setbox4=\vbox{\begin{lstlisting}
+aaab
+\end{lstlisting}}
+
+\START
+
+\TEST{LuaCJK-listings is loaded together with listings}{
+  \csname ver@LuaCJK-listings.sty\endcsname
+  \TYPE{loaded}
+}
+
+\TEST{a block listing keeps the CJK characters in place}{
+  \listingorder{0}
+}
+
+\TEST{a CJK character takes two columns}{
+  \listingcontent{2}
+  \listingcontent{4}
+}
+
+\TEST{lstinline is left alone}{
+  \setbox0=\hbox{\lstinline|int 数 = 2;|}
+  \TYPE{survived}
+}
+
+\END
+
+\end{document}

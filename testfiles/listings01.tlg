@@ -1,0 +1,27 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: LuaCJK-listings is loaded together with listings
+============================================================
+loaded
+============================================================
+============================================================
+TEST 2: a block listing keeps the CJK characters in place
+============================================================
+ORDER 112,114,105,110,116,102,40,34,20013,25991,34,41,59
+============================================================
+============================================================
+TEST 3: a CJK character takes two columns
+============================================================
+CONTENT 1572880
+CONTENT 1572880
+============================================================
+============================================================
+TEST 4: lstinline is left alone
+============================================================
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line ....
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line ....
+survived
+============================================================

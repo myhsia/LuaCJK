@@ -49,14 +49,14 @@
 
 LuaCJK is a LuaTeX package for Chinese typesetting, inspired by `xeCJK`.
 
-The project is currently at an early development stage. The first public
-release provides a CJK font family layer, basic CJK/CJK and CJK/Latin
-spacing, the `quanjiao`, `plain`, `banjiao`, `kaiming`, `CCT`, and
-`hangmobanjiao` punctuation styles, and basic punctuation line-breaking
-prohibitions on top of LuaTeX node callbacks.  The companion package
-`LuaCJKfntef` adds underlining, emphasis dots, and strike-through through
-`lua-ul`.  Fallback fonts and the remaining decoration types are planned for
-later releases.
+The project is currently at an early development stage.  The package
+provides a CJK font family layer, CJK/CJK and CJK/Latin spacing, the
+`quanjiao`, `plain`, `banjiao`, `kaiming`, `CCT`, and `hangmobanjiao`
+punctuation styles with line-breaking prohibitions, and fallback fonts, all
+on top of LuaTeX node callbacks.  The companion package `LuaCJKfntef` adds
+underlining, emphasis dots, and strike-through through `lua-ul`.
+`LuaCJK-listings` keeps CJK text in place and two columns wide inside a
+`listings` block.
 
 ## Loading
 
@@ -895,6 +895,22 @@ $ x + 中文 $ and 中文
 %</example>
 % \fi
 %
+% \section{Code listings}
+%
+% \pkg{listings} processes one character at a time and typesets a character
+% that is outside its character table at the moment it is read.  CJK
+% characters are outside that table, so they end up in front of the
+% surrounding Latin text.  The companion package
+% \pkg{LuaCJK-listings} fixes this: it adds the CJK characters to the
+% character table of \pkg{listings}, so they stay in place, counts each of
+% them as two columns, and turns the spacing adjustments off inside the
+% listing.  LuaCJK loads it automatically when \pkg{listings} is used, so no
+% extra command is needed.
+%
+% \tn{lstinline} reads its argument with changed category codes; the patch
+% would break that scanner, so inline code is left alone and takes the
+% normal handling.
+%
 % \section{Comparison with \pkg{xeCJK}}
 %
 % \pkg{LuaCJK} follows the \pkg{xeCJK} interface where the two engines allow
@@ -935,6 +951,8 @@ $ x + 中文 $ and 中文
 %     are approximated, as described with the command.
 %   \item \cs{setCJKfallbackfamilyfont} and \texttt{AutoFallBack},
 %     \texttt{LoadFandol}, and \texttt{LocalConfig}.
+%   \item The \pkg{xeCJK-listings} support, as \pkg{LuaCJK-listings}; LuaCJK
+%     loads it together with \pkg{listings}.
 %   \item The \pkg{LuaCJKfntef} keys \texttt{thickness}, \texttt{depth},
 %     \texttt{textformat}, \texttt{format}, \texttt{subtract}, \texttt{skip},
 %     \texttt{hidden}, \texttt{boxdepth}, \texttt{gap}, \texttt{height},
@@ -990,7 +1008,6 @@ $ x + 中文 $ and 中文
 %     options to the commands of \pkg{ulem}.  \pkg{LuaCJKfntef} builds on
 %     \pkg{lua-ul} instead, and its \tn{underLine} may be configured
 %     directly.
-%   \item The \pkg{xeCJK-listings} integration.
 %   \item A \pkg{ctex} backend.  The package is not wired into
 %     \pkg{ctex} yet; that needs the agreement of the \pkg{ctex}
 %     maintainers.
@@ -2714,6 +2731,10 @@ $ x + 中文 $ and 中文
     \g_LuaCJK_font_attr = \g_LuaCJK_fontid_int
   }
 \LuaCJK_load_local_config:
+\hook_gput_code:nnn { package/listings/after } { LuaCJK }
+  { \RequirePackage { LuaCJK-listings } }
+\cs_if_exist:cT { ver@listings.sty }
+  { \RequirePackage { LuaCJK-listings } }
 %    \end{macrocode}
 %
 %    \begin{macrocode}
@@ -5352,6 +5373,79 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %</fntef>
 %    \end{macrocode}
 % \end{macro}
+%
+% \subsection{Support for \pkg{listings}}
+%
+% The block listing environments are patched by making the CJK characters
+% active while the character table of a listing is built.  The active
+% character is defined through the \tn{lccode} of two helper characters: the
+% token in the body keeps category code 12, so it can be stored in the token
+% list of \pkg{listings} and typeset later.  The definitions are made once;
+% each listing only sets the category codes again in its own group.
+%    \begin{macrocode}
+%<*listings>
+\NeedsTeXFormat{LaTeX2e}
+\RequirePackage { expl3 }
+\GetIdInfo $Id: LuaCJK.dtx 0.1.0 2026-11-02 myhsia<myhsia@outlook.com>$
+\ProvidesPackage { LuaCJK-listings }
+  [\ExplFileDate\space\ExplFileVersion\space CJK support for listings]
+\RequirePackage { LuaCJK }
+\RequirePackage { listings }
+\makeatletter
+\newif\ifLuaCJK@listings@cjkrun
+\newif\ifLuaCJK@listings@defined
+\lst@AddToHook{InitVars}{\LuaCJK@listings@cjkrunfalse}
+\def\LuaCJK@listings@process#1{%
+  \lst@whitespacefalse
+  \LuaCJK@listings@setcjkflag
+  \advance\lst@length\@ne
+  \lst@Append#1}
+\def\LuaCJK@listings@setcjkflag{%
+  \lst@ifletter
+    \lst@Output
+  \else
+    \ifLuaCJK@listings@cjkrun\else\lst@OutputOther\fi
+    \lst@lettertrue
+  \fi
+  \LuaCJK@listings@cjkruntrue}
+\def\LuaCJK@listings@define#1#2{%
+  \@tempcnta=#1\relax
+  \loop\ifnum\@tempcnta<#2\relax
+    \advance\@tempcnta\@ne
+    \lccode`\~=\@tempcnta
+    \lccode`\/=\@tempcnta
+    \lowercase{\gdef~{\LuaCJK@listings@process/}}%
+  \repeat}
+\def\LuaCJK@listings@catcodes#1#2{%
+  \@tempcnta=#1\relax
+  \loop\ifnum\@tempcnta<#2\relax
+    \advance\@tempcnta\@ne
+    \catcode\@tempcnta=13\relax
+  \repeat}
+\def\LuaCJK@listings@ranges#1{%
+  #1{"2E80}{"9FFF}%
+  #1{"F900}{"FAFF}%
+  #1{"FF00}{"FFEF}%
+  #1{"AC00}{"D7AF}}
+\def\LuaCJK@listings@activate{%
+  \ifLuaCJK@listings@defined\else
+    \LuaCJK@listings@ranges\LuaCJK@listings@define
+    \global\LuaCJK@listings@definedtrue
+  \fi
+  \LuaCJK@listings@ranges\LuaCJK@listings@catcodes}
+% \lstinline reads its argument with changed category codes, so the patch is
+% limited to the block listing environments.
+\lst@AddToHook{SelectCharTable}{%
+  \ifx\lst@inlinechars\@empty
+    \LuaCJK@listings@activate
+  \fi}
+\lst@AddToHook{OutputBox}{%
+  \ifx\lst@inlinechars\@empty
+    \LuaCJKdisable
+  \fi}
+\makeatother
+%</listings>
+%    \end{macrocode}
 %
 % \end{implementation}
 %
