@@ -5,6 +5,7 @@ latexmk
 makeindex
 #
 # l3doc
+l3draw
 alphalph
 l3kernel
 l3packages

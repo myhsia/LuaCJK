@@ -614,6 +614,31 @@ $ x + 中文 $ and 中文
 %   \pkg{xeCJKfntef} and ignored.
 % \end{function}
 %
+% \begin{function}{\CJKunderdblline}
+%   \begin{syntax}
+%     \tn{CJKunderdblline} \oarg{ignored} \marg{text}
+%   \end{syntax}
+%   Put two parallel rules under \meta{text}.  A leading \texttt{*} or
+%   \texttt{-} is accepted and ignored, as for \cs{CJKunderline}.
+% \end{function}
+%
+% \begin{function}{\CJKunderwave}
+%   \begin{syntax}
+%     \tn{CJKunderwave} \oarg{ignored} \marg{text}
+%   \end{syntax}
+%   Put a wave under \meta{text}.  The wave is drawn with \pkg{l3draw} and
+%   repeated with \tn{leaders}, so it has the same phase across the parts of
+%   one line.
+% \end{function}
+%
+% \begin{function}{\CJKxout}
+%   \begin{syntax}
+%     \tn{CJKxout} \oarg{ignored} \marg{text}
+%   \end{syntax}
+%   Strike \meta{text} out with a repeated slash, like \pkg{ulem}'s
+%   \tn{xout}.
+% \end{function}
+%
 % \begin{function}{\CJKunderdot}
 %   \begin{syntax}
 %     \tn{CJKunderdot} \marg{text}
@@ -634,8 +659,11 @@ $ x + 中文 $ and 中文
 % \fi
 \begin{codemo}
 \CJKunderline{中文 test 中文}\\
+\CJKunderdblline{中文 test 中文}\\
+\CJKunderwave{中文 test 中文}\\
 \CJKunderdot{中文 test 中文}\\
-\CJKsout{中文 test 中文}
+\CJKsout{中文 test 中文}\\
+\CJKxout{中文 test 中文}
 \end{codemo}
 % \iffalse
 %</example>
@@ -3336,6 +3364,7 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
   }
 \RequirePackage { LuaCJK }
 \RequirePackage { lua-ul }
+\RequirePackage { l3draw }
 %    \end{macrocode}
 %
 % \begin{macro}{\CJKunderline}
@@ -3359,6 +3388,81 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
     \IfValueTF {#3}
       { \strikeThrough [ #3 ] { #4 } }
       { \strikeThrough { #4 } }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\CJKunderdblline}
+%   Two parallel rules.  They are two underline types applied in the same
+%   group, so \pkg{lua-ul} draws both along one span.
+%    \begin{macrocode}
+\newunderlinetype \LuaCJKfntef_double_top
+  { \leaders \vrule height -.20em depth .24em }
+\newunderlinetype \LuaCJKfntef_double_bottom
+  { \leaders \vrule height -.32em depth .36em }
+\NewDocumentCommand \CJKunderdblline { s t- o +m }
+  {
+    \group_begin:
+      \LuaCJKfntef_double_top
+      \LuaCJKfntef_double_bottom
+      #4
+    \group_end:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\CJKunderwave}
+%   A wave drawn with \pkg{l3draw}, one period per half em, repeated by
+%   \tn{leaders}.  The box is built once at load time.
+%    \begin{macrocode}
+\box_new:N \l_LuaCJKfntef_wave_box
+\hbox_set:Nn \l_LuaCJKfntef_wave_box
+  {
+    \raise -.42em \hbox:n
+      {
+        \draw_begin:
+          \draw_path_moveto:n { 0em , 0em }
+          \draw_path_curveto:nnn { .0625em , .16em } { .1875em , .16em }
+            { .25em , 0em }
+          \draw_path_curveto:nnn { .3125em , -.16em } { .4375em , -.16em }
+            { .5em , 0em }
+          \draw_path_use_clear:n { stroke }
+        \draw_end:
+      }
+  }
+\newunderlinetype \LuaCJKfntef_wave
+  { \leaders \box_use_drop:N \l_LuaCJKfntef_wave_box }
+\NewDocumentCommand \CJKunderwave { s t- o +m }
+  {
+    \group_begin:
+      \LuaCJKfntef_wave
+      #4
+    \group_end:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\CJKxout}
+%   A repeated slash, as in \pkg{ulem}'s \tn{xout}, drawn once and repeated
+%   by \tn{leaders}.
+%    \begin{macrocode}
+\box_new:N \l_LuaCJKfntef_slash_box
+\hbox_set:Nn \l_LuaCJKfntef_slash_box
+  {
+    \draw_begin:
+      \draw_path_moveto:n { 0em , -.25em }
+      \draw_path_lineto:n { .42em , .55em }
+      \draw_path_use_clear:n { stroke }
+    \draw_end:
+  }
+\newunderlinetype \LuaCJKfntef_slash
+  { \leaders \box_use_drop:N \l_LuaCJKfntef_slash_box }
+\NewDocumentCommand \CJKxout { s t- o +m }
+  {
+    \group_begin:
+      \LuaCJKfntef_slash
+      #4
+    \group_end:
   }
 %    \end{macrocode}
 % \end{macro}

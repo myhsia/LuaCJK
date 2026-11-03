@@ -85,6 +85,35 @@
   }
 }
 
+\TEST{double underline, wave, and xout keep the text width}{
+  \setbox0=\hbox{中\CJKunderdblline{文 test 文}中}
+  \setbox2=\hbox{中文 test 文中}
+  \TYPE{double: \the\wd0}
+  \TYPE{plain: \the\wd2}
+}
+
+\TEST{each new effect uses continuous leaders}{
+  \setbox0=\hbox{\CJKunderdblline{中文 test 中文}}
+  \setbox2=\hbox{\CJKunderwave{中文 test 中文}}
+  \setbox4=\hbox{\CJKxout{中文 test 中文}}
+  \directlua{
+    local function leaders (box)
+      local n = tex.box[box].head
+      local c = 0
+      while n do
+        if n.id == node.id("glue") and n.subtype == 100 then
+          c = c + 1
+        end
+        n = n.next
+      end
+      return c
+    end
+    texio.write_nl("term and log", "RUNS double " .. tostring(leaders(0)))
+    texio.write_nl("term and log", "RUNS wave " .. tostring(leaders(2)))
+    texio.write_nl("term and log", "RUNS xout " .. tostring(leaders(4)))
+  }
+}
+
 \END
 
 \end{document}
