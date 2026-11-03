@@ -180,6 +180,19 @@ LaTeX Project Public License, version 1.3c or later.
 %   Print the version of LuaCJK.
 % \end{function}
 %
+% \begin{function}{\LuaCJKsetup}
+%   \begin{syntax}
+%     \tn{LuaCJKsetup} \marg{key-value list}
+%   \end{syntax}
+%   Configure LuaCJK.  The keys are the ones documented in the following
+%   sections, and each setting is local to the current group.
+% \end{function}
+%
+% The same keys may be given as package options:
+% \begin{quote}
+%   |\usepackage[PunctStyle = banjiao]{LuaCJK}|
+% \end{quote}
+%
 % \section{Font selection}
 %
 % The main font commands take an optional list of \pkg{fontspec} options.
@@ -340,10 +353,10 @@ LaTeX Project Public License, version 1.3c or later.
 % family itself sets \texttt{BoldFont} or \texttt{ItalicFont}.
 %
 % \begin{keyval}
-%   \item[\keys{AutoFakeBold}]\val{\TFF \textbar{} \meta{number}}
+%   \item[\keys{AutoFakeBold}]\val{\TFF, number}
 %   Embolden the regular face when the bold shape is requested.  A number
 %   also sets \texttt{EmboldenFactor}.
-%   \item[\keys{AutoFakeSlant}]\val{\TFF \textbar{} \meta{number}}
+%   \item[\keys{AutoFakeSlant}]\val{\TFF, number}
 %   Slant the regular face when the italic shape is requested.  A number
 %   also sets \texttt{SlantFactor}.
 %   \item[\keys{EmboldenFactor}]\val{number}: The amount of emboldening.
@@ -384,20 +397,6 @@ LaTeX Project Public License, version 1.3c or later.
 %   accepted for compatibility with \pkg{xeCJK}, where it also covers the
 %   sub-blocks; LuaCJK has no blocks, so both forms act on the same font.
 % \end{function}
-%
-% \section{Options}
-%
-% \begin{function}{\LuaCJKsetup}
-%   \begin{syntax}
-%     \tn{LuaCJKsetup} \marg{key-value list}
-%   \end{syntax}
-%   Configure LuaCJK.  The settings are local to the current group.
-% \end{function}
-%
-% The same keys may be given as package options:
-% \begin{quote}
-%   |\usepackage[PunctStyle = banjiao]{LuaCJK}|
-% \end{quote}
 %
 % \section{Spacing}
 %
@@ -477,8 +476,7 @@ LaTeX Project Public License, version 1.3c or later.
 % \fi
 %
 % \begin{keyval}
-%   \item[\keys{LocalConfig}]\val{\TTF \textbar{} \meta{name} \textbar{}
-%     \texttt{false}}
+%   \item[\keys{LocalConfig}]\val{\TTF, name}
 %   Read local settings from a configuration file.  \texttt{true} loads
 %   \file{luacjk.cfg}, \meta{name} loads \file{luacjk-\meta{name}.cfg}, and
 %   \texttt{false} (the initial value) loads nothing.  The file is read at
@@ -496,8 +494,7 @@ LaTeX Project Public License, version 1.3c or later.
 % \end{function}
 %
 % \begin{keyval}
-%   \item[\keys{Verb}]\val{\TTF \textbar{} \texttt{env} \textbar{}
-%     \texttt{env+}}
+%   \item[\keys{Verb}]\val{\TTF, env, env+}
 %   What to do inside \tn{verb} and the verbatim-like environments
 %   (\env{verbatim}, \env{Verbatim}, \env{lstlisting}, and their
 %   relatives).  \texttt{true} suspends the adjustments in both;
@@ -579,10 +576,10 @@ $ x + 中文 $ and 中文
 %   \texttt{quanjiao} (the default), \texttt{plain}, \texttt{banjiao},
 %   \texttt{kaiming}, \texttt{CCT}, and \texttt{hangmobanjiao}.  An unknown
 %   name issues a warning and falls back to \texttt{plain}.
-%   \item[\keys{PunctWidth}]\val{length \textbar{} \texttt{false}}: Give
+%   \item[\keys{PunctWidth}]\val{length, false}: Give
 %   every punctuation mark the same advance, whatever the style says.  A
 %   width set with \cs{LuaCJKsetwidth} still wins for that mark.
-%   \item[\keys{PunctFamily}]\val{family \textbar{} \texttt{false}}: Use a
+%   \item[\keys{PunctFamily}]\val{family, false}: Use a
 %   different CJK family for the punctuation marks.  The family must be
 %   declared with \cs{setCJKfamilyfont}; \texttt{false} (the initial value)
 %   makes the marks follow the text again.
@@ -599,22 +596,24 @@ $ x + 中文 $ and 中文
 %
 % \subsection{Punctuation character sets}
 %
-% These keys replace, extend, or reduce the sets that the punctuation code
-% uses.  Each has a plain form that replaces the set, a \texttt{+} form that
-% adds characters, and a \texttt{-} form that removes them.  Ranges use the
-% same spelling as \cs{LuaCJKDeclareCharClass}.
+% Each of these keys comes in three forms: the plain one replaces the set,
+% the form with \texttt{+} adds characters, and the form with \texttt{-}
+% removes them.  Ranges use the same spelling as
+% \cs{LuaCJKDeclareCharClass}.
 %
 % \begin{keyval}
-%   \item[\keys{KaiMingPunct}]\val{char list}: The marks that keep a full
-%   width in the \texttt{kaiming} style.  Initially \texttt{。}、\texttt{．}、
-%   \texttt{？}、\texttt{！}.
-%   \item[\keys{MiddlePunct}]\val{char list}: The marks centred between the
-%   two halves of their box.  A middle mark cannot start a line.
-%   \item[\keys{LongPunct}]\val{char list}: The marks that are never
-%   compressed against each other, such as dashes and ellipses.
-%   \item[\keys{NoBreakLongPunct}]\val{char list}: The long marks that must
-%   not be separated by a line break.  Initially the same as
-%   \texttt{LongPunct}.
+%   \item[\keys{KaiMingPunct, KaiMingPunct+, KaiMingPunct-}]\val{char list}:
+%   The marks that keep a full width in the \texttt{kaiming} style.
+%   Initially \texttt{。}、\texttt{．}、\texttt{？}、\texttt{！}.
+%   \item[\keys{MiddlePunct, MiddlePunct+, MiddlePunct-}]\val{char list}:
+%   The marks centred between the two halves of their box.  A middle mark
+%   cannot start a line.
+%   \item[\keys{LongPunct, LongPunct+, LongPunct-}]\val{char list}: The
+%   marks that are never compressed against each other, such as dashes and
+%   ellipses.
+%   \item[\keys{NoBreakLongPunct, NoBreakLongPunct+, NoBreakLongPunct-}]
+%   \val{char list}: The long marks that must not be separated by a line
+%   break.  Initially the same as \texttt{LongPunct}.
 % \end{keyval}
 %
 % \begin{function}{\LuaCJKDeclareCharClass}
