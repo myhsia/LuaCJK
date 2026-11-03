@@ -528,6 +528,10 @@ $ x + 中文 $ and 中文
 %   \texttt{quanjiao} (the default), \texttt{plain}, \texttt{banjiao},
 %   \texttt{kaiming}, \texttt{CCT}, and \texttt{hangmobanjiao}.  An unknown
 %   name issues a warning and falls back to \texttt{plain}.
+%   \item[\keys{PunctFamily}]\val{family \textbar{} \texttt{false}}: Use a
+%   different CJK family for the punctuation marks.  The family must be
+%   declared with \cs{setCJKfamilyfont}; \texttt{false} (the initial value)
+%   makes the marks follow the text again.
 %   \item[\keys{AllowBreakBetweenPuncts}]\val{\TFF}: Whether two adjacent
 %   punctuation marks may be separated by a line break.  The marks are still
 %   compressed.
@@ -783,7 +787,8 @@ $ x + 中文 $ and 中文
 %     \g_LuaCJK_xecglue_attr, \c_LuaCJK_xecglue_attr_int,
 %     \g_LuaCJK_inserted_attr, \c_LuaCJK_inserted_attr_int,
 %     \g_LuaCJK_math_font_attr, \c_LuaCJK_math_font_attr_int,
-%     \g_LuaCJK_disabled_attr, \c_LuaCJK_disabled_attr_int
+%     \g_LuaCJK_disabled_attr, \c_LuaCJK_disabled_attr_int,
+%     \g_LuaCJK_punct_font_attr, \c_LuaCJK_punct_font_attr_int
 %   }
 %   The attributes record, per node, the CJK font, the space and glue
 %   policies, whether the node was inserted by LuaCJK, the CJK math font,
@@ -802,7 +807,10 @@ $ x + 中文 $ and 中文
 \int_const:Nn \c_LuaCJK_math_font_attr_int { \the \allocationnumber }
 \newattribute \g_LuaCJK_disabled_attr
 \int_const:Nn \c_LuaCJK_disabled_attr_int { \the \allocationnumber }
+\newattribute \g_LuaCJK_punct_font_attr
+\int_const:Nn \c_LuaCJK_punct_font_attr_int { \the \allocationnumber }
 \g_LuaCJK_math_font_attr = 0
+\g_LuaCJK_punct_font_attr = 0
 \g_LuaCJK_cjk_space_attr = 0
 \g_LuaCJK_xecglue_attr = 0
 %    \end{macrocode}
@@ -1267,6 +1275,14 @@ $ x + 中文 $ and 中文
     NoBreakLongPunct  .code:n = { \LuaCJK_set_charset:nnn { nobreak } { set } {#1} },
     NoBreakLongPunct+ .code:n = { \LuaCJK_set_charset:nnn { nobreak } { add } {#1} },
     NoBreakLongPunct- .code:n = { \LuaCJK_set_charset:nnn { nobreak } { remove } {#1} },
+    PunctFamily .code:n =
+      {
+        \str_if_eq:nnTF {#1} { false }
+          { \tl_clear:N \l_LuaCJK_punct_family_tl }
+          { \tl_set:Nn \l_LuaCJK_punct_family_tl {#1} }
+        \LuaCJK_update_font:
+      },
+    PunctFamily .default:n = { false },
     AllowBreakBetweenPuncts .choice:,
     AllowBreakBetweenPuncts / true .code:n =
       {
@@ -1671,11 +1687,15 @@ $ x + 中文 $ and 中文
 \int_new:N \g_LuaCJK_fontid_int
 %    \end{macrocode}
 %   \end{variable}
-%   \begin{variable}[internal]{\l_LuaCJK_math_family_tl, \g_LuaCJK_math_fontid_int}
-%     The math family registered by \cs{setCJKmathfont}, and the font
-%     identifier resolved from it.
+%   \begin{variable}[internal]
+%     {\l_LuaCJK_math_family_tl, \g_LuaCJK_math_fontid_int,
+%      \l_LuaCJK_punct_family_tl}
+%     The math family registered by \cs{setCJKmathfont}, the font identifier
+%     resolved from it, and the family chosen by \texttt{PunctFamily}.
 %    \begin{macrocode}
 \tl_new:N \l_LuaCJK_math_family_tl
+\tl_new:N \l_LuaCJK_punct_family_tl
+\int_new:N \g_LuaCJK_punct_fontid_int
 \int_new:N \g_LuaCJK_math_fontid_int
 %    \end{macrocode}
 %   \end{variable}
@@ -1712,6 +1732,22 @@ $ x + 中文 $ and 中文
               { \int_gzero:N \g_LuaCJK_math_fontid_int }
           }
         \g_LuaCJK_math_font_attr = \g_LuaCJK_math_fontid_int
+        \tl_if_empty:NTF \l_LuaCJK_punct_family_tl
+          { \g_LuaCJK_punct_font_attr = \c_zero_int }
+          {
+            \prop_get:NVNTF \g_LuaCJK_family_prop \l_LuaCJK_punct_family_tl
+              \l_LuaCJK_tmpa_tl
+              {
+                \group_begin:
+                  \exp_args:NV \fontfamily \l_LuaCJK_tmpa_tl
+                  \selectfont
+                  \int_gset:Nn \g_LuaCJK_punct_fontid_int
+                    { \tex_fontid:D \tex_font:D }
+                \group_end:
+                \g_LuaCJK_punct_font_attr = \g_LuaCJK_punct_fontid_int
+              }
+              { \g_LuaCJK_punct_font_attr = \c_zero_int }
+          }
         \bool_set_false:N \l_LuaCJK_selectfont_bool
       }
   }
@@ -2036,6 +2072,7 @@ $ x + 中文 $ and 中文
     LuaCJK.attr_xecglue = \int_use:N \c_LuaCJK_xecglue_attr_int ;
     LuaCJK.attr_inserted = \int_use:N \c_LuaCJK_inserted_attr_int ;
     LuaCJK.attr_math_font = \int_use:N \c_LuaCJK_math_font_attr_int ;
+    LuaCJK.attr_punct_font = \int_use:N \c_LuaCJK_punct_font_attr_int ;
     LuaCJK.attr_disabled = \int_use:N \c_LuaCJK_disabled_attr_int ;
     LuaCJK.auto_fallback = \bool_if:NTF \g_LuaCJK_auto_fallback_bool
       { true } { false }
@@ -2135,6 +2172,7 @@ M.attr_cjk_space = M.attr_cjk_space or nil
 M.attr_xecglue = M.attr_xecglue or nil
 M.attr_inserted = M.attr_inserted or nil
 M.attr_math_font = M.attr_math_font or nil
+M.attr_punct_font = M.attr_punct_font or nil
 
 %    \end{macrocode}
 % \end{variable}
@@ -2511,6 +2549,12 @@ local function rewrite_fonts (head)
     local nxt = cur.next
     if cur.id == GLYPH and is_cjk(cur.char) and M.attr_font then
       local target = has_attribute(cur, M.attr_font)
+      if target and M.attr_punct_font and punct_class(cur.char) then
+        local punct = has_attribute(cur, M.attr_punct_font)
+        if punct and punct > 0 then
+          target = punct
+        end
+      end
       if target and target > 0 and not has_char(target, cur.char) then
         target = fallback_font(target, cur.char) or target
       end

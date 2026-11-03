@@ -1,0 +1,69 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
+
+\def\psnamesof#1{%
+  \directlua{
+    local n = tex.box[#1].head
+    local out = {}
+    while n do
+      if n.id == node.id("glyph") then
+        local f = font.getfont(n.font)
+        table.insert(out, tostring(f and f.psname))
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "PS " .. table.concat(out, " "))
+  }%
+}
+
+\begin{document}
+
+\START
+
+% \TEST groups its body, so the boxes are built here where the settings are
+% still in force.
+\setbox0=\hbox{字。}
+
+\LuaCJKsetup{PunctFamily = zhkai}
+\setbox2=\hbox{字。}
+\setbox4=\hbox{字，}
+
+\LuaCJKsetup{PunctFamily = false}
+\setbox6=\hbox{字。}
+
+\LuaCJKsetup{PunctFamily = zhhei}
+\setbox8=\hbox{字。}
+\setCJKfamilyfont{zhhei}{FandolHei-Regular.otf}
+\setbox10=\hbox{字。}
+
+\TEST{by default punctuation uses the main CJK font}{
+  \psnamesof{0}
+}
+
+\TEST{PunctFamily switches the punctuation font}{
+  \psnamesof{2}
+}
+
+\TEST{the family is applied to every punctuation mark}{
+  \psnamesof{4}
+}
+
+\TEST{PunctFamily=false restores the main font}{
+  \psnamesof{6}
+}
+
+\TEST{an unknown family falls back to the main font}{
+  \psnamesof{8}
+}
+
+\TEST{the family is picked up once it is declared}{
+  \psnamesof{10}
+}
+
+\END
+
+\end{document}

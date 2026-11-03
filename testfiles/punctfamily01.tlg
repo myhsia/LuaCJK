@@ -1,0 +1,38 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+Package fontspec Info: 
+(fontspec)             Font family 'FandolHei-Regular.otf(0)' created for font 'FandolHei-Regular.otf' with options [Script=CJK].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->"[FandolHei-Regular.otf]:mode=node;script=hani;language=dflt;"
+============================================================
+TEST 1: by default punctuation uses the main CJK font
+============================================================
+PS FandolSong-Regular FandolSong-Regular
+============================================================
+============================================================
+TEST 2: PunctFamily switches the punctuation font
+============================================================
+PS FandolSong-Regular FandolKai-Regular
+============================================================
+============================================================
+TEST 3: the family is applied to every punctuation mark
+============================================================
+PS FandolSong-Regular FandolKai-Regular
+============================================================
+============================================================
+TEST 4: PunctFamily=false restores the main font
+============================================================
+PS FandolSong-Regular FandolSong-Regular
+============================================================
+============================================================
+TEST 5: an unknown family falls back to the main font
+============================================================
+PS FandolSong-Regular FandolSong-Regular
+============================================================
+============================================================
+TEST 6: the family is picked up once it is declared
+============================================================
+PS FandolSong-Regular FandolHei-Regular
+============================================================
