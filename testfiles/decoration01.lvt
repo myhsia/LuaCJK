@@ -1,0 +1,54 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\usepackage{LuaCJKfntef}
+\setCJKmainfont{FandolSong-Regular.otf}
+\showboxbreadth = 100
+\showboxdepth = 100
+
+\begin{document}
+
+\START
+
+\TEST{the plain underline covers the whole span}{
+  \setbox0=\hbox{\CJKunderline{中文}}
+  \TYPE{width: \the\wd0}
+  \showbox0
+}
+
+\TEST{subtract insets both ends by half an em}{
+  \setbox0=\hbox{\CJKunderline[subtract]{中文}}
+  \TYPE{width: \the\wd0}
+  \showbox0
+}
+
+\TEST{subtract takes a length}{
+  \setbox0=\hbox{\CJKunderline[subtract = 2pt]{中文}}
+  \showbox0
+}
+
+\TEST{a fully inset span draws no rule}{
+  \setbox0=\hbox{\CJKunderline[subtract = 1em]{中文}}
+  \showbox0
+}
+
+\TEST{skip leaves out the punctuation}{
+  \setbox0=\hbox{\CJKunderline[skip]{中，文}}
+  \TYPE{width: \the\wd0}
+  \showbox0
+}
+
+\TEST{skip and subtract can be combined}{
+  \setbox0=\hbox{\CJKunderline[skip, subtract = 2pt]{中，文}}
+  \showbox0
+}
+
+\TEST{the next command starts from the defaults}{
+  \setbox0=\hbox{\CJKunderline{中文}}
+  \showbox0
+}
+
+\END
+
+\end{document}

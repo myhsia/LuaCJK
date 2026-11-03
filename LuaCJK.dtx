@@ -736,7 +736,11 @@ $ x + 中文 $ and 中文
 %     \item \texttt{format}, the colour of the rule, given as a color name,
 %       for example |format=red|.  \pkg{xeCJK} takes code here
 %       (|format=\color{red}|); a color name is all LuaCJK needs, and the
-%       color affects the rule only, not the text.
+%       color affects the rule only, not the text;
+%     \item \texttt{subtract}, a length (or \texttt{true} for half an em)
+%       taken off the rule at both ends, so two neighbouring commands do not
+%       run together;
+%     \item \texttt{skip}, which leaves the punctuation out of the rule.
 %   \end{itemize}
 %   The default geometry is the one \pkg{lua-ul} uses.  Any other key is
 %   passed to \pkg{lua-ul}, which understands |top|, |bottom|, and |height|;
@@ -928,9 +932,9 @@ $ x + 中文 $ and 中文
 %     \texttt{bound-*}, \texttt{kerning-*}, \texttt{optimize-*},
 %     \texttt{margin-minimum}), which describe \pkg{xeCJK}'s model of
 %     adjusting the side bearings.
-%   \item In \pkg{LuaCJKfntef}: the \texttt{hidden}, \texttt{skip},
-%     \texttt{subtract}, and \texttt{boxdepth} options, and the
-%     \texttt{sep} of \cs{CJKunderanysymbol} applies only to that command.
+%   \item In \pkg{LuaCJKfntef}: the \texttt{hidden} and \texttt{boxdepth}
+%     options, and \texttt{subtract} and \texttt{skip} are so far only
+%     implemented for \cs{CJKunderline}.
 %   \item \cs{xeCJKVerbAddon}, \cs{xeCJKOffVerbAddon}, and the
 %     \pkg{xeCJK-listings} integration.
 %   \item A \pkg{ctex} backend.  The package is not wired into
@@ -2814,6 +2818,10 @@ end
 %   compression ratio, the opening and closing exemption, and optional fixed
 %   width or hanging parameters.
 %    \begin{macrocode}
+M.punct_class = function (c)
+  return punct_class(c)
+end
+
 M.punct_styles = {
   quanjiao = { compress_adjacent = true,  ratio = 0.5, keep_open_close = true },
   plain    = { compress_adjacent = false, ratio = 0.0, keep_open_close = true },
@@ -4181,6 +4189,164 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
 %</lua-core>
 %    \end{macrocode}
 %
+% \subsection{Adjusting the decoration boxes}
+%
+% \pkg{lua-ul} draws each decoration as a pair of nodes: a leaders glue of
+% width $w$ and a glue of width $-w$ that gives the space back, so the text
+% does not move.  Changing those numbers is enough to inset the decoration
+% and to leave out the punctuation, which is why LuaCJK adjusts the box
+% instead of drawing the decoration itself.
+%
+% \begin{variable}[internal]
+%   {LuaCJKfntef.subtract, LuaCJKfntef.skip, LuaCJKfntef.mark}
+%   The inset at both ends, whether punctuation is skipped, and the
+%   attribute that marks a box as already adjusted.
+%    \begin{macrocode}
+%<*lua-fntef>
+-- LuaCJKfntef.lua
+-- Copyright (C) 2026 by Mingyu Xia <myhsia@outlook.com>
+-- This work may be distributed and/or modified under the conditions of the
+-- LaTeX Project Public License, version 1.3c or later.
+
+LuaCJKfntef = LuaCJKfntef or {}
+
+local M = LuaCJKfntef
+local GLYPH = node.id("glyph")
+local GLUE = node.id("glue")
+-- TeX numbers the glue subtypes: 100 is \leaders, which both lua-ul and the
+-- decorations of this package use.
+local LEADERS = 100
+local KERN = node.id("kern")
+
+M.subtract = M.subtract or 0
+M.skip = M.skip or false
+
+local function kind (c)
+  local class = LuaCJK.punct_class
+  if class then
+    return class(c)
+  end
+  return nil
+end
+
+-- The intervals of the span where a decoration may be drawn.
+local function segments (w, inset, skip_punct)
+  local cuts = {}
+  if skip_punct then
+    local x = 0
+    local g = nil
+    -- the covered nodes start after the negative glue, see adjust()
+    g = M.span_start
+    while g and x < w do
+      local width = g.width or 0
+      if g.id == GLYPH and kind(g.char) then
+        cuts[#cuts + 1] = { x, math.min(x + width, w) }
+      end
+      x = x + width
+      g = g.next
+    end
+  end
+  local result = {}
+  local low = math.min(inset, w)
+  local high = math.max(w - inset, low)
+  for _, cut in ipairs(cuts) do
+    if cut[1] > low then
+      result[#result + 1] = { low, math.min(cut[1], high) }
+    end
+    low = math.max(low, cut[2])
+  end
+  if low < high then
+    result[#result + 1] = { low, high }
+  end
+  return result
+end
+
+local function adjust (head)
+  local inset = M.subtract or 0
+  local skip_punct = M.skip
+  if inset == 0 and not skip_punct then
+    return head
+  end
+  local prev = nil
+  local n = head
+  while n do
+    local nxt = n.next
+    if n.id == GLUE and n.subtype == LEADERS and n.next
+       and n.next.id == GLUE and n.next.width == -n.width then
+      local w = n.width
+      local neg = n.next
+      M.span_start = neg.next
+      local parts = segments(w, inset, skip_punct)
+      M.span_start = nil
+      local first, last
+      local cursor = 0
+      for _, part in ipairs(parts) do
+        if part[1] > cursor then
+          local k = node.new("kern")
+          k.kern = part[1] - cursor
+          if last then
+            last.next = k
+          else
+            first = k
+          end
+          last = k
+        end
+        local copy = node.copy(n)
+        copy.width = part[2] - part[1]
+        copy.stretch = 0
+        copy.shrink = 0
+        copy.next = nil
+        if last then
+          last.next = copy
+        else
+          first = copy
+        end
+        last = copy
+        cursor = part[2]
+      end
+      if cursor < w then
+        local k = node.new("kern")
+        k.kern = w - cursor
+        if last then
+          last.next = k
+        else
+          first = k
+        end
+        last = k
+      end
+      if first then
+        if prev then
+          prev.next = first
+        else
+          head = first
+        end
+        last.next = neg
+      end
+      n = neg
+      nxt = neg.next
+    end
+    prev = n
+    n = nxt
+  end
+  return head
+end
+
+function M.hpack (head)
+  return adjust(head)
+end
+
+luatexbase.add_to_callback("hpack_filter", M.hpack, "LuaCJKfntef.adjust")
+luatexbase.add_to_callback("pre_append_to_vlist_filter",
+  function (box)
+    if box.id == node.id("hlist") then
+      box.head = adjust(box.head)
+    end
+    return box
+  end, "LuaCJKfntef.adjust")
+%</lua-fntef>
+%    \end{macrocode}
+% \end{variable}
+%
 
 % \subsection{Font effects}
 %
@@ -4200,6 +4366,7 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
 \RequirePackage { lua-ul }
 \RequirePackage { luacolor }
 \RequirePackage { l3draw }
+\lua_load_module:n { LuaCJKfntef }
 %    \end{macrocode}
 %
 % \begin{macro}{\CJKunderline}
@@ -4219,6 +4386,9 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
 \dim_new:N \l_LuaCJKfntef_thickness_dim
 \tl_new:N \l_LuaCJKfntef_textformat_tl
 \tl_new:N \l_LuaCJKfntef_format_tl
+\dim_new:N \l_LuaCJKfntef_subtract_dim
+\tl_new:N \l_LuaCJKfntef_skip_tl
+\tl_new:N \l_LuaCJKfntef_skip_js_tl
 \dim_new:N \l_LuaCJKfntef_rule_height_dim
 \dim_new:N \l_LuaCJKfntef_rule_depth_dim
 \prop_new:N \g_LuaCJKfntef_format_prop
@@ -4249,6 +4419,24 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
       },
     textformat .tl_set:N = \l_LuaCJKfntef_textformat_tl,
     format .tl_set:N = \l_LuaCJKfntef_format_tl,
+    subtract .code:n =
+      {
+        \str_if_eq:nnTF {#1} { true }
+          { \dim_set:Nn \l_LuaCJKfntef_subtract_dim { .5em } }
+          {
+            \str_if_eq:nnTF {#1} { false }
+              { \dim_zero:N \l_LuaCJKfntef_subtract_dim }
+              { \dim_set:Nn \l_LuaCJKfntef_subtract_dim {#1} }
+          }
+      },
+    subtract .default:n = { true },
+    skip .code:n =
+      {
+        \str_if_eq:nnTF {#1} { true }
+          { \tl_set:Nn \l_LuaCJKfntef_skip_tl { 1 } }
+          { \tl_set:Nn \l_LuaCJKfntef_skip_tl { 0 } }
+      },
+    skip .default:n = { true },
     unknown .code:n =
       {
         \tl_put_right:Nx \l_LuaCJKfntef_pass_tl
@@ -4265,6 +4453,8 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
     \tl_clear:N \l_LuaCJKfntef_pass_tl
     \tl_clear:N \l_LuaCJKfntef_textformat_tl
     \tl_clear:N \l_LuaCJKfntef_format_tl
+    \dim_zero:N \l_LuaCJKfntef_subtract_dim
+    \tl_set:Nn \l_LuaCJKfntef_skip_tl { 0 }
     \bool_set_false:N \l_LuaCJKfntef_depth_given_bool
     \bool_set_false:N \l_LuaCJKfntef_thickness_given_bool
     \keys_set:nn { LuaCJKfntef / underline } {#1}
@@ -4280,6 +4470,15 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
             top = \dim_use:N \l_LuaCJKfntef_top_dim ,
             bottom = \dim_use:N \l_LuaCJKfntef_bottom_dim ,
           }
+      }
+    \str_if_eq:VnTF \l_LuaCJKfntef_skip_tl { 1 }
+      { \tl_set:Nn \l_LuaCJKfntef_skip_js_tl { true } }
+      { \tl_set:Nn \l_LuaCJKfntef_skip_js_tl { false } }
+    \lua_now:e
+      {
+        LuaCJKfntef.subtract = \dim_to_decimal_in_sp:n
+          { \l_LuaCJKfntef_subtract_dim } ;
+        LuaCJKfntef.skip = \l_LuaCJKfntef_skip_js_tl
       }
     \dim_set:Nn \l_LuaCJKfntef_rule_height_dim
       { \l_LuaCJKfntef_top_dim }

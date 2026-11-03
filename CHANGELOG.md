@@ -89,6 +89,10 @@
   half-em shift of `hangmobanjiao`.
 - Add `\LuaCJKShipoutHook`, which runs code through the standard
   `shipout/before` hook.
+- `\CJKunderline` accepts `subtract` (inset at both ends) and `skip`
+  (leave out the punctuation).  The decoration boxes of lua-ul are adjusted
+  in place: the leaders width is reduced and a matching kern and negative
+  glue keep the text where it was.
 - Add `PunctBoundWidth`: only the given advance of a line-final mark stays
   inside the line and the rest hangs into the margin, replacing the fixed
   half-em shift of `hangmobanjiao` at that end.
