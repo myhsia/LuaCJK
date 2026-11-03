@@ -740,11 +740,15 @@ $ x + 中文 $ and 中文
 %     \item \texttt{subtract}, a length (or \texttt{true} for half an em)
 %       taken off the rule at both ends, so two neighbouring commands do not
 %       run together;
-%     \item \texttt{skip}, which leaves the punctuation out of the rule.
+%     \item \texttt{skip}, which leaves the punctuation out of the rule;
+%     \item \texttt{hidden}, which hides the text and keeps the rule, with
+%       the width, height, and depth of the hidden text;
+%     \item \texttt{boxdepth}, the depth that the rule may add to the box.
+%       The ink is not moved, so the rule still shows; |boxdepth=0pt| keeps
+%       the rule from changing the line spacing.
 %   \end{itemize}
-%   \texttt{subtract} and \texttt{skip} work the same way for
-%   \cs{CJKunderdblline}, \cs{CJKunderwave}, \cs{CJKxout}, and
-%   \cs{CJKunderdot}.
+%   These four keys work the same way for \cs{CJKunderdblline},
+%   \cs{CJKunderwave}, \cs{CJKxout}, and \cs{CJKunderdot}.
 %   The default geometry is the one \pkg{lua-ul} uses.  Any other key is
 %   passed to \pkg{lua-ul}, which understands |top|, |bottom|, and |height|;
 %   note that \pkg{lua-ul} expects |bottom| to be a negative length.  A
@@ -756,9 +760,9 @@ $ x + 中文 $ and 中文
 %   \begin{syntax}
 %     \tn{CJKunderdblline} \oarg{options} \marg{text}
 %   \end{syntax}
-%   Put two parallel rules under \meta{text}.  The optional argument takes
-%   \texttt{subtract} and \texttt{skip}, as for \cs{CJKunderline}.  A
-%   leading \texttt{*} or \texttt{-} is accepted and ignored.
+%   Put two parallel rules under \meta{text}.  The optional argument
+%   takes the same keys as \cs{CJKunderline}.  A leading \texttt{*} or
+%   \texttt{-} is accepted and ignored.
 % \end{function}
 %
 % \begin{function}{\CJKunderwave}
@@ -767,8 +771,8 @@ $ x + 中文 $ and 中文
 %   \end{syntax}
 %   Put a wave under \meta{text}.  The wave is drawn with \pkg{l3draw} and
 %   repeated with \tn{leaders}, so it has the same phase across the parts of
-%   one line.  The optional argument takes \texttt{subtract} and
-%   \texttt{skip}.
+%   one line.  The optional argument takes the same keys as
+%   \cs{CJKunderline}.
 % \end{function}
 %
 % \begin{function}{\CJKxout}
@@ -776,8 +780,8 @@ $ x + 中文 $ and 中文
 %     \tn{CJKxout} \oarg{options} \marg{text}
 %   \end{syntax}
 %   Strike \meta{text} out with a repeated slash, like \pkg{ulem}'s
-%   \tn{xout}.  The optional argument takes \texttt{subtract} and
-%   \texttt{skip}.
+%   \tn{xout}.  The optional argument takes the same keys as
+%   \cs{CJKunderline}.
 % \end{function}
 %
 % \begin{function}{\CJKunderanyline}
@@ -803,8 +807,8 @@ $ x + 中文 $ and 中文
 %   \begin{syntax}
 %     \tn{CJKunderdot} \oarg{options} \marg{text}
 %   \end{syntax}
-%   Put emphasis dots under \meta{text}.  The optional argument takes
-%   \texttt{subtract} and \texttt{skip}.
+%   Put emphasis dots under \meta{text}.  The optional argument takes the
+%   same keys as \cs{CJKunderline}.
 % \end{function}
 %
 % \begin{function}{\CJKsout}
@@ -938,11 +942,9 @@ $ x + 中文 $ and 中文
 %     \texttt{bound-*}, \texttt{kerning-*}, \texttt{optimize-*},
 %     \texttt{margin-minimum}), which describe \pkg{xeCJK}'s model of
 %     adjusting the side bearings.
-%   \item In \pkg{LuaCJKfntef}: the \texttt{hidden} and \texttt{boxdepth}
-%     options.  \texttt{subtract} and \texttt{skip} are implemented for
-%     \cs{CJKunderline}, \cs{CJKunderdblline}, \cs{CJKunderwave},
-%     \cs{CJKxout}, and \cs{CJKunderdot}, but not for \cs{CJKsout}, whose
-%     optional argument is a color.
+%   \item In \pkg{LuaCJKfntef}: the \texttt{gap}, \texttt{height},
+%     \texttt{symbol}, and \texttt{ulem} options.  \cs{CJKsout} takes a
+%     color instead of the option list of \pkg{xeCJK}.
 %   \item \cs{xeCJKVerbAddon}, \cs{xeCJKOffVerbAddon}, and the
 %     \pkg{xeCJK-listings} integration.
 %   \item A \pkg{ctex} backend.  The package is not wired into
@@ -4234,10 +4236,10 @@ M.attr = M.attr or nil
 M.settings = M.settings or {}
 M.next_id = M.next_id or 1
 
-function M.new_settings (subtract, skip)
+function M.new_settings (subtract, skip, boxdepth)
   local id = M.next_id
   M.next_id = id + 1
-  M.settings[id] = { subtract = subtract, skip = skip }
+  M.settings[id] = { subtract = subtract, skip = skip, boxdepth = boxdepth }
   if M.attr then
     tex.setattribute(M.attr, id)
   end
@@ -4322,6 +4324,15 @@ local function replace_pair (head, prev, leaders, settings)
     copy.stretch = 0
     copy.shrink = 0
     copy.next = nil
+    -- A limited box depth only changes what the line reports; the ink of the
+    -- pattern is unchanged, so the dots still show.
+    if settings.boxdepth and settings.boxdepth >= 0 and copy.leader then
+      local leader = node.copy(copy.leader)
+      if leader.depth > settings.boxdepth then
+        leader.depth = settings.boxdepth
+      end
+      copy.leader = leader
+    end
     append(copy)
     cursor = part[2]
   end
@@ -4428,6 +4439,10 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \dim_new:N \l_LuaCJKfntef_subtract_dim
 \tl_new:N \l_LuaCJKfntef_skip_tl
 \tl_new:N \l_LuaCJKfntef_skip_js_tl
+\bool_new:N \l_LuaCJKfntef_hidden_bool
+\dim_new:N \l_LuaCJKfntef_boxdepth_dim
+\bool_new:N \l_LuaCJKfntef_boxdepth_given_bool
+\tl_new:N \l_LuaCJKfntef_boxdepth_js_tl
 \dim_new:N \l_LuaCJKfntef_rule_height_dim
 \dim_new:N \l_LuaCJKfntef_rule_depth_dim
 \prop_new:N \g_LuaCJKfntef_format_prop
@@ -4476,6 +4491,13 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
           { \tl_set:Nn \l_LuaCJKfntef_skip_tl { 0 } }
       },
     skip .default:n = { true },
+    hidden .bool_set:N = \l_LuaCJKfntef_hidden_bool,
+    hidden .default:n = { true },
+    boxdepth .code:n =
+      {
+        \dim_set:Nn \l_LuaCJKfntef_boxdepth_dim {#1}
+        \bool_set_true:N \l_LuaCJKfntef_boxdepth_given_bool
+      },
     unknown .code:n =
       {
         \tl_put_right:Nx \l_LuaCJKfntef_pass_tl
@@ -4487,11 +4509,27 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
           }
       },
   }
+\cs_new_protected:Npn \LuaCJKfntef_hide:n #1
+  {
+    \bool_if:NTF \l_LuaCJKfntef_hidden_bool
+      { \phantom {#1} }
+      { #1 }
+  }
 \cs_new_protected:Npn \LuaCJKfntef_push_settings:
   {
+    \bool_if:NTF \l_LuaCJKfntef_boxdepth_given_bool
+      {
+        \tl_set:Ne \l_LuaCJKfntef_boxdepth_js_tl
+          { \dim_to_decimal_in_sp:n { \l_LuaCJKfntef_boxdepth_dim } }
+      }
+      { \tl_set:Nn \l_LuaCJKfntef_boxdepth_js_tl { -1 } }
     \bool_lazy_and:nnTF
       { \dim_compare_p:nNn { \l_LuaCJKfntef_subtract_dim } = { 0pt } }
-      { \str_if_eq_p:Vn \l_LuaCJKfntef_skip_tl { 0 } }
+      {
+        \bool_lazy_and_p:nn
+          { \str_if_eq_p:Vn \l_LuaCJKfntef_skip_tl { 0 } }
+          { \bool_not_p:n { \l_LuaCJKfntef_boxdepth_given_bool } }
+      }
       {
         \lua_now:e
           {
@@ -4507,7 +4545,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
           {
             LuaCJKfntef.new_settings
               ( \dim_to_decimal_in_sp:n { \l_LuaCJKfntef_subtract_dim } ,
-                \l_LuaCJKfntef_skip_js_tl )
+                \l_LuaCJKfntef_skip_js_tl ,
+                \l_LuaCJKfntef_boxdepth_js_tl )
           }
       }
   }
@@ -4518,6 +4557,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \tl_clear:N \l_LuaCJKfntef_format_tl
     \dim_zero:N \l_LuaCJKfntef_subtract_dim
     \tl_set:Nn \l_LuaCJKfntef_skip_tl { 0 }
+    \bool_set_false:N \l_LuaCJKfntef_hidden_bool
+    \bool_set_false:N \l_LuaCJKfntef_boxdepth_given_bool
     \bool_set_false:N \l_LuaCJKfntef_depth_given_bool
     \bool_set_false:N \l_LuaCJKfntef_thickness_given_bool
     \tl_if_novalue:nF {#1}
@@ -4590,13 +4631,13 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       \tl_if_empty:NTF \l_LuaCJKfntef_format_tl
         {
           \tl_if_empty:NTF \l_LuaCJKfntef_pass_tl
-            { \underLine { #4 } }
+            { \underLine { \LuaCJKfntef_hide:n {#4} } }
             {
               \exp_args:NV \LuaCJKfntef_underLine:nn
-                \l_LuaCJKfntef_pass_tl {#4}
+                \l_LuaCJKfntef_pass_tl { \LuaCJKfntef_hide:n {#4} }
             }
         }
-        { \LuaCJKfntef_formatted_underline: #4 }
+        { \LuaCJKfntef_formatted_underline: { \LuaCJKfntef_hide:n {#4} } }
     \group_end:
   }
 %    \end{macrocode}
@@ -4650,12 +4691,21 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
           { \tl_set:Nn \l_LuaCJKfntef_skip_tl { 0 } }
       },
     skip .default:n = { true },
+    hidden .bool_set:N = \l_LuaCJKfntef_hidden_bool,
+    hidden .default:n = { true },
+    boxdepth .code:n =
+      {
+        \dim_set:Nn \l_LuaCJKfntef_boxdepth_dim {#1}
+        \bool_set_true:N \l_LuaCJKfntef_boxdepth_given_bool
+      },
     unknown .code:n = { },
   }
 \cs_new_protected:Npn \LuaCJKfntef_decoration_setup:n #1
   {
     \dim_zero:N \l_LuaCJKfntef_subtract_dim
     \tl_set:Nn \l_LuaCJKfntef_skip_tl { 0 }
+    \bool_set_false:N \l_LuaCJKfntef_hidden_bool
+    \bool_set_false:N \l_LuaCJKfntef_boxdepth_given_bool
     \tl_if_novalue:nF {#1}
       { \keys_set:nn { LuaCJKfntef / decoration } {#1} }
     \LuaCJKfntef_push_settings:
@@ -4673,7 +4723,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       \LuaCJKfntef_decoration_setup:n {#3}
       \LuaCJKfntef_double_top
       \LuaCJKfntef_double_bottom
-      #4
+      \LuaCJKfntef_hide:n {#4}
     \group_end:
   }
 %    \end{macrocode}
@@ -4705,7 +4755,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \group_begin:
       \LuaCJKfntef_decoration_setup:n {#3}
       \LuaCJKfntef_wave
-      #4
+      \LuaCJKfntef_hide:n {#4}
     \group_end:
   }
 %    \end{macrocode}
@@ -4731,7 +4781,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \group_begin:
       \LuaCJKfntef_decoration_setup:n {#3}
       \LuaCJKfntef_slash
-      #4
+      \LuaCJKfntef_hide:n {#4}
     \group_end:
   }
 %    \end{macrocode}
@@ -4847,7 +4897,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   {
     \group_begin:
       \LuaCJKfntef_decoration_setup:n {#3}
-      \LuaCJKfntef_underdot:n { #4 }
+      \LuaCJKfntef_underdot:n { \LuaCJKfntef_hide:n {#4} }
     \group_end:
   }
 %    \end{macrocode}

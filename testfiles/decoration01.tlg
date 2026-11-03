@@ -157,12 +157,24 @@ TEST 12: underdot without options keeps the whole span
 NODES leaders:1310720 glue:-1310720 glyph glue:0 glyph
 ============================================================
 ============================================================
-TEST 13: each decoration keeps its own settings
+TEST 13: hidden keeps the dimensions and drops the text
+============================================================
+width: 20.0pt, height: 7.78pt, depth: 3.2325pt
+NODES leaders:1310720 glue:-1310720
+============================================================
+============================================================
+TEST 14: boxdepth limits the depth the rule adds
+============================================================
+depth: 3.99994pt
+depth: 1.62pt
+============================================================
+============================================================
+TEST 15: each decoration keeps its own settings
 ============================================================
 NODES kern:327680 leaders:218430 kern:327680 glue:-873790 glyph glue:218430 glyph glue:218430 leaders:655360 glue:-655360 glyph
 ============================================================
 ============================================================
-TEST 14: settings do not leak to another decoration
+TEST 16: settings do not leak to another decoration
 ============================================================
 NODES leaders:1310720 glue:-1310720 glyph glue:0 glyph
 ============================================================

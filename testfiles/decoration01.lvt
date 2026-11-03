@@ -100,6 +100,19 @@
   \nodes
 }
 
+\TEST{hidden keeps the dimensions and drops the text}{
+  \setbox0=\hbox{\CJKunderline[hidden]{中文}}
+  \TYPE{width: \the\wd0, height: \the\ht0, depth: \the\dp0}
+  \nodes
+}
+
+\TEST{boxdepth limits the depth the rule adds}{
+  \setbox0=\hbox{\CJKunderdot{中文}}
+  \TYPE{depth: \the\dp0}
+  \setbox0=\hbox{\CJKunderdot[boxdepth = 0pt]{中文}}
+  \TYPE{depth: \the\dp0}
+}
+
 \TEST{each decoration keeps its own settings}{
   \setbox0=\hbox{\CJKunderline[subtract]{中}x\CJKunderline{文}}
   \nodes
