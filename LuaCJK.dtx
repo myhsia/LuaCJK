@@ -457,6 +457,37 @@ LaTeX Project Public License, version 1.3c or later.
 %   leave the adjustments on, they behave the same in LuaCJK.
 % \end{keyval}
 %
+% \section{Paragraph endings}
+%
+% \begin{keyval}
+%   \item[\keys{CheckSingle}]\val{\TFF}
+%   When on, the last two break points of a paragraph whose final character
+%   is CJK are made unbreakable, so a single character cannot end up alone
+%   on the last line.  The initial value is \meta{false}.
+%   \item[\keys{WidowPenalty}]\val{penalty}: The penalty used by
+%   \texttt{CheckSingle}.  The initial value is \texttt{10000}; a lower
+%   value allows the break when it is worth the cost.
+% \end{keyval}
+%
+% \pkg{xeCJK} needs the \texttt{NewLineCS}, \texttt{EnvCS},
+% \texttt{InlineEnv}, and \texttt{PlainEquation} options to recognise
+% \TeX{} constructs while it scans tokens.  LuaCJK looks at the finished
+% node list instead, so these options have no counterpart and are not
+% accepted.
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+\begingroup
+  \LuaCJKsetup{CheckSingle = true}
+  \hsize = 4em 字字字字字字字字字\par
+\endgroup
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
+%
 % \section{CJK in mathematics}
 %
 % \begin{keyval}
@@ -1008,6 +1039,7 @@ $ x + 中文 $ and 中文
 %   \begin{variable}[internal]
 %     {\l_LuaCJK_punct_kinsoku_tl, \l_LuaCJK_cjk_math_tl,
 %      \l_LuaCJK_verb_mode_tl, \l_LuaCJK_local_config_tl,
+%      \l_LuaCJK_check_single_tl, \l_LuaCJK_widow_penalty_int,
 %      \g_LuaCJK_autofake_bold_tl, \g_LuaCJK_autofake_slant_tl,
 %      \g_LuaCJK_embolden_factor_tl, \g_LuaCJK_slant_factor_tl,
 %      \g_LuaCJK_fallback_prop, \g_LuaCJK_auto_fallback_bool,
@@ -1024,6 +1056,10 @@ $ x + 中文 $ and 中文
 \tl_set:Nn \l_LuaCJK_cjk_math_tl { 0 }
 \tl_new:N \l_LuaCJK_verb_mode_tl
 \tl_set:Nn \l_LuaCJK_verb_mode_tl { true }
+\tl_new:N \l_LuaCJK_check_single_tl
+\tl_set:Nn \l_LuaCJK_check_single_tl { 0 }
+\int_new:N \l_LuaCJK_widow_penalty_int
+\int_set:Nn \l_LuaCJK_widow_penalty_int { 10000 }
 \tl_new:N \l_LuaCJK_local_config_tl
 \tl_new:N \g_LuaCJK_autofake_bold_tl
 \tl_new:N \g_LuaCJK_autofake_slant_tl
@@ -1079,6 +1115,12 @@ $ x + 中文 $ and 中文
     Verb / env+  .code:n = { \tl_set:Nn \l_LuaCJK_verb_mode_tl { env+ } },
     Verb / false .code:n = { \tl_set:Nn \l_LuaCJK_verb_mode_tl { false } },
     Verb .default:n = { true },
+    CheckSingle .choice:,
+    CheckSingle / true .code:n = { \tl_set:Nn \l_LuaCJK_check_single_tl { 1 } },
+    CheckSingle / false .code:n = { \tl_set:Nn \l_LuaCJK_check_single_tl { 0 } },
+    CheckSingle .default:n = { true },
+    WidowPenalty .code:n =
+      { \int_set:Nn \l_LuaCJK_widow_penalty_int {#1} },
     LocalConfig .code:n =
       {
         \str_case:nnF {#1}
@@ -3146,11 +3188,79 @@ end
 % \begin{macro}[internal]{LuaCJK.process}
 %   Run the font, spacing, fixed-width, and kinsoku passes over a list.
 %    \begin{macrocode}
+-- Widow control for a single CJK character on the last line.
+--
+-- TeX can break at the glue that LuaCJK inserts between CJK characters.  At
+-- the end of a paragraph we raise the penalty of the last two such break
+-- points, so at least three CJK characters travel to the last line together.
+local function check_single_enabled ()
+  return token.get_macro("l_LuaCJK_check_single_tl") == "1"
+end
+
+local function widow_penalty ()
+  return tex.count["l_LuaCJK_widow_penalty_int"] or 10000
+end
+
+local function apply_check_single (head)
+  if not check_single_enabled() then
+    return head
+  end
+  local trail = {}
+  local node = head
+  while node do
+    trail[#trail + 1] = node
+    node = node.next
+  end
+  local last
+  for i = #trail, 1, -1 do
+    local item = trail[i]
+    if item.id == GLYPH then
+      if is_cjk(item.char) then
+        last = i
+      end
+      break
+    elseif item.id == HLIST or item.id == VLIST then
+      break
+    end
+  end
+  if not last then
+    return head
+  end
+  local penalty = widow_penalty()
+  local inserted = 0
+  local i = last
+  while i > 1 and inserted < 2 do
+    local j = i - 1
+    while j >= 1 and (trail[j].id == GLUE or trail[j].id == PENALTY) do
+      j = j - 1
+    end
+    if j < 1 then
+      break
+    end
+    local glyph = trail[j]
+    if glyph.id ~= GLYPH or not is_cjk(glyph.char) then
+      break
+    end
+    local target = trail[j + 1]
+    if target and target.id == GLUE then
+      local p = new_node("penalty")
+      inherit_attributes(p, glyph)
+      p.penalty = penalty
+      p.next = target
+      glyph.next = p
+    end
+    inserted = inserted + 1
+    i = j
+  end
+  return head
+end
+
 local function process (head)
   head = rewrite_fonts(head)
   head = spacing(head)
   head = apply_fixed_widths(head)
   head = apply_kinsoku(head)
+  head = apply_check_single(head)
   return head
 end
 

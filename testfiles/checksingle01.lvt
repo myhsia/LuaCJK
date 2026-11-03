@@ -1,0 +1,64 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\def\linecounts{%
+  \directlua{
+    local n = tex.box[0].head
+    local lines = {}
+    while n do
+      if n.id == node.id("hlist") then
+        local c = 0
+        local m = n.head
+        while m do
+          if m.id == node.id("glyph") then
+            c = c + 1
+          end
+          m = m.next
+        end
+        table.insert(lines, c)
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "LINES " .. table.concat(lines, ","))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{without CheckSingle a short last line is allowed}{
+  \setbox0=\vbox{\hsize=4em 字字字字字字字字字\par}
+  \linecounts
+}
+
+\TEST{CheckSingle keeps three characters together}{
+  \LuaCJKsetup{CheckSingle = true}
+  \setbox0=\vbox{\hsize=4em 字字字字字字字字字\par}
+  \linecounts
+}
+
+\TEST{a zero WidowPenalty disables the protection}{
+  \LuaCJKsetup{CheckSingle = true, WidowPenalty = 0}
+  \setbox0=\vbox{\hsize=4em 字字字字字字字字字\par}
+  \linecounts
+}
+
+\TEST{CheckSingle can be turned off again}{
+  \LuaCJKsetup{CheckSingle = false, WidowPenalty = 10000}
+  \setbox0=\vbox{\hsize=4em 字字字字字字字字字\par}
+  \linecounts
+}
+
+\TEST{a paragraph ending with punctuation is covered}{
+  \LuaCJKsetup{CheckSingle = true}
+  \setbox0=\vbox{\hsize=4em 字字字字字字字字。\par}
+  \linecounts
+}
+
+\END
+
+\end{document}

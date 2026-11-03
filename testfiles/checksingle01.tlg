@@ -1,0 +1,140 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: without CheckSingle a short last line is allowed
+============================================================
+Overfull \hbox (5.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 字
+\hbox(7.69+1.75)x40.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue(\rightskip) 0.0
+LINES 3,4,2
+============================================================
+============================================================
+TEST 2: CheckSingle keeps three characters together
+============================================================
+Overfull \hbox (5.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 字
+\hbox(7.69+1.75)x40.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue(\rightskip) 0.0
+Overfull \hbox (20.0pt too wide) in paragraph at lines ...
+\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 字 字 字 字 
+\hbox(7.69+1.75)x40.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0
+LINES 3,6
+============================================================
+============================================================
+TEST 3: a zero WidowPenalty disables the protection
+============================================================
+Overfull \hbox (5.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 字
+\hbox(7.69+1.75)x40.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue(\rightskip) 0.0
+LINES 3,4,2
+============================================================
+============================================================
+TEST 4: CheckSingle can be turned off again
+============================================================
+Overfull \hbox (5.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 字
+\hbox(7.69+1.75)x40.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue(\rightskip) 0.0
+LINES 3,4,2
+============================================================
+============================================================
+TEST 5: a paragraph ending with punctuation is covered
+============================================================
+Overfull \hbox (5.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 字
+\hbox(7.69+1.75)x40.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue(\rightskip) 0.0
+Overfull \hbox (20.0pt too wide) in paragraph at lines ...
+\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 字 字 字 。 
+\hbox(7.69+1.75)x40.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 。
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0
+LINES 3,6
+============================================================
