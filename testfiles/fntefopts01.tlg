@@ -1,10 +1,10 @@
 This is a generated file for the l3build validation system.
 Don't change this file in any respect.
 ============================================================
-TEST 1: the default underline geometry comes from lua-ul
+TEST 1: the default geometry is depth 0.2em and thickness 0.4pt
 ============================================================
 Lua-only attribute luaul1 = ...
-depth: 3.2325pt
+depth: 2.39996pt
 ============================================================
 ============================================================
 TEST 2: depth and thickness set the geometry
@@ -39,14 +39,45 @@ Check that you have spelled the key name correctly.
 survived
 ============================================================
 ============================================================
-TEST 7: format keeps the text width and draws a leader run
+TEST 7: the double underline takes gap and thickness
+============================================================
+Lua-only attribute luaul2 = ...
+depth: 3.89996pt
+depth: 6.99997pt
+============================================================
+============================================================
+TEST 8: gap does not leak to the next call
+============================================================
+depth: 3.89996pt
+============================================================
+============================================================
+TEST 9: strike-through takes height and thickness
+============================================================
+RULE 154337 -128123
+RULE 229378 -163842
+============================================================
+============================================================
+TEST 10: a bare color is still accepted by CJKsout
+============================================================
+width: 10.0pt
+============================================================
+============================================================
+TEST 11: a symbol replaces the wave and the dots
+============================================================
+PATTERN 353894
+PATTERN 640950
+PATTERN 196600
+PATTERN 640950
+============================================================
+============================================================
+TEST 12: format keeps the text width and draws a leader run
 ============================================================
 formatted: 39.49pt
 plain: 39.49pt
 RUNS 1
 ============================================================
 ============================================================
-TEST 8: format and textformat can be combined
+TEST 13: format and textformat can be combined
 ============================================================
 LaTeX Font Warning: Font shape `TU/FandolSong-Regular.otf(0)/bx/n' undefined
 (Font)              using `TU/FandolSong-Regular.otf(0)/m/n' instead on input line ....

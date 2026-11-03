@@ -6,9 +6,9 @@ TEST 1: the plain underline covers the whole span
 Lua-only attribute luaul1 = ...
 width: 20.0pt
 > \box...=
-\hbox(7.78+3.2325)x20.0, direction TLT
+\hbox(7.78+2.39996)x20.0, direction TLT
 .\leaders 20.0 plus 0.96002
-..\rule(-2.80147+3.2325)x0.4
+..\rule(-1.99997+2.39996)x0.4
 .\glue -20.0 plus -0.96002
 .\TU/FandolSong-Regular.otf(0)/m/n/10 中
 .\glue 0.0 plus 0.96002
@@ -22,10 +22,10 @@ TEST 2: subtract insets both ends by half an em
 ============================================================
 width: 20.0pt
 > \box...=
-\hbox(7.78+3.2325)x20.0, direction TLT
+\hbox(7.78+2.39996)x20.0, direction TLT
 .\kern5.0 (font)
 .\leaders 10.0
-..\rule(-2.80147+3.2325)x0.4
+..\rule(-1.99997+2.39996)x0.4
 .\kern5.0 (font)
 .\glue -20.0 plus -0.96002
 .\TU/FandolSong-Regular.otf(0)/m/n/10 中
@@ -39,10 +39,10 @@ l. ...}
 TEST 3: subtract takes a length
 ============================================================
 > \box...=
-\hbox(7.78+3.2325)x20.0, direction TLT
+\hbox(7.78+2.39996)x20.0, direction TLT
 .\kern2.0 (font)
 .\leaders 16.0
-..\rule(-2.80147+3.2325)x0.4
+..\rule(-1.99997+2.39996)x0.4
 .\kern2.0 (font)
 .\glue -20.0 plus -0.96002
 .\TU/FandolSong-Regular.otf(0)/m/n/10 中
@@ -71,12 +71,12 @@ TEST 5: skip leaves out the punctuation
 ============================================================
 width: 30.0pt
 > \box...=
-\hbox(7.78+3.2325)x30.0, direction TLT
+\hbox(7.78+2.39996)x30.0, direction TLT
 .\leaders 10.0
-..\rule(-2.80147+3.2325)x0.4
+..\rule(-1.99997+2.39996)x0.4
 .\kern10.0 (font)
 .\leaders 10.0
-..\rule(-2.80147+3.2325)x0.4
+..\rule(-1.99997+2.39996)x0.4
 .\glue -30.0 plus -1.92004
 .\TU/FandolSong-Regular.otf(0)/m/n/10 中
 .\penalty 10000
@@ -92,13 +92,13 @@ l. ...}
 TEST 6: skip and subtract can be combined
 ============================================================
 > \box...=
-\hbox(7.78+3.2325)x30.0, direction TLT
+\hbox(7.78+2.39996)x30.0, direction TLT
 .\kern2.0 (font)
 .\leaders 8.0
-..\rule(-2.80147+3.2325)x0.4
+..\rule(-1.99997+2.39996)x0.4
 .\kern10.0 (font)
 .\leaders 8.0
-..\rule(-2.80147+3.2325)x0.4
+..\rule(-1.99997+2.39996)x0.4
 .\kern2.0 (font)
 .\glue -30.0 plus -1.92004
 .\TU/FandolSong-Regular.otf(0)/m/n/10 中
@@ -115,9 +115,9 @@ l. ...}
 TEST 7: the next command starts from the defaults
 ============================================================
 > \box...=
-\hbox(7.78+3.2325)x20.0, direction TLT
+\hbox(7.78+2.39996)x20.0, direction TLT
 .\leaders 20.0 plus 0.96002
-..\rule(-2.80147+3.2325)x0.4
+..\rule(-1.99997+2.39996)x0.4
 .\glue -20.0 plus -0.96002
 .\TU/FandolSong-Regular.otf(0)/m/n/10 中
 .\glue 0.0 plus 0.96002
@@ -159,7 +159,7 @@ NODES leaders:1310720 glue:-1310720 glyph glue:0 glyph
 ============================================================
 TEST 13: hidden keeps the dimensions and drops the text
 ============================================================
-width: 20.0pt, height: 7.78pt, depth: 3.2325pt
+width: 20.0pt, height: 7.78pt, depth: 2.39996pt
 NODES leaders:1310720 glue:-1310720
 ============================================================
 ============================================================

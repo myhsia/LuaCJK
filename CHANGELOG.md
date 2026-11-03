@@ -102,6 +102,13 @@
   breaks between CJK characters, so columns in code listings stay aligned.
 - Add `LatinPunct`, which keeps the shared quotation marks, the middle dot,
   and the ellipses in the Latin font instead of the CJK font.
+- The underline geometry now uses `depth=0.2em` and `thickness=0.4pt` on
+  every path, so `format` works without also giving `thickness` or `depth`.
+  `top` and `bottom` still override the computed values.
+- Add `gap` to `\CJKunderdblline`, `symbol` and `sep` to `\CJKunderwave` and
+  `\CJKunderdot`, and `height` and `thickness` to `\CJKsout`.
+- `\CJKsout` now takes the same key list as the other decorations, including
+  `format` and `subtract`; a bare color name is still accepted.
 - `\LuaCJKDeclareCharClass` accepts the class names of `xeCJK`
   (`FullLeft`, `FullRight`, `HalfLeft`, `HalfRight`, `NormalSpace`,
   `CJStarter`, `CM`, `Boundary`); `\LuaCJKResetCharClass` also restores the

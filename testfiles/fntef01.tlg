@@ -6,7 +6,7 @@ TEST 1: underline keeps the text width
 Lua-only attribute luaul1 = ...
 underlined: 62.82pt
 plain: 62.82pt
-depth difference: 1.6125pt
+depth difference: 0.77997pt
 ============================================================
 ============================================================
 TEST 2: underline accepts the star and the dash

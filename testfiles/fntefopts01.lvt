@@ -5,11 +5,29 @@
 \usepackage{LuaCJKfntef}
 \setCJKmainfont{FandolSong-Regular.otf}
 
+\def\rulegeometry{%
+  \directlua{
+    local n = tex.box[0].head
+    while n do
+      if n.id == node.id("glue") and n.subtype == 100 and n.leader then
+        local leader = n.leader
+        if leader.id == node.id("rule") then
+          texio.write_nl("term and log",
+            "RULE " .. tostring(leader.height) .. " " .. tostring(leader.depth))
+        else
+          texio.write_nl("term and log", "PATTERN " .. tostring(leader.width))
+        end
+      end
+      n = n.next
+    end
+  }%
+}
+
 \begin{document}
 
 \START
 
-\TEST{the default underline geometry comes from lua-ul}{
+\TEST{the default geometry is depth 0.2em and thickness 0.4pt}{
   \setbox0=\hbox{\CJKunderline{中}}
   \TYPE{depth: \the\dp0}
 }
@@ -39,6 +57,42 @@
 \TEST{an unknown key is reported by lua-ul}{
   \setbox0=\hbox{\CJKunderline[no-such-key = 1]{中}}
   \TYPE{survived}
+}
+
+\TEST{the double underline takes gap and thickness}{
+  \setbox0=\hbox{\CJKunderdblline{中}}
+  \TYPE{depth: \the\dp0}
+  \setbox0=\hbox{\CJKunderdblline[gap = 3pt, thickness = 1pt]{中}}
+  \TYPE{depth: \the\dp0}
+}
+
+\TEST{gap does not leak to the next call}{
+  \setbox0=\hbox{\CJKunderdblline[gap = 3pt]{中}}
+  \setbox0=\hbox{\CJKunderdblline{中}}
+  \TYPE{depth: \the\dp0}
+}
+
+\TEST{strike-through takes height and thickness}{
+  \setbox0=\hbox{\CJKsout{中}}
+  \rulegeometry
+  \setbox0=\hbox{\CJKsout[height = 0.3em, thickness = 1pt]{中}}
+  \rulegeometry
+}
+
+\TEST{a bare color is still accepted by CJKsout}{
+  \setbox0=\hbox{\CJKsout[red]{中}}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{a symbol replaces the wave and the dots}{
+  \setbox0=\hbox{\CJKunderwave{中}}
+  \rulegeometry
+  \setbox0=\hbox{\CJKunderwave[symbol = \textbullet]{中}}
+  \rulegeometry
+  \setbox0=\hbox{\CJKunderdot{中}}
+  \rulegeometry
+  \setbox0=\hbox{\CJKunderdot[symbol = \textbullet]{中}}
+  \rulegeometry
 }
 
 \TEST{format keeps the text width and draws a leader run}{

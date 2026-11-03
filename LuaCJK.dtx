@@ -770,12 +770,13 @@ $ x + 中文 $ and 中文
 %       The ink is not moved, so the rule still shows; |boxdepth=0pt| keeps
 %       the rule from changing the line spacing.
 %   \end{itemize}
-%   These four keys work the same way for \cs{CJKunderdblline},
-%   \cs{CJKunderwave}, \cs{CJKxout}, and \cs{CJKunderdot}.
-%   The default geometry is the one \pkg{lua-ul} uses.  Any other key is
-%   passed to \pkg{lua-ul}, which understands |top|, |bottom|, and |height|;
-%   note that \pkg{lua-ul} expects |bottom| to be a negative length.  A
-%   leading \texttt{*} or \texttt{-} is accepted for compatibility with
+%   The initial geometry is \texttt{depth=0.2em} and
+%   \texttt{thickness=0.4pt}.  \texttt{subtract}, \texttt{skip},
+%   \texttt{hidden}, and \texttt{boxdepth} work the same way for
+%   \cs{CJKunderdblline}, \cs{CJKunderwave}, \cs{CJKxout}, and
+%   \cs{CJKunderdot}.  The keys \texttt{top} and \texttt{bottom} are passed
+%   to \pkg{lua-ul} and override the computed geometry.  A leading
+%   \texttt{*} or \texttt{-} is accepted for compatibility with
 %   \pkg{xeCJKfntef} and ignored.
 % \end{function}
 %
@@ -783,9 +784,11 @@ $ x + 中文 $ and 中文
 %   \begin{syntax}
 %     \tn{CJKunderdblline} \oarg{options} \marg{text}
 %   \end{syntax}
-%   Put two parallel rules under \meta{text}.  The optional argument
-%   takes the same keys as \cs{CJKunderline}.  A leading \texttt{*} or
-%   \texttt{-} is accepted and ignored.
+%   Put two parallel rules under \meta{text}.  Besides the keys of
+%   \cs{CJKunderline}, the optional argument takes \texttt{gap}, the
+%   distance between the two rules (initial \texttt{1.1pt}); both rules use
+%   \texttt{thickness} and the top rule starts at \texttt{depth}.  A leading
+%   \texttt{*} or \texttt{-} is accepted and ignored.
 % \end{function}
 %
 % \begin{function}{\CJKunderwave}
@@ -794,8 +797,10 @@ $ x + 中文 $ and 中文
 %   \end{syntax}
 %   Put a wave under \meta{text}.  The wave is drawn with \pkg{l3draw} and
 %   repeated with \tn{leaders}, so it has the same phase across the parts of
-%   one line.  The optional argument takes the same keys as
-%   \cs{CJKunderline}.
+%   one line.  The optional argument takes the keys of \cs{CJKunderline}
+%   and, in addition, \texttt{symbol} to replace the wave with another
+%   symbol, and \texttt{sep} for the space on each side of it (initial
+%   \texttt{0.1em}).
 % \end{function}
 %
 % \begin{function}{\CJKxout}
@@ -831,15 +836,21 @@ $ x + 中文 $ and 中文
 %     \tn{CJKunderdot} \oarg{options} \marg{text}
 %   \end{syntax}
 %   Put emphasis dots under \meta{text}.  The optional argument takes the
-%   same keys as \cs{CJKunderline}.
+%   keys of \cs{CJKunderline} and, like \cs{CJKunderwave}, the keys
+%   \texttt{symbol} and \texttt{sep}.
 % \end{function}
 %
 % \begin{function}{\CJKsout}
 %   \begin{syntax}
-%     \tn{CJKsout} \oarg{color} \marg{text}
+%     \tn{CJKsout} \oarg{options} \marg{text}
 %   \end{syntax}
-%   Strike \meta{text} through.  The optional argument is the color of the
-%   rule.
+%   Strike \meta{text} through.  The optional argument takes
+%   \texttt{thickness}, \texttt{height} (the distance from the baseline to
+%   the centre of the rule, initial \texttt{0.5ex}), \texttt{format} (a
+%   color name), and the keys \texttt{subtract}, \texttt{skip},
+%   \texttt{hidden}, and \texttt{boxdepth}.  A bare color name is still
+%   accepted and means |format = |\meta{color}; \texttt{color} is another
+%   name for \texttt{format}.
 % \end{function}
 %
 % \iffalse
@@ -924,6 +935,11 @@ $ x + 中文 $ and 中文
 %     are approximated, as described with the command.
 %   \item \cs{setCJKfallbackfamilyfont} and \texttt{AutoFallBack},
 %     \texttt{LoadFandol}, and \texttt{LocalConfig}.
+%   \item The \pkg{LuaCJKfntef} keys \texttt{thickness}, \texttt{depth},
+%     \texttt{textformat}, \texttt{format}, \texttt{subtract}, \texttt{skip},
+%     \texttt{hidden}, \texttt{boxdepth}, \texttt{gap}, \texttt{height},
+%     \texttt{symbol}, and \texttt{sep}.  \texttt{format} differs, as noted
+%     below.
 % \end{itemize}
 %
 % \subsection{Available with a different meaning}
@@ -970,9 +986,10 @@ $ x + 中文 $ and 中文
 %     \texttt{bound-*}, \texttt{kerning-*}, \texttt{optimize-*},
 %     \texttt{margin-minimum}), which describe \pkg{xeCJK}'s model of
 %     adjusting the side bearings.
-%   \item In \pkg{LuaCJKfntef}: the \texttt{gap}, \texttt{height},
-%     \texttt{symbol}, and \texttt{ulem} options.  \cs{CJKsout} takes a
-%     color instead of the option list of \pkg{xeCJK}.
+%   \item In \pkg{LuaCJKfntef}: the \texttt{ulem} option, which passes
+%     options to the commands of \pkg{ulem}.  \pkg{LuaCJKfntef} builds on
+%     \pkg{lua-ul} instead, and its \tn{underLine} may be configured
+%     directly.
 %   \item The \pkg{xeCJK-listings} integration.
 %   \item A \pkg{ctex} backend.  The package is not wired into
 %     \pkg{ctex} yet; that needs the agreement of the \pkg{ctex}
@@ -4611,8 +4628,13 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \dim_new:N \l_LuaCJKfntef_bottom_dim
 \bool_new:N \l_LuaCJKfntef_depth_given_bool
 \bool_new:N \l_LuaCJKfntef_thickness_given_bool
+\dim_new:N \l_LuaCJKfntef_gap_dim
+\dim_new:N \l_LuaCJKfntef_height_dim
+\tl_new:N \l_LuaCJKfntef_symbol_tl
 \dim_set:Nn \l_LuaCJKfntef_depth_dim { .2em }
 \dim_set:Nn \l_LuaCJKfntef_thickness_dim { .4pt }
+\dim_set:Nn \l_LuaCJKfntef_gap_dim { 1.1pt }
+\dim_set:Nn \l_LuaCJKfntef_height_dim { .5ex }
 %    \end{macrocode}
 %   \end{variable}
 %    \begin{macrocode}
@@ -4709,29 +4731,20 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   }
 \cs_new_protected:Npn \LuaCJKfntef_prepare_underline:n #1
   {
+    \LuaCJKfntef_reset_decoration:
     \tl_clear:N \l_LuaCJKfntef_pass_tl
     \tl_clear:N \l_LuaCJKfntef_textformat_tl
-    \tl_clear:N \l_LuaCJKfntef_format_tl
-    \dim_zero:N \l_LuaCJKfntef_subtract_dim
-    \tl_set:Nn \l_LuaCJKfntef_skip_tl { 0 }
-    \bool_set_false:N \l_LuaCJKfntef_hidden_bool
-    \bool_set_false:N \l_LuaCJKfntef_boxdepth_given_bool
     \bool_set_false:N \l_LuaCJKfntef_depth_given_bool
     \bool_set_false:N \l_LuaCJKfntef_thickness_given_bool
     \tl_if_novalue:nF {#1}
       { \keys_set:nn { LuaCJKfntef / underline } {#1} }
-    \bool_lazy_or:nnT
-      { \l_LuaCJKfntef_depth_given_bool }
-      { \l_LuaCJKfntef_thickness_given_bool }
+    \dim_set:Nn \l_LuaCJKfntef_top_dim { -\l_LuaCJKfntef_depth_dim }
+    \dim_set:Nn \l_LuaCJKfntef_bottom_dim
+      { -\l_LuaCJKfntef_depth_dim - \l_LuaCJKfntef_thickness_dim }
+    \tl_put_left:Nx \l_LuaCJKfntef_pass_tl
       {
-        \dim_set:Nn \l_LuaCJKfntef_top_dim { -\l_LuaCJKfntef_depth_dim }
-        \dim_set:Nn \l_LuaCJKfntef_bottom_dim
-          { -\l_LuaCJKfntef_depth_dim - \l_LuaCJKfntef_thickness_dim }
-        \tl_put_right:Nx \l_LuaCJKfntef_pass_tl
-          {
-            top = \dim_use:N \l_LuaCJKfntef_top_dim ,
-            bottom = \dim_use:N \l_LuaCJKfntef_bottom_dim ,
-          }
+        top = \dim_use:N \l_LuaCJKfntef_top_dim ,
+        bottom = \dim_use:N \l_LuaCJKfntef_bottom_dim ,
       }
     \LuaCJKfntef_push_settings:
     \dim_set:Nn \l_LuaCJKfntef_rule_height_dim
@@ -4754,6 +4767,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         | \dim_use:N \l_LuaCJKfntef_rule_height_dim
         | \dim_use:N \l_LuaCJKfntef_rule_depth_dim
       }
+    \luaul_set_color:n { \l_LuaCJKfntef_format_tl }
     \prop_get:NVNTF \g_LuaCJKfntef_format_prop
       \l_LuaCJKfntef_cache_key_tl \l_LuaCJKfntef_cache_name_tl
       { }
@@ -4772,7 +4786,6 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         \prop_gput:NVV \g_LuaCJKfntef_format_prop
           \l_LuaCJKfntef_cache_key_tl \l_LuaCJKfntef_cache_name_tl
       }
-    \luaul_set_color:n { \l_LuaCJKfntef_format_tl }
     \use:c { \l_LuaCJKfntef_cache_name_tl }
   }
 %    \end{macrocode}
@@ -4803,13 +4816,78 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \begin{macro}{\CJKsout}
 %   Strike through the argument.
 %    \begin{macrocode}
+\cs_new_protected:Npn \LuaCJKfntef_use_sout:
+  {
+    \tl_set:Ne \l_LuaCJKfntef_cache_key_tl
+      {
+        sout |
+        \dim_use:N \l_LuaCJKfntef_height_dim |
+        \dim_use:N \l_LuaCJKfntef_thickness_dim |
+        \l_LuaCJKfntef_format_tl
+      }
+    \tl_if_empty:NF \l_LuaCJKfntef_format_tl
+      { \luaul_set_color:n { \l_LuaCJKfntef_format_tl } }
+    \prop_get:NVNTF \g_LuaCJKfntef_format_prop
+      \l_LuaCJKfntef_cache_key_tl \l_LuaCJKfntef_cache_name_tl
+      { }
+      {
+        \int_gincr:N \g_LuaCJKfntef_format_int
+        \tl_set:Ne \l_LuaCJKfntef_cache_name_tl
+          { LuaCJKfntef/st/ \int_use:N \g_LuaCJKfntef_format_int }
+        \tl_if_empty:NTF \l_LuaCJKfntef_format_tl
+          {
+            \exp_args:Nc \newunderlinetype
+              { \l_LuaCJKfntef_cache_name_tl }
+              {
+                \leaders \vrule
+                  height \dim_eval:n
+                    {
+                      \l_LuaCJKfntef_height_dim
+                      + \l_LuaCJKfntef_thickness_dim / 2
+                    }
+                  depth \dim_eval:n
+                    {
+                      -\l_LuaCJKfntef_height_dim
+                      + \l_LuaCJKfntef_thickness_dim / 2
+                    }
+              }
+          }
+          {
+            \exp_args:Nc \newunderlinetype
+              { \l_LuaCJKfntef_cache_name_tl }
+              [ \dim_to_decimal_in_sp:n { 1ex } @ \luaul_context_color: ]
+              {
+                \luaul_apply_color:
+                \leaders \vrule
+                  height \dim_eval:n
+                    {
+                      \l_LuaCJKfntef_height_dim
+                      + \l_LuaCJKfntef_thickness_dim / 2
+                    }
+                  depth \dim_eval:n
+                    {
+                      -\l_LuaCJKfntef_height_dim
+                      + \l_LuaCJKfntef_thickness_dim / 2
+                    }
+              }
+          }
+        \prop_gput:NVV \g_LuaCJKfntef_format_prop
+          \l_LuaCJKfntef_cache_key_tl \l_LuaCJKfntef_cache_name_tl
+      }
+    \use:c { \l_LuaCJKfntef_cache_name_tl }
+  }
 \NewDocumentCommand \CJKsout { s t- o +m }
   {
     \group_begin:
-      \LuaCJKfntef_decoration_setup:n { }
-      \IfValueTF {#3}
-        { \strikeThrough [ #3 ] { #4 } }
-        { \strikeThrough { #4 } }
+      \tl_if_novalue:nTF {#3}
+        { \LuaCJKfntef_decoration_setup:n { } }
+        {
+          \tl_if_in:nnTF {#3} { = }
+            { \LuaCJKfntef_decoration_setup:n {#3} }
+            { \LuaCJKfntef_decoration_setup:n { format = #3 } }
+        }
+      \LuaCJKfntef_use_sout:
+      \LuaCJKfntef_hide:n {#4}
     \group_end:
   }
 %    \end{macrocode}
@@ -4819,10 +4897,49 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   Two parallel rules.  They are two underline types applied in the same
 %   group, so \pkg{lua-ul} draws both along one span.
 %    \begin{macrocode}
-\newunderlinetype \LuaCJKfntef_double_top
-  { \leaders \vrule height -.20em depth .24em }
-\newunderlinetype \LuaCJKfntef_double_bottom
-  { \leaders \vrule height -.32em depth .36em }
+\cs_new_protected:Npn \LuaCJKfntef_use_double:
+  {
+    \tl_set:Ne \l_LuaCJKfntef_cache_key_tl
+      {
+        double-top |
+        \dim_use:N \l_LuaCJKfntef_depth_dim |
+        \dim_use:N \l_LuaCJKfntef_thickness_dim
+      }
+    \tl_set:Ne \l_LuaCJKfntef_any_code_tl
+      {
+        \exp_not:N \leaders \exp_not:N \vrule
+          height \dim_eval:n { -\l_LuaCJKfntef_depth_dim }
+          depth \dim_eval:n
+            { \l_LuaCJKfntef_depth_dim + \l_LuaCJKfntef_thickness_dim }
+      }
+    \exp_args:NV \LuaCJKfntef_use_leader_type:nn
+      \l_LuaCJKfntef_cache_key_tl \l_LuaCJKfntef_any_code_tl
+    \tl_set:Ne \l_LuaCJKfntef_cache_key_tl
+      {
+        double-bottom |
+        \dim_use:N \l_LuaCJKfntef_depth_dim |
+        \dim_use:N \l_LuaCJKfntef_thickness_dim |
+        \dim_use:N \l_LuaCJKfntef_gap_dim
+      }
+    \tl_set:Ne \l_LuaCJKfntef_any_code_tl
+      {
+        \exp_not:N \leaders \exp_not:N \vrule
+          height \dim_eval:n
+            {
+              -\l_LuaCJKfntef_depth_dim
+              - \l_LuaCJKfntef_thickness_dim
+              - \l_LuaCJKfntef_gap_dim
+            }
+          depth \dim_eval:n
+            {
+              \l_LuaCJKfntef_depth_dim
+              + 2 \l_LuaCJKfntef_thickness_dim
+              + \l_LuaCJKfntef_gap_dim
+            }
+      }
+    \exp_args:NV \LuaCJKfntef_use_leader_type:nn
+      \l_LuaCJKfntef_cache_key_tl \l_LuaCJKfntef_any_code_tl
+  }
 % \begin{macro}[internal]{\LuaCJKfntef_decoration_setup:n}
 %   The settings that the decoration pass reads.  They are pushed on every
 %   call, so a command without options starts from the defaults instead of
@@ -4855,14 +4972,39 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         \dim_set:Nn \l_LuaCJKfntef_boxdepth_dim {#1}
         \bool_set_true:N \l_LuaCJKfntef_boxdepth_given_bool
       },
+    depth .dim_set:N = \l_LuaCJKfntef_depth_dim,
+    depth .value_required:n = true,
+    thickness .dim_set:N = \l_LuaCJKfntef_thickness_dim,
+    thickness .value_required:n = true,
+    gap .dim_set:N = \l_LuaCJKfntef_gap_dim,
+    gap .value_required:n = true,
+    height .dim_set:N = \l_LuaCJKfntef_height_dim,
+    height .value_required:n = true,
+    format .tl_set:N = \l_LuaCJKfntef_format_tl,
+    color .tl_set:N = \l_LuaCJKfntef_format_tl,
+    color .value_required:n = true,
+    symbol .tl_set:N = \l_LuaCJKfntef_symbol_tl,
+    sep .dim_set:N = \l_LuaCJKfntef_symbol_sep_dim,
+    sep .value_required:n = true,
     unknown .code:n = { },
   }
-\cs_new_protected:Npn \LuaCJKfntef_decoration_setup:n #1
+\cs_new_protected:Npn \LuaCJKfntef_reset_decoration:
   {
     \dim_zero:N \l_LuaCJKfntef_subtract_dim
     \tl_set:Nn \l_LuaCJKfntef_skip_tl { 0 }
     \bool_set_false:N \l_LuaCJKfntef_hidden_bool
     \bool_set_false:N \l_LuaCJKfntef_boxdepth_given_bool
+    \dim_set:Nn \l_LuaCJKfntef_depth_dim { .2em }
+    \dim_set:Nn \l_LuaCJKfntef_thickness_dim { .4pt }
+    \dim_set:Nn \l_LuaCJKfntef_gap_dim { 1.1pt }
+    \dim_set:Nn \l_LuaCJKfntef_height_dim { .5ex }
+    \tl_clear:N \l_LuaCJKfntef_format_tl
+    \tl_clear:N \l_LuaCJKfntef_symbol_tl
+    \dim_set:Nn \l_LuaCJKfntef_symbol_sep_dim { .1em }
+  }
+\cs_new_protected:Npn \LuaCJKfntef_decoration_setup:n #1
+  {
+    \LuaCJKfntef_reset_decoration:
     \tl_if_novalue:nF {#1}
       { \keys_set:nn { LuaCJKfntef / decoration } {#1} }
     \LuaCJKfntef_push_settings:
@@ -4878,8 +5020,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   {
     \group_begin:
       \LuaCJKfntef_decoration_setup:n {#3}
-      \LuaCJKfntef_double_top
-      \LuaCJKfntef_double_bottom
+      \LuaCJKfntef_use_double:
       \LuaCJKfntef_hide:n {#4}
     \group_end:
   }
@@ -4907,11 +5048,38 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   }
 \newunderlinetype \LuaCJKfntef_wave
   { \leaders \box_use_drop:N \l_LuaCJKfntef_wave_box }
+\cs_new_protected:Npn \LuaCJKfntef_use_symbol:n #1
+  {
+    \dim_set:Nn \l_LuaCJKfntef_any_depth_dim {#1}
+    \tl_set:Ne \l_LuaCJKfntef_any_code_tl
+      {
+        \exp_not:N \leaders \exp_not:N \hbox
+          {
+            \exp_not:N \skip_horizontal:n
+              { \dim_use:N \l_LuaCJKfntef_symbol_sep_dim }
+            \exp_not:N \raise \dim_use:N \l_LuaCJKfntef_any_depth_dim
+            \exp_not:N \hbox { \exp_not:V \l_LuaCJKfntef_symbol_tl }
+            \exp_not:N \skip_horizontal:n
+              { \dim_use:N \l_LuaCJKfntef_symbol_sep_dim }
+          }
+      }
+    \tl_set:Ne \l_LuaCJKfntef_cache_key_tl
+      {
+        symbol |
+        \dim_use:N \l_LuaCJKfntef_symbol_sep_dim |
+        \dim_use:N \l_LuaCJKfntef_any_depth_dim |
+        \tl_to_str:V \l_LuaCJKfntef_symbol_tl
+      }
+    \exp_args:NV \LuaCJKfntef_use_leader_type:nn
+      \l_LuaCJKfntef_cache_key_tl \l_LuaCJKfntef_any_code_tl
+  }
 \NewDocumentCommand \CJKunderwave { s t- o +m }
   {
     \group_begin:
       \LuaCJKfntef_decoration_setup:n {#3}
-      \LuaCJKfntef_wave
+      \tl_if_empty:NTF \l_LuaCJKfntef_symbol_tl
+        { \LuaCJKfntef_wave }
+        { \LuaCJKfntef_use_symbol:n { -.42em } }
       \LuaCJKfntef_hide:n {#4}
     \group_end:
   }
@@ -5001,11 +5169,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   wants for a repeated mark.  \texttt{sep} sets the gap; the initial value
 %   is \texttt{0.1em}.
 %   \begin{variable}[internal]{\l_LuaCJKfntef_symbol_sep_dim}
-%     The gap between two symbols.
-%    \begin{macrocode}
-\dim_new:N \l_LuaCJKfntef_symbol_sep_dim
-\dim_set:Nn \l_LuaCJKfntef_symbol_sep_dim { .1em }
-%    \end{macrocode}
+%     The gap between two symbols.  The variable is declared with the
+%     \texttt{sep} key of the decoration setup, which also resets it to
+%     \texttt{0.1em} on every call.
 %   \end{variable}
 %    \begin{macrocode}
 \keys_define:nn { LuaCJKfntef / anysymbol }
@@ -5054,7 +5220,12 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   {
     \group_begin:
       \LuaCJKfntef_decoration_setup:n {#3}
-      \LuaCJKfntef_underdot:n { \LuaCJKfntef_hide:n {#4} }
+      \tl_if_empty:NTF \l_LuaCJKfntef_symbol_tl
+        { \LuaCJKfntef_underdot:n { \LuaCJKfntef_hide:n {#4} } }
+        {
+          \LuaCJKfntef_use_symbol:n { -.40em }
+          \LuaCJKfntef_hide:n {#4}
+        }
     \group_end:
   }
 %    \end{macrocode}
