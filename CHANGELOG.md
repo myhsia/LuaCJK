@@ -89,6 +89,8 @@
   half-em shift of `hangmobanjiao`.
 - Add `\LuaCJKShipoutHook`, which runs code through the standard
   `shipout/before` hook.
+- `subtract` and `skip` now work for `\CJKunderdblline`, `\CJKunderwave`,
+  `\CJKxout`, and `\CJKunderdot` as well as `\CJKunderline`.
 - `\CJKunderline` accepts `subtract` (inset at both ends) and `skip`
   (leave out the punctuation).  The decoration boxes of lua-ul are adjusted
   in place: the leaders width is reduced and a matching kern and negative

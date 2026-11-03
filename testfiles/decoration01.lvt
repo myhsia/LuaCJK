@@ -7,6 +7,28 @@
 \showboxbreadth = 100
 \showboxdepth = 100
 
+\def\nodes{%
+  \directlua{
+    local n = tex.box[0].head
+    local out = {}
+    local i = 0
+    while n do
+      if n.id == node.id("glue") then
+        i = i + 1
+        out[i] = (n.subtype == 100 and "leaders:" or "glue:") .. n.width
+      elseif n.id == node.id("kern") then
+        i = i + 1
+        out[i] = "kern:" .. n.kern
+      elseif n.id == node.id("glyph") then
+        i = i + 1
+        out[i] = "glyph"
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "NODES " .. table.concat(out, " "))
+  }%
+}
+
 \begin{document}
 
 \START
@@ -47,6 +69,46 @@
 \TEST{the next command starts from the defaults}{
   \setbox0=\hbox{\CJKunderline{中文}}
   \showbox0
+}
+
+\TEST{underdblline takes subtract}{
+  \setbox0=\hbox{\CJKunderdblline[subtract]{中文}}
+  \TYPE{width: \the\wd0}
+  \nodes
+}
+
+\TEST{underwave takes subtract and skip}{
+  \setbox0=\hbox{\CJKunderwave[subtract, skip]{中，文}}
+  \TYPE{width: \the\wd0}
+  \nodes
+}
+
+\TEST{xout takes subtract}{
+  \setbox0=\hbox{\CJKxout[subtract]{中文}}
+  \TYPE{width: \the\wd0}
+  \nodes
+}
+
+\TEST{underdot takes subtract}{
+  \setbox0=\hbox{\CJKunderdot[subtract]{中文}}
+  \TYPE{width: \the\wd0}
+  \nodes
+}
+
+\TEST{underdot without options keeps the whole span}{
+  \setbox0=\hbox{\CJKunderdot{中文}}
+  \nodes
+}
+
+\TEST{each decoration keeps its own settings}{
+  \setbox0=\hbox{\CJKunderline[subtract]{中}x\CJKunderline{文}}
+  \nodes
+}
+
+\TEST{settings do not leak to another decoration}{
+  \setbox0=\hbox{\CJKunderline[subtract]{中}}
+  \setbox0=\hbox{\CJKunderanyline{0.3em}{\rule{1pt}{0.4pt}}{中文}}
+  \nodes
 }
 
 \END

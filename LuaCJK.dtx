@@ -742,6 +742,9 @@ $ x + 中文 $ and 中文
 %       run together;
 %     \item \texttt{skip}, which leaves the punctuation out of the rule.
 %   \end{itemize}
+%   \texttt{subtract} and \texttt{skip} work the same way for
+%   \cs{CJKunderdblline}, \cs{CJKunderwave}, \cs{CJKxout}, and
+%   \cs{CJKunderdot}.
 %   The default geometry is the one \pkg{lua-ul} uses.  Any other key is
 %   passed to \pkg{lua-ul}, which understands |top|, |bottom|, and |height|;
 %   note that \pkg{lua-ul} expects |bottom| to be a negative length.  A
@@ -751,28 +754,30 @@ $ x + 中文 $ and 中文
 %
 % \begin{function}{\CJKunderdblline}
 %   \begin{syntax}
-%     \tn{CJKunderdblline} \oarg{ignored} \marg{text}
+%     \tn{CJKunderdblline} \oarg{options} \marg{text}
 %   \end{syntax}
-%   Put two parallel rules under \meta{text}.  A leading \texttt{*} or
-%   \texttt{-} is accepted and ignored, as for \cs{CJKunderline}; the
-%   optional argument is accepted and ignored as well.
+%   Put two parallel rules under \meta{text}.  The optional argument takes
+%   \texttt{subtract} and \texttt{skip}, as for \cs{CJKunderline}.  A
+%   leading \texttt{*} or \texttt{-} is accepted and ignored.
 % \end{function}
 %
 % \begin{function}{\CJKunderwave}
 %   \begin{syntax}
-%     \tn{CJKunderwave} \oarg{ignored} \marg{text}
+%     \tn{CJKunderwave} \oarg{options} \marg{text}
 %   \end{syntax}
 %   Put a wave under \meta{text}.  The wave is drawn with \pkg{l3draw} and
 %   repeated with \tn{leaders}, so it has the same phase across the parts of
-%   one line.
+%   one line.  The optional argument takes \texttt{subtract} and
+%   \texttt{skip}.
 % \end{function}
 %
 % \begin{function}{\CJKxout}
 %   \begin{syntax}
-%     \tn{CJKxout} \oarg{ignored} \marg{text}
+%     \tn{CJKxout} \oarg{options} \marg{text}
 %   \end{syntax}
 %   Strike \meta{text} out with a repeated slash, like \pkg{ulem}'s
-%   \tn{xout}.
+%   \tn{xout}.  The optional argument takes \texttt{subtract} and
+%   \texttt{skip}.
 % \end{function}
 %
 % \begin{function}{\CJKunderanyline}
@@ -796,9 +801,10 @@ $ x + 中文 $ and 中文
 %
 % \begin{function}{\CJKunderdot}
 %   \begin{syntax}
-%     \tn{CJKunderdot} \marg{text}
+%     \tn{CJKunderdot} \oarg{options} \marg{text}
 %   \end{syntax}
-%   Put emphasis dots under \meta{text}.
+%   Put emphasis dots under \meta{text}.  The optional argument takes
+%   \texttt{subtract} and \texttt{skip}.
 % \end{function}
 %
 % \begin{function}{\CJKsout}
@@ -933,8 +939,10 @@ $ x + 中文 $ and 中文
 %     \texttt{margin-minimum}), which describe \pkg{xeCJK}'s model of
 %     adjusting the side bearings.
 %   \item In \pkg{LuaCJKfntef}: the \texttt{hidden} and \texttt{boxdepth}
-%     options, and \texttt{subtract} and \texttt{skip} are so far only
-%     implemented for \cs{CJKunderline}.
+%     options.  \texttt{subtract} and \texttt{skip} are implemented for
+%     \cs{CJKunderline}, \cs{CJKunderdblline}, \cs{CJKunderwave},
+%     \cs{CJKxout}, and \cs{CJKunderdot}, but not for \cs{CJKsout}, whose
+%     optional argument is a color.
 %   \item \cs{xeCJKVerbAddon}, \cs{xeCJKOffVerbAddon}, and the
 %     \pkg{xeCJK-listings} integration.
 %   \item A \pkg{ctex} backend.  The package is not wired into
@@ -4198,9 +4206,10 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
 % instead of drawing the decoration itself.
 %
 % \begin{variable}[internal]
-%   {LuaCJKfntef.subtract, LuaCJKfntef.skip, LuaCJKfntef.mark}
-%   The inset at both ends, whether punctuation is skipped, and the
-%   attribute that marks a box as already adjusted.
+%   {LuaCJKfntef.attr, LuaCJKfntef.settings}
+%   The attribute that carries the number of a settings entry, and the entry
+%   itself: the inset at both ends and whether punctuation is skipped.  A
+%   separate entry per call keeps two decorations in one paragraph apart.
 %    \begin{macrocode}
 %<*lua-fntef>
 -- LuaCJKfntef.lua
@@ -4218,8 +4227,21 @@ local GLUE = node.id("glue")
 local LEADERS = 100
 local KERN = node.id("kern")
 
-M.subtract = M.subtract or 0
-M.skip = M.skip or false
+-- The per-call settings live in a Lua table; the number of the entry is
+-- stored in an attribute on the decorated text, so two decorations in the
+-- same paragraph keep their own settings.  Attribute 0 means no adjustment.
+M.attr = M.attr or nil
+M.settings = M.settings or {}
+M.next_id = M.next_id or 1
+
+function M.new_settings (subtract, skip)
+  local id = M.next_id
+  M.next_id = id + 1
+  M.settings[id] = { subtract = subtract, skip = skip }
+  if M.attr then
+    tex.setattribute(M.attr, id)
+  end
+end
 
 local function kind (c)
   local class = LuaCJK.punct_class
@@ -4230,13 +4252,11 @@ local function kind (c)
 end
 
 -- The intervals of the span where a decoration may be drawn.
-local function segments (w, inset, skip_punct)
+local function segments (w, start, inset, skip_punct)
   local cuts = {}
   if skip_punct then
     local x = 0
-    local g = nil
-    -- the covered nodes start after the negative glue, see adjust()
-    g = M.span_start
+    local g = start
     while g and x < w do
       local width = g.width or 0
       if g.id == GLYPH and kind(g.char) then
@@ -4261,10 +4281,68 @@ local function segments (w, inset, skip_punct)
   return result
 end
 
+-- The settings of a decoration, read from the attribute of the first node it
+-- covers.  The leaders pair sits immediately before that node.
+local function settings_at (node_)
+  if not node_ or not M.attr then
+    return nil
+  end
+  local id = node.has_attribute(node_, M.attr)
+  if not id or id == 0 then
+    return nil
+  end
+  return M.settings[id]
+end
+
+-- Replace the leaders glue of one decoration: the pieces are kerns and
+-- shorter leaders, and their total width stays $w$, so the text does not
+-- move.  The negative glue that follows is kept and becomes the tail.
+local function replace_pair (head, prev, leaders, settings)
+  local w = leaders.width
+  local neg = leaders.next
+  local parts = segments(w, neg.next, settings.subtract, settings.skip)
+  local first, last
+  local cursor = 0
+  local function append (node_)
+    if last then
+      last.next = node_
+    else
+      first = node_
+    end
+    last = node_
+  end
+  for _, part in ipairs(parts) do
+    if part[1] > cursor then
+      local k = node.new("kern")
+      k.kern = part[1] - cursor
+      append(k)
+    end
+    local copy = node.copy(leaders)
+    copy.width = part[2] - part[1]
+    copy.stretch = 0
+    copy.shrink = 0
+    copy.next = nil
+    append(copy)
+    cursor = part[2]
+  end
+  if cursor < w then
+    local k = node.new("kern")
+    k.kern = w - cursor
+    append(k)
+  end
+  if first then
+    if prev then
+      prev.next = first
+    else
+      head = first
+    end
+    last.next = neg
+  end
+  return head
+end
+
 local function adjust (head)
-  local inset = M.subtract or 0
-  local skip_punct = M.skip
-  if inset == 0 and not skip_punct then
+  if not M.attr then
     return head
   end
   local prev = nil
@@ -4273,57 +4351,13 @@ local function adjust (head)
     local nxt = n.next
     if n.id == GLUE and n.subtype == LEADERS and n.next
        and n.next.id == GLUE and n.next.width == -n.width then
-      local w = n.width
       local neg = n.next
-      M.span_start = neg.next
-      local parts = segments(w, inset, skip_punct)
-      M.span_start = nil
-      local first, last
-      local cursor = 0
-      for _, part in ipairs(parts) do
-        if part[1] > cursor then
-          local k = node.new("kern")
-          k.kern = part[1] - cursor
-          if last then
-            last.next = k
-          else
-            first = k
-          end
-          last = k
-        end
-        local copy = node.copy(n)
-        copy.width = part[2] - part[1]
-        copy.stretch = 0
-        copy.shrink = 0
-        copy.next = nil
-        if last then
-          last.next = copy
-        else
-          first = copy
-        end
-        last = copy
-        cursor = part[2]
+      local settings = settings_at(neg.next)
+      if settings then
+        head = replace_pair(head, prev, n, settings)
+        n = neg
+        nxt = neg.next
       end
-      if cursor < w then
-        local k = node.new("kern")
-        k.kern = w - cursor
-        if last then
-          last.next = k
-        else
-          first = k
-        end
-        last = k
-      end
-      if first then
-        if prev then
-          prev.next = first
-        else
-          head = first
-        end
-        last.next = neg
-      end
-      n = neg
-      nxt = neg.next
     end
     prev = n
     n = nxt
@@ -4367,6 +4401,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \RequirePackage { luacolor }
 \RequirePackage { l3draw }
 \lua_load_module:n { LuaCJKfntef }
+\newattribute \g_LuaCJKfntef_settings_attr
+\int_const:Nn \c_LuaCJKfntef_settings_attr_int { \the \allocationnumber }
+\g_LuaCJKfntef_settings_attr = 0
+\lua_now:e
+  { LuaCJKfntef.attr = \int_use:N \c_LuaCJKfntef_settings_attr_int }
 %    \end{macrocode}
 %
 % \begin{macro}{\CJKunderline}
@@ -4448,6 +4487,30 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
           }
       },
   }
+\cs_new_protected:Npn \LuaCJKfntef_push_settings:
+  {
+    \bool_lazy_and:nnTF
+      { \dim_compare_p:nNn { \l_LuaCJKfntef_subtract_dim } = { 0pt } }
+      { \str_if_eq_p:Vn \l_LuaCJKfntef_skip_tl { 0 } }
+      {
+        \lua_now:e
+          {
+            tex.setattribute
+              ( \int_use:N \c_LuaCJKfntef_settings_attr_int , 0 )
+          }
+      }
+      {
+        \str_if_eq:VnTF \l_LuaCJKfntef_skip_tl { 1 }
+          { \tl_set:Nn \l_LuaCJKfntef_skip_js_tl { true } }
+          { \tl_set:Nn \l_LuaCJKfntef_skip_js_tl { false } }
+        \lua_now:e
+          {
+            LuaCJKfntef.new_settings
+              ( \dim_to_decimal_in_sp:n { \l_LuaCJKfntef_subtract_dim } ,
+                \l_LuaCJKfntef_skip_js_tl )
+          }
+      }
+  }
 \cs_new_protected:Npn \LuaCJKfntef_prepare_underline:n #1
   {
     \tl_clear:N \l_LuaCJKfntef_pass_tl
@@ -4457,7 +4520,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \tl_set:Nn \l_LuaCJKfntef_skip_tl { 0 }
     \bool_set_false:N \l_LuaCJKfntef_depth_given_bool
     \bool_set_false:N \l_LuaCJKfntef_thickness_given_bool
-    \keys_set:nn { LuaCJKfntef / underline } {#1}
+    \tl_if_novalue:nF {#1}
+      { \keys_set:nn { LuaCJKfntef / underline } {#1} }
     \bool_lazy_or:nnT
       { \l_LuaCJKfntef_depth_given_bool }
       { \l_LuaCJKfntef_thickness_given_bool }
@@ -4471,15 +4535,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
             bottom = \dim_use:N \l_LuaCJKfntef_bottom_dim ,
           }
       }
-    \str_if_eq:VnTF \l_LuaCJKfntef_skip_tl { 1 }
-      { \tl_set:Nn \l_LuaCJKfntef_skip_js_tl { true } }
-      { \tl_set:Nn \l_LuaCJKfntef_skip_js_tl { false } }
-    \lua_now:e
-      {
-        LuaCJKfntef.subtract = \dim_to_decimal_in_sp:n
-          { \l_LuaCJKfntef_subtract_dim } ;
-        LuaCJKfntef.skip = \l_LuaCJKfntef_skip_js_tl
-      }
+    \LuaCJKfntef_push_settings:
     \dim_set:Nn \l_LuaCJKfntef_rule_height_dim
       { \l_LuaCJKfntef_top_dim }
     \dim_set:Nn \l_LuaCJKfntef_rule_depth_dim
@@ -4528,24 +4584,20 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   { \underLine [ #1 ] { #2 } }
 \NewDocumentCommand \CJKunderline { s t- o +m }
   {
-    \tl_if_novalue:nTF {#3}
-      { \underLine { #4 } }
-      {
-        \LuaCJKfntef_prepare_underline:n {#3}
-        \group_begin:
-          \l_LuaCJKfntef_textformat_tl
-          \tl_if_empty:NTF \l_LuaCJKfntef_format_tl
+    \group_begin:
+      \LuaCJKfntef_prepare_underline:n {#3}
+      \l_LuaCJKfntef_textformat_tl
+      \tl_if_empty:NTF \l_LuaCJKfntef_format_tl
+        {
+          \tl_if_empty:NTF \l_LuaCJKfntef_pass_tl
+            { \underLine { #4 } }
             {
-              \tl_if_empty:NTF \l_LuaCJKfntef_pass_tl
-                { \underLine { #4 } }
-                {
-                  \exp_args:NV \LuaCJKfntef_underLine:nn
-                    \l_LuaCJKfntef_pass_tl {#4}
-                }
+              \exp_args:NV \LuaCJKfntef_underLine:nn
+                \l_LuaCJKfntef_pass_tl {#4}
             }
-            { \LuaCJKfntef_formatted_underline: #4 }
-        \group_end:
-      }
+        }
+        { \LuaCJKfntef_formatted_underline: #4 }
+    \group_end:
   }
 %    \end{macrocode}
 % \end{macro}
@@ -4555,9 +4607,12 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \begin{macrocode}
 \NewDocumentCommand \CJKsout { s t- o +m }
   {
-    \IfValueTF {#3}
-      { \strikeThrough [ #3 ] { #4 } }
-      { \strikeThrough { #4 } }
+    \group_begin:
+      \LuaCJKfntef_decoration_setup:n { }
+      \IfValueTF {#3}
+        { \strikeThrough [ #3 ] { #4 } }
+        { \strikeThrough { #4 } }
+    \group_end:
   }
 %    \end{macrocode}
 % \end{macro}
@@ -4570,9 +4625,52 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   { \leaders \vrule height -.20em depth .24em }
 \newunderlinetype \LuaCJKfntef_double_bottom
   { \leaders \vrule height -.32em depth .36em }
+% \begin{macro}[internal]{\LuaCJKfntef_decoration_setup:n}
+%   The settings that the decoration pass reads.  They are pushed on every
+%   call, so a command without options starts from the defaults instead of
+%   inheriting the previous call.
+%    \begin{macrocode}
+\keys_define:nn { LuaCJKfntef / decoration }
+  {
+    subtract .code:n =
+      {
+        \str_if_eq:nnTF {#1} { true }
+          { \dim_set:Nn \l_LuaCJKfntef_subtract_dim { .5em } }
+          {
+            \str_if_eq:nnTF {#1} { false }
+              { \dim_zero:N \l_LuaCJKfntef_subtract_dim }
+              { \dim_set:Nn \l_LuaCJKfntef_subtract_dim {#1} }
+          }
+      },
+    subtract .default:n = { true },
+    skip .code:n =
+      {
+        \str_if_eq:nnTF {#1} { true }
+          { \tl_set:Nn \l_LuaCJKfntef_skip_tl { 1 } }
+          { \tl_set:Nn \l_LuaCJKfntef_skip_tl { 0 } }
+      },
+    skip .default:n = { true },
+    unknown .code:n = { },
+  }
+\cs_new_protected:Npn \LuaCJKfntef_decoration_setup:n #1
+  {
+    \dim_zero:N \l_LuaCJKfntef_subtract_dim
+    \tl_set:Nn \l_LuaCJKfntef_skip_tl { 0 }
+    \tl_if_novalue:nF {#1}
+      { \keys_set:nn { LuaCJKfntef / decoration } {#1} }
+    \LuaCJKfntef_push_settings:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\CJKunderdblline}
+%   Two parallel rules.  The optional argument takes \texttt{subtract} and
+%   \texttt{skip}; \texttt{*} and \texttt{-} are accepted for compatibility.
+%    \begin{macrocode}
 \NewDocumentCommand \CJKunderdblline { s t- o +m }
   {
     \group_begin:
+      \LuaCJKfntef_decoration_setup:n {#3}
       \LuaCJKfntef_double_top
       \LuaCJKfntef_double_bottom
       #4
@@ -4605,6 +4703,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \NewDocumentCommand \CJKunderwave { s t- o +m }
   {
     \group_begin:
+      \LuaCJKfntef_decoration_setup:n {#3}
       \LuaCJKfntef_wave
       #4
     \group_end:
@@ -4630,6 +4729,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \NewDocumentCommand \CJKxout { s t- o +m }
   {
     \group_begin:
+      \LuaCJKfntef_decoration_setup:n {#3}
       \LuaCJKfntef_slash
       #4
     \group_end:
@@ -4669,6 +4769,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \NewDocumentCommand \CJKunderanyline { m m +m }
   {
     \group_begin:
+      \LuaCJKfntef_decoration_setup:n { }
       \dim_set:Nn \l_LuaCJKfntef_any_depth_dim { -#1 }
       \tl_set:Ne \l_LuaCJKfntef_any_code_tl
         {
@@ -4708,6 +4809,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \NewDocumentCommand \CJKunderanysymbol { O{} m m +m }
   {
     \group_begin:
+      \LuaCJKfntef_decoration_setup:n { }
       \tl_clear:N \l_LuaCJKfntef_textformat_tl
       \dim_set:Nn \l_LuaCJKfntef_symbol_sep_dim { .1em }
       \keys_set:nn { LuaCJKfntef / anysymbol } {#1}
@@ -4738,19 +4840,16 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKunderdot}
-%   Emphasise with dots below the glyphs.  The optional argument of
-%   \pkg{xeCJK} is not implemented, so it only raises a warning.
+%   Emphasise with dots below the glyphs.  The optional argument takes
+%   \texttt{subtract} and \texttt{skip}, like the other decorations.
 %    \begin{macrocode}
 \NewDocumentCommand \CJKunderdot { s t- o +m }
   {
-    \IfValueT {#3}
-      {
-        \msg_warning:nn { LuaCJKfntef } { no-options }
-      }
-    \LuaCJKfntef_underdot:n { #4 }
+    \group_begin:
+      \LuaCJKfntef_decoration_setup:n {#3}
+      \LuaCJKfntef_underdot:n { #4 }
+    \group_end:
   }
-\msg_new:nnn { LuaCJKfntef } { no-options }
-  { The~optional~argument~of~`\token_to_str:N \CJKunderdot'~is~ignored. }
 %    \end{macrocode}
 %   \begin{macro}[internal]{\LuaCJKfntef_underdot:n}
 %     Apply the dot pattern inside a group.
