@@ -94,6 +94,9 @@ LaTeX Project Public License, version 1.3c or later.
 %
 %<*driver>
 \documentclass[11pt, letterpaper]{l3doc}
+% Long function names in the prose cannot be broken, so allow the spaces to
+% stretch a little more before TeX gives up and overflows the line.
+\setlength{\emergencystretch}{3em}
 \providecommand*\LuaLaTeX{\hologo{LuaLaTeX}}
 \providecommand*\XeLaTeX{\hologo{XeLaTeX}}
 \usepackage[color = 00498F, ratio = .625]{docext}
@@ -131,7 +134,7 @@ LaTeX Project Public License, version 1.3c or later.
 \setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
 \setCJKfamilyfont{zhfs}{FandolFang-Regular.otf}
 \usepackage{LuaCJKfntef}
-\LuaCJKsetup{CJKmath=true}
+\LuaCJKsetup{CJKmath=true, LatinPunct=true}
 \setCJKmathfont{FandolSong-Regular.otf}
 \begin{document}
   \DocInput{\jobname.dtx}
@@ -269,10 +272,11 @@ LaTeX Project Public License, version 1.3c or later.
 %     \tn{LuaCJKDeclareSubCJKBlock} \marg{block} \marg{range list}
 %   \end{syntax}
 %   Declare \meta{block} with the given ranges, in the same spelling as
-%   \cs{LuaCJKDeclareCharClass}.  The name becomes a font option:
-%   |\setCJKmainfont{SimSun}[ExtB=SimSun-ExtB]|.  A family that does not set
-%   the option leaves those characters in the main font.  Overlapping blocks
-%   are resolved in declaration order.
+%   \cs{LuaCJKDeclareCharClass}.  The name becomes a font option, so
+%   |\setCJKmainfont{Song}[Kana=Kai]| puts the characters of the block in
+%   the second font.  A family that does not set the option leaves those
+%   characters in the main font.  Overlapping blocks are resolved in
+%   declaration order.
 % \end{function}
 %
 % \begin{function}{\LuaCJKCancelSubCJKBlock, \LuaCJKRestoreSubCJKBlock}
@@ -291,8 +295,10 @@ LaTeX Project Public License, version 1.3c or later.
 % \fi
 \begin{codemo}
 \begingroup
-  \LuaCJKDeclareSubCJKBlock{Kana}{3040 -> 30FF}
-  \setCJKmainfont{FandolSong-Regular.otf}[Kana = FandolKai-Regular.otf]
+  \LuaCJKDeclareSubCJKBlock{Kana}
+    {3040 -> 30FF}
+  \setCJKmainfont{FandolSong-Regular.otf}
+    [Kana = FandolKai-Regular.otf]
   中 あ
 \endgroup
 \end{codemo}
@@ -308,7 +314,8 @@ LaTeX Project Public License, version 1.3c or later.
 %
 % \begin{function}{\setCJKfallbackfamilyfont}
 %   \begin{syntax}
-%     \tn{setCJKfallbackfamilyfont} \marg{family} \oarg{options} \marg{font}
+%     \tn{setCJKfallbackfamilyfont} \marg{family} \oarg{options} \\
+%     \phantom{\tn{setCJKfallbackfamilyfont}} \marg{font} \oarg{options}
 %   \end{syntax}
 %   Add \meta{font} to the fallback list of \meta{family}.  The family may
 %   be given as \cs{CJKrmdefault} and friends.  Call the command several
@@ -326,7 +333,8 @@ LaTeX Project Public License, version 1.3c or later.
 \begin{codemo}
 \begingroup
   \setCJKmainfont{FandolSong-Regular.otf}
-  \setCJKfallbackfamilyfont{\CJKrmdefault}{FandolKai-Regular.otf}
+  \setCJKfallbackfamilyfont{\CJKrmdefault}
+    {FandolKai-Regular.otf}
   \LuaCJKsetup{AutoFallBack = true}
   中文
 \endgroup
@@ -612,8 +620,9 @@ $ x + 中文 $ and 中文
 %   a line, while a mark at the start of a line is still shifted by the
 %   style.  \texttt{false} turns the option off.
 %   \item[\keys{LatinPunct}]\val{\TFF}: Treat the quotation marks
-%   (\texttt{‘ ’ “ ”}), the middle dot (\texttt{·}), and the ellipses
-%   (\texttt{⋯ … ‧}) as Latin punctuation: they stay in the current Latin
+%   (U+2018, U+2019, U+201C, U+201D), the middle dot (U+00B7), and the
+%   ellipses (U+2026, U+2027, U+22EF) as Latin punctuation: they stay in the
+%   current Latin
 %   font and are not compressed.  This keeps an apostrophe inside an English
 %   word from turning into a full-width form.  The em dash is not affected.
 %   \item[\keys{PunctFamily}]\val{family, false}: Use a
@@ -871,15 +880,16 @@ $ x + 中文 $ and 中文
 % \begin{environment}{CJKfilltwosides}
 %   \begin{syntax}
 %     \tn{begin}\marg{CJKfilltwosides}\oarg{position}\marg{width}
-%       \meta{line} \tn{} \meta{line} \dots
+%       \meta{lines} \\
 %     \tn{end}\marg{CJKfilltwosides}
 %   \end{syntax}
 %   Set the lines in a vertical box whose lines are justified to
-%   \meta{width}, separated by |\\|.  The \meta{position} places the box on
-%   the baseline: \texttt{t} for top, \texttt{c} for centred (the default),
-%   or \texttt{b} for bottom.  A width of zero or less keeps the surrounding
-%   line width.  The starred form behaves the same; unlike \pkg{xeCJK} it
-%   does not additionally compare against the natural width of the content.
+%   \meta{width}, separated by |\\|.  Its \meta{position} argument puts the
+%   box on the baseline: \texttt{t} for top, \texttt{c} for centred (the
+%   default), or \texttt{b} for bottom.  A width of zero or less keeps the
+%   surrounding line width.  The starred form behaves the same; unlike
+%   \pkg{xeCJK} it does not additionally compare against the natural width of
+%   the content.
 % \end{environment}
 %
 % \iffalse
@@ -2651,7 +2661,7 @@ $ x + 中文 $ and 中文
 %
 % \subsection{Local configuration}
 %
-% \begin{macro}{\LuaCJK_load_local_config:}
+% \begin{macro}[internal]{\LuaCJK_load_local_config:}
 %   Load the file chosen by the \texttt{LocalConfig} option.  The key is
 %   read while the package is being loaded, but the file is only input at
 %   the end, so that it can use everything LuaCJK defines.
@@ -2676,7 +2686,7 @@ $ x + 中文 $ and 中文
 %
 % \subsection{Loading Fandol}
 %
-% \begin{macro}{\LuaCJK_load_fandol:}
+% \begin{macro}[internal]{\LuaCJK_load_fandol:}
 %   When the \texttt{LoadFandol} option is on and the document did not
 %   declare any CJK font, fall back to the four Fandol faces.  This runs at
 %   \tn{begin}\marg{document} so that a family declared anywhere in the
@@ -4623,7 +4633,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %     {\l_LuaCJKfntef_depth_dim, \l_LuaCJKfntef_thickness_dim,
 %      \l_LuaCJKfntef_textformat_tl, \l_LuaCJKfntef_pass_tl,
 %      \l_LuaCJKfntef_top_dim, \l_LuaCJKfntef_bottom_dim,
-%      \l_LuaCJKfntef_depth_given_bool, \l_LuaCJKfntef_thickness_given_bool}
+%      \l_LuaCJKfntef_boxdepth_given_bool}
 %     The requested geometry, the format of the text, the keys that
 %     \pkg{lua-ul} receives, and whether the geometry keys were given.
 %    \begin{macrocode}
@@ -4647,8 +4657,6 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \tl_new:N \l_LuaCJKfntef_pass_tl
 \dim_new:N \l_LuaCJKfntef_top_dim
 \dim_new:N \l_LuaCJKfntef_bottom_dim
-\bool_new:N \l_LuaCJKfntef_depth_given_bool
-\bool_new:N \l_LuaCJKfntef_thickness_given_bool
 \dim_new:N \l_LuaCJKfntef_gap_dim
 \dim_new:N \l_LuaCJKfntef_height_dim
 \tl_new:N \l_LuaCJKfntef_symbol_tl
@@ -4661,16 +4669,10 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \begin{macrocode}
 \keys_define:nn { LuaCJKfntef / underline }
   {
-    thickness .code:n =
-      {
-        \bool_set_true:N \l_LuaCJKfntef_thickness_given_bool
-        \dim_set:Nn \l_LuaCJKfntef_thickness_dim {#1}
-      },
-    depth .code:n =
-      {
-        \bool_set_true:N \l_LuaCJKfntef_depth_given_bool
-        \dim_set:Nn \l_LuaCJKfntef_depth_dim {#1}
-      },
+    thickness .dim_set:N = \l_LuaCJKfntef_thickness_dim,
+    thickness .value_required:n = true,
+    depth .dim_set:N = \l_LuaCJKfntef_depth_dim,
+    depth .value_required:n = true,
     textformat .tl_set:N = \l_LuaCJKfntef_textformat_tl,
     format .tl_set:N = \l_LuaCJKfntef_format_tl,
     subtract .code:n =
@@ -4755,8 +4757,6 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \LuaCJKfntef_reset_decoration:
     \tl_clear:N \l_LuaCJKfntef_pass_tl
     \tl_clear:N \l_LuaCJKfntef_textformat_tl
-    \bool_set_false:N \l_LuaCJKfntef_depth_given_bool
-    \bool_set_false:N \l_LuaCJKfntef_thickness_given_bool
     \tl_if_novalue:nF {#1}
       { \keys_set:nn { LuaCJKfntef / underline } {#1} }
     \dim_set:Nn \l_LuaCJKfntef_top_dim { -\l_LuaCJKfntef_depth_dim }
@@ -4821,12 +4821,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       \l_LuaCJKfntef_textformat_tl
       \tl_if_empty:NTF \l_LuaCJKfntef_format_tl
         {
-          \tl_if_empty:NTF \l_LuaCJKfntef_pass_tl
-            { \underLine { \LuaCJKfntef_hide:n {#4} } }
-            {
-              \exp_args:NV \LuaCJKfntef_underLine:nn
-                \l_LuaCJKfntef_pass_tl { \LuaCJKfntef_hide:n {#4} }
-            }
+          \exp_args:NV \LuaCJKfntef_underLine:nn
+            \l_LuaCJKfntef_pass_tl { \LuaCJKfntef_hide:n {#4} }
         }
         { \LuaCJKfntef_formatted_underline: { \LuaCJKfntef_hide:n {#4} } }
     \group_end:
@@ -5189,24 +5185,13 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   The same idea with a symbol and a gap on each side, which is what one
 %   wants for a repeated mark.  \texttt{sep} sets the gap; the initial value
 %   is \texttt{0.1em}.
-%   \begin{variable}[internal]{\l_LuaCJKfntef_symbol_sep_dim}
-%     The gap between two symbols.  The variable is declared with the
-%     \texttt{sep} key of the decoration setup, which also resets it to
-%     \texttt{0.1em} on every call.
-%   \end{variable}
+%   The gap between two symbols is the \texttt{sep} key of the decoration
+%   setup, which resets it to \texttt{0.1em} on every call.
 %    \begin{macrocode}
-\keys_define:nn { LuaCJKfntef / anysymbol }
-  {
-    sep .dim_set:N = \l_LuaCJKfntef_symbol_sep_dim,
-    sep .value_required:n = true,
-  }
 \NewDocumentCommand \CJKunderanysymbol { O{} m m +m }
   {
     \group_begin:
-      \LuaCJKfntef_decoration_setup:n { }
-      \tl_clear:N \l_LuaCJKfntef_textformat_tl
-      \dim_set:Nn \l_LuaCJKfntef_symbol_sep_dim { .1em }
-      \keys_set:nn { LuaCJKfntef / anysymbol } {#1}
+      \LuaCJKfntef_decoration_setup:n {#1}
       \dim_set:Nn \l_LuaCJKfntef_any_depth_dim { -#2 }
       \tl_set:Ne \l_LuaCJKfntef_any_code_tl
         {
@@ -5297,7 +5282,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   \end{macro}
 % \end{macro}
 %
-% \begin{macro}{\CJKfilltwosides}
+% \begin{environment}{CJKfilltwosides}
 %   Set the body in a vertical box whose lines are justified to the given
 %   width, with the lines separated by \tn{}.  The optional argument places
 %   the box on the baseline: \texttt{t} for top, \texttt{c} for centred (the
@@ -5361,9 +5346,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   { \LuaCJKfntef_fill_begin:nn {#1} {#2} }
   { \LuaCJKfntef_fill_end: }
 %    \end{macrocode}
-% \end{macro}
+% \end{environment}
 %
-% \begin{macro}{\CJKfilltwosides*}
+% \begin{environment}{CJKfilltwosides*}
 %   The starred form behaves like the plain one; a width of zero or less
 %   keeps the surrounding line width in both.
 %    \begin{macrocode}
@@ -5372,7 +5357,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   { \LuaCJKfntef_fill_end: }
 %</fntef>
 %    \end{macrocode}
-% \end{macro}
+% \end{environment}
 %
 % \subsection{Support for \pkg{listings}}
 %
