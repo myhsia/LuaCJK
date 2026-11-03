@@ -613,9 +613,12 @@ $ x + 中文 $ and 中文
 %     \tn{LuaCJKsetwidth} \marg{punctuation list} \marg{length}
 %   \end{syntax}
 %   Give the listed punctuation marks a fixed advance, overriding the
-%   selected \texttt{PunctStyle}.  A leading \texttt{*} is accepted for
-%   compatibility with \pkg{xeCJK}, where it sets the width used at the
-%   start or end of a line; that case is not implemented and warns once.
+%   selected \texttt{PunctStyle} and \texttt{PunctWidth}.  The setting is
+%   global: a group does not restore the previous width, and a later call
+%   adds to the table rather than replacing it.  A leading \texttt{*} is
+%   accepted for compatibility with \pkg{xeCJK}, where it sets the width
+%   used at the start or end of a line; that case is not implemented and
+%   warns once.
 % \end{function}
 %
 % \begin{function}{\LuaCJKsetkern}
@@ -623,7 +626,8 @@ $ x + 中文 $ and 中文
 %     \tn{LuaCJKsetkern} \marg{before} \marg{after} \marg{length}
 %   \end{syntax}
 %   Set the gap between two adjacent punctuation marks, overriding the
-%   style.  Only the first character of each argument is used.
+%   style.  Only the first character of each argument is used.  Like
+%   \cs{LuaCJKsetwidth}, the setting is global.
 % \end{function}
 %
 % \begin{function}{\LuaCJKDeclarePunctStyle}
