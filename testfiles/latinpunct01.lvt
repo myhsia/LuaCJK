@@ -1,0 +1,38 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\begin{document}
+
+\START
+
+\TEST{by default the apostrophe belongs to CJK}{
+  \setbox0=\hbox{a’a}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{LatinPunct keeps it in the Latin font}{
+  \LuaCJKsetup{LatinPunct}
+  \setbox0=\hbox{a’a}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{the option can be turned off again}{
+  \LuaCJKsetup{LatinPunct = false}
+  \setbox0=\hbox{a’a}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{a class declaration overrides LatinPunct}{
+  \LuaCJKsetup{LatinPunct}
+  \LuaCJKDeclareCharClass{CJK}{"2019}
+  \setbox0=\hbox{a’a}
+  \TYPE{width: \the\wd0}
+  \LuaCJKResetCharClass
+}
+
+\END
+
+\end{document}
