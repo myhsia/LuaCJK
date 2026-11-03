@@ -715,6 +715,33 @@ $ x + 中文 $ and 中文
 %</example>
 % \fi
 %
+% \begin{environment}{CJKfilltwosides}
+%   \begin{syntax}
+%     \tn{begin}\marg{CJKfilltwosides}\oarg{position}\marg{width}
+%       \meta{line} \tn{} \meta{line} \dots
+%     \tn{end}\marg{CJKfilltwosides}
+%   \end{syntax}
+%   Set the lines in a vertical box whose lines are justified to
+%   \meta{width}, separated by |\\|.  The \meta{position} places the box on
+%   the baseline: \texttt{t} for top, \texttt{c} for centred (the default),
+%   or \texttt{b} for bottom.  A width of zero or less keeps the surrounding
+%   line width.  The starred form behaves the same; unlike \pkg{xeCJK} it
+%   does not additionally compare against the natural width of the content.
+% \end{environment}
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+\begin{CJKfilltwosides}{6em}
+瞻彼阕者，\\
+虚室生白
+\end{CJKfilltwosides}
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
+%
 % \section{Current limitations}
 %
 % The first release covers the font and spacing core, the
@@ -3876,9 +3903,85 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
       #1
     \group_end:
   }
-%</fntef>
 %    \end{macrocode}
 %   \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\CJKfilltwosides}
+%   Set the body in a vertical box whose lines are justified to the given
+%   width, with the lines separated by \tn{}.  The optional argument places
+%   the box on the baseline: \texttt{t} for top, \texttt{c} for centred (the
+%   default), and \texttt{b} for bottom.  A width of zero or less keeps the
+%   surrounding line width.
+%   \begin{variable}[internal]
+%     {\l_LuaCJKfntef_fill_box, \l_LuaCJKfntef_fill_width_dim,
+%      \l_LuaCJKfntef_fill_half_dim, \l_LuaCJKfntef_fill_position_tl}
+%     The box being filled, its requested width, the half height used for
+%     centring, and the requested baseline position.
+%    \begin{macrocode}
+\box_new:N \l_LuaCJKfntef_fill_box
+\dim_new:N \l_LuaCJKfntef_fill_width_dim
+\dim_new:N \l_LuaCJKfntef_fill_half_dim
+\tl_new:N \l_LuaCJKfntef_fill_position_tl
+%    \end{macrocode}
+%   \end{variable}
+%    \begin{macrocode}
+\cs_new_protected:Npn \LuaCJKfntef_fill_begin:nn #1#2
+  {
+    \group_begin:
+    \tl_set:Nn \l_LuaCJKfntef_fill_position_tl {#1}
+    \dim_set:Nn \l_LuaCJKfntef_fill_width_dim {#2}
+    \vbox_set:Nw \l_LuaCJKfntef_fill_box
+      \dim_compare:nNnT { \l_LuaCJKfntef_fill_width_dim } > { 0pt }
+        { \hsize = \l_LuaCJKfntef_fill_width_dim }
+      \let \\ \par
+      \noindent \ignorespaces
+  }
+\cs_new_protected:Npn \LuaCJKfntef_fill_end:
+  {
+    \par
+    \vbox_set_end:
+    \str_case:Vn \l_LuaCJKfntef_fill_position_tl
+      {
+        { t }
+          {
+            \dim_set:Nn \l_LuaCJKfntef_fill_half_dim
+              { \box_ht:N \l_LuaCJKfntef_fill_box
+                + \box_dp:N \l_LuaCJKfntef_fill_box }
+            \box_set_ht:Nn \l_LuaCJKfntef_fill_box { 0pt }
+            \box_set_dp:Nn \l_LuaCJKfntef_fill_box
+              { \l_LuaCJKfntef_fill_half_dim }
+          }
+        { c }
+          {
+            \dim_set:Nn \l_LuaCJKfntef_fill_half_dim
+              { ( \box_ht:N \l_LuaCJKfntef_fill_box
+                  + \box_dp:N \l_LuaCJKfntef_fill_box ) / 2 }
+            \box_set_ht:Nn \l_LuaCJKfntef_fill_box
+              { \l_LuaCJKfntef_fill_half_dim }
+            \box_set_dp:Nn \l_LuaCJKfntef_fill_box
+              { \l_LuaCJKfntef_fill_half_dim }
+          }
+      }
+      { }
+    \box_use_drop:N \l_LuaCJKfntef_fill_box
+    \group_end:
+  }
+\NewDocumentEnvironment { CJKfilltwosides } { O{c} m }
+  { \LuaCJKfntef_fill_begin:nn {#1} {#2} }
+  { \LuaCJKfntef_fill_end: }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\CJKfilltwosides*}
+%   The starred form behaves like the plain one; a width of zero or less
+%   keeps the surrounding line width in both.
+%    \begin{macrocode}
+\NewDocumentEnvironment { CJKfilltwosides* } { O{c} m }
+  { \LuaCJKfntef_fill_begin:nn {#1} {#2} }
+  { \LuaCJKfntef_fill_end: }
+%</fntef>
+%    \end{macrocode}
 % \end{macro}
 %
 % \end{implementation}

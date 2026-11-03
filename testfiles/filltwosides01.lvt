@@ -1,0 +1,70 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\usepackage{LuaCJKfntef}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\begin{document}
+
+\START
+
+\TEST{the box takes the requested width}{
+  \setbox0=\vbox{
+    \begin{CJKfilltwosides}{5em}
+      中\\文
+    \end{CJKfilltwosides}
+  }
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{the default position centres the box}{
+  \setbox0=\vbox{
+    \begin{CJKfilltwosides}{5em}
+      中\\文
+    \end{CJKfilltwosides}
+  }
+  \TYPE{height: \the\ht0}
+  \TYPE{depth: \the\dp0}
+}
+
+\TEST{the t position keeps no height}{
+  \setbox0=\vbox{
+    \begin{CJKfilltwosides}[t]{5em}
+      中\\文
+    \end{CJKfilltwosides}
+  }
+  \TYPE{height: \the\ht0}
+}
+
+\TEST{the b position keeps no depth apart from the last line}{
+  \setbox0=\vbox{
+    \begin{CJKfilltwosides}[b]{5em}
+      中\\文
+    \end{CJKfilltwosides}
+  }
+  \TYPE{depth: \the\dp0}
+}
+
+\TEST{a zero width keeps the surrounding line width}{
+  \setbox0=\vbox{
+    \begin{CJKfilltwosides*}{0pt}
+      中\\文
+    \end{CJKfilltwosides*}
+  }
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{each line is justified to the width}{
+  \setbox0=\vbox{
+    \begin{CJKfilltwosides}{5em}
+      中 文\\字
+    \end{CJKfilltwosides}
+  }
+  \TYPE{width: \the\wd0}
+  \TYPE{depth: \the\dp0}
+}
+
+\END
+
+\end{document}
