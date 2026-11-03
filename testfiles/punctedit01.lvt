@@ -1,0 +1,68 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKglue = 0pt, CJKecglue = 0pt}
+
+\def\countpenalties{%
+  \directlua{
+    local n = tex.box[0].head
+    local c = 0
+    while n do
+      if n.id == node.id("penalty") and n.penalty >= 10000 then
+        c = c + 1
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "PENALTIES " .. tostring(c))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{the default compression ratio}{
+  \setbox0=\hbox{字，，字}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{editing the ratio keeps the other parameters}{
+  \LuaCJKEditPunctStyle{quanjiao}{adjacent-ratio = 0.2}
+  \setbox0=\hbox{字，，字}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{editing only the switch keeps the ratio}{
+  \LuaCJKEditPunctStyle{quanjiao}{compress-adjacent = false}
+  \setbox0=\hbox{字，，字}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{the switch can be turned back on}{
+  \LuaCJKEditPunctStyle{quanjiao}{compress-adjacent = true}
+  \setbox0=\hbox{字，，字}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{by default no break is allowed between punctuation}{
+  \setbox0=\hbox{字」。}
+  \countpenalties
+}
+
+\TEST{AllowBreakBetweenPuncts removes those penalties}{
+  \LuaCJKsetup{AllowBreakBetweenPuncts = true}
+  \setbox0=\hbox{字」。}
+  \countpenalties
+}
+
+\TEST{the option can be turned off again}{
+  \LuaCJKsetup{AllowBreakBetweenPuncts = false}
+  \setbox0=\hbox{字」。}
+  \countpenalties
+}
+
+\END
+
+\end{document}

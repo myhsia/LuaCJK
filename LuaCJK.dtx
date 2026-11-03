@@ -528,6 +528,9 @@ $ x + 中文 $ and 中文
 %   \texttt{quanjiao} (the default), \texttt{plain}, \texttt{banjiao},
 %   \texttt{kaiming}, \texttt{CCT}, and \texttt{hangmobanjiao}.  An unknown
 %   name issues a warning and falls back to \texttt{plain}.
+%   \item[\keys{AllowBreakBetweenPuncts}]\val{\TFF}: Whether two adjacent
+%   punctuation marks may be separated by a line break.  The marks are still
+%   compressed.
 %   \item[\keys{PunctKinsoku}]\val{\TTF}: Whether to apply line-breaking
 %   prohibitions for punctuation.  A closing
 %   or middle punctuation cannot start a line, an opening punctuation cannot
@@ -578,6 +581,15 @@ $ x + 中文 $ and 中文
 %
 % \begin{function}{\LuaCJKResetCharClass}
 %   Drop every class and punctuation override declared so far.
+% \end{function}
+%
+% \begin{function}{\LuaCJKEditPunctStyle}
+%   \begin{syntax}
+%     \tn{LuaCJKEditPunctStyle} \marg{style} \marg{key-value list}
+%   \end{syntax}
+%   Change the parameters of an existing style.  The keys are
+%   \texttt{compress-adjacent}, \texttt{adjacent-ratio}, and
+%   \texttt{keep-open-close}; a key that is not given keeps its value.
 % \end{function}
 %
 % \begin{function}{\LuaCJKsetwidth}
@@ -851,6 +863,65 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}{\LuaCJKEditPunctStyle}
+%   Change the parameters of an existing style.  A key that is not given
+%   keeps its current value, which is why the three ``given'' switches are
+%   tracked here instead of starting from the defaults.
+%   \begin{variable}[internal]
+%     {\l_LuaCJK_punct_compress_given_bool, \l_LuaCJK_punct_ratio_given_bool,
+%      \l_LuaCJK_punct_keep_given_bool}
+%     Whether the corresponding key was part of the edit.
+%    \begin{macrocode}
+\bool_new:N \l_LuaCJK_punct_compress_given_bool
+\bool_new:N \l_LuaCJK_punct_ratio_given_bool
+\bool_new:N \l_LuaCJK_punct_keep_given_bool
+\tl_new:N \l_LuaCJK_punct_compress_value_tl
+\tl_new:N \l_LuaCJK_punct_keep_value_tl
+%    \end{macrocode}
+%   \end{variable}
+%    \begin{macrocode}
+\keys_define:nn { LuaCJK / punct-edit }
+  {
+    compress-adjacent .code:n =
+      {
+        \bool_set_true:N \l_LuaCJK_punct_compress_given_bool
+        \tl_set:Nn \l_LuaCJK_punct_compress_value_tl {#1}
+      },
+    adjacent-ratio .code:n =
+      {
+        \bool_set_true:N \l_LuaCJK_punct_ratio_given_bool
+        \fp_set:Nn \l_LuaCJK_punct_ratio_fp {#1}
+      },
+    keep-open-close .code:n =
+      {
+        \bool_set_true:N \l_LuaCJK_punct_keep_given_bool
+        \tl_set:Nn \l_LuaCJK_punct_keep_value_tl {#1}
+      },
+  }
+\NewDocumentCommand \LuaCJKEditPunctStyle { m m }
+  {
+    \bool_set_false:N \l_LuaCJK_punct_compress_given_bool
+    \bool_set_false:N \l_LuaCJK_punct_ratio_given_bool
+    \bool_set_false:N \l_LuaCJK_punct_keep_given_bool
+    \keys_set:nn { LuaCJK / punct-edit } {#2}
+    \lua_now:e
+      {
+        LuaCJK.edit_punct_style
+          ( "\lua_escape:e {#1}" ,
+            \bool_if:NTF \l_LuaCJK_punct_compress_given_bool
+              { \l_LuaCJK_punct_compress_value_tl }
+              { nil } ,
+            \bool_if:NTF \l_LuaCJK_punct_ratio_given_bool
+              { \fp_use:N \l_LuaCJK_punct_ratio_fp }
+              { nil } ,
+            \bool_if:NTF \l_LuaCJK_punct_keep_given_bool
+              { \l_LuaCJK_punct_keep_value_tl }
+              { nil } )
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}{\LuaCJKsetwidth}
 %   Give specific punctuation marks a fixed advance, overriding the
 %   selected style.  The star form of \pkg{xeCJK}, which sets the width used
@@ -1107,6 +1178,7 @@ $ x + 中文 $ and 中文
 %     {\l_LuaCJK_punct_kinsoku_tl, \l_LuaCJK_cjk_math_tl,
 %      \l_LuaCJK_verb_mode_tl, \l_LuaCJK_local_config_tl,
 %      \l_LuaCJK_check_single_tl, \l_LuaCJK_widow_penalty_int,
+%      \l_LuaCJK_break_between_puncts_bool,
 %      \g_LuaCJK_autofake_bold_tl, \g_LuaCJK_autofake_slant_tl,
 %      \g_LuaCJK_embolden_factor_tl, \g_LuaCJK_slant_factor_tl,
 %      \g_LuaCJK_fallback_prop, \g_LuaCJK_auto_fallback_bool,
@@ -1123,6 +1195,7 @@ $ x + 中文 $ and 中文
 \tl_set:Nn \l_LuaCJK_cjk_math_tl { 0 }
 \tl_new:N \l_LuaCJK_verb_mode_tl
 \tl_set:Nn \l_LuaCJK_verb_mode_tl { true }
+\bool_new:N \l_LuaCJK_break_between_puncts_bool
 \tl_new:N \l_LuaCJK_check_single_tl
 \tl_set:Nn \l_LuaCJK_check_single_tl { 0 }
 \int_new:N \l_LuaCJK_widow_penalty_int
@@ -1194,6 +1267,18 @@ $ x + 中文 $ and 中文
     NoBreakLongPunct  .code:n = { \LuaCJK_set_charset:nnn { nobreak } { set } {#1} },
     NoBreakLongPunct+ .code:n = { \LuaCJK_set_charset:nnn { nobreak } { add } {#1} },
     NoBreakLongPunct- .code:n = { \LuaCJK_set_charset:nnn { nobreak } { remove } {#1} },
+    AllowBreakBetweenPuncts .choice:,
+    AllowBreakBetweenPuncts / true .code:n =
+      {
+        \bool_set_true:N \l_LuaCJK_break_between_puncts_bool
+        \LuaCJK_push_break_puncts:
+      },
+    AllowBreakBetweenPuncts / false .code:n =
+      {
+        \bool_set_false:N \l_LuaCJK_break_between_puncts_bool
+        \LuaCJK_push_break_puncts:
+      },
+    AllowBreakBetweenPuncts .default:n = { true },
     CheckSingle .choice:,
     CheckSingle / true .code:n = { \tl_set:Nn \l_LuaCJK_check_single_tl { 1 } },
     CheckSingle / false .code:n = { \tl_set:Nn \l_LuaCJK_check_single_tl { 0 } },
@@ -1481,6 +1566,15 @@ $ x + 中文 $ and 中文
 %      \begin{macrocode}
 %      \begin{macrocode}
 \bool_new:N \g_LuaCJK_lua_loaded_bool
+\cs_new_protected:Npn \LuaCJK_push_break_puncts:
+  {
+    \bool_if:NT \g_LuaCJK_lua_loaded_bool
+      {
+        \bool_if:NTF \l_LuaCJK_break_between_puncts_bool
+          { \lua_now:n { LuaCJK.allow_break_between_puncts = true } }
+          { \lua_now:n { LuaCJK.allow_break_between_puncts = false } }
+      }
+  }
 \cs_new_protected:Npn \LuaCJK_push_fallback_switch:
   {
     \bool_if:NT \g_LuaCJK_lua_loaded_bool
@@ -2287,6 +2381,22 @@ local function user_kern (before, after)
   return row and row[after]
 end
 
+function M.edit_punct_style (name, compress, ratio, keep)
+  local style = M.punct_styles[name]
+  if not style then
+    return
+  end
+  if compress ~= nil then
+    style.compress_adjacent = compress
+  end
+  if ratio ~= nil then
+    style.ratio = ratio
+  end
+  if keep ~= nil then
+    style.keep_open_close = keep
+  end
+end
+
 local function punct_style ()
   local name = token.get_macro("l_LuaCJK_punct_style_tl")
   return M.punct_styles[name] or M.punct_styles.plain
@@ -2311,6 +2421,7 @@ end
 %   The attribute number of the suspension switch.
 %    \begin{macrocode}
 M.attr_disabled = M.attr_disabled or nil
+M.allow_break_between_puncts = M.allow_break_between_puncts or false
 
 %    \end{macrocode}
 % \end{variable}
@@ -2893,6 +3004,9 @@ end
 local function forbids_break (prev_char, next_char)
   local prev_punct = prev_char and punct_class(prev_char)
   local next_punct = next_char and punct_class(next_char)
+  if M.allow_break_between_puncts and prev_punct and next_punct then
+    return false
+  end
   -- A closing or middle punctuation must not start a line.
   if next_punct == "close" or next_punct == "middle" then
     return true

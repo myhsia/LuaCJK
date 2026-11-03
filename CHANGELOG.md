@@ -67,6 +67,7 @@
   repeated with leaders, so they stay in phase along a line.
 - Add `KaiMingPunct`, `MiddlePunct`, `LongPunct`, and `NoBreakLongPunct`,
   each with `+` and `-` forms, to edit the punctuation character sets.
+- Add `\LuaCJKEditPunctStyle` and `AllowBreakBetweenPuncts`.
 - Drop the placeholder glyph that a font without the character leaves behind
   (one `.notdef` glyph in some fonts, a private-use glyph in others).
 - Move the manual driver into `LuaCJK.dtx` and use the same fonts as
