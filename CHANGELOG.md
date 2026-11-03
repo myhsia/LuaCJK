@@ -76,6 +76,7 @@
   given width and places the box on the baseline as requested.
 - Document a comparison with `xeCJK` that separates what is available with
   the same meaning, what differs, and what is missing.
+- Add `\LuaCJKnobreak` and the `PunctWidth` option.
 - Drop the placeholder glyph that a font without the character leaves behind
   (one `.notdef` glyph in some fonts, a private-use glyph in others).
 - Move the manual driver into `LuaCJK.dtx` and use the same fonts as

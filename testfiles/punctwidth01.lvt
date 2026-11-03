@@ -46,6 +46,31 @@
   \TYPE{colon: \the\wd2}
 }
 
+\TEST{PunctWidth gives every mark the same width}{
+  \begingroup
+    \LuaCJKsetup{PunctWidth = 0.8em}
+    \setbox0=\hbox{字！字}
+    \TYPE{width: \the\wd0}
+  \endgroup
+}
+
+\TEST{PunctWidth wins over the style}{
+  \begingroup
+    \LuaCJKsetup{PunctWidth = 0.8em, PunctStyle = banjiao}
+    \setbox0=\hbox{字！字}
+    \TYPE{width: \the\wd0}
+  \endgroup
+}
+
+\TEST{a per-mark width still wins over PunctWidth}{
+  \begingroup
+    \LuaCJKsetup{PunctWidth = 0.8em}
+    \LuaCJKsetwidth{！}{0.5em}
+    \setbox0=\hbox{字！字}
+    \TYPE{width: \the\wd0}
+  \endgroup
+}
+
 \END
 
 \end{document}

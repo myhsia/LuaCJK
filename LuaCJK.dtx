@@ -444,6 +444,15 @@ LaTeX Project Public License, version 1.3c or later.
 %   missing file only warns.
 % \end{keyval}
 %
+% \begin{function}{\LuaCJKnobreak}
+%   \begin{syntax}
+%     \tn{LuaCJKnobreak} \marg{text}
+%   \end{syntax}
+%   Keep \meta{text} on one line.  The nodes of the argument are marked and
+%   the line-breaking pass forbids a break at any of their boundaries.  The
+%   marking ends with the current group.
+% \end{function}
+%
 % \begin{keyval}
 %   \item[\keys{Verb}]\val{\TTF \textbar{} \texttt{env} \textbar{}
 %     \texttt{env+}}
@@ -528,6 +537,9 @@ $ x + 中文 $ and 中文
 %   \texttt{quanjiao} (the default), \texttt{plain}, \texttt{banjiao},
 %   \texttt{kaiming}, \texttt{CCT}, and \texttt{hangmobanjiao}.  An unknown
 %   name issues a warning and falls back to \texttt{plain}.
+%   \item[\keys{PunctWidth}]\val{length \textbar{} \texttt{false}}: Give
+%   every punctuation mark the same advance, whatever the style says.  A
+%   width set with \cs{LuaCJKsetwidth} still wins for that mark.
 %   \item[\keys{PunctFamily}]\val{family \textbar{} \texttt{false}}: Use a
 %   different CJK family for the punctuation marks.  The family must be
 %   declared with \cs{setCJKfamilyfont}; \texttt{false} (the initial value)
@@ -772,6 +784,8 @@ $ x + 中文 $ and 中文
 %     \texttt{MiddlePunct}, \texttt{LongPunct}, and \texttt{NoBreakLongPunct}
 %     with their \texttt{+} and \texttt{-} forms.
 %   \item \texttt{CheckSingle} and \texttt{WidowPenalty}.
+%   \item \texttt{PunctWidth} and \cs{xeCJKnobreak}, the latter as
+%     \cs{LuaCJKnobreak}.
 %   \item \cs{setCJKfallbackfamilyfont} and \texttt{AutoFallBack},
 %     \texttt{LoadFandol}, and \texttt{LocalConfig}.
 % \end{itemize}
@@ -810,7 +824,7 @@ $ x + 中文 $ and 中文
 %     node list and needs no hint.
 %   \item \texttt{SubCJKBlock} and its two companions, which give a block of
 %     characters its own font family.
-%   \item \texttt{PunctWidth}, \texttt{PunctBoundWidth},
+%   \item \texttt{PunctBoundWidth},
 %     \texttt{RubberPunctSkip}, \texttt{LatinPunct}, \texttt{PoZheHaoLigature},
 %     and \texttt{CheckFullRight}.
 %   \item The detailed punctuation keys of \pkg{xeCJK}
@@ -822,7 +836,7 @@ $ x + 中文 $ and 中文
 %     \cs{CJKunderanysymbol}, and the \texttt{format}, \texttt{hidden},
 %     \texttt{skip}, \texttt{subtract}, \texttt{symbol}, \texttt{boxdepth},
 %     \texttt{sep}, and \texttt{gap} options.
-%   \item \cs{xeCJKVerbAddon}, \cs{xeCJKOffVerbAddon}, \cs{xeCJKnobreak},
+%   \item \cs{xeCJKVerbAddon}, \cs{xeCJKOffVerbAddon},
 %     \cs{xeCJKShipoutHook}, and the \pkg{xeCJK-listings} integration.
 %   \item A \pkg{ctex} backend.  The package is not wired into
 %     \pkg{ctex} yet; that needs the agreement of the \pkg{ctex}
@@ -903,7 +917,8 @@ $ x + 中文 $ and 中文
 %     \g_LuaCJK_inserted_attr, \c_LuaCJK_inserted_attr_int,
 %     \g_LuaCJK_math_font_attr, \c_LuaCJK_math_font_attr_int,
 %     \g_LuaCJK_disabled_attr, \c_LuaCJK_disabled_attr_int,
-%     \g_LuaCJK_punct_font_attr, \c_LuaCJK_punct_font_attr_int
+%     \g_LuaCJK_punct_font_attr, \c_LuaCJK_punct_font_attr_int,
+%     \g_LuaCJK_nobreak_attr, \c_LuaCJK_nobreak_attr_int
 %   }
 %   The attributes record, per node, the CJK font, the space and glue
 %   policies, whether the node was inserted by LuaCJK, the CJK math font,
@@ -924,6 +939,8 @@ $ x + 中文 $ and 中文
 \int_const:Nn \c_LuaCJK_disabled_attr_int { \the \allocationnumber }
 \newattribute \g_LuaCJK_punct_font_attr
 \int_const:Nn \c_LuaCJK_punct_font_attr_int { \the \allocationnumber }
+\newattribute \g_LuaCJK_nobreak_attr
+\int_const:Nn \c_LuaCJK_nobreak_attr_int { \the \allocationnumber }
 \g_LuaCJK_math_font_attr = 0
 \g_LuaCJK_punct_font_attr = 0
 \g_LuaCJK_cjk_space_attr = 0
@@ -1390,6 +1407,17 @@ $ x + 中文 $ and 中文
     NoBreakLongPunct  .code:n = { \LuaCJK_set_charset:nnn { nobreak } { set } {#1} },
     NoBreakLongPunct+ .code:n = { \LuaCJK_set_charset:nnn { nobreak } { add } {#1} },
     NoBreakLongPunct- .code:n = { \LuaCJK_set_charset:nnn { nobreak } { remove } {#1} },
+    PunctWidth .code:n =
+      {
+        \str_if_eq:nnTF {#1} { false }
+          { \lua_now:n { LuaCJK.set_punct_width_all(nil) } }
+          {
+            \lua_now:e
+              { LuaCJK.set_punct_width_all
+                  ( \dim_to_decimal_in_sp:n {#1} ) }
+          }
+      },
+    PunctWidth .default:n = { false },
     PunctFamily .code:n =
       {
         \str_if_eq:nnTF {#1} { false }
@@ -1492,6 +1520,21 @@ $ x + 中文 $ and 中文
   { \g_LuaCJK_disabled_attr = 1 }
 \NewDocumentCommand \LuaCJKenable { }
   { \g_LuaCJK_disabled_attr = 0 }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\LuaCJKnobreak}
+%   Keep the argument on one line.  The nodes of the argument are marked,
+%   and the line-breaking pass puts a penalty in front of every break
+%   opportunity that involves a marked node.
+%    \begin{macrocode}
+\NewDocumentCommand \LuaCJKnobreak { +m }
+  {
+    \group_begin:
+      \g_LuaCJK_nobreak_attr = 1
+      #1
+    \group_end:
+  }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -2188,6 +2231,7 @@ $ x + 中文 $ and 中文
     LuaCJK.attr_inserted = \int_use:N \c_LuaCJK_inserted_attr_int ;
     LuaCJK.attr_math_font = \int_use:N \c_LuaCJK_math_font_attr_int ;
     LuaCJK.attr_punct_font = \int_use:N \c_LuaCJK_punct_font_attr_int ;
+    LuaCJK.attr_nobreak = \int_use:N \c_LuaCJK_nobreak_attr_int ;
     LuaCJK.attr_disabled = \int_use:N \c_LuaCJK_disabled_attr_int ;
     LuaCJK.auto_fallback = \bool_if:NTF \g_LuaCJK_auto_fallback_bool
       { true } { false }
@@ -2288,6 +2332,7 @@ M.attr_xecglue = M.attr_xecglue or nil
 M.attr_inserted = M.attr_inserted or nil
 M.attr_math_font = M.attr_math_font or nil
 M.attr_punct_font = M.attr_punct_font or nil
+M.attr_nobreak = M.attr_nobreak or nil
 
 %    \end{macrocode}
 % \end{variable}
@@ -2509,6 +2554,12 @@ local function first_code (s)
   for _, code in utf8.codes(s) do
     return code
   end
+end
+
+M.global_punct_width = nil
+
+function M.set_punct_width_all (sp)
+  M.global_punct_width = sp
 end
 
 function M.set_punct_width (chars, sp)
@@ -3118,6 +3169,14 @@ end
 %   \begin{macro}[internal]{class_char}
 %     The character of a glyph, or nothing for any other node.
 %    \begin{macrocode}
+local function no_break_mark (n)
+  if not (M.attr_nobreak and n) then
+    return false
+  end
+  local value = has_attribute(n, M.attr_nobreak)
+  return value ~= nil and value ~= 0
+end
+
 local function class_char (n)
   if n and n.id == GLYPH then
     return n.char
@@ -3153,6 +3212,14 @@ end
 %     opening punctuation must not end one, and a run of dashes or ellipses
 %     stays together.
 %    \begin{macrocode}
+local function no_break_mark (n)
+  if not (M.attr_nobreak and n) then
+    return false
+  end
+  local value = has_attribute(n, M.attr_nobreak)
+  return value ~= nil and value ~= 0
+end
+
 local function class_char (n)
   if n and n.id == GLYPH then
     return n.char
@@ -3211,8 +3278,10 @@ local function apply_kinsoku (head)
       last_visible = cur
     elseif is_break_point(cur) and last_visible then
       local nxt = next_visible(cur.next)
-      if nxt and not disabled(last_visible) and not disabled(nxt)
-         and forbids_break(class_char(last_visible), class_char(nxt)) then
+      if nxt and (no_break_mark(last_visible) or no_break_mark(nxt)
+         or (not disabled(last_visible) and not disabled(nxt)
+             and forbids_break(class_char(last_visible), class_char(nxt))))
+      then
         if not (prev and prev.id == PENALTY and prev.penalty >= 10000) then
           local p = new_node("penalty")
           inherit_attributes(p, last_visible)
@@ -3258,7 +3327,7 @@ local function apply_fixed_widths (head)
   local cur = head
   while cur do
     if cur.id == GLYPH and punct_class(cur.char) and not disabled(cur) then
-      local target = user_width(cur.char)
+      local target = user_width(cur.char) or M.global_punct_width
       if not target and ratio then
         local f = font.getfont(cur.font)
         local size = f and f.size or 0

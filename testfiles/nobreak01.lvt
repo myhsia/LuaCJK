@@ -1,0 +1,56 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\def\countpenalties{%
+  \directlua{
+    local n = tex.box[0].head
+    local c = 0
+    while n do
+      if n.id == node.id("penalty") and n.penalty >= 10000 then
+        c = c + 1
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "PENALTIES " .. tostring(c))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{three CJK characters have two break points}{
+  \setbox0=\hbox{中中中}
+  \countpenalties
+}
+
+\TEST{LuaCJKnobreak forbids them}{
+  \setbox0=\hbox{\LuaCJKnobreak{中中中}}
+  \countpenalties
+}
+
+\TEST{a CJK and a Latin letter have two break points}{
+  \setbox0=\hbox{中x中}
+  \countpenalties
+}
+
+\TEST{LuaCJKnobreak forbids those as well}{
+  \setbox0=\hbox{\LuaCJKnobreak{中x中}}
+  \countpenalties
+}
+
+\TEST{the marking is local to the group}{
+  \begingroup
+    \LuaCJKnobreak{中}
+    \setbox0=\hbox{中中中}
+    \countpenalties
+  \endgroup
+  \TYPE{survived}
+}
+
+\END
+
+\end{document}
