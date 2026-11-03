@@ -111,6 +111,13 @@
 - The default `CJKglue` and `CJKecglue` are recomputed at every font
   selection, so they follow `\small`, `\Large`, and `\zihao` instead of
   staying at the value of the 10pt size.
+- `AutoFallBack` and the cancelled sub-blocks follow the group now.  Both
+  are part of the settings snapshot, so `{\LuaCJKsetup{AutoFallBack=true} ...}`
+  and `{\LuaCJKCancelSubCJKBlock{...} ...}` end with their group.
+- `\LuaCJKnobreak` and `\LuaCJKVerbAddon` keep their prohibition when
+  `PunctKinsoku` is off; the switch only controls the punctuation rules.
+- The manual now separates the settings that follow the text from the global
+  and load-time keys.
 - The underline geometry now uses `depth=0.2em` and `thickness=0.4pt` on
   every path, so `format` works without also giving `thickness` or `depth`.
   `top` and `bottom` still override the computed values.

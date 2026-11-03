@@ -23,7 +23,14 @@ Missing character: There is no 中 (U+4E2D) in font "name:TeX Gyre Pagella:mode=
 PSNAME TeXGyrePagella-Regular
 ============================================================
 ============================================================
-TEST 5: a fallback with its own options
+TEST 5: AutoFallBack ends with the group
+============================================================
+PSNAME FandolSong-Regular
+Missing character: There is no 中 (U+4E2D) in font "name:TeX Gyre Pagella:mode=node;script=hani;language=dflt;"!
+PSNAME TeXGyrePagella-Regular
+============================================================
+============================================================
+TEST 6: a fallback with its own options
 ============================================================
 Package fontspec Info: 
 (fontspec)             Script 'CJK' not explicitly supported within font 'TeX Gyre Pagella'. Check the typeset output, and if it is okay then ignore this warning. Otherwise a different font should be chosen.

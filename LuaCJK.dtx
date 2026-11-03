@@ -188,14 +188,32 @@ LaTeX Project Public License, version 1.3c or later.
 %     \tn{LuaCJKsetup} \marg{key-value list}
 %   \end{syntax}
 %   Configure LuaCJK.  The keys are the ones documented in the following
-%   sections.  Each setting is local to the current group, and it is recorded
-%   on the characters themselves, so text inside a group keeps its settings
-%   even when the group has already ended by the time the paragraph is
-%   broken:
+%   sections, and they fall into two groups.
+%
+%   The settings that describe how text is set are local to the current
+%   group, and they are recorded on the characters themselves, so text inside
+%   a group keeps its settings even when the group has already ended by the
+%   time the paragraph is broken:
 %   \begin{quote}
 %     |\vbox{\begingroup\LuaCJKsetup{CJKglue=10pt}中中\endgroup\par}|
 %   \end{quote}
-%   uses the 10pt glue, although the group is closed before |\par|.
+%   uses the 10pt glue, although the group is closed before |\par|.  These
+%   keys are \texttt{CJKglue}, \texttt{CJKecglue}, \texttt{CJKspace},
+%   \texttt{xCJKecglue}, \texttt{PunctStyle}, \texttt{PunctKinsoku},
+%   \texttt{LatinPunct}, \texttt{CJKmath}, \texttt{PunctWidth},
+%   \texttt{PunctBoundWidth}, \texttt{CheckSingle}, \texttt{WidowPenalty},
+%   \texttt{AllowBreakBetweenPuncts}, \texttt{AutoFallBack}, and
+%   \texttt{Verb}, together with \cs{LuaCJKCancelSubCJKBlock} and
+%   \cs{LuaCJKRestoreSubCJKBlock}.
+%
+%   The rest are global: \texttt{KaiMingPunct}, \texttt{MiddlePunct},
+%   \texttt{LongPunct}, and \texttt{NoBreakLongPunct} edit character sets;
+%   \texttt{AutoFakeBold}, \texttt{AutoFakeSlant}, \texttt{EmboldenFactor},
+%   and \texttt{SlantFactor} act when a family is registered; and
+%   \texttt{LoadFandol} and \texttt{LocalConfig} act while the package is
+%   loaded.  The same holds for \cs{LuaCJKDeclareCharClass},
+%   \cs{LuaCJKDeclarePunctClass}, \cs{LuaCJKDeclareSubCJKBlock},
+%   \cs{LuaCJKsetwidth}, and \cs{LuaCJKsetkern}.
 % \end{function}
 %
 % The same keys may be given as package options:
@@ -331,7 +349,8 @@ LaTeX Project Public License, version 1.3c or later.
 %
 % \begin{keyval}
 %   \item[\keys{AutoFallBack}]\val{\TFF}
-%   Whether to use the declared fallback fonts.
+%   Whether to use the declared fallback fonts.  The switch follows the text
+%   like the spacing keys, so it can be turned on for one group.
 % \end{keyval}
 %
 % \iffalse
@@ -365,7 +384,8 @@ LaTeX Project Public License, version 1.3c or later.
 % A CJK family often has no bold or italic face.  The following keys make
 % LuaCJK ask \pkg{fontspec} to embolden or slant the regular face instead.
 % They apply to families registered afterwards, and are not used when the
-% family itself sets \texttt{BoldFont} or \texttt{ItalicFont}.
+% family itself sets \texttt{BoldFont} or \texttt{ItalicFont}.  They are
+% global: a group does not change what an already registered family uses.
 %
 % \begin{keyval}
 %   \item[\keys{AutoFakeBold}]\val{\TFF, number}
@@ -656,7 +676,8 @@ $ x + 中文 $ and 中文
 % Each of these keys comes in three forms: the plain one replaces the set,
 % the form with \texttt{+} adds characters, and the form with \texttt{-}
 % removes them.  Ranges use the same spelling as
-% \cs{LuaCJKDeclareCharClass}.
+% \cs{LuaCJKDeclareCharClass}.  The sets are global: a group does not bring
+% the previous members back.
 %
 % \begin{keyval}
 %   \item[\keys{KaiMingPunct(+-)}]\val{char list}:
@@ -1373,19 +1394,23 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKCancelSubCJKBlock, \LuaCJKRestoreSubCJKBlock}
-%    Turn a block off or on again, and refresh the fonts of the current
-%    family so the change takes effect at once.
+%    Turn a block off or on again.  The list of cancelled blocks is part of
+%    the settings of the text, so the change ends with the group; the fonts
+%    of the current family are refreshed so it takes effect at once.
 %     \begin{macrocode}
+\clist_new:N \l_LuaCJK_blocks_off_clist
 \cs_new_protected:Npn \LuaCJK_set_block_enabled:nn #1#2
   {
     \clist_map_inline:nn {#1}
       {
-        \lua_now:e
+        \str_if_eq:nnTF {#2} { false }
           {
-            LuaCJK.set_block_enabled
-              ( "\lua_escape:e {##1}" , #2 )
+            \clist_if_in:NnF \l_LuaCJK_blocks_off_clist {##1}
+              { \clist_put_right:Nn \l_LuaCJK_blocks_off_clist {##1} }
           }
+          { \clist_remove_all:Nn \l_LuaCJK_blocks_off_clist {##1} }
       }
+    \LuaCJK_settings_push:
     \LuaCJK_update_font:
   }
 \NewDocumentCommand \LuaCJKCancelSubCJKBlock { m }
@@ -1686,7 +1711,7 @@ $ x + 中文 $ and 中文
 %      \l_LuaCJK_break_between_puncts_bool,
 %      \g_LuaCJK_autofake_bold_tl, \g_LuaCJK_autofake_slant_tl,
 %      \g_LuaCJK_embolden_factor_tl, \g_LuaCJK_slant_factor_tl,
-%      \g_LuaCJK_fallback_prop, \g_LuaCJK_auto_fallback_bool,
+%      \g_LuaCJK_fallback_prop, \l_LuaCJK_auto_fallback_bool,
 %      \g_LuaCJK_load_fandol_bool,
 %      \l_LuaCJK_fallback_family_tl, \l_LuaCJK_fallback_ids_tl,
 %      \l_LuaCJK_main_fontid_int}
@@ -1719,7 +1744,7 @@ $ x + 中文 $ and 中文
 \tl_new:N \g_LuaCJK_slant_factor_tl
 \tl_gset:Nn \g_LuaCJK_slant_factor_tl { 0.167 }
 \prop_new:N \g_LuaCJK_fallback_prop
-\bool_new:N \g_LuaCJK_auto_fallback_bool
+\bool_new:N \l_LuaCJK_auto_fallback_bool
 \bool_new:N \g_LuaCJK_load_fandol_bool
 \tl_new:N \l_LuaCJK_fallback_family_tl
 \tl_new:N \l_LuaCJK_fallback_key_tl
@@ -1838,18 +1863,11 @@ $ x + 中文 $ and 中文
     AutoFallBack .choice:,
     AutoFallBack / true .code:n =
       {
-        \bool_gset_true:N \g_LuaCJK_auto_fallback_bool
-        \LuaCJK_push_fallback_switch:
-
-        \prop_map_inline:Nn \g_LuaCJK_family_prop
-          { \LuaCJK_recall_fallback:n {##1} }
+        \bool_set_true:N \l_LuaCJK_auto_fallback_bool
+        \LuaCJK_recall_all_fallbacks:
       },
     AutoFallBack / false .code:n =
-      {
-        \bool_gset_false:N \g_LuaCJK_auto_fallback_bool
-        \LuaCJK_push_fallback_switch:
-
-      },
+      { \bool_set_false:N \l_LuaCJK_auto_fallback_bool },
     AutoFallBack .default:n = { true },
     LoadFandol .choice:,
     LoadFandol / true .code:n = { \bool_gset_true:N \g_LuaCJK_load_fandol_bool },
@@ -1909,7 +1927,10 @@ $ x + 中文 $ and 中文
                 \LuaCJK_bool_js:N \l_LuaCJK_check_single_tl ,
                 \int_use:N \l_LuaCJK_widow_penalty_int ,
                 \bool_if:NTF \l_LuaCJK_break_between_puncts_bool
-                  { true } { false }
+                  { true } { false } ,
+                \bool_if:NTF \l_LuaCJK_auto_fallback_bool
+                  { true } { false } ,
+                "\lua_escape:e { \l_LuaCJK_blocks_off_clist }"
               )
           }
       }
@@ -2269,19 +2290,6 @@ $ x + 中文 $ and 中文
 %      \begin{macrocode}
 %      \begin{macrocode}
 \bool_new:N \g_LuaCJK_lua_loaded_bool
-\cs_new_protected:Npn \LuaCJK_push_fallback_switch:
-  {
-    \bool_if:NT \g_LuaCJK_lua_loaded_bool
-      {
-        \bool_if:NTF \g_LuaCJK_auto_fallback_bool
-          { \lua_now:n { LuaCJK.auto_fallback = true } }
-          { \lua_now:n { LuaCJK.auto_fallback = false } }
-      }
-  }
-%      \end{macrocode}
-%     \end{variable}
-%      \begin{macrocode}
-%      \begin{macrocode}
 \cs_new_protected:Npn \LuaCJK_recall_all_fallbacks:
   {
     \prop_map_inline:Nn \g_LuaCJK_family_prop
@@ -2292,7 +2300,7 @@ $ x + 中文 $ and 中文
 %      \begin{macrocode}
 \cs_new_protected:Npn \LuaCJK_recall_fallback:n #1
   {
-    \bool_if:NT \g_LuaCJK_auto_fallback_bool
+    \prop_if_in:NnT \g_LuaCJK_fallback_prop {#1}
       {
         \prop_get:NnNF \g_LuaCJK_fallback_prop {#1} \l_LuaCJK_tmpa_tl
           { \tl_clear:N \l_LuaCJK_tmpa_tl }
@@ -2813,9 +2821,7 @@ $ x + 中文 $ and 中文
     LuaCJK.attr_punct_font = \int_use:N \c_LuaCJK_punct_font_attr_int ;
     LuaCJK.attr_nobreak = \int_use:N \c_LuaCJK_nobreak_attr_int ;
     LuaCJK.attr_settings = \int_use:N \c_LuaCJK_settings_attr_int ;
-    LuaCJK.attr_disabled = \int_use:N \c_LuaCJK_disabled_attr_int ;
-    LuaCJK.auto_fallback = \bool_if:NTF \g_LuaCJK_auto_fallback_bool
-      { true } { false }
+    LuaCJK.attr_disabled = \int_use:N \c_LuaCJK_disabled_attr_int
   }
 \bool_gset_true:N \g_LuaCJK_lua_loaded_bool
 \LuaCJK_settings_push:
@@ -2949,6 +2955,8 @@ local DEFAULT_SETTINGS = {
   check_single = false,
   widow_penalty = 10000,
   allow_break = false,
+  auto_fallback = false,
+  blocks_off = {},
 }
 
 M.settings = { DEFAULT_SETTINGS }
@@ -2971,7 +2979,15 @@ local function glue_spec (name)
 end
 
 function M.new_settings (style, kinsoku, latin_punct, cjk_math, punct_width,
-                         bound_width, check_single, widow_penalty, allow_break)
+                         bound_width, check_single, widow_penalty, allow_break,
+                         auto_fallback, off_list)
+  local off = {}
+  for name in string.gmatch(off_list or "", "[^,]+") do
+    local trimmed = string.match(name, "^%s*(.-)%s*$")
+    if trimmed ~= "" then
+      off[trimmed] = true
+    end
+  end
   local entry = {
     ccglue = glue_spec("l_LuaCJK_ccglue_skip"),
     ecglue = glue_spec("l_LuaCJK_ecglue_skip"),
@@ -2984,13 +3000,15 @@ function M.new_settings (style, kinsoku, latin_punct, cjk_math, punct_width,
     check_single = check_single,
     widow_penalty = widow_penalty,
     allow_break = allow_break,
+    auto_fallback = auto_fallback,
+    blocks_off = off,
   }
   local signature = table.concat({
     entry.ccglue.width, entry.ccglue.stretch, entry.ccglue.shrink,
     entry.ecglue.width, entry.ecglue.stretch, entry.ecglue.shrink,
     style, tostring(kinsoku), tostring(latin_punct), tostring(cjk_math),
     punct_width, bound_width, tostring(check_single), widow_penalty,
-    tostring(allow_break),
+    tostring(allow_break), tostring(auto_fallback), off_list,
   }, "|")
   local id = M.settings_by_signature[signature]
   if not id then
@@ -3360,14 +3378,7 @@ function M.declare_block (name, ranges)
   if not M.blocks[name] then
     table.insert(M.block_order, name)
   end
-  M.blocks[name] = { ranges = ranges, enabled = true }
-end
-
-function M.set_block_enabled (name, flag)
-  local block = M.blocks[name]
-  if block then
-    block.enabled = flag
-  end
+  M.blocks[name] = { ranges = ranges }
 end
 
 function M.set_block_font (main, name, fid)
@@ -3383,14 +3394,15 @@ function M.set_block_font (main, name, fid)
   end
 end
 
-local function block_font (main, char)
+local function block_font (main, char, settings)
   local row = M.block_fonts[main]
   if not row then
     return nil
   end
+  local off = settings and settings.blocks_off or {}
   for _, name in ipairs(M.block_order) do
     local block = M.blocks[name]
-    if block and block.enabled and row[name] then
+    if block and not off[name] and row[name] then
       for _, range in ipairs(block.ranges) do
         if char >= range[1] and char <= (range[2] or range[1]) then
           return row[name]
@@ -3402,7 +3414,6 @@ local function block_font (main, char)
 end
 
 M.fallback = {}
-M.auto_fallback = M.auto_fallback or false
 
 function M.set_fallback (main, list)
   M.fallback[main] = list
@@ -3423,8 +3434,8 @@ local function has_char (fid, char)
 end
 
 -- Pick the first fallback font that has the character.
-local function fallback_font (fid, char)
-  if not M.auto_fallback then
+local function fallback_font (fid, char, settings)
+  if not (settings and settings.auto_fallback) then
     return nil
   end
   local list = M.fallback[fid]
@@ -3466,7 +3477,7 @@ local function rewrite_fonts (head)
     if cur.id == GLYPH and is_cjk(cur.char, settings_of(cur)) and M.attr_font then
       local target = has_attribute(cur, M.attr_font)
       if target and target > 0 then
-        local block = block_font(target, cur.char)
+        local block = block_font(target, cur.char, settings_of(cur))
         if block then
           target = block
         end
@@ -3478,7 +3489,7 @@ local function rewrite_fonts (head)
         end
       end
       if target and target > 0 and not has_char(target, cur.char) then
-        target = fallback_font(target, cur.char) or target
+        target = fallback_font(target, cur.char, settings_of(cur)) or target
       end
       if target and target > 0 and target ~= cur.font then
         -- A font without the character leaves a placeholder glyph behind:
@@ -4010,11 +4021,13 @@ local function apply_kinsoku (head)
     elseif is_break_point(cur) and last_visible then
       local nxt = next_visible(cur.next)
       local settings = settings_of(last_visible)
-      if nxt and settings.kinsoku
-         and (no_break_mark(last_visible) or no_break_mark(nxt)
-              or (not disabled(last_visible) and not disabled(nxt)
-                  and forbids_break(
-                    class_char(last_visible), class_char(nxt), settings)))
+      -- \LuaCJKnobreak and the verbatim addon mark nodes themselves, so their
+      -- prohibition must not depend on the punctuation switch.
+      if nxt and (no_break_mark(last_visible) or no_break_mark(nxt)
+                  or (settings.kinsoku
+                      and not disabled(last_visible) and not disabled(nxt)
+                      and forbids_break(
+                        class_char(last_visible), class_char(nxt), settings)))
       then
         if not (prev and prev.id == PENALTY and prev.penalty >= 10000) then
           local p = new_node("penalty")

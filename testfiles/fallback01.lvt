@@ -45,6 +45,16 @@
   \psname{0}
 }
 
+\TEST{AutoFallBack ends with the group}{
+  \begingroup
+    \LuaCJKsetup{AutoFallBack = true}
+    \setbox0=\hbox{中}
+    \psname{0}
+  \endgroup
+  \setbox0=\hbox{中}
+  \psname{0}
+}
+
 \TEST{a fallback with its own options}{
   \begingroup
     \LuaCJKsetup{AutoFallBack = true}

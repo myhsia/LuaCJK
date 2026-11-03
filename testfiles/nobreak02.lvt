@@ -1,0 +1,58 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\def\countpenalties{%
+  \directlua{
+    local n = tex.box[0].head
+    local c = 0
+    while n do
+      if n.id == node.id("penalty") and n.penalty >= 10000 then
+        c = c + 1
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "PENALTIES " .. tostring(c))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{the punctuation switch off leaves no breaks forbidden}{
+  \begingroup
+    \LuaCJKsetup{PunctKinsoku = false}
+    \setbox0=\hbox{字」。}
+    \countpenalties
+  \endgroup
+}
+
+\TEST{LuaCJKnobreak still works with that switch off}{
+  \begingroup
+    \LuaCJKsetup{PunctKinsoku = false}
+    \setbox0=\hbox{\LuaCJKnobreak{中中中}}
+    \countpenalties
+  \endgroup
+}
+
+\TEST{the verbatim addon also keeps its prohibition}{
+  \begingroup
+    \LuaCJKsetup{PunctKinsoku = false}
+    \ttfamily
+    \LuaCJKVerbAddon
+    \setbox0=\hbox{中中}
+    \countpenalties
+  \endgroup
+}
+
+\TEST{with the switch on the prohibitions are back}{
+  \setbox0=\hbox{字」。}
+  \countpenalties
+}
+
+\END
+
+\end{document}

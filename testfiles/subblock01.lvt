@@ -41,6 +41,16 @@
   \psnames
 }
 
+\TEST{CancelSubCJKBlock ends with the group}{
+  \begingroup
+    \LuaCJKCancelSubCJKBlock{Kana}
+    \setbox0=\hbox{中あ}
+    \psnames
+  \endgroup
+  \setbox0=\hbox{中あ}
+  \psnames
+}
+
 \TEST{a family without the option keeps the main font}{
   \setCJKfamilyfont{plain}{FandolSong-Regular.otf}
   \setbox0=\hbox{\CJKfamily{plain}中あ}

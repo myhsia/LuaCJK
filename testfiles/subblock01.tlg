@@ -16,7 +16,13 @@ TEST 3: RestoreSubCJKBlock turns it on again
 PS FandolSong-Regular FandolKai-Regular
 ============================================================
 ============================================================
-TEST 4: a family without the option keeps the main font
+TEST 4: CancelSubCJKBlock ends with the group
+============================================================
+PS FandolSong-Regular FandolSong-Regular
+PS FandolSong-Regular FandolKai-Regular
+============================================================
+============================================================
+TEST 5: a family without the option keeps the main font
 ============================================================
 PS FandolSong-Regular FandolSong-Regular
 ============================================================

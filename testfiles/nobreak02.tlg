@@ -1,0 +1,23 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: the punctuation switch off leaves no breaks forbidden
+============================================================
+PENALTIES 0
+============================================================
+============================================================
+TEST 2: LuaCJKnobreak still works with that switch off
+============================================================
+PENALTIES 2
+============================================================
+============================================================
+TEST 3: the verbatim addon also keeps its prohibition
+============================================================
+Package LuaCJK Warning: Unknown CJK family `zhfs' is being ignored.
+PENALTIES 1
+============================================================
+============================================================
+TEST 4: with the switch on the prohibitions are back
+============================================================
+PENALTIES 3
+============================================================
