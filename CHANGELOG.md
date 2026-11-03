@@ -74,6 +74,8 @@
   passes any other key on to `lua-ul`.
 - Add the `CJKfilltwosides` environment, which justifies its lines to a
   given width and places the box on the baseline as requested.
+- Document a comparison with `xeCJK` that separates what is available with
+  the same meaning, what differs, and what is missing.
 - Drop the placeholder glyph that a font without the character leaves behind
   (one `.notdef` glyph in some fonts, a private-use glyph in others).
 - Move the manual driver into `LuaCJK.dtx` and use the same fonts as

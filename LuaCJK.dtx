@@ -742,14 +742,92 @@ $ x + 中文 $ and 中文
 %</example>
 % \fi
 %
-% \section{Current limitations}
+% \section{Comparison with \pkg{xeCJK}}
 %
-% The first release covers the font and spacing core, the
-% \texttt{quanjiao} and \texttt{plain} punctuation styles, and the basic
-% line-breaking prohibitions for punctuation, hanging punctuation, and direct
-% CJK input in math mode, and the font effects of \pkg{LuaCJKfntef}.
-% Line-end compression, fallback fonts, alternate fonts, wave and double
-% underlines, and a \pkg{ctex} backend are not yet implemented.
+% \pkg{LuaCJK} follows the \pkg{xeCJK} interface where the two engines allow
+% it, but a \LuaTeX{} node list is not an \XeTeX{} character class table, so
+% some options mean something slightly different here, and some have no
+% counterpart at all.  This section records the differences so that a
+% document can be migrated with the eyes open.
+%
+% \subsection{Available with the same meaning}
+%
+% \begin{itemize}
+%   \item The font commands \cs{setCJKmainfont}, \cs{setCJKsansfont},
+%     \cs{setCJKmonofont}, \cs{setCJKfamilyfont}, \cs{newCJKfontfamily},
+%     \cs{CJKfontspec}, and \cs{setCJKmathfont}, with the options before or
+%     after the font name.
+%   \item \cs{CJKfamily}, the four \cs{CJK...default} family names, and
+%     \cs{defaultCJKfontfeatures} and \cs{addCJKfontfeatures}.
+%   \item \texttt{CJKglue}, \texttt{CJKecglue}, \texttt{CJKspace}, and
+%     \texttt{xCJKecglue}.
+%   \item \cs{normalspacedchars}.
+%   \item \texttt{AutoFakeBold}, \texttt{AutoFakeSlant},
+%     \texttt{EmboldenFactor}, and \texttt{SlantFactor}.
+%   \item \texttt{CJKmath} and \cs{setCJKmathfont}.
+%   \item \texttt{PunctStyle} with the six presets, \cs{xeCJKDeclarePunctStyle}
+%     and \cs{xeCJKEditPunctStyle} (the keys differ, see below),
+%     \cs{xeCJKsetwidth} and \cs{xeCJKsetkern} (as \cs{LuaCJKsetwidth} and
+%     \cs{LuaCJKsetkern}), \texttt{PunctFamily}, \texttt{KaiMingPunct},
+%     \texttt{MiddlePunct}, \texttt{LongPunct}, and \texttt{NoBreakLongPunct}
+%     with their \texttt{+} and \texttt{-} forms.
+%   \item \texttt{CheckSingle} and \texttt{WidowPenalty}.
+%   \item \cs{setCJKfallbackfamilyfont} and \texttt{AutoFallBack},
+%     \texttt{LoadFandol}, and \texttt{LocalConfig}.
+% \end{itemize}
+%
+% \subsection{Available with a different meaning}
+%
+% \begin{itemize}
+%   \item \texttt{xeCJKactive} becomes \cs{LuaCJKdisable} and
+%     \cs{LuaCJKenable}.  The switch is stored per node, so it follows the
+%     \TeX{} grouping, and CJK characters keep their font while the
+%     adjustments are off.
+%   \item \texttt{Verb} accepts the four \pkg{xeCJK} values, but
+%     \texttt{env+} behaves like \texttt{false}: both leave the adjustments
+%     on, so the distinction has no observable effect here.
+%   \item The punctuation geometry is approximate.  \texttt{banjiao},
+%     \texttt{kaiming}, and \texttt{CCT} give a mark half, half (with the
+%     sentence-ending marks full), or 0.7 of the current size, and the
+%     hanging shift is half an em.  \pkg{xeCJK} instead measures the real
+%     side bearings of each glyph.
+%   \item \cs{xeCJKDeclareCharClass} takes only \texttt{CJK} and
+%     \texttt{Default}; the eight classes of \pkg{xeCJK} are not modelled,
+%     because LuaCJK classifies characters in Lua rather than in \XeTeX.
+%   \item \cs{LuaCJKDeclarePunctStyle} takes \texttt{compress-adjacent},
+%     \texttt{adjacent-ratio}, and \texttt{keep-open-close} instead of the
+%     thirty geometry keys of \pkg{xeCJK}.
+%   \item \texttt{CJKfilltwosides*} does not compare with the natural width
+%     of its content.
+% \end{itemize}
+%
+% \subsection{Not available}
+%
+% \begin{itemize}
+%   \item \texttt{NewLineCS}, \texttt{EnvCS}, \texttt{InlineEnv}, and
+%     \texttt{PlainEquation}.  They exist so that \pkg{xeCJK} can recognise
+%     \TeX{} constructs while it scans tokens; LuaCJK looks at the finished
+%     node list and needs no hint.
+%   \item \texttt{SubCJKBlock} and its two companions, which give a block of
+%     characters its own font family.
+%   \item \texttt{PunctWidth}, \texttt{PunctBoundWidth},
+%     \texttt{RubberPunctSkip}, \texttt{LatinPunct}, \texttt{PoZheHaoLigature},
+%     and \texttt{CheckFullRight}.
+%   \item The detailed punctuation keys of \pkg{xeCJK}
+%     (\texttt{fixed-punct-*}, \texttt{mixed-*}, \texttt{middle-*},
+%     \texttt{bound-*}, \texttt{kerning-*}, \texttt{optimize-*},
+%     \texttt{margin-minimum}), which describe \pkg{xeCJK}'s model of
+%     adjusting the side bearings.
+%   \item In \pkg{LuaCJKfntef}: \cs{CJKunderanyline},
+%     \cs{CJKunderanysymbol}, and the \texttt{format}, \texttt{hidden},
+%     \texttt{skip}, \texttt{subtract}, \texttt{symbol}, \texttt{boxdepth},
+%     \texttt{sep}, and \texttt{gap} options.
+%   \item \cs{xeCJKVerbAddon}, \cs{xeCJKOffVerbAddon}, \cs{xeCJKnobreak},
+%     \cs{xeCJKShipoutHook}, and the \pkg{xeCJK-listings} integration.
+%   \item A \pkg{ctex} backend.  The package is not wired into
+%     \pkg{ctex} yet; that needs the agreement of the \pkg{ctex}
+%     maintainers.
+% \end{itemize}
 %
 % \end{documentation}
 %
