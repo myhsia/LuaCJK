@@ -30,6 +30,7 @@ xcolor
 zref-clever
 #
 # Fonts and LuaTeX
+listings
 lua-ul
 luacolor
 lualatex-math
