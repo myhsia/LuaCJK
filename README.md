@@ -6,7 +6,7 @@
 
 # LuaCJK
 
-LuaCJK is a LuaTeX package for Chinese typesetting, inspired by `xeCJK`.
+LuaCJK is a LuaTeX package for Chinese typesetting.
 
 The project is currently at an early development stage.  The package
 provides a CJK font family layer, CJK/CJK and CJK/Latin spacing, the

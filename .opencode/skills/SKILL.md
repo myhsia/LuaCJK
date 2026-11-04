@@ -10,8 +10,9 @@ metadata:
 
 # LuaCJK
 
-LuaCJK sets Chinese text on LuaTeX the way `xeCJK` does on XeTeX, but through
-node callbacks instead of XeTeX character classes.  This skill carries the
+LuaCJK sets Chinese text through LuaTeX node callbacks: a CJK glyph carries
+its font in a LuaTeX attribute and is replaced before line breaking and box
+packing.  This skill carries the
 architecture: which callback does what, what each attribute means, how a
 punctuation style is expressed, and why the decorations are adjusted rather
 than drawn.  It exists so that a change to the pipeline does not have to be
@@ -156,7 +157,7 @@ the agreement of the `ctex` maintainers; the redirect is the interim route.
 - Lengths on the Lua side are integers in scaled points; dimensions cross the
   boundary through `\dim_to_decimal_in_sp:n`.
 - Code-point ranges cross the boundary as a Lua list of `{first, last}` pairs,
-  built from the `xeCJK` spelling (`"4E00 -> "9FFF`) in TeX.
+  built from the hexadecimal spelling (`"4E00 -> "9FFF`) in TeX.
 - Glue crosses as a spec table `{width, stretch, shrink}`; `make_glue` and
   `set_glue` take that table, not a register name.
 - A character class or punctuation override in `M.class_override` /
