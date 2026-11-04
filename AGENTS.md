@@ -36,14 +36,16 @@ Python 3 is available when a task needs it. Entry points:
 | --- | --- |
 | `LuaCJK.dtx` | the single source: user documentation, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
-| `build.lua` | `l3build` configuration: module `luacjk`, version `v0.0.1`, `tdslocations`, the `update_tag` hack, `docinit_hook` (copies the generated README back to the root), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly and sets `LUAINPUTS` so that the documentation can load the generated Lua modules |
+| `build.lua` | `l3build` configuration: module `luacjk`, version `v0.0.1`, `tdslocations`, the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly and sets `LUAINPUTS` so that the documentation can load the generated Lua modules |
 | `testfiles/NN.lvt` + `.tlg` | 37 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`) and `ctexopts.cfg` (the redirect that makes `ctex01` and the `ctex` subset load the engine file), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends the redirect to the `ctexopts.cfg` of the `ctex` test tree |
-| `scripts/check-docs.sh` | compares the facts in the two guides with their sources: version, test count, DocStrip blocks, installed file types, attribute and decoration counts, `\RequirePackage` against `DEPENDS.txt` (a package loaded from the listings guard must be `soft`), `DEPENDS.txt` against `.github/tl_packages`, and the subset count.  A `\RequirePackage` name is resolved to its TeX Live package with `tlmgr search --global --file`, falling back to `expl3 -> l3kernel` and `l3draw -> l3experimental` when `tlmgr` is absent |
+| `scripts/check-docs.sh` | compares the facts in the two guides with their sources: the layout table against `git ls-files` (both directions), version, test count, DocStrip blocks, installed file types, attribute and decoration counts, `\RequirePackage` against `DEPENDS.txt` (a package loaded from the listings guard must be `soft`), `DEPENDS.txt` against `.github/tl_packages`, and the subset count.  A `\RequirePackage` name is resolved to its TeX Live package with `tlmgr search --global --file`, falling back to `expl3 -> l3kernel` and `l3draw -> l3experimental` when `tlmgr` is absent |
 | `.github/workflows/test.yaml` | the CI workflow |
 | `.github/tl_packages` | the package list CI installs; a dependency must be added **or removed** here or the Ubuntu job fails first |
 | `CHANGELOG.md` | user-visible changes, newest first |
+| `LICENSE` | the LPPL text the meta-comment refers to |
+| `.gitattributes` | `* text=auto`, so the guides and the `dtx` keep one line ending whichever checkout writes them |
 | `DEPENDS.txt` | the TeX Live packages the package needs at run time, one per line as `hard <bundle>` and `soft <bundle>`; `soft` marks a dependency that only an optional output needs |
 
 Generated, never edited by hand: `*.sty`, `*.lua`, `*.def` in the root,
@@ -87,8 +89,8 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   expansion. Never write `@@` inside a Lua block or a Lua string: DocStrip
   rewrites it there too, and the Lua side would no longer match the TeX
   register it looks up. Names that Lua must see are passed in with
-  `\cs_to_str:N` (see `LuaCJK.name_ccglue` in the initialisation block).
-- **Every behaviour change needs a test.**  Add or extend a `.lvt`, run
+  `\cs_to_str:N` (see `LuaCJK.name_ccglue` in the initialization block).
+- **Every behavior change needs a test.**  Add or extend a `.lvt`, run
   `l3build save <name>`, then read the `.tlg` diff and confirm the numbers are
   the values you designed, not merely "whatever came out". `save` takes bare
   test names without the extension.
@@ -124,11 +126,11 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **Three Lua modules, one module table.**  `LuaCJK.lua` only loads the core;
   `LuaCJK-core.lua` owns the load-time state and the passes;
   `LuaCJKfntef.lua` owns the decoration settings, may read what the core
-  publishes (`LuaCJK.punct_class`), and must not redefine core behaviour.
+  publishes (`LuaCJK.punct_class`), and must not redefine core behavior.
 - **No narration in the Lua code.**  What a function or a pass does is prose in
   the dtx, above its `macrocode` chunk, so it reaches the manual; only a
   comment that explains one expression (a magic number, an invariant) stays as
-  a Lua comment. The licence header of the three modules comes from
+  a Lua comment. The license header of the three modules comes from
   `\declarepreamble` in `LuaCJK.ins`, not from the dtx body.
 - **`l3doc` bookkeeping.**  Follow the global `repo-rules` section "l3doc source
   style": `macrocode` is `%` plus exactly four spaces, every other documentation
@@ -157,7 +159,7 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   mark, or exclamation mark, and no trailing space at the end of a line. TeX
   collapses runs of spaces and breaks lines itself, so neither controls the
   output; alignment padding in code, `syntax` blocks, docstrip tables, and
-  licence boxes stays as it is.
+  license boxes stays as it is.
 - **Key names.**  An option name in running text is `\keys{name}`, not
   `\texttt{name}`, even outside a `keyval` environment. Inside one it appends
   `=`, so a cross-reference inside a `keyval` description stays `\texttt`.
@@ -171,6 +173,12 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   package is tested and released belongs in this guide, and the principle
   behind an interface belongs in the implementation section, not next to the
   user instruction.
+- **`\LuaCJKsetup` gets one sentence.**  Its `function` entry states the
+  syntax and that the keys are documented in the following sections; the two
+  groups (per-node settings and global or load-time keys) are explained
+  outside the environment, and every key is listed once, in the subsection
+  that describes it.  A key added to a group in that introduction is a
+  second place to forget, so the group lists stay short.
 - **Documentation literals.**  Write code points (`U+2018`) rather than the
   characters themselves when the prose would otherwise need a font the manual
   does not set.
@@ -203,12 +211,14 @@ checkout needs the network.
 
 - `bash scripts/check-docs.sh` must print `OK: the guides agree with the
   sources`; it is the first thing CI runs and the thing to run before a
-  commit that touches a number in either guide.  The `hard` and `soft` words
-  of `DEPENDS.txt` are what the script reads to decide whether a dependency
-  belongs to the package proper or only to an optional output, so the word
-  is part of the check, not a comment.
+  commit that touches a number in either guide, or adds, renames, or removes
+  a tracked file (the layout table is compared with `git ls-files` in both
+  directions).  The `hard` and `soft` words of `DEPENDS.txt` are what the
+  script reads to decide whether a dependency belongs to the package proper
+  or only to an optional output, so the word is part of the check, not a
+  comment.
 - `l3build check` must print `All checks passed`; the `.tlg` baselines must
-  match byte for byte. A difference is a behaviour change until proven
+  match byte for byte. A difference is a behavior change until proven
   otherwise.
 - Prove a documentation-only change inert rather than arguing it: unpack from
   a worktree of the previous commit, then `cmp build/unpacked/*` against the

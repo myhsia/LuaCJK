@@ -226,6 +226,53 @@ state_number "attribute count" "$attrs" "$word_attrs"
 state_number "decoration count" "$decorations" "$word_decor"
 state_number "decoration option count" "$options" "$word_opt"
 
+# --- 9. the layout table against git ls-files -----------------------------
+# Every row of the table names a path in its first code span: a directory, a
+# pattern such as `testfiles/NN.lvt`, or a file.  The check runs both ways, so
+# a new tracked file cannot stay out of the guide, and a row cannot survive
+# the file it describes.  The exceptions are the guide itself, the version
+# control metadata, and the generated README, which the layout table lists in
+# its prose rather than as a row.
+layout=$(sed -n '/^## Project layout$/,/^## /p' "$guide" |
+           sed -n 's/^| `\([^`]*\)`.*/\1/p')
+tracked=$(git ls-files)
+exempt='^(AGENTS\.md|\.gitignore|README\.md|\.opencode/)'
+layout_dirs=""
+while read -r entry; do
+  [ -n "$entry" ] || continue
+  case "$entry" in
+    *NN*|*\**)
+      dir=${entry%%/*}
+      layout_dirs="$layout_dirs $dir"
+      git ls-files --error-unmatch -- "$dir" >/dev/null 2>&1 ||
+        report "layout table names a pattern in a missing directory" "$entry"
+      ;;
+    */)
+      dir=${entry%/}
+      layout_dirs="$layout_dirs $dir"
+      git ls-files --error-unmatch -- "$dir" >/dev/null 2>&1 ||
+        report "layout table names a missing directory" "$entry"
+      ;;
+    *)
+      git ls-files --error-unmatch -- "$entry" >/dev/null 2>&1 ||
+        report "layout table names a file that is not tracked" "$entry"
+      ;;
+  esac
+done <<EOF
+$layout
+EOF
+
+while read -r file; do
+  printf '%s\n' "$file" | grep -qE "$exempt" && continue
+  printf '%s\n' "$layout" | grep -qxF "$file" && continue
+  for dir in $layout_dirs; do
+    case "$file" in "$dir"/*) continue 2 ;; esac
+  done
+  report "tracked file is missing from the layout table" "$file"
+done <<EOF
+$tracked
+EOF
+
 if [ "$fail" -eq 0 ]; then
   echo "OK: the guides agree with the sources"
   exit 0

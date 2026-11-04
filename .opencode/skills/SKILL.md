@@ -81,7 +81,7 @@ dedupes them by a signature string, stores the entry, and records its number in
 the `settings` attribute. Lua reads `settings_of(node)` and never the TeX side.
 Adding an option means touching all five places listed in `AGENTS.md`.
 
-Two kernel hooks drive the push, both labelled `LuaCJK`:
+Two kernel hooks drive the push, both labeled `LuaCJK`:
 `\hook_gput_code:nnn { selectfont }` fires while the size is being selected,
 and `\hook_gput_code:nnn { cmd / selectfont / after }` repeats the push once
 `\baselineskip` has settled, so the glue belongs to the new size; the guard
@@ -90,7 +90,7 @@ twice. `cmd / rmfamily / after`, `cmd / sffamily / after`, and
 `cmd / ttfamily / after` switch the family in the same way.
 
 The snapshot is also where state that used to be a Lua global now lives, so a
-group cannot leak it: `AutoFallBack` and the list of cancelled sub-blocks are
+group cannot leak it: `AutoFallBack` and the list of canceled sub-blocks are
 fields of the entry, resolved per node, rather than flags on the module. When
 a setting is described as "for the rest of the group", it belongs here; only
 the character sets, the fake bold factors, and the load-time keys stay global.
@@ -133,10 +133,10 @@ The settings of one call live in `LuaCJKfntef.settings`, numbered by the
 decoration attribute, so two decorations in one paragraph keep their own
 settings.
 
-A coloured rule cannot use `\color`, which emits whatsits in front of
-`\leaders`; it goes through `luacolor`'s attribute colouring
+A colored rule cannot use `\color`, which emits whatsits in front of
+`\leaders`; it goes through `luacolor`'s attribute coloring
 (`\luaul_set_color:n` plus `\luaul_apply_color:`),
-which is why `format` takes a colour name rather than code.
+which is why `format` takes a color name rather than code.
 
 The `depth` key places the rule below the baseline. `boxdepth`, which used to
 cap how much a rule added to the box, is gone: it was a workaround for the
@@ -157,7 +157,7 @@ exact instead of leaving a stroke-wide gap. It also places the drawing by the
 bottom of that box, which lifts a path that goes below the baseline, so the
 xout slash is lowered again by the part below the baseline plus half the
 stroke. The `symbol` variants of `\CJKunderdot` and `\CJKunderwave`, and
-`\CJKunderanysymbol`, follow one placement rule: one symbol per em, centred in
+`\CJKunderanysymbol`, follow one placement rule: one symbol per em, centered in
 the cell, its top a given distance under the baseline.
 
 ### The ctex adapter
@@ -214,6 +214,10 @@ the agreement of the `ctex` maintainers; the redirect is the interim route.
 - The manual is English; the package's user-facing prose keeps the same
   terminology as the code (`CJKglue`, `PunctStyle`, `subtract`) rather than
   inventing translations.
+- Lua code declares its functions with `local function` and publishes only through `M`; no other
+  name reaches the global environment except the module table that `LuaCJK.lua` creates.
+- Inside a module a local is `snake_case` and a module-level constant is `UPPER_CASE`
+  (`PUNCT_CLASS`, `DEFAULT_SETTINGS`, `M.punct_styles`).
 - The code carries no narration. Each pass is introduced by prose in the dtx
   between `\end{macrocode}` and `\begin{macrocode}`; a Lua comment survives
   only when it explains a single expression. The three module headers are
