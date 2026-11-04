@@ -81,8 +81,7 @@ File: LuaCJK.ins
 % copyright and the licence are already valid Lua when the file is read.
 % DocStrip prefixes every preamble line with \MetaPrefix, which is `%%' for
 % TeX.  It is expanded when the macros are declared, so switching it to `--'
-% for the two declarations below is enough; the default is restored after
-% them.
+% around the two declarations is enough; the default is restored afterwards.
 \let\savedMetaPrefix\MetaPrefix
 \def\MetaPrefix{--}
 \declarepreamble\luapreamble
@@ -107,9 +106,8 @@ LaTeX Project Public License, version 1.3c or later.
     \file{LuaCJK-listings.sty}            {\from{\jobname.dtx}{listings}}
     \file{ctex-engine-luacjk.def}         {\from{\jobname.dtx}{ctex}}
   \usedir{tex/luatex/luacjk}
-% DocStrip expands the reference lines in the heading when the file is
-% opened, so \MetaPrefix has to be `--' here as well, not only while the
-% macros above are declared.
+% DocStrip expands the reference lines of the heading when a file is opened,
+% so \MetaPrefix has to be `--' here as well, not only at declaration time.
   \let\savedMetaPrefix\MetaPrefix
   \def\MetaPrefix{--}
   \usepreamble\luapreamble

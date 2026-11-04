@@ -3200,6 +3200,10 @@ M.settings_of = settings_of
 %
 % \subsection{Character classes}
 %
+% The quotation marks, the middle dot, and the ellipses are shared with Latin
+% scripts.  With \texttt{LatinPunct} on, they use the Latin font and are not
+% compressed; the em dash is not in the table, because it stays CJK.
+%
 % \begin{macro}[internal]{LuaCJK.is_cjk}
 %   Test whether a character is treated as CJK.  The ranges cover CJK
 %   ideographs, compatibility and presentation forms, kana, Hangul, and the
@@ -3208,9 +3212,6 @@ M.settings_of = settings_of
 M.class_override = {}
 M.punct_override = {}
 
--- Punctuation shared with Latin scripts.  With LatinPunct on, these use the
--- Latin font and are not compressed; U+2014 is not in the list, because the
--- dash stays CJK.
 local LATIN_PUNCT = {
   [0x00B7] = true, [0x2018] = true, [0x2019] = true,
   [0x201C] = true, [0x201D] = true, [0x2025] = true,
@@ -3329,10 +3330,13 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{variable}[internal]{KAIMING_FULL}
-%   Characters that keep a full em width in the \texttt{kaiming} style.
+% \begin{variable}[internal]{M.charsets}
+%   The four character sets that the punctuation options can replace.
+%   \texttt{kaiming} holds the marks that keep a full em width in the
+%   \texttt{kaiming} style; \texttt{middle} and \texttt{long} are filled
+%   from the punctuation groups below, and \texttt{nobreak} starts as a copy
+%   of \texttt{long}.
 %    \begin{macrocode}
--- The character sets that the punctuation options can replace.
 M.charsets = {
   kaiming = {
     [0xFF0E] = true,  -- ．
@@ -3358,8 +3362,13 @@ for code in pairs(M.charsets.long) do
   M.charsets.nobreak[code] = true
 end
 
--- Replace, add to, or remove from one of the sets above.  Ranges arrive as
--- a list of {first, last} pairs.
+%    \end{macrocode}
+% \end{variable}
+%
+% \begin{macro}[internal]{LuaCJK.set_charset}
+%   Replace, extend, or reduce one of the sets above.  The ranges arrive from
+%   \TeX{} as a list of \texttt{\{first, last\}} pairs.
+%    \begin{macrocode}
 function M.set_charset (kind, mode, ranges)
   local target = M.charsets[kind]
   if not target then
@@ -3383,7 +3392,7 @@ function M.set_charset (kind, mode, ranges)
 end
 
 %    \end{macrocode}
-% \end{variable}
+% \end{macro}
 %
 % \begin{variable}[internal]{LuaCJK.punct_styles}
 %   The built-in styles.  Each entry holds the compression switch, the
@@ -3520,10 +3529,14 @@ end
 %
 % \subsection{Font rewriting}
 %
-% \begin{macro}[internal]{rewrite_fonts}
-%   Replace CJK glyphs by a copy in the font recorded in the attribute.
-%   \begin{macro}[internal]{copy_glyph}
-%     Copy a glyph node, changing only its font.
+% A CJK glyph carries the identifier of the family that applies to it in an
+% attribute.  The pass below replaces it by a copy in that font, and takes a
+% sub-block font or a fallback font instead when one applies.
+%
+% \begin{variable}[internal]{M.blocks, M.block_order, M.block_fonts}
+%   The declared sub-blocks in declaration order, and the font identifier of
+%   each block for each family.  The order decides which block wins when two
+%   ranges overlap.
 %    \begin{macrocode}
 M.blocks = {}
 M.block_order = {}
@@ -3549,6 +3562,13 @@ function M.set_block_font (main, name, fid)
   end
 end
 
+%    \end{macrocode}
+% \end{variable}
+%
+% \begin{macro}[internal]{block_font}
+%   The font of the first block of \meta{main} that contains \meta{char} and
+%   is not cancelled in \meta{settings}.
+%    \begin{macrocode}
 local function block_font (main, char, settings)
   local row = M.block_fonts[main]
   if not row then
@@ -3568,12 +3588,29 @@ local function block_font (main, char, settings)
   return nil
 end
 
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{variable}[internal]{M.fallback}
+%   The fallback fonts of each family, as identifiers, in the order in which
+%   they were declared.
+%    \begin{macrocode}
 M.fallback = {}
 
 function M.set_fallback (main, list)
   M.fallback[main] = list
 end
 
+%    \end{macrocode}
+% \end{variable}
+%
+% \begin{macro}[internal]{has_char}
+%   Whether \meta{fid} has a glyph for \meta{char}.  The answer is cached per
+%   font and code point, because the pass asks it once per glyph.
+%   \begin{variable}[internal]{has_char_cache}
+%     The cache, keyed by the font identifier and the code point packed into
+%     one number.
+%    \begin{macrocode}
 local has_char_cache = {}
 
 local function has_char (fid, char)
@@ -3588,7 +3625,14 @@ local function has_char (fid, char)
   return ok
 end
 
--- Pick the first fallback font that has the character.
+%    \end{macrocode}
+%   \end{variable}
+% \end{macro}
+%
+% \begin{macro}[internal]{fallback_font}
+%   The first fallback font of \meta{fid} that has \meta{char}, or nothing
+%   when the feature is off or no fallback covers the character.
+%    \begin{macrocode}
 local function fallback_font (fid, char, settings)
   if not (settings and settings.auto_fallback) then
     return nil
@@ -3604,6 +3648,12 @@ local function fallback_font (fid, char, settings)
   end
 end
 
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[internal]{copy_glyph}
+%   Copy a glyph node, changing only its font.
+%    \begin{macrocode}
 local function copy_glyph (n, fid)
   local g = new_node("glyph")
   g.font = fid
@@ -3622,7 +3672,14 @@ local function copy_glyph (n, fid)
 end
 
 %    \end{macrocode}
-%   \end{macro}
+% \end{macro}
+%
+% \begin{macro}[internal]{rewrite_fonts}
+%   Replace each CJK glyph by a copy in the font its attribute names, after
+%   giving way to a sub-block font or to a fallback font.  A glyph that the
+%   old font did not have may sit next to the placeholder \pkg{luaotfload}
+%   emitted for it; the placeholder is freed at the same time, because it
+%   would otherwise add an advance of its own.
 %    \begin{macrocode}
 local function rewrite_fonts (head)
   local prev = nil
@@ -4075,11 +4132,6 @@ end
 % \begin{macro}[internal]{apply_kinsoku}
 %   Add the prohibitions.
 %    \begin{macrocode}
--- Line-breaking prohibitions (kinsoku).
---
--- TeX may break at glue and at kern.  Both are the places we insert our own
--- spacing nodes, so after building the list we walk it once more and put a
--- penalty 10000 in front of every break opportunity that must not be used.
 %    \end{macrocode}
 %   \begin{macro}[internal]{class_char}
 %     The character of a glyph, or nothing for any other node.
@@ -4216,12 +4268,6 @@ end
 %   goes right after the glyph.  A penalty in front of that kern keeps \TeX{}
 %   from treating it as an extra break opportunity.
 %    \begin{macrocode}
--- Fixed punctuation width.
---
--- Styles such as banjiao give every punctuation mark a fixed advance.  The
--- glyph advance cannot be changed, so a compensating kern goes right after
--- the glyph.  A penalty in front of that kern keeps TeX from treating it as
--- an extra break opportunity.
 local function apply_fixed_widths (head)
   local cur = head
   while cur do
@@ -4273,11 +4319,6 @@ end
 % \begin{variable}[internal]{MATH_CHAR, MATH_TEXT_CHAR}
 %   The node types of the two kinds of math character noad.
 %    \begin{macrocode}
--- CJK in math mode.
---
--- A CJK character in math mode reaches the math list as a `math_char` noad.
--- Its family points at the math font, which usually has no CJK glyph.  We
--- replace the nucleus by a `sub_box` holding the character in the CJK font.
 local MATH_CHAR = node.id("math_char")
 local MATH_TEXT_CHAR = node.id("math_text_char")
 
@@ -4328,11 +4369,10 @@ local SUB_MLIST = node.id("sub_mlist")
 %   Rewrite the CJK noads of a math list, or warn once when the feature is
 %   off.
 %   \begin{macro}[internal]{rewrite_math_list}
-%     Walk a math list.  The declaration is split from the definition
-%     because the walk recurses into sub lists.
+%     Walk a math list, recursing into sub lists (fractions, braces, scripts)
+%     so that nested CJK characters are rewritten too.  The declaration is
+%     split from the definition because of that recursion.
 %    \begin{macrocode}
--- Recurse into sub lists (fractions, braces, scripts) so that nested CJK
--- characters are rewritten too.
 local rewrite_math_list
 
 %    \end{macrocode}
@@ -4483,20 +4523,9 @@ end
 % a line-final closing punctuation hang into the margin without changing the
 % line width.  Line-initial opening punctuation is shifted the other way.
 %
-% \begin{macro}[internal]{hang_punctuation}
-%   Apply the hanging shift to every line.
-%   \begin{macro}[internal]{hang_line}
-%     Shift the first and last punctuation glyph of one line.
+% \begin{macro}[internal]{find_first_last_glyph}
+%   The first and the last glyph node of a list.
 %    \begin{macrocode}
--- Hanging punctuation (hangmobanjiao).
---
--- The glyph advance stays inside the line, so shifting the ink sideways lets
--- a line-final closing punctuation hang into the margin without changing the
--- line width.  Line-initial opening punctuation is shifted the other way.
-%    \end{macrocode}
-%     \begin{macro}[internal]{find_first_last_glyph}
-%       The first and last glyph nodes of a list.
-%      \begin{macrocode}
 local function find_first_last_glyph (list)
   local first, last
   local n = list
@@ -4511,22 +4540,25 @@ local function find_first_last_glyph (list)
 end
 
 %    \end{macrocode}
-%     \end{macro}
-%     \begin{macro}[internal]{shift_glyph}
-%       Move the ink of a glyph by a horizontal offset.
-%      \begin{macrocode}
+% \end{macro}
+%
+% \begin{macro}[internal]{shift_glyph}
+%   Move the ink of a glyph by a horizontal offset.  The advance is not
+%   touched, so nothing in the line changes width.
+%    \begin{macrocode}
 local function shift_glyph (g, delta)
   if delta == 0 then return end
   g.xoffset = g.xoffset + delta
 end
 
 %    \end{macrocode}
-%     \end{macro}
+% \end{macro}
+%
+% \begin{macro}[internal]{bound_width}
+%   The advance that a mark keeps inside the line when it ends one, or
+%   nothing when the option is off.  Without it the shift is half an em, as
+%   the hanging style asks.
 %    \begin{macrocode}
--- When a mark ends a line, only the bound width should stay inside it; the
--- rest of the ink hangs into the margin.  Shifting the ink does not change
--- any width, so justification is untouched.  Without the bound width the
--- shift is half an em, as before.
 local function bound_width (settings)
   local value = settings and settings.bound_width or 0
   if value > 0 then
@@ -4535,6 +4567,15 @@ local function bound_width (settings)
   return nil
 end
 
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[internal]{hang_line}
+%   Shift the punctuation glyphs at the two ends of one line.  A closing or
+%   middle mark at the end, and an opening mark at the start, take their own
+%   settings; with a bound width the end shift is the part that would stick
+%   out otherwise.
+%    \begin{macrocode}
 local function hang_line (line)
   if line.id ~= HLIST then
     return
@@ -4578,7 +4619,11 @@ local function hang_line (line)
 end
 
 %    \end{macrocode}
-%   \end{macro}
+% \end{macro}
+%
+% \begin{macro}[internal]{process_lines}
+%   Walk a list of lines, descending into nested boxes, and apply
+%   \cs{hang_line} to each.
 %    \begin{macrocode}
 local function process_lines (list)
   local n = list
@@ -4591,6 +4636,12 @@ local function process_lines (list)
   end
 end
 
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[internal]{hang_punctuation}
+%   Apply the hanging shift to every line of the paragraph.
+%    \begin{macrocode}
 local function hang_punctuation (head)
   process_lines(head)
   return head
@@ -4599,16 +4650,17 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Callbacks}
+% \subsection{Widow control}
 %
-% \begin{macro}[internal]{LuaCJK.process}
-%   Run the font, spacing, fixed-width, and kinsoku passes over a list.
+% \TeX{} can break at the glue that LuaCJK inserts between CJK characters.
+% At the end of a paragraph the last two such break points get a penalty, so
+% that at least three CJK characters travel to the last line together instead
+% of a single one.
+%
+% \begin{macro}[internal]{apply_check_single}
+%   Insert the widow penalties.  Only a paragraph whose last visible node is
+%   a CJK glyph is examined, and only when its settings ask for it.
 %    \begin{macrocode}
--- Widow control for a single CJK character on the last line.
---
--- TeX can break at the glue that LuaCJK inserts between CJK characters.  At
--- the end of a paragraph we raise the penalty of the last two such break
--- points, so at least three CJK characters travel to the last line together.
 local function apply_check_single (head)
   local trail = {}
   local node = head
@@ -4664,6 +4716,16 @@ local function apply_check_single (head)
   return head
 end
 
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsection{Callbacks}
+%
+% \begin{macro}[internal]{LuaCJK.process}
+%   Run the passes over a list, in the order in which they depend on each
+%   other: the font first, because the classes depend on it; then the
+%   spacing, the fixed widths, the prohibitions, and the widow penalties.
+%    \begin{macrocode}
 local function process (head)
   head = rewrite_fonts(head)
   head = spacing(head)
@@ -4753,13 +4815,20 @@ local GLUE = node.id("glue")
 local LEADERS = 100
 local KERN = node.id("kern")
 
--- The per-call settings live in a Lua table; the number of the entry is
--- stored in an attribute on the decorated text, so two decorations in the
--- same paragraph keep their own settings.  Attribute 0 means no adjustment.
 M.attr = M.attr or nil
 M.settings = M.settings or {}
 M.next_id = M.next_id or 1
 
+%    \end{macrocode}
+% \end{variable}
+%
+% A decoration records its settings by selecting an entry: the number of the
+% entry goes into the attribute on the decorated text, and attribute zero
+% means that the text carries no decoration of this package.
+%
+% \begin{macro}[internal]{LuaCJKfntef.new_settings}
+%   Register one entry and select it.
+%    \begin{macrocode}
 function M.new_settings (subtract, skip, boxdepth)
   local id = M.next_id
   M.next_id = id + 1
@@ -4768,7 +4837,12 @@ function M.new_settings (subtract, skip, boxdepth)
     tex.setattribute(M.attr, id)
   end
 end
-
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[internal]{kind}
+%   The punctuation group of a character, as the core module classifies it.
+%    \begin{macrocode}
 local function kind (c)
   local class = LuaCJK.punct_class
   if class then
@@ -4777,7 +4851,16 @@ local function kind (c)
   return nil
 end
 
--- The intervals of the span where a decoration may be drawn.
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[internal]{segments}
+%   The intervals of a span of width \meta{w} that the decoration may cover:
+%   the first and the last \meta{inset} are taken off, and with
+%   \meta{skip-punct} every punctuation mark inside is cut out as well.  A
+%   cut is clamped to the span, so a mark that straddles the end keeps the
+%   part that fits.
+%    \begin{macrocode}
 local function segments (w, start, inset, skip_punct)
   local cuts = {}
   if skip_punct then
@@ -4807,8 +4890,14 @@ local function segments (w, start, inset, skip_punct)
   return result
 end
 
--- The settings of a decoration, read from the attribute of the first node it
--- covers.  The leaders pair sits immediately before that node.
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[internal]{settings_at}
+%   The settings of the decoration whose leaders pair ends just before
+%   \meta{node}: the number is read from that node, because the pair itself
+%   is inserted before the marked text.
+%    \begin{macrocode}
 local function settings_at (node_)
   if not node_ or not M.attr then
     return nil
@@ -4820,9 +4909,15 @@ local function settings_at (node_)
   return M.settings[id]
 end
 
--- Replace the leaders glue of one decoration: the pieces are kerns and
--- shorter leaders, and their total width stays $w$, so the text does not
--- move.  The negative glue that follows is kept and becomes the tail.
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[internal]{replace_pair}
+%   Replace the leaders glue of one decoration.  The pieces are kerns and
+%   shorter leaders whose total width stays \meta{w}, so the text does not
+%   move; the negative glue that follows the leaders is kept and becomes the
+%   tail of the replacement.
+%    \begin{macrocode}
 local function replace_pair (head, prev, leaders, settings)
   local w = leaders.width
   local neg = leaders.next
@@ -4876,6 +4971,13 @@ local function replace_pair (head, prev, leaders, settings)
   return head
 end
 
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[internal]{adjust}
+%   Walk a horizontal list and rewrite every leaders pair whose following node
+%   carries a settings entry.
+%    \begin{macrocode}
 local function adjust (head)
   if not M.attr then
     return head
@@ -4900,6 +5002,13 @@ local function adjust (head)
   return head
 end
 
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[internal]{LuaCJKfntef.hpack}
+%   The box-packing callback.  The pass also runs before a box is appended to
+%   a vertical list, because a box built earlier is not packed again.
+%    \begin{macrocode}
 function M.hpack (head)
   return adjust(head)
 end
@@ -4914,7 +5023,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   end, "LuaCJKfntef.adjust")
 %</lua-fntef>
 %    \end{macrocode}
-% \end{variable}
+% \end{macro}
 %
 
 % \subsection{Font effects}
