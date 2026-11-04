@@ -148,3 +148,12 @@
   (one `.notdef` glyph in some fonts, a private-use glyph in others).
 - Move the manual driver into `LuaCJK.dtx` and use the same fonts as
   `ctxdoc.cls`; the manual is now built from the `.dtx` alone.
+- Close the gap between two periods of `\CJKunderwave`: the drawing box now
+  has exactly the period width, and the two `\hss` absorb the stroke width,
+  so the wave is continuous and no overfull box is reported.
+- `\CJKunderwave`, `\CJKunderdot`, and `\CJKxout` now build their pattern at
+  use time, so the wave period, the dots, and the slash scale with the font
+  size instead of keeping the size of the font current when the package was
+  loaded.
+- `\CJKsout` now strikes at `height=0.3em` by default, which passes through
+  the middle of a CJK glyph; `height=0.5ex` restores the Latin position.

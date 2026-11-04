@@ -870,7 +870,8 @@ $ x + 中文 $ and 中文
 %   \end{syntax}
 %   Put a wave under \meta{text}.  The wave is drawn with \pkg{l3draw} and
 %   repeated with \tn{leaders}, so it has the same phase across the parts of
-%   one line.  The optional argument takes the keys of \cs{CJKunderline}
+%   one line.  One period is half an em and the whole pattern scales with
+%   the font size.  The optional argument takes the keys of \cs{CJKunderline}
 %   and, in addition, \texttt{symbol} to replace the wave with another
 %   symbol, and \texttt{sep} for the space on each side of it (initial
 %   \texttt{0.1em}).
@@ -919,11 +920,13 @@ $ x + 中文 $ and 中文
 %   \end{syntax}
 %   Strike \meta{text} through.  The optional argument takes
 %   \texttt{thickness}, \texttt{height} (the distance from the baseline to
-%   the centre of the rule, initial \texttt{0.5ex}), \texttt{format} (a
+%   the centre of the rule, initial \texttt{0.3em}), \texttt{format} (a
 %   color name), and the keys \texttt{subtract}, \texttt{skip},
 %   \texttt{hidden}, and \texttt{boxdepth}.  A bare color name is still
 %   accepted and means |format = |\meta{color}; \texttt{color} is another
-%   name for \texttt{format}.
+%   name for \texttt{format}.  The initial height passes through the middle
+%   of a CJK glyph, which sits higher than the middle of the Latin
+%   x-height; use |height = 0.5ex| for text that is entirely Latin.
 % \end{function}
 %
 % \iffalse
@@ -5095,7 +5098,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \dim_set:Nn \l_LuaCJKfntef_depth_dim { .2em }
 \dim_set:Nn \l_LuaCJKfntef_thickness_dim { .4pt }
 \dim_set:Nn \l_LuaCJKfntef_gap_dim { 1.1pt }
-\dim_set:Nn \l_LuaCJKfntef_height_dim { .5ex }
+\dim_set:Nn \l_LuaCJKfntef_height_dim { .3em }
 %    \end{macrocode}
 % \end{variable}
 %    \begin{macrocode}
@@ -5449,7 +5452,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \dim_set:Nn \l_LuaCJKfntef_depth_dim { .2em }
     \dim_set:Nn \l_LuaCJKfntef_thickness_dim { .4pt }
     \dim_set:Nn \l_LuaCJKfntef_gap_dim { 1.1pt }
-    \dim_set:Nn \l_LuaCJKfntef_height_dim { .5ex }
+    \dim_set:Nn \l_LuaCJKfntef_height_dim { .3em }
     \tl_clear:N \l_LuaCJKfntef_format_tl
     \tl_clear:N \l_LuaCJKfntef_symbol_tl
     \dim_set:Nn \l_LuaCJKfntef_symbol_sep_dim { .1em }
@@ -5481,25 +5484,39 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %
 % \begin{macro}{\CJKunderwave}
 % A wave drawn with \pkg{l3draw}, one period per half em, repeated by
-% \tn{leaders}.  The box is built once at load time.
+% \tn{leaders}.  The drawing is kept as code rather than as a box, so the
+% |em| units are resolved when the decoration is used and the pattern
+% follows the current font size.
+%
+% The period is forced to exactly half an em by \tn{hbox}| to .5em|.
+% \pkg{l3draw} sizes its box by the bounding box of the stroked path, which
+% is a full stroke width wider than the path; repeating that box would leave
+% a gap of one stroke width between two periods.  The two \tn{hss} absorb the
+% excess symmetrically, so the ink fills the period exactly and no overfull
+% box is reported.  The stroke is set to |.04em|, which is \texttt{0.4pt} at
+% 10pt, so the pattern keeps its look from the previous release while it
+% scales with the font size.
 %    \begin{macrocode}
-\box_new:N \l_LuaCJKfntef_wave_box
-\hbox_set:Nn \l_LuaCJKfntef_wave_box
+\newunderlinetype \LuaCJKfntef_wave
   {
-    \raise -.42em \hbox:n
+    \leaders \hbox to .5em
       {
-        \draw_begin:
-          \draw_path_moveto:n { 0em , 0em }
-          \draw_path_curveto:nnn { .0625em , .16em } { .1875em , .16em }
-            { .25em , 0em }
-          \draw_path_curveto:nnn { .3125em , -.16em } { .4375em , -.16em }
-            { .5em , 0em }
-          \draw_path_use_clear:n { stroke }
-        \draw_end:
+        \hss
+        \raise -.42em \hbox
+          {
+            \draw_begin:
+              \draw_set_linewidth:n { .04em }
+              \draw_path_moveto:n { 0em , 0em }
+              \draw_path_curveto:nnn { .0625em , .16em }
+                { .1875em , .16em } { .25em , 0em }
+              \draw_path_curveto:nnn { .3125em , -.16em }
+                { .4375em , -.16em } { .5em , 0em }
+              \draw_path_use_clear:n { stroke }
+            \draw_end:
+          }
+        \hss
       }
   }
-\newunderlinetype \LuaCJKfntef_wave
-  { \leaders \box_use_drop:N \l_LuaCJKfntef_wave_box }
 \cs_new_protected:Npn \LuaCJKfntef_use_symbol:n #1
   {
     \dim_set:Nn \l_LuaCJKfntef_any_depth_dim {#1}
@@ -5539,20 +5556,22 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKxout}
-% A repeated slash, as in \pkg{ulem}'s \tn{xout}, drawn once and repeated
-% by \tn{leaders}.
+% A repeated slash, as in \pkg{ulem}'s \tn{xout}.  The drawing is kept as
+% code so that it scales with the font size, and the stroke width is
+% |.04em| like the wave.
 %    \begin{macrocode}
-\box_new:N \l_LuaCJKfntef_slash_box
-\hbox_set:Nn \l_LuaCJKfntef_slash_box
-  {
-    \draw_begin:
-      \draw_path_moveto:n { 0em , -.25em }
-      \draw_path_lineto:n { .42em , .55em }
-      \draw_path_use_clear:n { stroke }
-    \draw_end:
-  }
 \newunderlinetype \LuaCJKfntef_slash
-  { \leaders \box_use_drop:N \l_LuaCJKfntef_slash_box }
+  {
+    \leaders \hbox
+      {
+        \draw_begin:
+          \draw_set_linewidth:n { .04em }
+          \draw_path_moveto:n { 0em , -.25em }
+          \draw_path_lineto:n { .42em , .55em }
+          \draw_path_use_clear:n { stroke }
+        \draw_end:
+      }
+  }
 \NewDocumentCommand \CJKxout { s t- o +m }
   {
     \group_begin:
@@ -5671,38 +5690,24 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   }
 %    \end{macrocode}
 % \begin{macro}[int]{\LuaCJKfntef_underdot:n}
-% Apply the dot pattern inside a group.
-% \begin{variable}[int]
-% {\l_LuaCJKfntef_dot_dim, \l_LuaCJKfntef_dot_gap_dim,
-% \l_LuaCJKfntef_dot_raise_dim, \l_LuaCJKfntef_dots_box}
-% The size of one dot, the space on both sides of it, the amount it is
-% lowered, and the box holding one repeating unit of the pattern.
-%    \begin{macrocode}
-\dim_new:N \l_LuaCJKfntef_dot_dim
-\dim_set:Nn \l_LuaCJKfntef_dot_dim { .06em }
-\dim_new:N \l_LuaCJKfntef_dot_gap_dim
-\dim_set:Nn \l_LuaCJKfntef_dot_gap_dim { .12em }
-\dim_new:N \l_LuaCJKfntef_dot_raise_dim
-\dim_set:Nn \l_LuaCJKfntef_dot_raise_dim { -.40em }
-\box_new:N \l_LuaCJKfntef_dots_box
-\hbox_set:Nn \l_LuaCJKfntef_dots_box
-  {
-    \skip_horizontal:n { \l_LuaCJKfntef_dot_gap_dim }
-    \raise \l_LuaCJKfntef_dot_raise_dim \tex_hbox:D
-      {
-        \vrule width \l_LuaCJKfntef_dot_dim
-               height \l_LuaCJKfntef_dot_dim
-               depth \c_zero_dim
-      }
-    \skip_horizontal:n { \l_LuaCJKfntef_dot_gap_dim }
-  }
-%    \end{macrocode}
-% \end{variable}
+% Apply the dot pattern inside a group.  One repeating unit is a dot of
+% \texttt{.06em} with \texttt{.12em} on each side, lowered by \texttt{.4em}.
+% The unit is written with |em| units so that it scales with the font size.
 % \begin{macro}[int]{\LuaCJKfntef_dots}
-% The underline type that repeats the dot box.
+% The underline type that repeats one dot of the pattern.
 %    \begin{macrocode}
 \newunderlinetype \LuaCJKfntef_dots
-  { \leaders \box_use_drop:N \l_LuaCJKfntef_dots_box }
+  {
+    \leaders \hbox
+      {
+        \skip_horizontal:n { .12em }
+        \raise -.4em \hbox
+          {
+            \vrule width .06em height .06em depth \c_zero_dim
+          }
+        \skip_horizontal:n { .12em }
+      }
+  }
 %    \end{macrocode}
 % \end{macro}
 %    \begin{macrocode}

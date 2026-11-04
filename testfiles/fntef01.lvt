@@ -143,6 +143,62 @@
   }
 }
 
+\def\reporule#1{
+  \directlua{
+    local n = tex.box[#1].head
+    while n do
+      if n.id == node.id("glue") and n.subtype == 100 and n.leader then
+        local l = n.leader
+        texio.write_nl("term and log",
+          "LEADER width=" .. tostring(l.width) ..
+          " height=" .. tostring(l.height) ..
+          " depth=" .. tostring(l.depth))
+      end
+      n = n.next
+    end
+  }
+}
+
+\TEST{wave period is half an em and closes the gap}{
+  \setbox0=\hbox{\CJKunderwave{中文}}
+  \reporule{0}
+}
+
+\TEST{wave scales with the font size}{
+  \begingroup
+    \fontsize{20}{24}\selectfont
+    \setbox0=\hbox{\CJKunderwave{中文}}
+    \reporule{0}
+  \endgroup
+}
+
+\TEST{emphasis dots scale with the font size}{
+  \setbox0=\hbox{\CJKunderdot{中文}}
+  \reporule{0}
+  \begingroup
+    \fontsize{20}{24}\selectfont
+    \setbox2=\hbox{\CJKunderdot{中文}}
+    \reporule{2}
+  \endgroup
+}
+
+\TEST{xout slash scales with the font size}{
+  \setbox0=\hbox{\CJKxout{中文}}
+  \reporule{0}
+  \begingroup
+    \fontsize{20}{24}\selectfont
+    \setbox2=\hbox{\CJKxout{中文}}
+    \reporule{2}
+  \endgroup
+}
+
+\TEST{strike-through crosses the middle of a CJK glyph}{
+  \setbox0=\hbox{\CJKsout{中文}}
+  \reporule{0}
+  \setbox2=\hbox{\CJKsout[height = .5ex]{中文}}
+  \reporule{2}
+}
+
 \END
 
 \end{document}
