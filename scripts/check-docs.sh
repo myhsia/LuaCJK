@@ -65,8 +65,9 @@ state_number() {
     report "$label differs" "$dtx: $actual" "guide: $value ($word)"
 }
 
-depends=$(grep -vE '^\s*(#|$)' DEPENDS.txt | awk '{print $NF}' | sort -u)
-tl=$(grep -vE '^\s*(#|$)' .github/tl_packages | sort -u)
+# `tr -d '\r'` keeps the comparison honest when a Windows checkout has CRLF.
+depends=$(grep -vE '^\s*(#|$)' DEPENDS.txt | tr -d '\r' | awk '{print $NF}' | sort -u)
+tl=$(grep -vE '^\s*(#|$)' .github/tl_packages | tr -d '\r' | sort -u)
 known=$(printf '%s\n%s\n' "$depends" "$tl" | sort -u)
 
 # A `\RequirePackage` name and the TeX Live package that installs it are the
@@ -204,7 +205,7 @@ done
 # --- 8. the numbers the skill states --------------------------------------
 # The sentences are searched on one line, because a count may be split across
 # a line break in the source.
-skill_flat=$(tr '\n' ' ' < "$skill")
+skill_flat=$(tr -d '\r' < "$skill" | tr '\n' ' ')
 attrs=$(grep -c '\\newattribute ' "$dtx")
 decorations=$(grep -cE '^\\NewDocumentCommand \\CJK(underline|sout|underdblline|underwave|xout|underanyline|underanysymbol|underdot)' "$dtx")
 options=$(awk '
