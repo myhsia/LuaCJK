@@ -23,6 +23,8 @@ docext
 fancyvrb
 hypdoc
 hyperref
+nameref
+refcount
 microtype
 enumitem
 underscore
