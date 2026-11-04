@@ -1,0 +1,117 @@
+\input{regression-test}
+
+\documentclass[fontset=fandol]{ctexart}
+
+% The narrow paragraphs below are meant to be overfull; keep TeX from
+% printing the box in the log.
+\hfuzz = \maxdimen
+
+\def\countpenalties#1{%
+  \directlua{
+    local function penalties (n)
+      local c = 0
+      while n do
+        if n.id == node.id("penalty") and n.penalty >= 10000 then
+          c = c + 1
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          c = c + penalties(n.head)
+        end
+        n = n.next
+      end
+      return c
+    end
+    texio.write_nl("term and log",
+      "PENALTIES " .. tostring(penalties(tex.box[#1])))
+  }%
+}
+
+\def\glyphnames#1{%
+  \directlua{
+    local out = {}
+    local function walk (n)
+      while n do
+        if n.id == node.id("glyph") then
+          local f = font.getfont(n.font)
+          table.insert(out, tostring(n.char) .. ":" ..
+            tostring(f and (f.fullname or f.name) or "?"))
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          walk(n.head)
+        end
+        n = n.next
+      end
+    end
+    walk(tex.box[#1])
+    texio.write_nl("term and log", "GLYPHS " .. table.concat(out, " "))
+  }%
+}
+
+% The first character of each line of a vertical box.
+\def\linefirsts#1{%
+  \directlua{
+    local function first (n)
+      local m = n.head
+      while m do
+        if m.id == node.id("glyph") then
+          return m.char
+        end
+        m = m.next
+      end
+    end
+    local out = {}
+    local n = tex.box[#1].head
+    while n do
+      if node.type(n.id) == "hlist" then
+        table.insert(out, tostring(first(n)))
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "LINES " .. table.concat(out, ","))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{ctex loads the LuaCJK engine file}{
+  \LuaCJKversion
+}
+
+\TEST{a CJK character is set in the font of the fontset}{
+  \setbox0=\hbox{中}
+  \glyphnames{0}
+}
+
+\TEST{the punct option selects a punctuation style}{
+  \setbox0=\hbox{字，，字}
+  \ctexset{punct = plain}
+  \global\setbox2=\hbox{字，，字}
+  \ctexset{punct = quanjiao}
+  \TYPE{quanjiao: \the\wd0}
+  \TYPE{plain: \the\wd2}
+}
+
+\TEST{a single punctuation mark is not compressed}{
+  \setbox0=\hbox{字。字}
+  \ctexset{punct = plain}
+  \global\setbox2=\hbox{字。字}
+  \ctexset{punct = quanjiao}
+  \TYPE{quanjiao: \the\wd0}
+  \TYPE{plain: \the\wd2}
+}
+
+\TEST{the line-breaking prohibitions are in place}{
+  \setbox0=\vbox{\hsize = 3em 字字字字字字字。\par}
+  \linefirsts{0}
+  \countpenalties{0}
+}
+
+\TEST{CJKmath through \cs{LuaCJKsetup}}{
+  \LuaCJKsetup{CJKmath = true}
+  \setbox0=\hbox{$中$}
+  \glyphnames{0}
+}
+
+\END
+
+\end{document}

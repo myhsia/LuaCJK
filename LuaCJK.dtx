@@ -1009,9 +1009,14 @@ $ x + 中文 $ and 中文
 %
 % The engine file cannot be tested against the baselines of \pkg{ctex}: those
 % were produced with LuaTeX-ja and describe a different line-breaking
-% implementation.  LuaCJK's tests compile a subset of the \pkg{ctex} test
-% files and check that they run, and compare behaviour through the \pkg{ctex}
-% options where the result is comparable.
+% implementation.  Two things are checked instead.  \file{ctex01.lvt} is an
+% ordinary test of LuaCJK that sets a \pkg{ctexart} document; because
+% \file{ctex-engine-luatex.def} is one of the installed files, \texttt{l3build
+% check} copies it into the test directory, where \tn{input} finds it first.
+% That ties the engine file to the normal test run of LuaCJK.  A subset of the
+% \pkg{ctex} test files is compiled separately by
+% \file{scripts/ctex-subset.sh}, which needs a checkout of \pkg{ctex} and
+% therefore cannot be part of \texttt{l3build check}.
 %
 % \section{Comparison with \pkg{xeCJK}}
 %

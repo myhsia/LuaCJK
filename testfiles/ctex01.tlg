@@ -1,0 +1,40 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: ctex loads the LuaCJK engine file
+============================================================
+============================================================
+============================================================
+TEST 2: a CJK character is set in the font of the fontset
+============================================================
+GLYPHS 20013:FandolSong
+============================================================
+============================================================
+TEST 3: the punct option selects a punctuation style
+============================================================
+quanjiao: 36.88779pt
+plain: 42.15747pt
+============================================================
+============================================================
+TEST 4: a single punctuation mark is not compressed
+============================================================
+quanjiao: 31.6181pt
+plain: 31.6181pt
+============================================================
+============================================================
+TEST 5: the line-breaking prohibitions are in place
+============================================================
+LINES 23383,23383,23383
+PENALTIES 2
+============================================================
+============================================================
+TEST 6: CJKmath through \cs {LuaCJKsetup}
+============================================================
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <10.53937> on input line ....
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line ....
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line ....
+GLYPHS 20013:FandolSong
+============================================================
