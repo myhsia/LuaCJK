@@ -206,33 +206,47 @@ LaTeX Project Public License, version 1.3c or later.
 %     \tn{LuaCJKsetup} \marg{key-value list}
 %   \end{syntax}
 %   Configure LuaCJK.  The keys are the ones documented in the following
-%   sections, and they fall into two groups.
-%
-%   The settings that describe how text is set are local to the current
-%   group, and they are recorded on the characters themselves, so text inside
-%   a group keeps its settings even when the group has already ended by the
-%   time the paragraph is broken:
-%   \begin{quote}
-%     |\vbox{\begingroup\LuaCJKsetup{CJKglue=10pt}中中\endgroup\par}|
-%   \end{quote}
-%   uses the 10pt glue, although the group is closed before |\par|.  These
-%   keys are \texttt{CJKglue}, \texttt{CJKecglue}, \texttt{CJKspace},
-%   \texttt{xCJKecglue}, \texttt{PunctStyle}, \texttt{PunctKinsoku},
-%   \texttt{LatinPunct}, \texttt{CJKmath}, \texttt{PunctWidth},
-%   \texttt{PunctBoundWidth}, \texttt{CheckSingle}, \texttt{WidowPenalty},
-%   \texttt{AllowBreakBetweenPuncts}, \texttt{AutoFallBack}, and
-%   \texttt{Verb}, together with \cs{LuaCJKCancelSubCJKBlock} and
-%   \cs{LuaCJKRestoreSubCJKBlock}.
-%
-%   The rest are global: \texttt{KaiMingPunct}, \texttt{MiddlePunct},
-%   \texttt{LongPunct}, and \texttt{NoBreakLongPunct} edit character sets;
-%   \texttt{AutoFakeBold}, \texttt{AutoFakeSlant}, \texttt{EmboldenFactor},
-%   and \texttt{SlantFactor} act when a family is registered; and
-%   \texttt{LoadFandol} and \texttt{LocalConfig} act while the package is
-%   loaded.  The same holds for \cs{LuaCJKDeclareCharClass},
-%   \cs{LuaCJKDeclarePunctClass}, \cs{LuaCJKDeclareSubCJKBlock},
-%   \cs{LuaCJKsetwidth}, and \cs{LuaCJKsetkern}.
+%   sections.
 % \end{function}
+%
+% The keys fall into two groups.
+%
+% The settings that describe how text is set are local to the current group,
+% and they are recorded on the characters themselves, so text inside a group
+% keeps its settings even when the group has already ended by the time the
+% paragraph is broken:
+% \begin{quote}
+%   |\vbox{\begingroup\LuaCJKsetup{CJKglue=10pt}中中\endgroup\par}|
+% \end{quote}
+% uses the 10pt glue, although the group is closed before |\par|.  This group
+% contains
+% \begin{itemize}
+%   \item \texttt{CJKglue}, \texttt{CJKecglue}, \texttt{CJKspace}, and
+%     \texttt{xCJKecglue};
+%   \item \texttt{PunctStyle}, \texttt{PunctKinsoku},
+%     \texttt{AllowBreakBetweenPuncts}, \texttt{PunctWidth}, and
+%     \texttt{PunctBoundWidth};
+%   \item \texttt{LatinPunct} and \texttt{CJKmath};
+%   \item \texttt{CheckSingle} and \texttt{WidowPenalty};
+%   \item \texttt{AutoFallBack} and \texttt{Verb};
+%   \item the two commands \cs{LuaCJKCancelSubCJKBlock} and
+%     \cs{LuaCJKRestoreSubCJKBlock}.
+% \end{itemize}
+%
+% The other keys are global or act while the package is loaded:
+% \begin{itemize}
+%   \item \texttt{KaiMingPunct}, \texttt{MiddlePunct}, \texttt{LongPunct},
+%     and \texttt{NoBreakLongPunct} edit character sets;
+%   \item \texttt{AutoFakeBold}, \texttt{AutoFakeSlant},
+%     \texttt{EmboldenFactor}, and \texttt{SlantFactor} act when a family is
+%     registered;
+%   \item \texttt{LoadFandol} and \texttt{LocalConfig} act while the package
+%     is loaded.
+% \end{itemize}
+% The declarations \cs{LuaCJKDeclareCharClass},
+% \cs{LuaCJKDeclarePunctClass}, \cs{LuaCJKDeclareSubCJKBlock},
+% \cs{LuaCJKsetwidth}, and \cs{LuaCJKsetkern} are global as well, as noted
+% with each of them.
 %
 % The same keys may be given as package options:
 % \begin{quote}
@@ -336,15 +350,15 @@ LaTeX Project Public License, version 1.3c or later.
 % \iffalse
 %<*example>
 % \fi
-\begin{codemo}
 \begingroup
-  \LuaCJKDeclareSubCJKBlock{Kana}
-    {3040 -> 30FF}
-  \setCJKmainfont{FandolSong-Regular.otf}
-    [Kana = FandolKai-Regular.otf]
-  中 あ
-\endgroup
+\begin{codemo}
+\LuaCJKDeclareSubCJKBlock{Kana}
+  {3040 -> 30FF}
+\setCJKmainfont{FandolSong-Regular.otf}
+  [Kana = FandolKai-Regular.otf]
+中 あ
 \end{codemo}
+\endgroup
 % \iffalse
 %</example>
 % \fi
@@ -374,15 +388,15 @@ LaTeX Project Public License, version 1.3c or later.
 % \iffalse
 %<*example>
 % \fi
-\begin{codemo}
 \begingroup
-  \setCJKmainfont{FandolSong-Regular.otf}
-  \setCJKfallbackfamilyfont{\CJKrmdefault}
-    {FandolKai-Regular.otf}
-  \LuaCJKsetup{AutoFallBack = true}
-  中文
-\endgroup
+\begin{codemo}
+\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKfallbackfamilyfont{\CJKrmdefault}
+  {FandolKai-Regular.otf}
+\LuaCJKsetup{AutoFallBack = true}
+中文
 \end{codemo}
+\endgroup
 % \iffalse
 %</example>
 % \fi
@@ -421,13 +435,13 @@ LaTeX Project Public License, version 1.3c or later.
 % \iffalse
 %<*example>
 % \fi
-\begin{codemo}
 \begingroup
-  \LuaCJKsetup{AutoFakeBold = true}
-  \setCJKmainfont{FandolSong-Regular.otf}
-  \textbf{中文} and 中文
-\endgroup
+\begin{codemo}
+\LuaCJKsetup{AutoFakeBold = true}
+\setCJKmainfont{FandolSong-Regular.otf}
+\textbf{中文} and 中文
 \end{codemo}
+\endgroup
 % \iffalse
 %</example>
 % \fi
@@ -482,12 +496,12 @@ LaTeX Project Public License, version 1.3c or later.
 % \iffalse
 %<*example>
 % \fi
-\begin{codemo}
 \begingroup
-  \LuaCJKsetup{CJKspace = true}
-  中 文 中 文
-\endgroup
+\begin{codemo}
+\LuaCJKsetup{CJKspace = true}
+中 文 中 文
 \end{codemo}
+\endgroup
 % \iffalse
 %</example>
 % \fi
@@ -522,12 +536,12 @@ LaTeX Project Public License, version 1.3c or later.
 % \iffalse
 %<*example>
 % \fi
-\begin{codemo}
 \begingroup
-  \LuaCJKdisable
-  中 文
-\endgroup
+\begin{codemo}
+\LuaCJKdisable
+中 文
 \end{codemo}
+\endgroup
 % \iffalse
 %</example>
 % \fi
@@ -609,12 +623,12 @@ LaTeX Project Public License, version 1.3c or later.
 % \iffalse
 %<*example>
 % \fi
-\begin{codemo}
 \begingroup
-  \LuaCJKsetup{CheckSingle = true}
-  \hsize = 4em 字字字字字字字字字\par
-\endgroup
+\begin{codemo}
+\LuaCJKsetup{CheckSingle = true}
+\hsize = 4em 字字字字字字字字字\par
 \end{codemo}
+\endgroup
 % \iffalse
 %</example>
 % \fi
@@ -1048,61 +1062,14 @@ $ x + 中文 $ and 中文
 % \section{Comparison with \pkg{xeCJK}}
 %
 % \pkg{LuaCJK} follows the \pkg{xeCJK} interface where the two engines allow
-% it, but a \LuaTeX{} node list is not an \XeTeX{} character class table, so
-% some options mean something slightly different here, and some have no
-% counterpart at all.  This section records the differences so that a
-% document can be migrated with the eyes open.
+% it, so a document that already uses \pkg{xeCJK} mostly needs no change.
+% This section lists only the places where the two differ: a \LuaTeX{} node
+% list is not an \XeTeX{} character class table, so some options mean
+% something slightly different here, and some have no counterpart at all.
 %
-% \subsection{Available with the same meaning}
-%
-% \begin{itemize}
-%   \item The font commands \cs{setCJKmainfont}, \cs{setCJKsansfont},
-%     \cs{setCJKmonofont}, \cs{setCJKfamilyfont}, \cs{newCJKfontfamily},
-%     \cs{CJKfontspec}, and \cs{setCJKmathfont}, with the options before or
-%     after the font name.
-%   \item \cs{CJKfamily}, the four \cs{CJK...default} family names, and
-%     \cs{defaultCJKfontfeatures} and \cs{addCJKfontfeatures}.
-%   \item \texttt{CJKglue}, \texttt{CJKecglue}, \texttt{CJKspace}, and
-%     \texttt{xCJKecglue}.
-%   \item \cs{normalspacedchars}.
-%   \item \texttt{AutoFakeBold}, \texttt{AutoFakeSlant},
-%     \texttt{EmboldenFactor}, and \texttt{SlantFactor}.
-%   \item \texttt{CJKmath} and \cs{setCJKmathfont}.
-%   \item \texttt{PunctStyle} with the six presets, \cs{xeCJKDeclarePunctStyle}
-%     and \cs{xeCJKEditPunctStyle} (the keys differ, see below),
-%     \cs{xeCJKsetwidth} and \cs{xeCJKsetkern} (as \cs{LuaCJKsetwidth} and
-%     \cs{LuaCJKsetkern}), \texttt{PunctFamily}, \texttt{KaiMingPunct},
-%     \texttt{MiddlePunct}, \texttt{LongPunct}, and \texttt{NoBreakLongPunct}
-%     with their \texttt{+} and \texttt{-} forms.
-%   \item \texttt{CheckSingle} and \texttt{WidowPenalty}.
-%   \item \texttt{PunctWidth} and \texttt{PunctBoundWidth}, and
-%     \cs{xeCJKnobreak}, \cs{xeCJKShipoutHook}, \cs{xeCJKVerbAddon}, and
-%     \cs{xeCJKOffVerbAddon} as the \cs{LuaCJK...} spellings.
-%   \item \cs{xeCJKDeclareSubCJKBlock} with its cancel and restore commands,
-%     as the \cs{LuaCJK...} spellings.
-%   \item \cs{xeCJKDeclareCharClass}, with all the class names of
-%     \pkg{xeCJK}; \texttt{CJStarter}, \texttt{CM}, and \texttt{Boundary}
-%     are approximated, as described with the command.
-%   \item \cs{setCJKfallbackfamilyfont} and \texttt{AutoFallBack},
-%     \texttt{LoadFandol}, and \texttt{LocalConfig}.
-%   \item The \pkg{ctex} LuaTeX backend, as the engine file described in the
-%     previous section.
-%   \item The \pkg{xeCJK-listings} support, as \pkg{LuaCJK-listings}; LuaCJK
-%     loads it together with \pkg{listings}.
-%   \item The \pkg{LuaCJKfntef} keys \texttt{thickness}, \texttt{depth},
-%     \texttt{textformat}, \texttt{format}, \texttt{subtract}, \texttt{skip},
-%     \texttt{hidden}, \texttt{boxdepth}, \texttt{gap}, \texttt{height},
-%     \texttt{symbol}, and \texttt{sep}.  \texttt{format} differs, as noted
-%     below.
-% \end{itemize}
-%
-% \subsection{Available with a different meaning}
+% \subsection{Different behaviour}
 %
 % \begin{itemize}
-%   \item \texttt{xeCJKactive} becomes \cs{LuaCJKdisable} and
-%     \cs{LuaCJKenable}.  The switch is stored per node, so it follows the
-%     \TeX{} grouping, and CJK characters keep their font while the
-%     adjustments are off.
 %   \item \texttt{Verb} accepts the four \pkg{xeCJK} values, but
 %     \texttt{env+} behaves like \texttt{false}: both leave the adjustments
 %     on, so the distinction has no observable effect here.
