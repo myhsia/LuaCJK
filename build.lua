@@ -63,9 +63,6 @@ function update_tag(file, content, tagname, tagdate)
   return content
 end
 
--- `l3build doc` unpacks the sources first; copy the README generated from the
--- `<readme>` block back to the repository root so the two stay in sync.
--- Trailing blank lines are trimmed so that repeated runs are idempotent.
 function docinit_hook()
   cp(ctanreadme, unpackdir, currentdir)
   local path = currentdir .. "/" .. ctanreadme
@@ -78,9 +75,6 @@ function docinit_hook()
   return 0
 end
 
--- `l3build` normally appends `\input <file>` to `typesetexe`.  `latexmk`
--- expects a file name, so run it on the driver file directly and give it the
--- l3doc index style.  The Windows branch follows `docext`'s build script.
 function tex(file,dir,cmd)
   dir = dir or "."
   cmd = cmd or typesetexe
