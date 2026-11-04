@@ -90,7 +90,7 @@ This work may be distributed and/or modified under the conditions of the
 LaTeX Project Public License, version 1.3c or later.
 %</readme>
 %
-%<*package|fntef>
+%<*package|fntef|listings|ctex>
 \NeedsTeXFormat{LaTeX2e}[2026/06/01]
 \RequirePackage{expl3}
 \GetIdInfo $Id: LuaCJK.dtx v0.0.1 2026-11-02 myhsia<myhsia@outlook.com>$
@@ -98,12 +98,17 @@ LaTeX Project Public License, version 1.3c or later.
 %<package>\ProvidesExplPackage {\ExplFileName}
 %<fntef>  {Font effects for LuaCJK (CTEX)}
 %<fntef>\ProvidesExplPackage {LuaCJKfntef}
-  {\ExplFileDate} {\ExplFileVersion} {\ExplFileDescription}
+%<listings>  {CJK support for listings}
+%<listings>\ProvidesPackage {LuaCJK-listings}
+%<ctex>  {LuaTeX adapter for ctex (LuaCJK)}
+%<ctex>\ProvidesExplFile {ctex-engine-luacjk.def}
+%<package|fntef|ctex>  {\ExplFileDate} {\ExplFileVersion} {\ExplFileDescription}
+%<listings>  [\ExplFileDate\space\ExplFileVersion\space\ExplFileDescription]
 %<package>\edef \DocFileDate        {\ExplFileDate}
 %<package>\edef \DocFileVersion     {\ExplFileVersion}
 %<package>\edef \DocFileDescription {\ExplFileDescription}
 %<package>\tl_greplace_all:Nnn \DocFileDate { / } { - }
-%</package|fntef>
+%</package|fntef|listings|ctex>
 %
 %<*internal>
 \fi
@@ -5885,11 +5890,6 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % each listing only sets the category codes again in its own group.
 %    \begin{macrocode}
 %<*listings>
-\NeedsTeXFormat{LaTeX2e}
-\RequirePackage { expl3 }
-\GetIdInfo $Id: LuaCJK.dtx v0.0.1 2026-11-02 myhsia<myhsia@outlook.com>$
-\ProvidesPackage { LuaCJK-listings }
-  [\ExplFileDate\space\ExplFileVersion\space CJK support for listings]
 \RequirePackage { LuaCJK }
 \RequirePackage { listings }
 \makeatletter
@@ -5970,12 +5970,6 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \pkg{ctex} and some documents still use.
 %    \begin{macrocode}
 %<*ctex>
-\NeedsTeXFormat{LaTeX2e}
-\RequirePackage { expl3 }
-\GetIdInfo $Id: LuaCJK.dtx v0.0.1 2026-11-02 myhsia<myhsia@outlook.com>$
-  {LuaTeX adapter for ctex (LuaCJK)}
-\ProvidesExplFile {ctex-engine-luacjk.def}
-  {\ExplFileDate} {\ExplFileVersion} {\ExplFileDescription}
 \typeout{LuaCJK~ctex~engine~loaded}
 \sys_if_engine_luatex:F
   {
