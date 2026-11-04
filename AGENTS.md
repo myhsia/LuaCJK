@@ -85,11 +85,19 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   comment that explains one expression (a magic number, an invariant) stays as
   a Lua comment.  The licence header of the three modules comes from
   `\declarepreamble` in `LuaCJK.ins`, not from the dtx body.
-- **`l3doc` bookkeeping.**  Internal control sequences are introduced with
-  `\begin{macro}[internal]{...}`; environments documented with
-  `\begin{environment}{...}` in the user part must use `environment`, not
-  `macro`, in the implementation part, or the PDF reports an undefined
-  reference.
+- **`l3doc` bookkeeping.**  Follow the global `repo-rules` section "l3doc source
+  style": `macrocode` is `%` plus exactly four spaces, every other documentation
+  line is `%` plus one space, internal objects are `[int]`, and entries are
+  separated by a blank `%` line.  A `variable` whose name is a Lua identifier
+  (dots, underscores) must carry `[int]`, or the PDF reports an undefined
+  reference.  Environments documented with `\begin{environment}{...}` in the
+  user part must use `environment`, not `macro`, in the implementation part.
+- **Check the markup before committing.**  Two greps catch nearly everything:
+
+  ```bash
+  grep -nE '^%[ ]{0,3}\\(begin|end)\{macrocode\}' LuaCJK.dtx   # must be empty
+  grep -c 'Reference `doc' build/doc/LuaCJK.log                      # must be 0
+  ```
 - **Documentation literals.**  Write code points (`U+2018`) rather than the
   characters themselves when the prose would otherwise need a font the manual
   does not set.
