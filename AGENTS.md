@@ -60,6 +60,14 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **One source.** Edit `LuaCJK.dtx` only; `l3build unpack` regenerates
   everything else.  A change to a derived file that is not in the `dtx` is lost
   at the next unpack.
+- **Internal names use `@@`.**  The `dtx` sets `%<@@=LuaCJK>` once, before the
+  first implementation line, and every private name is written as
+  `\l_@@_…`, `\g_@@_…`, `\c_@@_…`, or `\@@_…`; DocStrip expands the leading
+  `@@` to `__LuaCJK`.  Documenting them as `\@@_…` lets `l3doc` print the same
+  expansion.  Never write `@@` inside a Lua block or a Lua string: DocStrip
+  rewrites it there too, and the Lua side would no longer match the TeX
+  register it looks up.  Names that Lua must see are passed in with
+  `\cs_to_str:N` (see `LuaCJK.name_ccglue` in the initialisation block).
 - **Every behaviour change needs a test.**  Add or extend a `.lvt`, run
   `l3build save <name>`, then read the `.tlg` diff and confirm the numbers are
   the values you designed, not merely "whatever came out".  `save` takes bare
@@ -67,7 +75,7 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **New options must reach the settings snapshot.**  A key that describes how
   text is set needs an entry in `DEFAULT_SETTINGS`, a parameter of
   `LuaCJK.new_settings`, a field in the signature string, an argument in
-  `\LuaCJK_settings_push:`, and a read through `settings_of(node)` in Lua.
+  `\@@_settings_push:`, and a read through `settings_of(node)` in Lua.
   Skipping any of the five makes the option global, which contradicts the
   documented grouping.
 - **Inserted nodes must inherit attributes.**  Glue, kern, and penalty nodes

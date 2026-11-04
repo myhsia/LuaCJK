@@ -31,7 +31,7 @@ The character-level passes run in `pre_linebreak_filter` and in
 `hpack_filter` (the source is `local function process`):
 
 1. `rewrite_fonts` — point each CJK glyph at the font family recorded on it
-   (`\g_LuaCJK_font_attr`), then at the punctuation family or a sub-block font
+   (`\g_@@_font_attr`), then at the punctuation family or a sub-block font
    if one applies, then at a fallback font when the target lacks the glyph.
 2. `spacing` — remove the source space between CJK characters, and insert
    `CJKglue`/`CJKecglue` at every boundary between two classes of character.
@@ -74,7 +74,7 @@ Ten attributes carry the per-node state; all are read through
 Every option used to be read from a TeX register at the moment the paragraph
 was broken, which silently lost a setting whose group had closed before
 `\par`, and made `{\small ...}` use the glue of the outer size.  Now
-`\LuaCJK_settings_push:` (called at the end of `\LuaCJKsetup` and after every
+`\@@_settings_push:` (called at the end of `\LuaCJKsetup` and after every
 `\selectfont`) sends the current options to `LuaCJK.new_settings`, which
 dedupes them by a signature string, stores the entry, and records its number in
 the `settings` attribute.  Lua reads `settings_of(node)` and never the TeX
