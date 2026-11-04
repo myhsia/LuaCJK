@@ -340,11 +340,10 @@ LaTeX Project Public License, version 1.3c or later.
 %     \tn{LuaCJKDeclareSubCJKBlock} \marg{block} \marg{range list}
 %   \end{syntax}
 %   Declare \meta{block} with the given ranges, in the same spelling as
-%   \cs{LuaCJKDeclareCharClass}.  The name becomes a font option, so
-%   |\setCJKmainfont[Kana=Kai]{Song}| puts the characters of the block in
-%   the second font.  A family that does not set the option leaves those
-%   characters in the main font.  Overlapping blocks are resolved in
-%   declaration order.
+%   \cs{LuaCJKDeclareCharClass}.  The name becomes a font option, as the
+%   example below shows: a family that sets it uses the second font for the
+%   characters of the block, and a family that does not leaves them in the
+%   main font.  Overlapping blocks are resolved in declaration order.
 % \end{function}
 %
 % \begin{function}{\LuaCJKCancelSubCJKBlock, \LuaCJKRestoreSubCJKBlock}
@@ -1017,15 +1016,14 @@ a’a\quad 字！字
 %   bottom of \meta{object} is placed \meta{depth} below the baseline, so
 %   for a \cs{rule} (which has no depth of its own) the rule occupies
 %   \meta{depth} below the baseline upwards.  To cover the body of a CJK
-%   glyph, use the descender of the body and its height, for example
-%   |\CJKunderanyline{.16em}{\color{yellow}\rule{1pt}{.94em}}{...}|.
-%   The type is cached, so the same arguments reuse one underline type.
+%   glyph, use the descender of the body and its height, as the example
+%   below does.  The type is cached, so the same arguments reuse one
+%   underline type.
 % \end{function}
 %
 % \begin{function}{\CJKunderanysymbol}
 %   \begin{syntax}
-%     \tn{CJKunderanysymbol} \oarg{options} \marg{depth} \marg{symbol}
-%       \marg{text}
+%   \tn{CJKunderanysymbol} \oarg{options} \marg{depth} \marg{symbol} \marg{text}
 %   \end{syntax}
 %   The same, with one \meta{symbol} per em: the symbol is centred in a cell
 %   as wide as a CJK character, so a row of symbols lines up with the
