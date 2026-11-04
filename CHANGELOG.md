@@ -118,14 +118,18 @@
   `PunctKinsoku` is off; the switch only controls the punctuation rules.
 - The manual now separates the settings that follow the text from the global
   and load-time keys.
-- Ship `ctex-engine-luatex.def`, generated from `LuaCJK.dtx`, so that ctex can
-  use LuaCJK as its LuaTeX backend.  `ctex` looks the file up by name, so it
-  only takes effect when it is found before the copy that `ctex` installs
-  (the document directory, or a tree earlier than the TeX Live main tree).
+- Ship `ctex-engine-luacjk.def` as the LuaTeX backend for ctex.  The name
+  differs from the file that ctex installs, so both packages can be installed
+  side by side and CTAN has no duplicate file.
+- Add `\LuaCJKwriteCtexConfig`, which writes a `ctexopts.cfg` redirect into
+  the document directory.  ctex inputs that file after it has fixed the
+  engine file name and before it loads the engine file, so the redirect takes
+  effect in the same run; `ctexbackend.cfg` is read too early and `ctex.cfg`
+  too late.
 - The test-only `support/ctex` directory is gone.  The ctex smoke test is a
   normal test file now (`testfiles/ctex01.lvt`), so `l3build check` exercises
-  the engine file on every run; only the compilation of the external ctex
-  test corpus still needs a script.  `scripts/ctex-engine.sh` is removed.
+  the engine file on every run; the subset script fails if any of the ctex
+  tests falls back to LuaTeX-ja.
 - The underline geometry now uses `depth=0.2em` and `thickness=0.4pt` on
   every path, so `format` works without also giving `thickness` or `depth`.
   `top` and `bottom` still override the computed values.

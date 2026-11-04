@@ -41,9 +41,12 @@ rm -rf "$run"
 mkdir -p "$run"
 
 cp build/unpacked/*.sty "$run/"
-cp build/unpacked/ctex-engine-luatex.def "$run/"
+cp build/unpacked/ctex-engine-luacjk.def "$run/"
 cp build/unpacked/*.lua "$run/"
 cp "$ctex_kit"/ctex/test/support/* "$run/"
+# The test tree of ctex brings its own ctexopts.cfg (it selects a fontset);
+# append the redirect so that both settings apply.
+cat testsupport/ctexopts.cfg >> "$run/ctexopts.cfg"
 
 tests="
 basic01 basic02 basic03 basic04 basic05
@@ -85,6 +88,15 @@ for name in $tests; do
     failed=$((failed + 1))
   fi
 done
+
+echo "== verifying the backend =="
+# Not one of the tests may fall back to LuaTeX-ja.
+if grep -l 'luatexja' ./*.log >/dev/null 2>&1; then
+  echo "LuaTeX-ja was loaded; the LuaCJK engine file was not used" >&2
+  grep -l 'luatexja' ./*.log >&2
+  exit 1
+fi
+grep -q 'ctex-engine-luacjk.def' basic01.log
 
 echo "== verifying ctex option plumbing =="
 # ecglue01: \ctexset{experiment/CJKecglue=...} must reach the LuaCJK skip.

@@ -44,7 +44,7 @@ tdslocations        = {
   "tex/latex/luacjk/LuaCJK.sty",
   "tex/latex/luacjk/LuaCJKfntef.sty",
   "tex/latex/luacjk/LuaCJK-listings.sty",
-  "tex/latex/luacjk/ctex-engine-luatex.def",
+  "tex/latex/luacjk/ctex-engine-luacjk.def",
   "tex/luatex/luacjk/LuaCJK.lua",
   "tex/luatex/luacjk/LuaCJK-core.lua",
   "tex/luatex/luacjk/LuaCJKfntef.lua"

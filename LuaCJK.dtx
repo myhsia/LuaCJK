@@ -69,12 +69,21 @@ LuaCJK requires LuaLaTeX. It must not be loaded together with `luatexja`.
 
 ## Using it with ctex
 
-`ctex` looks for a file named `ctex-engine-luatex.def` and inputs it, so
-LuaCJK ships that file and `ctex` then uses LuaCJK instead of LuaTeX-ja.
-Since `ctex` installs a file of the same name, the LuaCJK copy has to be
-found first: keep it in the document directory, or install it into a tree
-that comes before the TeX Live main tree. A copy next to the one of `ctex`
-is ignored.
+`ctex` inputs an engine file whose name it fixes itself, so LuaCJK ships its
+own `ctex-engine-luacjk.def` (a different name, to stay clear of the file that
+`ctex` installs) and a short redirect that tells `ctex` about it. Create the
+redirect once, in any document:
+
+```tex
+\documentclass{article}
+\usepackage{LuaCJK}
+\LuaCJKwriteCtexConfig
+```
+
+That writes `ctexopts.cfg` into the current directory. `ctex` inputs that file
+before it loads its engine file, so every `ctex` document compiled from that
+directory then uses LuaCJK instead of LuaTeX-ja. The redirect only acts on
+LuaTeX, so XeLaTeX documents in the same directory keep their own backend.
 
 ## License
 
@@ -964,37 +973,53 @@ $ x + 中文 $ and 中文
 %
 % \section{Using LuaCJK with \pkg{ctex}}
 %
-% \pkg{ctex} chooses its LuaTeX backend by inputting a file named after the
-% engine:
+% \pkg{ctex} chooses its LuaTeX backend by inputting a file whose name it
+% fixes itself:
 % \begin{quote}
 %   |\file_if_exist:nTF { ctex-engine-luatex.def } { ... }|
+%   \dots\ |\ctex_file_input:n { \c__ctex_engine_file_str }|
 % \end{quote}
-% so a backend can only be provided under that exact name.  LuaCJK therefore
-% ships |ctex-engine-luatex.def|; loading it pulls in LuaCJK and defines the
-% handful of \cs{ctex_...} commands that the \pkg{ctex} kernel asks for.
+% LuaCJK cannot ship a file of that name without colliding with \pkg{ctex},
+% so its engine file is called |ctex-engine-luacjk.def|, and \pkg{ctex} has
+% to be told about it.  The place for that is |ctexopts.cfg|: \pkg{ctex}
+% inputs it after the engine file name has been fixed and before that file is
+% input, so changing the name there takes effect for the current run.
 %
-% \subsection{Where the file has to be found}
+% \subsection{Creating the redirect}
 %
-% kpathsea returns the first file it finds while walking the search path, and
-% inside one tree it takes the lexicographically smallest path.  A copy in
-% |tex/latex/luacjk/| is therefore never used when \pkg{ctex} also provides
-% |tex/latex/ctex/ctex-engine-luatex.def| in the same tree.  To let LuaCJK
-% take over, put the file where it is found first:
+% \begin{function}{\LuaCJKwriteCtexConfig}
+%   \begin{syntax}
+%     \tn{LuaCJKwriteCtexConfig} \oarg{directory}
+%   \end{syntax}
+%   Write \file{ctexopts.cfg} into \meta{directory} (the current one by
+%   default) with the redirect.  An existing file is left alone; the starred
+%   form overwrites it.  Run it once in a plain document:
+%   \begin{quote}
+%     |\documentclass{article}|
+%     |\usepackage{LuaCJK}|
+%     |\LuaCJKwriteCtexConfig|
+%   \end{quote}
+%   After that every \pkg{ctex} document in that directory --- or in a
+%   directory below it, because \tn{input} searches upwards only through the
+%   search path, not through the file system --- finds the file and uses
+%   LuaCJK.
+% \end{function}
 %
-% \begin{itemize}
-%   \item in the directory of the document, because \tn{input} looks there
-%     first --- this is what the tests of LuaCJK do;
-%   \item in a tree that comes before the TeX Live main tree, such as
-%     \texttt{TEXMFHOME} or \texttt{TEXMFLOCAL}.
-% \end{itemize}
+% The file is written in plain \LaTeXe{} without any comment character, so
+% that it works whichever category codes and whatever \pkg{expl3} state are
+% current when \pkg{ctex} inputs it.  It only acts on \LuaTeX, so a
+% \XeLaTeX{} document in the same directory keeps its own backend:
+% \begin{quote}\small
+%   |\@ifundefined{directlua}{}{\@ifundefined{c__ctex_engine_file_str}{}{|\\
+%   |  \expandafter\def\csname c__ctex_engine_file_str\endcsname|\\
+%   |    {ctex-engine-luacjk.def}}}|
+% \end{quote}
 %
-% Installing LuaCJK into the same tree as \pkg{ctex} is harmless but has no
-% effect: \pkg{ctex} keeps using its own file and LuaTeX-ja.
+% \subsection{What the engine file provides}
 %
-% \subsection{What the file provides}
-%
-% The parts of the \pkg{ctex} kernel interface that the classes rely on ---
-% the \cs{ctex_...} commands, \cs{ccwd} and friends, the |kanjiskip| and
+% Loading |ctex-engine-luacjk.def| pulls in LuaCJK and defines the parts of
+% the \pkg{ctex} kernel interface that the classes rely on: the
+% \cs{ctex_...} commands, \cs{ccwd} and friends, the |kanjiskip| and
 % |xkanjiskip| bridges, and the |punct| option, which selects a
 % \texttt{PunctStyle}.  A small part of the \pkg{luatexja} parameter
 % interface is kept as well:
@@ -1007,16 +1032,18 @@ $ x + 中文 $ and 中文
 % tests and for documents that set the skips directly, not as a general
 % reimplementation of LuaTeX-ja.
 %
+% \subsection{Testing}
+%
 % The engine file cannot be tested against the baselines of \pkg{ctex}: those
 % were produced with LuaTeX-ja and describe a different line-breaking
 % implementation.  Two things are checked instead.  \file{ctex01.lvt} is an
-% ordinary test of LuaCJK that sets a \pkg{ctexart} document; because
-% \file{ctex-engine-luatex.def} is one of the installed files, \texttt{l3build
-% check} copies it into the test directory, where \tn{input} finds it first.
-% That ties the engine file to the normal test run of LuaCJK.  A subset of the
-% \pkg{ctex} test files is compiled separately by
-% \file{scripts/ctex-subset.sh}, which needs a checkout of \pkg{ctex} and
-% therefore cannot be part of \texttt{l3build check}.
+% ordinary test of LuaCJK that sets a \pkg{ctexart} document; the test
+% directory contains the redirect and the engine file, so \texttt{l3build
+% check} exercises the real path on every run.  A subset of the \pkg{ctex}
+% test files is compiled separately by \file{scripts/ctex-subset.sh}, which
+% needs a checkout of \pkg{ctex} and therefore cannot be part of
+% \texttt{l3build check}; it also fails if any of those files falls back to
+% LuaTeX-ja.
 %
 % \section{Comparison with \pkg{xeCJK}}
 %
@@ -1117,11 +1144,12 @@ $ x + 中文 $ and 中文
 %     options to the commands of \pkg{ulem}.  \pkg{LuaCJKfntef} builds on
 %     \pkg{lua-ul} instead, and its \tn{underLine} may be configured
 %     directly.
-%   \item A \pkg{ctex} backend that is picked up automatically.  LuaCJK ships
-%     |ctex-engine-luatex.def|, but \pkg{ctex} asks for that name itself, so
-%     the file only wins when it is found before the copy of \pkg{ctex};
-%     see the section on \pkg{ctex}.  Wiring the backend into \pkg{ctex}
-%     proper still needs the agreement of the \pkg{ctex} maintainers.
+%   \item A \pkg{ctex} backend that is picked up without a redirect.
+%     \pkg{ctex} asks for a file of its own naming, so LuaCJK ships
+%     |ctex-engine-luacjk.def| and a \file{ctexopts.cfg} written by
+%     \cs{LuaCJKwriteCtexConfig} points \pkg{ctex} at it.  Choosing a backend
+%     inside \pkg{ctex} itself still needs the agreement of the
+%     \pkg{ctex} maintainers.
 % \end{itemize}
 %
 % \end{documentation}
@@ -2874,6 +2902,108 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
+% \subsection{The ctex redirect}
+%
+% \pkg{ctex} picks its own engine file by name, so LuaCJK cannot install a
+% file of that name without colliding with \pkg{ctex} itself.  The redirect
+% therefore lives in a \file{ctexopts.cfg} that \pkg{ctex} inputs after it
+% has fixed the engine file name and before it inputs that file.
+%
+% \begin{macro}{\LuaCJKwriteCtexConfig}
+%   Write such a file.  Without a star an existing file is left alone, so that
+%   a hand-written configuration is not lost; the star overwrites it.  The
+%   optional argument is a directory to write into.
+%   \begin{variable}[internal]
+%     {\l_LuaCJK_ctex_config_iow, \l_LuaCJK_ctex_config_path_tl,
+%      \c_LuaCJK_ctex_engine_file_tl}
+%     The stream, the target path, and the name of the engine file.
+%    \begin{macrocode}
+\iow_new:N \l_LuaCJK_ctex_config_iow
+\tl_new:N \l_LuaCJK_ctex_config_path_tl
+\tl_const:Nn \c_LuaCJK_ctex_engine_file_tl { ctex-engine-luacjk.def }
+%    \end{macrocode}
+%   \end{variable}
+%    \begin{macrocode}
+\msg_new:nnn { LuaCJK } { ctex-config-exists }
+  {
+    `ctexopts.cfg'~already~exists~and~is~left~alone.\\
+    Use~\token_to_str:N \LuaCJKwriteCtexConfig*~to~overwrite~it.
+  }
+\cs_new_protected:Npn \LuaCJK_ctex_config_copy:
+  {
+    \exp_args:NNV \iow_open:Nn \l_LuaCJK_ctex_config_iow
+      \l_LuaCJK_ctex_config_path_tl
+    % The file must work whatever the category codes and the state of
+    % \pkg{expl3} are when \pkg{ctex} inputs it, so it is written in plain
+    % \LaTeXe{} and without any comment character.
+    \iow_now:Nx \l_LuaCJK_ctex_config_iow
+      {
+        \token_to_str:N \ProvidesFile { ctexopts.cfg }
+        [ \ExplFileDate \c_space_tl v \ExplFileVersion \c_space_tl
+          Redirect~ctex~to~the~LuaTeX~backend~of~LuaCJK ]
+      }
+    \iow_now:Nx \l_LuaCJK_ctex_config_iow
+      { \token_to_str:N \makeatletter }
+    \iow_now:Nx \l_LuaCJK_ctex_config_iow
+      {
+        \token_to_str:N \@ifundefined { directlua } { }
+          {
+            \token_to_str:N \@ifundefined { c__ctex_engine_file_str } { }
+              {
+                \token_to_str:N \expandafter
+                \token_to_str:N \def
+                \token_to_str:N \csname \c_space_tl c__ctex_engine_file_str
+                \token_to_str:N \endcsname
+                { \exp_not:V \c_LuaCJK_ctex_engine_file_tl }
+              }
+          }
+      }
+    \iow_now:Nx \l_LuaCJK_ctex_config_iow
+      { \token_to_str:N \makeatother }
+    \iow_close:N \l_LuaCJK_ctex_config_iow
+    \iow_term:x
+      { LuaCJK:~wrote~\l_LuaCJK_ctex_config_path_tl }
+  }
+\NewDocumentCommand \LuaCJKwriteCtexConfig { s O{.} }
+  {
+    \tl_set:Nx \l_LuaCJK_ctex_config_path_tl { #2 / ctexopts.cfg }
+    % A plain name would also match the file that ctex installs, so the check
+    % has to name the directory explicitly.
+    \file_if_exist:nTF { \l_LuaCJK_ctex_config_path_tl }
+      {
+        \IfBooleanTF {#1}
+          { \LuaCJK_ctex_config_copy: }
+          { \msg_warning:nn { LuaCJK } { ctex-config-exists } }
+      }
+      { \LuaCJK_ctex_config_copy: }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[internal]{\LuaCJK_check_ctex_redirect:}
+%   When LuaCJK was reached through its own engine file, the redirect must
+%   already have been read; otherwise \pkg{ctex} could only have found the
+%   file because something else put it in the search path.  Say so once, so
+%   that a stale or missing \file{ctexopts.cfg} does not stay silent.
+%    \begin{macrocode}
+\cs_new_protected:Npn \LuaCJK_check_ctex_redirect:
+  {
+    \cs_if_exist:NT \__LuaCJK_from_ctex_engine:
+      {
+        \file_if_exist:nF { ./ ctexopts.cfg }
+          { \msg_note:nn { LuaCJK } { ctex-config-missing } }
+      }
+  }
+\msg_new:nnn { LuaCJK } { ctex-config-missing }
+  {
+    LuaCJK~was~reached~through~its~ctex~engine~file,~but~no~
+    `ctexopts.cfg'~was~found~in~the~current~directory.\\
+    Keep~that~file~next~to~the~document,~or~create~it~with~
+    \token_to_str:N \LuaCJKwriteCtexConfig.
+  }
+%    \end{macrocode}
+% \end{macro}
+%
 % \subsection{Loading the Lua core}
 %
 % The Lua module reads the attribute numbers and installs its callbacks.
@@ -2906,6 +3036,7 @@ $ x + 中文 $ and 中文
     \g_LuaCJK_font_attr = \g_LuaCJK_fontid_int
   }
 \LuaCJK_load_local_config:
+\LuaCJK_check_ctex_redirect:
 \hook_gput_code:nnn { package/listings/after } { LuaCJK }
   { \RequirePackage { LuaCJK-listings } }
 \cs_if_exist:cT { ver@listings.sty }
@@ -5674,7 +5805,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %
 % \pkg{ctex} looks for a file named after the engine and inputs it, so a
 % backend can only be provided under that same name.  LuaCJK therefore ships
-% |ctex-engine-luatex.def| itself; the manual explains where it has to be
+% |ctex-engine-luacjk.def| itself; the manual explains where it has to be
 % found, because a copy inside the same tree as \pkg{ctex} loses under
 % kpathsea's path ordering.
 %
@@ -5687,7 +5818,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \RequirePackage { expl3 }
 \GetIdInfo $Id: LuaCJK.dtx 0.1.0 2026-11-02 myhsia<myhsia@outlook.com>$
   {LuaTeX adapter for ctex (LuaCJK)}
-\ProvidesExplFile {ctex-engine-luatex.def}
+\ProvidesExplFile {ctex-engine-luacjk.def}
   {\ExplFileDate} {\ExplFileVersion} {\ExplFileDescription}
 \typeout{LuaCJK~ctex~engine~loaded}
 \sys_if_engine_luatex:F
@@ -5697,6 +5828,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \msg_critical:nn { LuaCJK } { ctex-engine }
     \tex_endinput:D
   }
+% Tell the package that it was reached through this file, so that it can
+% check the redirect of ctexopts.cfg.
+\cs_gset_eq:NN \__LuaCJK_from_ctex_engine: \scan_stop:
 \RequirePackage { LuaCJK }
 % The fontset of ctex defines these shortcuts itself, and it checks for an
 % existing definition, so LuaCJK's own ones have to go first.
