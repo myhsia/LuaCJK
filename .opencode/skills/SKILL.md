@@ -166,6 +166,11 @@ the agreement of the `ctex` maintainers; the redirect is the interim route.
 - The manual is English; the package's user-facing prose keeps the same
   terminology as the code (`CJKglue`, `PunctStyle`, `subtract`) rather than
   inventing translations.
+- The code carries no narration.  Each pass is introduced by prose in the dtx
+  between `\end{macrocode}` and `\begin{macrocode}`; a Lua comment survives
+  only when it explains a single expression.  The three module headers are
+  DocStrip preambles declared in `LuaCJK.ins`, in Lua comment syntax, so the
+  generated files are valid Lua from the first line.
 
 ## Workflows and validation
 

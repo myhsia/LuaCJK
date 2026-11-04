@@ -80,6 +80,11 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **Two Lua modules, one module table.**  `LuaCJK-core.lua` owns the load-time
   state and passes; `LuaCJKfntef.lua` may read `LuaCJK.punct_class` but must not
   redefine core behaviour.
+- **No narration in the Lua code.**  What a function or a pass does is prose in
+  the dtx, above its `macrocode` chunk, so it reaches the manual; only a
+  comment that explains one expression (a magic number, an invariant) stays as
+  a Lua comment.  The licence header of the three modules comes from
+  `\declarepreamble` in `LuaCJK.ins`, not from the dtx body.
 - **`l3doc` bookkeeping.**  Internal control sequences are introduced with
   `\begin{macro}[internal]{...}`; environments documented with
   `\begin{environment}{...}` in the user part must use `environment`, not
