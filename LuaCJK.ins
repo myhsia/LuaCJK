@@ -77,6 +77,27 @@ File: LuaCJK.ins
 -----------------------------------------------------------------------
 \endpostamble
 
+% The Lua modules take a preamble in Lua comment syntax, so that the
+% copyright and the licence are already valid Lua when the file is read.
+% DocStrip prefixes every preamble line with \MetaPrefix, which is `%%' for
+% TeX.  It is expanded when the macros are declared, so switching it to `--'
+% for the two declarations below is enough; the default is restored after
+% them.
+\let\savedMetaPrefix\MetaPrefix
+\def\MetaPrefix{--}
+\declarepreamble\luapreamble
+----------------------------------------------------------------------
+LuaCJK, Chinese typesetting for LuaLaTeX.
+Copyright (C) 2026 by Mingyu Xia <myhsia@outlook.com>
+This work may be distributed and/or modified under the conditions of the
+LaTeX Project Public License, version 1.3c or later.
+----------------------------------------------------------------------
+\endpreamble
+
+\declarepostamble\luapostamble
+\endpostamble
+\let\MetaPrefix\savedMetaPrefix
+
 \keepsilent
 
 \generate{
@@ -86,10 +107,17 @@ File: LuaCJK.ins
     \file{LuaCJK-listings.sty}            {\from{\jobname.dtx}{listings}}
     \file{ctex-engine-luacjk.def}         {\from{\jobname.dtx}{ctex}}
   \usedir{tex/luatex/luacjk}
-  \nopreamble\nopostamble
+% DocStrip expands the reference lines in the heading when the file is
+% opened, so \MetaPrefix has to be `--' here as well, not only while the
+% macros above are declared.
+  \let\savedMetaPrefix\MetaPrefix
+  \def\MetaPrefix{--}
+  \usepreamble\luapreamble
+  \usepostamble\luapostamble
     \file{LuaCJK.lua}                     {\from{\jobname.dtx}{lua}}
     \file{LuaCJK-core.lua}                {\from{\jobname.dtx}{lua-core}}
     \file{LuaCJKfntef.lua}                {\from{\jobname.dtx}{lua-fntef}}
+  \let\MetaPrefix\savedMetaPrefix
   \usedir{doc/latex/luacjk}
   \nopreamble\nopostamble
     \file{README.md}                      {\from{\jobname.dtx}{readme}}

@@ -3023,12 +3023,6 @@ $ x + 中文 $ and 中文
 %   and constants to it.
 %    \begin{macrocode}
 %<*lua>
--- LuaCJK.lua
--- Copyright (C) 2026 by Mingyu Xia <myhsia@outlook.com>
--- This work may be distributed and/or modified under the conditions of the
--- LaTeX Project Public License, version 1.3c or later.
--- Entry point: load the core module.
-
 LuaCJK = LuaCJK or {}
 
 require("LuaCJK-core")
@@ -3043,12 +3037,6 @@ require("LuaCJK-core")
 % once.
 %    \begin{macrocode}
 %<*lua-core>
--- LuaCJK-core.lua
--- Copyright (C) 2026 by Mingyu Xia <myhsia@outlook.com>
--- This work may be distributed and/or modified under the conditions of the
--- LaTeX Project Public License, version 1.3c or later.
--- Core node processing.
-
 LuaCJK = LuaCJK or {}
 
 %    \end{macrocode}
@@ -4755,11 +4743,6 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
 %   separate entry per call keeps two decorations in one paragraph apart.
 %    \begin{macrocode}
 %<*lua-fntef>
--- LuaCJKfntef.lua
--- Copyright (C) 2026 by Mingyu Xia <myhsia@outlook.com>
--- This work may be distributed and/or modified under the conditions of the
--- LaTeX Project Public License, version 1.3c or later.
-
 LuaCJKfntef = LuaCJKfntef or {}
 
 local M = LuaCJKfntef
