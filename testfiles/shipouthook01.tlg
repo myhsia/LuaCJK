@@ -5,15 +5,15 @@ TEST 1: the hook adds code to shipout/before
 ============================================================
 -> The hook 'shipout/before':
 > Code chunks:
->     ---
+>     LuaCJK ->  \typeout { SHIPOUT HOOK RAN } 
 > Document-level (top-level) code (executed last):
->     ->  \typeout { SHIPOUT HOOK RAN } 
+>     ---
 > Extra code for next invocation:
 >     ---
 > Rules:
 >     ---
 > Execution order:
->     ---.
+>     LuaCJK.
 <recently read> }
 l. ...}
 ============================================================
@@ -22,15 +22,15 @@ TEST 2: the hook can take more than one chunk
 ============================================================
 -> The hook 'shipout/before':
 > Code chunks:
->     ---
+>     LuaCJK ->  \typeout { SHIPOUT HOOK RAN }  \typeout { SECOND } 
 > Document-level (top-level) code (executed last):
->     ->  \typeout { SHIPOUT HOOK RAN }  \typeout { SECOND } 
+>     ---
 > Extra code for next invocation:
 >     ---
 > Rules:
 >     ---
 > Execution order:
->     ---.
+>     LuaCJK.
 <recently read> }
 l. ...}
 ============================================================

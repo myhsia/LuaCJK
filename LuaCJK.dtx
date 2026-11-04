@@ -1261,7 +1261,7 @@ $ x + 中文 $ and 中文
   }
 \cs_if_exist:cT { ver@luatexja.sty }
   { \msg_critical:nn { LuaCJK } { luatexja-conflict } }
-\AddToHook { package/luatexja/before }
+\hook_gput_code:nnn { package/luatexja/before } { LuaCJK }
   { \msg_critical:nn { LuaCJK } { luatexja-conflict } }
 %    \end{macrocode}
 %
@@ -2119,7 +2119,7 @@ $ x + 中文 $ and 中文
 % \texttt{shipout/before} hook and therefore follows its rules.
 %    \begin{macrocode}
 \NewDocumentCommand \LuaCJKShipoutHook { m }
-  { \AddToHook { shipout/before } {#1} }
+  { \hook_gput_code:nnn { shipout/before } { LuaCJK } {#1} }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -2300,8 +2300,10 @@ $ x + 中文 $ and 中文
     BVerbatim , LVerbatim , lstlisting
   }
   {
-    \AddToHook { env / #1 / begin } { \@@_verbatim_env_begin: }
-    \AddToHook { env / #1 / end }   { \@@_verbatim_env_end: }
+    \hook_gput_code:nnn { env/#1/begin } { LuaCJK }
+      { \@@_verbatim_env_begin: }
+    \hook_gput_code:nnn { env/#1/end } { LuaCJK }
+      { \@@_verbatim_env_end: }
   }
 %    \end{macrocode}
 % \end{macro}
@@ -2659,8 +2661,8 @@ $ x + 中文 $ and 中文
 % temporary font selections inside \cs{@@_update_font:} from doing the
 % same twice.
 %    \begin{macrocode}
-\AddToHook { selectfont } { \@@_update_font: }
-\AddToHook { cmd/selectfont/after }
+\hook_gput_code:nnn { selectfont } { LuaCJK } { \@@_update_font: }
+\hook_gput_code:nnn { cmd/selectfont/after } { LuaCJK }
   {
     \bool_if:NF \l_@@_selectfont_bool
       {
@@ -2886,11 +2888,11 @@ $ x + 中文 $ and 中文
 \cs_new_protected:Npn \kaishu { \CJKfamily { zhkai  } }
 \cs_new_protected:Npn \lishu { \CJKfamily { zhli   } }
 \cs_new_protected:Npn \youyuan { \CJKfamily { zhyou  } }
-\AddToHook { cmd/rmfamily/after }
+\hook_gput_code:nnn { cmd/rmfamily/after } { LuaCJK }
   { \exp_args:NV \@@_switch_family:n \CJKrmdefault }
-\AddToHook { cmd/sffamily/after }
+\hook_gput_code:nnn { cmd/sffamily/after } { LuaCJK }
   { \exp_args:NV \@@_switch_family:n \CJKsfdefault }
-\AddToHook { cmd/ttfamily/after }
+\hook_gput_code:nnn { cmd/ttfamily/after } { LuaCJK }
   { \exp_args:NV \@@_switch_family:n \CJKttdefault }
 %    \end{macrocode}
 % \end{macro}
@@ -3101,7 +3103,7 @@ $ x + 中文 $ and 中文
 \bool_gset_true:N \g_@@_lua_loaded_bool
 \@@_settings_push:
 \@@_set_normal_spaced_chars:
-\AtBeginDocument
+\hook_gput_code:nnn { begindocument } { LuaCJK }
   {
     \bool_if:NT \g_@@_load_fandol_bool
       {
@@ -6023,7 +6025,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \begin{macrocode}
 %<*ctex>
 \cs_new_protected:Npn \ctex_add_to_selectfont:n #1
-  { \AddToHook { selectfont } {#1} }
+  { \hook_gput_code:nnn { selectfont } { LuaCJK } {#1} }
 \cs_new_eq:NN \ctex_ltj_zero_globaldefs: \prg_do_nothing:
 \cs_new_protected:Npn \CTEX@alchar #1 {#1}
 \cs_new_eq:NN \CTEX@beginallalchar \prg_do_nothing:
