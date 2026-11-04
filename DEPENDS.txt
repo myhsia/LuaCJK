@@ -1,4 +1,4 @@
-hard expl3
+hard l3kernel
 hard fontspec
 hard luaotfload
 hard lua-ul

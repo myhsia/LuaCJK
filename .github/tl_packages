@@ -8,7 +8,6 @@ makeindex
 l3experimental
 alphalph
 l3kernel
-l3packages
 #
 # Base
 latex
