@@ -168,3 +168,12 @@
   about `0.25em` of depth.  The `boxdepth` key, which only existed to limit
   that growth, is removed; it also erased the rule of a `\vrule`-based
   decoration when used there.
+- `\CJKunderanysymbol` now puts one symbol per em, centred in the cell, so
+  a row of symbols lines up with the characters above them.  Its depth
+  argument is the distance from the baseline to the top of the symbol, so
+  `0pt` sets the symbol right under the characters; `sep` no longer
+  applies, because the cell is fixed at one em.  The symbol of
+  `\CJKunderdot[symbol = ...]` and `\CJKunderwave[symbol = ...]` follows the
+  same placement.
+- The manual now shows `\CJKunderanyline` with em-based geometry, so the
+  object covers the body of a CJK glyph.

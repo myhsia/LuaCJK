@@ -65,9 +65,9 @@ width: 10.0pt
 TEST 11: a symbol replaces the wave and the dots
 ============================================================
 PATTERN 327680
-PATTERN 640950
+PATTERN 655360
 PATTERN 196600
-PATTERN 640950
+PATTERN 655360
 ============================================================
 ============================================================
 TEST 12: format keeps the text width and draws a leader run

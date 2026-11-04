@@ -978,10 +978,10 @@ a’a\quad 字！字
 %   repeated with \tn{leaders}, so it has the same phase across the parts of
 %   one line.  One period is half an em and the whole pattern scales with
 %   the font size; like the other drawn patterns it leaves the height and
-%   depth of the line alone.  The optional argument takes the keys of \cs{CJKunderline}
-%   and, in addition, \texttt{symbol} to replace the wave with another
-%   symbol, and \texttt{sep} for the space on each side of it (initial
-%   \texttt{0.1em}).
+%   depth of the line alone.  The optional argument takes the keys of
+%   \cs{CJKunderline} and, in addition, \texttt{symbol} to replace the wave
+%   with another symbol: one symbol per em, centred, its top half an em
+%   below the baseline.
 % \end{function}
 %
 % \iffalse
@@ -1013,9 +1013,13 @@ a’a\quad 字！字
 %   \begin{syntax}
 %     \tn{CJKunderanyline} \marg{depth} \marg{object} \marg{text}
 %   \end{syntax}
-%   Put \meta{object} under \meta{text}, lowered by \meta{depth} and
-%   repeated by \tn{leaders}.  The type is cached, so the same arguments
-%   reuse one underline type.
+%   Put \meta{object} under \meta{text}, repeated by \tn{leaders}.  The
+%   bottom of \meta{object} is placed \meta{depth} below the baseline, so
+%   for a \cs{rule} (which has no depth of its own) the rule occupies
+%   \meta{depth} below the baseline upwards.  To cover the body of a CJK
+%   glyph, use the descender of the body and its height, for example
+%   |\CJKunderanyline{.16em}{\color{yellow}\rule{1pt}{.94em}}{...}|.
+%   The type is cached, so the same arguments reuse one underline type.
 % \end{function}
 %
 % \begin{function}{\CJKunderanysymbol}
@@ -1023,8 +1027,12 @@ a’a\quad 字！字
 %     \tn{CJKunderanysymbol} \oarg{options} \marg{depth} \marg{symbol}
 %       \marg{text}
 %   \end{syntax}
-%   The same, with a gap between two symbols.  The option \texttt{sep}
-%   sets the gap; the initial value is \texttt{0.1em}.
+%   The same, with one \meta{symbol} per em: the symbol is centred in a cell
+%   as wide as a CJK character, so a row of symbols lines up with the
+%   characters above them.  \meta{depth} is the distance from the baseline
+%   to the top of the symbol; |0pt| puts the top of the symbol right under
+%   the characters.  The option \texttt{sep} is accepted for compatibility
+%   but has no effect, because the cell is fixed at one em.
 % \end{function}
 %
 % \iffalse
@@ -1032,9 +1040,9 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\CJKunderanyline{.5ex}
-  {\color{yellow}\rule{1pt}{2ex}}{中}\\
-\CJKunderanysymbol{.2em}{\tiny$\triangle$}{中}
+\CJKunderanyline{.16em}
+  {\color{yellow}\rule{1pt}{.94em}}{中}\\
+\CJKunderanysymbol{.02em}{\tiny$\triangle$}{中}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1046,8 +1054,10 @@ a’a\quad 字！字
 %     \tn{CJKunderdot} \oarg{options} \marg{text}
 %   \end{syntax}
 %   Put emphasis dots under \meta{text}.  The optional argument takes the
-%   keys of \cs{CJKunderline} and, like \cs{CJKunderwave}, the keys
-%   \texttt{symbol} and \texttt{sep}.
+%   keys of \cs{CJKunderline}.  With |symbol=|\meta{symbol} a symbol takes
+%   the place of the dots and is placed like the symbol of
+%   \cs{CJKunderanysymbol}: one per em, centred, its top \texttt{0.3em}
+%   under the baseline.
 % \end{function}
 %
 % \begin{function}{\CJKsout}
@@ -5556,6 +5566,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   line it sits on.
 %    \begin{macrocode}
 \box_new:N \l_LuaCJKfntef_pattern_box
+\dim_new:N \l_LuaCJKfntef_symbol_kern_dim
+\dim_new:N \l_LuaCJKfntef_symbol_raise_dim
 %    \end{macrocode}
 %   \end{variable}
 %    \begin{macrocode}
@@ -5592,18 +5604,39 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       {
         \exp_not:N \leaders \exp_not:N \hbox
           {
+            \exp_not:N \hbox_set:Nn \exp_not:N \l_LuaCJKfntef_pattern_box
+              { \exp_not:V \l_LuaCJKfntef_symbol_tl }
+            \exp_not:N \dim_set:Nn \exp_not:N \l_LuaCJKfntef_symbol_kern_dim
+              {
+                \exp_not:N \dim_eval:n
+                  {
+                    ( 1em
+                      - \exp_not:N \box_wd:N \l_LuaCJKfntef_pattern_box ) / 2
+                  }
+              }
+            \exp_not:N \dim_set:Nn \exp_not:N \l_LuaCJKfntef_symbol_raise_dim
+              {
+                \exp_not:N \dim_eval:n
+                  {
+                    - \exp_not:N \l_LuaCJKfntef_any_depth_dim
+                    - \exp_not:N \box_ht:N \l_LuaCJKfntef_pattern_box
+                  }
+              }
+            \exp_not:N \box_set_ht:Nn \exp_not:N \l_LuaCJKfntef_pattern_box
+              { \exp_not:N \c_zero_dim }
+            \exp_not:N \box_set_dp:Nn \exp_not:N \l_LuaCJKfntef_pattern_box
+              { \exp_not:N \c_zero_dim }
             \exp_not:N \skip_horizontal:n
-              { \dim_use:N \l_LuaCJKfntef_symbol_sep_dim }
-            \exp_not:N \raise \dim_use:N \l_LuaCJKfntef_any_depth_dim
-            \exp_not:N \hbox { \exp_not:V \l_LuaCJKfntef_symbol_tl }
+              { \exp_not:N \l_LuaCJKfntef_symbol_kern_dim }
+            \exp_not:N \raise \exp_not:N \l_LuaCJKfntef_symbol_raise_dim
+              \exp_not:N \box_use_drop:N \l_LuaCJKfntef_pattern_box
             \exp_not:N \skip_horizontal:n
-              { \dim_use:N \l_LuaCJKfntef_symbol_sep_dim }
+              { \exp_not:N \l_LuaCJKfntef_symbol_kern_dim }
           }
       }
     \tl_set:Ne \l_LuaCJKfntef_cache_key_tl
       {
         symbol |
-        \dim_use:N \l_LuaCJKfntef_symbol_sep_dim |
         \dim_use:N \l_LuaCJKfntef_any_depth_dim |
         \tl_to_str:V \l_LuaCJKfntef_symbol_tl
       }
@@ -5616,7 +5649,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       \LuaCJKfntef_decoration_setup:n {#3}
       \tl_if_empty:NTF \l_LuaCJKfntef_symbol_tl
         { \LuaCJKfntef_wave }
-        { \LuaCJKfntef_use_symbol:n { -.42em } }
+        { \LuaCJKfntef_use_symbol:n { .42em } }
       \LuaCJKfntef_hide:n {#4}
     \group_end:
   }
@@ -5721,36 +5754,18 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKunderanysymbol}
-% The same idea with a symbol and a gap on each side, which is what one
-% wants for a repeated mark.  \texttt{sep} sets the gap; the initial value
-% is \texttt{0.1em}.
-% The gap between two symbols is the \texttt{sep} key of the decoration
-% setup, which resets it to \texttt{0.1em} on every call.
+% One symbol per em, which is what one wants for a repeated mark: the cell
+% is as wide as a CJK character, so a row of symbols lines up with the
+% characters above, and the symbol is centred in its cell.  The depth is
+% handed to \cs{LuaCJKfntef_use_symbol:n}, which puts the top of the symbol
+% that far below the baseline.
 %    \begin{macrocode}
 \NewDocumentCommand \CJKunderanysymbol { O{} m m +m }
   {
     \group_begin:
       \LuaCJKfntef_decoration_setup:n {#1}
-      \dim_set:Nn \l_LuaCJKfntef_any_depth_dim { -#2 }
-      \tl_set:Ne \l_LuaCJKfntef_any_code_tl
-        {
-          \exp_not:N \leaders \exp_not:N \hbox
-            {
-              \exp_not:N \skip_horizontal:n
-                { \dim_use:N \l_LuaCJKfntef_symbol_sep_dim }
-              \exp_not:N \raise \dim_use:N \l_LuaCJKfntef_any_depth_dim
-              \exp_not:N \hbox { \exp_not:n {#3} }
-              \exp_not:N \skip_horizontal:n
-                { \dim_use:N \l_LuaCJKfntef_symbol_sep_dim }
-            }
-        }
-      \tl_set:Ne \l_LuaCJKfntef_cache_key_tl
-        {
-          anysymbol | \dim_use:N \l_LuaCJKfntef_symbol_sep_dim
-          | #2 | \tl_to_str:n {#3}
-        }
-      \exp_args:NV \LuaCJKfntef_use_leader_type:nn
-        \l_LuaCJKfntef_cache_key_tl \l_LuaCJKfntef_any_code_tl
+      \tl_set:Nn \l_LuaCJKfntef_symbol_tl {#3}
+      \LuaCJKfntef_use_symbol:n {#2}
       #4
     \group_end:
   }
@@ -5768,7 +5783,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       \tl_if_empty:NTF \l_LuaCJKfntef_symbol_tl
         { \LuaCJKfntef_underdot:n { \LuaCJKfntef_hide:n {#4} } }
         {
-          \LuaCJKfntef_use_symbol:n { -.40em }
+          \LuaCJKfntef_use_symbol:n { .3em }
           \LuaCJKfntef_hide:n {#4}
         }
     \group_end:
