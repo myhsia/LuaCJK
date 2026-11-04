@@ -22,8 +22,9 @@ punctuation model, the decoration mechanism, or the `ctex` adapter.
 
 ## Environment
 
-TeX Live 2026 with LuaLaTeX; no conda, no Python. Every command runs from
-the repository root, where `build.lua` lives. Entry points:
+TeX Live 2026 with LuaLaTeX; no conda. Every command runs from the
+repository root, where `build.lua` lives. The maintenance scripts are bash;
+Python 3 is available when a task needs it. Entry points:
 
 - `l3build` (unpack, check, save, doc, ctan, tag) for the package itself;
 - `scripts/ctex-subset.sh` for the `ctex` integration;
@@ -39,10 +40,11 @@ the repository root, where `build.lua` lives. Entry points:
 | `testfiles/NN.lvt` + `.tlg` | 37 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`) and `ctexopts.cfg` (the redirect that makes `ctex01` and the `ctex` subset load the engine file), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends the redirect to the `ctexopts.cfg` of the `ctex` test tree |
+| `scripts/check-docs.sh` | compares the facts in the two guides with their sources: version, test count, DocStrip blocks, installed file types, `\RequirePackage` against `DEPENDS.txt`, `DEPENDS.txt` against `.github/tl_packages`, and the subset count |
 | `.github/workflows/test.yaml` | the CI workflow |
 | `.github/tl_packages` | the package list CI installs; a new dependency must be added here or the Ubuntu job fails first |
 | `CHANGELOG.md` | user-visible changes, newest first |
-| `DEPENDS.txt` | the TeX Live packages the package needs at run time |
+| `DEPENDS.txt` | the TeX Live packages the package needs at run time, one per line as `hard <bundle>` and `soft <bundle>`; `soft` marks a dependency that only an optional output needs |
 
 Generated, never edited by hand: `*.sty`, `*.lua`, `*.def` in the root,
 `README.md` (from the `<readme>` block), `LuaCJK.pdf`, `*.zip`, `*.glo`,
@@ -188,6 +190,7 @@ l3build ctan            # builds luacjk-ctan.zip
 l3build tag             # syncs \GetIdInfo with build.lua's version and date
 bash scripts/ctex-subset.sh            # ~3 min, needs ../ctex-kit or network
 bash scripts/ctex-subset.sh --skip-unpack
+bash scripts/check-docs.sh             # ~1 s, the guide facts against the code
 ```
 
 `l3build doc` and `l3build tag` both write into the working tree: review and
@@ -198,9 +201,16 @@ checkout needs the network.
 
 ## Validation
 
+- `bash scripts/check-docs.sh` must print `OK: the guides agree with the
+  sources`; it is the first thing CI runs and the thing to run before a
+  commit that touches a number in either guide.
 - `l3build check` must print `All checks passed`; the `.tlg` baselines must
   match byte for byte. A difference is a behaviour change until proven
   otherwise.
+- Prove a documentation-only change inert rather than arguing it: unpack from
+  a worktree of the previous commit, then `cmp build/unpacked/*` against the
+  current build, and compare `mutool draw -F txt` output of the two PDFs. Both
+  must be identical, which is the evidence that only prose moved.
 - `l3build doc` must finish with no `^!` error, no `Reference ... undefined`,
   and no `Missing character`.
 - `bash scripts/ctex-subset.sh` must print `ctex subset: 21/21 passed`, every
@@ -222,7 +232,8 @@ checkout needs the network.
 requests. Two jobs, each on `ubuntu-latest`, `macos-latest`, and
 `windows-latest`:
 
-- `l3build`: `l3build check`, then `l3build doc` (only if the check passed);
+- `l3build`: `bash scripts/check-docs.sh`, then `l3build check`, then
+  `l3build doc` (only if the check passed);
 - `ctex-subset`: `l3build unpack`, then `bash scripts/ctex-subset.sh
   --skip-unpack`.
 

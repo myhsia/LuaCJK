@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Check the guide facts
+        run: bash scripts/check-docs.sh
       - name: Install TeX Live
         uses: zauguin/install-texlive@v4
         with:

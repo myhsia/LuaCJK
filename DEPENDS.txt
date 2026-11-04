@@ -1,5 +1,7 @@
-expl3
-fontspec
-luaotfload
-lua-ul
-l3experimental
+hard expl3
+hard fontspec
+hard luaotfload
+hard lua-ul
+hard luacolor
+hard l3experimental
+soft listings
