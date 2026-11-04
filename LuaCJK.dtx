@@ -232,26 +232,26 @@ LaTeX Project Public License, version 1.3c or later.
 % uses the 10pt glue, although the group is closed before |\par|.  This group
 % contains
 % \begin{itemize}
-%   \item \texttt{CJKglue}, \texttt{CJKecglue}, \texttt{CJKspace}, and
-%     \texttt{xCJKecglue};
-%   \item \texttt{PunctStyle}, \texttt{PunctKinsoku},
-%     \texttt{AllowBreakBetweenPuncts}, \texttt{PunctWidth}, and
-%     \texttt{PunctBoundWidth};
-%   \item \texttt{LatinPunct} and \texttt{CJKmath};
-%   \item \texttt{CheckSingle} and \texttt{WidowPenalty};
-%   \item \texttt{AutoFallBack} and \texttt{Verb};
+%   \item \keys{CJKglue}, \keys{CJKecglue}, \keys{CJKspace}, and
+%     \keys{xCJKecglue};
+%   \item \keys{PunctStyle}, \keys{PunctKinsoku},
+%     \keys{AllowBreakBetweenPuncts}, \keys{PunctWidth}, and
+%     \keys{PunctBoundWidth};
+%   \item \keys{LatinPunct} and \keys{CJKmath};
+%   \item \keys{CheckSingle} and \keys{WidowPenalty};
+%   \item \keys{AutoFallBack} and \keys{Verb};
 %   \item the two commands \cs{LuaCJKCancelSubCJKBlock} and
 %     \cs{LuaCJKRestoreSubCJKBlock}.
 % \end{itemize}
 %
 % The other keys are global or act while the package is loaded:
 % \begin{itemize}
-%   \item \texttt{KaiMingPunct}, \texttt{MiddlePunct}, \texttt{LongPunct},
-%     and \texttt{NoBreakLongPunct} edit character sets;
-%   \item \texttt{AutoFakeBold}, \texttt{AutoFakeSlant},
-%     \texttt{EmboldenFactor}, and \texttt{SlantFactor} act when a family is
+%   \item \keys{KaiMingPunct}, \keys{MiddlePunct}, \keys{LongPunct},
+%     and \keys{NoBreakLongPunct} edit character sets;
+%   \item \keys{AutoFakeBold}, \keys{AutoFakeSlant},
+%     \keys{EmboldenFactor}, and \keys{SlantFactor} act when a family is
 %     registered;
-%   \item \texttt{LoadFandol} and \texttt{LocalConfig} act while the package
+%   \item \keys{LoadFandol} and \keys{LocalConfig} act while the package
 %     is loaded.
 % \end{itemize}
 % The declarations \cs{LuaCJKDeclareCharClass},
@@ -524,8 +524,8 @@ LaTeX Project Public License, version 1.3c or later.
 % \section{Suspending the adjustments}
 %
 % \begin{function}{\LuaCJKdisable, \LuaCJKenable}
-%   \tn{LuaCJKdisable} stops the typographic adjustments: no \texttt{CJKglue}
-%   or \texttt{CJKecglue} is inserted, punctuation is not compressed, no
+%   \tn{LuaCJKdisable} stops the typographic adjustments: no \keys{CJKglue}
+%   or \keys{CJKecglue} is inserted, punctuation is not compressed, no
 %   line-breaking prohibitions are added, punctuation is not hung, and CJK
 %   characters in math mode are left alone.  CJK characters are still
 %   typeset in the CJK font, so text stays readable.  The switch is local to
@@ -590,7 +590,7 @@ LaTeX Project Public License, version 1.3c or later.
 % \begin{function}{\LuaCJKVerbAddon, \LuaCJKOffVerbAddon}
 %   Make one CJK character as wide as two spaces of the current monospaced
 %   font, which keeps columns aligned when a code listing contains CJK text.
-%   The gap is added as \texttt{CJKglue}, so the CJK font itself is not
+%   The gap is added as \keys{CJKglue}, so the CJK font itself is not
 %   scaled; a negative gap only raises a warning and adds nothing.  Breaks
 %   between CJK characters are forbidden until the group ends, as in Latin
 %   verbatim text.
@@ -675,7 +675,7 @@ LaTeX Project Public License, version 1.3c or later.
 %     \tn{setCJKmathfont} \oarg{options} \marg{font} \oarg{options}
 %   \end{syntax}
 %   Select the CJK font used for characters in math mode.  Without this
-%   command the CJK main font is used.  This manual enables \texttt{CJKmath}
+%   command the CJK main font is used.  This manual enables \keys{CJKmath}
 %   and sets this font in its preamble.
 % \end{function}
 %
@@ -830,8 +830,8 @@ a’a\quad 字！字
 %     \tn{LuaCJKEditPunctStyle} \marg{style} \marg{key-value list}
 %   \end{syntax}
 %   Change the parameters of an existing style.  The keys are
-%   \texttt{compress-adjacent}, \texttt{adjacent-ratio}, and
-%   \texttt{keep-open-close}; a key that is not given keeps its value.
+%   \keys{compress-adjacent}, \keys{adjacent-ratio}, and
+%   \keys{keep-open-close}; a key that is not given keeps its value.
 % \end{function}
 %
 % \begin{function}{\LuaCJKsetwidth}
@@ -839,7 +839,7 @@ a’a\quad 字！字
 %     \tn{LuaCJKsetwidth} \marg{punctuation list} \marg{length}
 %   \end{syntax}
 %   Give the listed punctuation marks a fixed advance, overriding the
-%   selected \texttt{PunctStyle} and \texttt{PunctWidth}.  The setting is
+%   selected \keys{PunctStyle} and \keys{PunctWidth}.  The setting is
 %   global: a group does not restore the previous width, and a later call
 %   adds to the table rather than replacing it.  A leading \texttt{*} is
 %   accepted for compatibility with \pkg{xeCJK}, where it sets the width
@@ -874,8 +874,8 @@ a’a\quad 字！字
 %     \tn{LuaCJKDeclarePunctStyle} \marg{name} \marg{key-value list}
 %   \end{syntax}
 %   Define a punctuation style.  The available keys are
-%   \texttt{compress-adjacent}, \texttt{adjacent-ratio}, and
-%   \texttt{keep-open-close}.
+%   \keys{compress-adjacent}, \keys{adjacent-ratio}, and
+%   \keys{keep-open-close}.
 % \end{function}
 %
 % \iffalse
@@ -901,25 +901,25 @@ a’a\quad 字！字
 %   \end{syntax}
 %   Underline \meta{text}.  The options are
 %   \begin{itemize}
-%     \item \texttt{thickness}, the thickness of the rule;
-%     \item \texttt{depth}, the distance from the baseline to the top of the
+%     \item \keys{thickness}, the thickness of the rule;
+%     \item \keys{depth}, the distance from the baseline to the top of the
 %       rule;
-%     \item \texttt{textformat}, code applied to the text, for example
+%     \item \keys{textformat}, code applied to the text, for example
 %       |textformat=\bfseries|;
-%     \item \texttt{format}, the colour of the rule, given as a color name,
+%     \item \keys{format}, the colour of the rule, given as a color name,
 %       for example |format=red|.  \pkg{xeCJK} takes code here
 %       (|format=\color{red}|); a color name is all LuaCJK needs, and the
 %       color affects the rule only, not the text;
-%     \item \texttt{subtract}, a length (or \texttt{true} for half an em)
+%     \item \keys{subtract}, a length (or \texttt{true} for half an em)
 %       taken off the rule at both ends, so two neighbouring commands do not
 %       run together;
-%     \item \texttt{skip}, which leaves the punctuation out of the rule;
-%     \item \texttt{hidden}, which hides the text and keeps the rule, with
+%     \item \keys{skip}, which leaves the punctuation out of the rule;
+%     \item \keys{hidden}, which hides the text and keeps the rule, with
 %       the width, height, and depth of the hidden text.
 %   \end{itemize}
 %   The initial geometry is \texttt{depth=0.2em} and
-%   \texttt{thickness=0.4pt}.  \texttt{subtract}, \texttt{skip}, and
-%   \texttt{hidden} work the same way for \cs{CJKunderdblline},
+%   \texttt{thickness=0.4pt}.  \keys{subtract}, \keys{skip}, and
+%   \keys{hidden} work the same way for \cs{CJKunderdblline},
 %   \cs{CJKunderwave}, \cs{CJKxout}, and \cs{CJKunderdot}.  The keys
 %   \texttt{top} and \texttt{bottom} are passed to \pkg{lua-ul} and
 %   override the computed geometry.  The drawn patterns of
@@ -963,9 +963,9 @@ a’a\quad 字！字
 %     \tn{CJKunderdblline} \oarg{options} \marg{text}
 %   \end{syntax}
 %   Put two parallel rules under \meta{text}.  Besides the keys of
-%   \cs{CJKunderline}, the optional argument takes \texttt{gap}, the
+%   \cs{CJKunderline}, the optional argument takes \keys{gap}, the
 %   distance between the two rules (initial \texttt{1.1pt}); both rules use
-%   \texttt{thickness} and the top rule starts at \texttt{depth}.  A leading
+%   \keys{thickness} and the top rule starts at \keys{depth}.  A leading
 %   \texttt{*} or \texttt{-} is accepted and ignored.
 % \end{function}
 %
@@ -978,7 +978,7 @@ a’a\quad 字！字
 %   one line.  One period is half an em and the whole pattern scales with
 %   the font size; like the other drawn patterns it leaves the height and
 %   depth of the line alone.  The optional argument takes the keys of
-%   \cs{CJKunderline} and, in addition, \texttt{symbol} to replace the wave
+%   \cs{CJKunderline} and, in addition, \keys{symbol} to replace the wave
 %   with another symbol: one symbol per em, centred, its top half an em
 %   below the baseline.
 % \end{function}
@@ -1029,7 +1029,7 @@ a’a\quad 字！字
 %   as wide as a CJK character, so a row of symbols lines up with the
 %   characters above them.  \meta{depth} is the distance from the baseline
 %   to the top of the symbol; |0pt| puts the top of the symbol right under
-%   the characters.  The option \texttt{sep} is accepted for compatibility
+%   the characters.  The option \keys{sep} is accepted for compatibility
 %   but has no effect, because the cell is fixed at one em.
 % \end{function}
 %
@@ -1063,12 +1063,12 @@ a’a\quad 字！字
 %     \tn{CJKsout} \oarg{options} \marg{text}
 %   \end{syntax}
 %   Strike \meta{text} through.  The optional argument takes
-%   \texttt{thickness}, \texttt{height} (the distance from the baseline to
-%   the centre of the rule, initial \texttt{0.3em}), \texttt{format} (a
-%   color name), and the keys \texttt{subtract}, \texttt{skip}, and
-%   \texttt{hidden}.  A bare color name is still
+%   \keys{thickness}, \keys{height} (the distance from the baseline to
+%   the centre of the rule, initial \texttt{0.3em}), \keys{format} (a
+%   color name), and the keys \keys{subtract}, \keys{skip}, and
+%   \keys{hidden}.  A bare color name is still
 %   accepted and means |format = |\meta{color}; \texttt{color} is another
-%   name for \texttt{format}.  The initial height passes through the middle
+%   name for \keys{format}.  The initial height passes through the middle
 %   of a CJK glyph, which sits higher than the middle of the Latin
 %   x-height; use |height = 0.5ex| for text that is entirely Latin.
 % \end{function}
@@ -1169,7 +1169,7 @@ a’a\quad 字！字
 % \subsection{Different behaviour}
 %
 % \begin{itemize}
-%   \item \texttt{Verb} accepts the four \pkg{xeCJK} values, but
+%   \item \keys{Verb} accepts the four \pkg{xeCJK} values, but
 %     \texttt{env+} behaves like \texttt{false}: both leave the adjustments
 %     on, so the distinction has no observable effect here.
 %   \item The punctuation geometry is approximate.  \texttt{banjiao},
@@ -1177,12 +1177,12 @@ a’a\quad 字！字
 %     sentence-ending marks full), or 0.7 of the current size, and the
 %     hanging shift is half an em.  \pkg{xeCJK} instead measures the real
 %     side bearings of each glyph.
-%   \item \cs{LuaCJKDeclarePunctStyle} takes \texttt{compress-adjacent},
-%     \texttt{adjacent-ratio}, and \texttt{keep-open-close} instead of the
+%   \item \cs{LuaCJKDeclarePunctStyle} takes \keys{compress-adjacent},
+%     \keys{adjacent-ratio}, and \keys{keep-open-close} instead of the
 %     thirty geometry keys of \pkg{xeCJK}.
 %   \item \texttt{CJKfilltwosides*} does not compare with the natural width
 %     of its content.
-%   \item The \pkg{LuaCJKfntef} option \texttt{format} takes the colour of
+%   \item The \pkg{LuaCJKfntef} option \keys{format} takes the colour of
 %     the rule as a name (|format=red|), not as code
 %     (|format=\color{red}|).
 % \end{itemize}
@@ -1875,7 +1875,7 @@ a’a\quad 字！字
 % \g_LuaCJK_load_fandol_bool,
 % \l_LuaCJK_fallback_family_tl, \l_LuaCJK_fallback_ids_tl,
 % \l_LuaCJK_main_fontid_int}
-% The switches read by the Lua side, the \texttt{Verb} setting, the
+% The switches read by the Lua side, the \keys{Verb} setting, the
 % configuration file name, the fake bold and slant parameters, and the
 % fallback fonts.
 %    \begin{macrocode}
@@ -2252,7 +2252,7 @@ a’a\quad 字！字
 % Verbatim-like material must usually be left alone.  \tn{verb} opens its
 % own group and selects \tn{verbatim@font} inside it, so extending that
 % command covers \tn{verb} on its own.  The hook consults the current
-% \texttt{Verb} setting, so that \cs{LuaCJKsetup} can change the behaviour
+% \keys{Verb} setting, so that \cs{LuaCJKsetup} can change the behaviour
 % after the package is loaded.
 %    \begin{macrocode}
 \cs_new_protected:Npn \LuaCJK_verbatim@font_hook:
@@ -2344,8 +2344,8 @@ a’a\quad 字！字
 % \l_LuaCJK_bold_font_given_bool,
 % \l_LuaCJK_italic_font_given_bool
 % }
-% Whether one family's options already mention \texttt{AutoFakeBold},
-% \texttt{AutoFakeSlant}, \texttt{BoldFont}, or \texttt{ItalicFont}.
+% Whether one family's options already mention \keys{AutoFakeBold},
+% \keys{AutoFakeSlant}, \texttt{BoldFont}, or \texttt{ItalicFont}.
 %    \begin{macrocode}
 \bool_new:N \l_LuaCJK_autofake_bold_given_bool
 \bool_new:N \l_LuaCJK_autofake_slant_given_bool
@@ -2543,7 +2543,7 @@ a’a\quad 字！字
 % {\l_LuaCJK_math_family_tl, \g_LuaCJK_math_fontid_int,
 % \l_LuaCJK_punct_family_tl}
 % The math family registered by \cs{setCJKmathfont}, the font identifier
-% resolved from it, and the family chosen by \texttt{PunctFamily}.
+% resolved from it, and the family chosen by \keys{PunctFamily}.
 %    \begin{macrocode}
 \tl_new:N \l_LuaCJK_math_family_tl
 \tl_new:N \l_LuaCJK_punct_family_tl
@@ -2925,7 +2925,7 @@ a’a\quad 字！字
 % \subsection{Local configuration}
 %
 % \begin{macro}[int]{\LuaCJK_load_local_config:}
-% Load the file chosen by the \texttt{LocalConfig} option.  The key is
+% Load the file chosen by the \keys{LocalConfig} option.  The key is
 % read while the package is being loaded, but the file is only input at
 % the end, so that it can use everything LuaCJK defines.
 %    \begin{macrocode}
@@ -2950,7 +2950,7 @@ a’a\quad 字！字
 % \subsection{Loading Fandol}
 %
 % \begin{macro}[int]{\LuaCJK_load_fandol:}
-% When the \texttt{LoadFandol} option is on and the document did not
+% When the \keys{LoadFandol} option is on and the document did not
 % declare any CJK font, fall back to the four Fandol faces.  This runs at
 % \tn{begin}\{document\} so that a family declared anywhere in the
 % preamble still wins.
@@ -3304,7 +3304,7 @@ M.settings_of = settings_of
 % \subsection{Character classes}
 %
 % The quotation marks, the middle dot, and the ellipses are shared with Latin
-% scripts.  With \texttt{LatinPunct} on, they use the Latin font and are not
+% scripts.  With \keys{LatinPunct} on, they use the Latin font and are not
 % compressed; the em dash is not in the table, because it stays CJK.
 %
 % \begin{macro}[int]{LuaCJK.is_cjk}
@@ -5148,7 +5148,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %
 % \begin{macro}{\CJKunderline}
 % Underline the argument.  The optional argument takes
-% \texttt{thickness}, \texttt{depth}, and \texttt{textformat}, and any
+% \keys{thickness}, \keys{depth}, and \keys{textformat}, and any
 % other key is passed on to \pkg{lua-ul}, which understands
 % \texttt{top}, \texttt{bottom}, and \texttt{height}.
 % \begin{variable}[int]
@@ -5529,8 +5529,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKunderdblline}
-% Two parallel rules.  The optional argument takes \texttt{subtract} and
-% \texttt{skip}; \texttt{*} and \texttt{-} are accepted for compatibility.
+% Two parallel rules.  The optional argument takes \keys{subtract} and
+% \keys{skip}; \texttt{*} and \texttt{-} are accepted for compatibility.
 %    \begin{macrocode}
 \NewDocumentCommand \CJKunderdblline { s t- o +m }
   {
@@ -5772,7 +5772,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %
 % \begin{macro}{\CJKunderdot}
 % Emphasise with dots below the glyphs.  The optional argument takes
-% \texttt{subtract} and \texttt{skip}, like the other decorations.
+% \keys{subtract} and \keys{skip}, like the other decorations.
 %    \begin{macrocode}
 \NewDocumentCommand \CJKunderdot { s t- o +m }
   {

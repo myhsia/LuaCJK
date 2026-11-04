@@ -103,6 +103,9 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   grep -nE '^%[ ]{0,3}\\(begin|end)\{macrocode\}' LuaCJK.dtx   # must be empty
   grep -c 'Reference `doc' build/doc/LuaCJK.log                      # must be 0
   ```
+- **Key names.**  An option name in running text is `\keys{name}`, not
+  `\texttt{name}`, even outside a `keyval` environment.  Inside one it appends
+  `=`, so a cross-reference inside a `keyval` description stays `\texttt`.
 - **Demos.**  A command without arguments gets no `syntax` block; a command with a
   visible effect gets a `codemo`.  In a demo, parallel commands align their
   arguments, a command is not split from the text it affects, and font options
