@@ -113,22 +113,44 @@ a closing or middle mark may not start a line, an opening mark may not end one,
 and a run of `nobreak` long marks is one unit. `AllowBreakBetweenPuncts` and
 `PunctKinsoku` gate these, but an explicit `nobreak` attribute bypasses both.
 
-### Decorations adjust, they do not draw
+### Rule decorations adjust `lua-ul`
 
 `LuaCJKfntef` builds on `lua-ul`, which represents a decoration as a leaders
 glue of width *w* followed by a glue of width *-w* that gives the space back.
 `LuaCJKfntef.lua` finds that pair in `hpack_filter` and
 `pre_append_to_vlist_filter`, and replaces the leaders by a sequence of kerns
 and shorter leaders whose total is still *w*; the text therefore does not move
-while the rule is inset (`subtract`), left out over punctuation (`skip`),
-or capped in depth (`boxdepth`). The settings of one call live in
-`LuaCJKfntef.settings`, numbered by the decoration attribute, so two
-decorations in one paragraph keep their own settings.
+while the rule is inset (`subtract`) or left out over punctuation (`skip`).
+The settings of one call live in `LuaCJKfntef.settings`, numbered by the
+decoration attribute, so two decorations in one paragraph keep their own
+settings.
 
 A coloured rule cannot use `\color`, which emits whatsits in front of
 `\leaders`; it goes through `luacolor`'s attribute colouring
 (`\luaul_set_color:n` plus `\luaul_apply_color:`),
 which is why `format` takes a colour name rather than code.
+
+The `depth` key places the rule below the baseline. `boxdepth`, which used to
+cap how much a rule added to the box, is gone: it was a workaround for the
+drawn patterns growing the line, and on a rule it removed the rule itself.
+
+### Drawn decorations stay out of the metrics
+
+The wave, the emphasis dots, and the xout slash are drawings rather than
+leaders of a rule. Each is built at use time inside
+`\l_@@_fntef_pattern_box`, and the box is then set to zero height and depth, so
+the pattern reaches the page as a PDF literal without entering the dimensions
+of the line. That is why a decorated line keeps the leading of a plain one.
+
+Two properties of `l3draw` shape the code. Its box is the bounding box of the
+*stroked* path, one stroke width wider than the path, so a tiled pattern is
+wrapped in `\hbox to <period>` with `\hss` on both sides and the period stays
+exact instead of leaving a stroke-wide gap. It also places the drawing by the
+bottom of that box, which lifts a path that goes below the baseline, so the
+xout slash is lowered again by the part below the baseline plus half the
+stroke. The `symbol` variants of `\CJKunderdot` and `\CJKunderwave`, and
+`\CJKunderanysymbol`, follow one placement rule: one symbol per em, centred in
+the cell, its top a given distance under the baseline.
 
 ### The ctex adapter
 
