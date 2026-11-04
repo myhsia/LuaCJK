@@ -103,6 +103,11 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   grep -nE '^%[ ]{0,3}\\(begin|end)\{macrocode\}' LuaCJK.dtx   # must be empty
   grep -c 'Reference `doc' build/doc/LuaCJK.log                      # must be 0
   ```
+- **The manual describes the package, not the repository.**  No `.lvt` files,
+  CI, build commands, or script names in the documentation part: how the
+  package is tested and released belongs in this guide, and the principle
+  behind an interface belongs in the implementation section, not next to the
+  user instruction.
 - **Documentation literals.**  Write code points (`U+2018`) rather than the
   characters themselves when the prose would otherwise need a font the manual
   does not set.
@@ -139,6 +144,12 @@ checkout needs the network.
 - `bash scripts/ctex-subset.sh` must print `ctex subset: 21/21 passed`, every
   log must be free of `luatexja`, and the script additionally greps for the
   glue strings that prove the `ctex` option plumbing reached LuaCJK.
+- The `ctex` baselines cannot be compared: they were produced with LuaTeX-ja
+  and describe a different line-breaking implementation, so the subset script
+  only compiles the files and checks for the fallback.  `ctex01.lvt` covers
+  the real path inside `l3build check`, because `testsupport/` holds the
+  redirect and the engine file; the subset script needs a `ctex` checkout and
+  therefore stays outside the normal run.
 - A change that touches the node pipeline should also be checked by hand in
   `build/doc/LuaCJK.pdf` for the affected demo; the extracted examples are the
   fastest place to see the effect.

@@ -992,77 +992,30 @@ $ x + 中文 $ and 中文
 %
 % \section{Using LuaCJK with \pkg{ctex}}
 %
-% \pkg{ctex} chooses its LuaTeX backend by inputting a file whose name it
-% fixes itself:
+% \pkg{ctex} always inputs an engine file of its own naming, so it has to be
+% told to use the one LuaCJK ships.  Run \cs{LuaCJKwriteCtexConfig} once in a
+% plain document:
 % \begin{quote}
-%   |\file_if_exist:nTF { ctex-engine-luatex.def } { ... }|\\
-%   \dots\ |\ctex_file_input:n { \c__ctex_engine_file_str }|
+%   |\documentclass{article}|\\
+%   |\usepackage{LuaCJK}|\\
+%   |\LuaCJKwriteCtexConfig|
 % \end{quote}
-% LuaCJK cannot ship a file of that name without colliding with \pkg{ctex},
-% so its engine file is called |ctex-engine-luacjk.def|, and \pkg{ctex} has
-% to be told about it.  The place for that is |ctexopts.cfg|: \pkg{ctex}
-% inputs it after the engine file name has been fixed and before that file is
-% input, so changing the name there takes effect for the current run.
-%
-% \subsection{Creating the redirect}
+% The command writes \file{ctexopts.cfg} into the current directory.  Every
+% \pkg{ctex} document in that directory, or in a directory below it, then
+% uses LuaCJK, while \XeLaTeX{} documents in the same place keep their own
+% backend.  Writing that file by hand has the same effect.
 %
 % \begin{function}{\LuaCJKwriteCtexConfig}
 %   \begin{syntax}
 %     \tn{LuaCJKwriteCtexConfig} \oarg{directory}
 %   \end{syntax}
-%   Write \file{ctexopts.cfg} into \meta{directory} (the current one by
-%   default) with the redirect.  An existing file is left alone; the starred
-%   form overwrites it.  Run it once in a plain document:
-%   \begin{quote}
-%     |\documentclass{article}|\\
-%     |\usepackage{LuaCJK}|\\
-%     |\LuaCJKwriteCtexConfig|
-%   \end{quote}
-%   After that every \pkg{ctex} document in that directory --- or in a
-%   directory below it, because \tn{input} searches upwards only through the
-%   search path, not through the file system --- finds the file and uses
-%   LuaCJK.
+%   Write the redirect into \meta{directory}, the current directory by
+%   default.  An existing file is left alone; the starred form overwrites it.
 % \end{function}
 %
-% The file is written in plain \LaTeXe{} without any comment character, so
-% that it works whichever category codes and whatever \pkg{expl3} state are
-% current when \pkg{ctex} inputs it.  It only acts on \LuaTeX, so a
-% \XeLaTeX{} document in the same directory keeps its own backend:
-% \begin{quote}\small
-%   |\@ifundefined{directlua}{}{\@ifundefined{c__ctex_engine_file_str}{}{|\\
-%   |  \expandafter\def\csname c__ctex_engine_file_str\endcsname|\\
-%   |    {ctex-engine-luacjk.def}}}|
-% \end{quote}
-%
-% \subsection{What the engine file provides}
-%
-% Loading |ctex-engine-luacjk.def| pulls in LuaCJK and defines the parts of
-% the \pkg{ctex} kernel interface that the classes rely on: the
-% \cs{ctex_...} commands, \cs{ccwd} and friends, the |kanjiskip| and
-% |xkanjiskip| bridges, and the |punct| option, which selects a
-% \texttt{PunctStyle}.  A small part of the \pkg{luatexja} parameter
-% interface is kept as well:
-% \begin{quote}
-%   |\ltjsetparameter{kanjiskip = ...}|\\
-%   and |\ltjgetparameter{xkanjiskip}|
-% \end{quote}
-% Only these two parameters are understood; any other key of
-% \cs{ltjsetparameter} is silently ignored.  They exist for the \pkg{ctex}
-% tests and for documents that set the skips directly, not as a general
-% reimplementation of LuaTeX-ja.
-%
-% \subsection{Testing}
-%
-% The engine file cannot be tested against the baselines of \pkg{ctex}: those
-% were produced with LuaTeX-ja and describe a different line-breaking
-% implementation.  Two things are checked instead.  \file{ctex01.lvt} is an
-% ordinary test of LuaCJK that sets a \pkg{ctexart} document; the test
-% directory contains the redirect and the engine file, so \texttt{l3build
-% check} exercises the real path on every run.  A subset of the \pkg{ctex}
-% test files is compiled separately by \file{scripts/ctex-subset.sh}, which
-% needs a checkout of \pkg{ctex} and therefore cannot be part of
-% \texttt{l3build check}; it also fails if any of those files falls back to
-% LuaTeX-ja.
+% A \pkg{ctex} document then works as usual: the class finds the
+% \cs{ctex_...} commands it calls, \cs{ccwd}, the |kanjiskip| and
+% |xkanjiskip| settings, and the |punct| option.
 %
 % \section{Comparison with \pkg{xeCJK}}
 %
@@ -5882,11 +5835,19 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %
 % \subsection{The ctex engine file}
 %
-% \pkg{ctex} looks for a file named after the engine and inputs it, so a
-% backend can only be provided under that same name.  LuaCJK therefore ships
-% |ctex-engine-luacjk.def| itself; the manual explains where it has to be
-% found, because a copy inside the same tree as \pkg{ctex} loses under
-% kpathsea's path ordering.
+% \pkg{ctex} chooses its LuaTeX backend by inputting a file whose name it
+% fixes itself:
+% \begin{quote}
+%   |\file_if_exist:nTF { ctex-engine-luatex.def } { ... }|\\
+%   \dots\ |\ctex_file_input:n { \c__ctex_engine_file_str }|
+% \end{quote}
+% A backend can therefore only be provided under that very name, and LuaCJK
+% cannot ship a file of it without colliding with \pkg{ctex}.  Its engine file
+% is called |ctex-engine-luacjk.def| instead, and \pkg{ctex} is redirected to
+% it through |ctexopts.cfg|, which \pkg{ctex} inputs after the name has been
+% fixed and before the file is read; changing the name there therefore takes
+% effect for the current run.  The redirect acts only on \LuaTeX, so an
+% \XeLaTeX{} document in the same directory keeps its own backend.
 %
 % The file defines the handful of \cs{ctex_...} commands that the \pkg{ctex}
 % kernel calls, and maps the parts of the \pkg{luatexja} interface that
@@ -6062,7 +6023,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \end{macrocode}
 %
 % A very small part of the \pkg{luatexja} parameter interface is kept, for
-% the \pkg{ctex} tests and for documents that set the skips directly.
+% documents that set the skips directly.  Only |kanjiskip| and |xkanjiskip|
+% are understood; any other key is silently ignored, because this is not a
+% reimplementation of the \pkg{luatexja} parameter system.
 %    \begin{macrocode}
 %<*ctex>
 \keys_define:nn { LuaCJK / ctex / ltj }
