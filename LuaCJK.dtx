@@ -94,7 +94,7 @@ LaTeX Project Public License, version 1.3c or later.
 %<*package|fntef>
 \NeedsTeXFormat{LaTeX2e}[2026/06/01]
 \RequirePackage{expl3}
-\GetIdInfo $Id: LuaCJK.dtx 0.1.0 2026-11-02 myhsia<myhsia@outlook.com>$
+\GetIdInfo $Id: LuaCJK.dtx v0.0.1 2026-11-02 myhsia<myhsia@outlook.com>$
 %<package>  {A LuaTeX CJK typesetting package}
 %<package>\ProvidesExplPackage {\ExplFileName}
 %<fntef>  {Font effects for LuaCJK (CTEX)}
@@ -117,7 +117,14 @@ LaTeX Project Public License, version 1.3c or later.
 \setlength{\emergencystretch}{3em}
 \providecommand*\LuaLaTeX{\hologo{LuaLaTeX}}
 \providecommand*\XeLaTeX{\hologo{XeLaTeX}}
+\usepackage{xurl}
 \usepackage[color = 00498F, ratio = .625]{docext}
+\hypersetup{
+  pdfstartview = FitH,
+  unicode      = true,
+  pdfauthor    = Mingyu Xia
+}
+\newcommand \mail[1] {\href{mailto:#1}{\ttfamily #1}}
 \usepackage{fontspec}
 \setmainfont{texgyrepagella}[
   Extension      = .otf,
@@ -162,8 +169,12 @@ LaTeX Project Public License, version 1.3c or later.
 %</driver>
 % \fi
 %
-% \title{\bfseries The \pkg{LuaCJK} package}
-% \author{Mingyu Xia\thanks{\url{https://github.com/myhsia/LuaCJK}}}
+% \title{\bfseries The \pkg{LuaCJK} package\thanks{^^A
+%   \url{https://ctan.org/pkg/luacjk},\
+%   \url{https://github.com/myhsia/LuaCJK}^^A
+% }^^A
+% }
+% \author{Mingyu Xia\thanks{\mail{xiamingyu@westlake.edu.cn}}}
 % \date{Released \DocFileDate\quad \texttt{\DocFileVersion}}
 % \maketitle
 %
@@ -5769,7 +5780,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %<*listings>
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage { expl3 }
-\GetIdInfo $Id: LuaCJK.dtx 0.1.0 2026-11-02 myhsia<myhsia@outlook.com>$
+\GetIdInfo $Id: LuaCJK.dtx v0.0.1 2026-11-02 myhsia<myhsia@outlook.com>$
 \ProvidesPackage { LuaCJK-listings }
   [\ExplFileDate\space\ExplFileVersion\space CJK support for listings]
 \RequirePackage { LuaCJK }
@@ -5856,7 +5867,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %<*ctex>
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage { expl3 }
-\GetIdInfo $Id: LuaCJK.dtx 0.1.0 2026-11-02 myhsia<myhsia@outlook.com>$
+\GetIdInfo $Id: LuaCJK.dtx v0.0.1 2026-11-02 myhsia<myhsia@outlook.com>$
   {LuaTeX adapter for ctex (LuaCJK)}
 \ProvidesExplFile {ctex-engine-luacjk.def}
   {\ExplFileDate} {\ExplFileVersion} {\ExplFileDescription}

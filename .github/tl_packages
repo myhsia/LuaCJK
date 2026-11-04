@@ -28,6 +28,7 @@ enumitem
 underscore
 xcolor
 zref-clever
+xurl
 #
 # Fonts and LuaTeX
 listings

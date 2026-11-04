@@ -6,7 +6,7 @@
     Basic Information: Do Check Before Push
 --]==========================================================================]--
 module              = "luacjk"
-version             = "0.1.0"
+version             = "v0.0.1"
 date                = "2026-11-02"
 maintainer          = "Mingyu Xia"
 uploader            = "Mingyu Xia"

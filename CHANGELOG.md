@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 (2026-11-02)
+## v0.0.1 (2026-11-02)
 
 - Initial development release.
 - Provide the CJK font family interface (`\setCJKmainfont`,
