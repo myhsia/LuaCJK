@@ -1,9 +1,9 @@
 # LuaCJK
 
-A Chinese typesetting package for LuaLaTeX, built on LuaTeX node callbacks.  Everything ships from the single source `LuaCJK.dtx`:
+A Chinese typesetting package for LuaLaTeX, built on LuaTeX node callbacks. Everything ships from the single source `LuaCJK.dtx`:
 three LaTeX packages (`LuaCJK`, `LuaCJKfntef`, `LuaCJK-listings`), the `ctex`
 engine file `ctex-engine-luacjk.def`, three Lua modules, the manual
-`LuaCJK.pdf`, and `README.md`.  `../ctex-kit` is read only, by
+`LuaCJK.pdf`, and `README.md`. `../ctex-kit` is read only, by
 `scripts/ctex-subset.sh`, which compiles a subset of the `ctex` test suite
 against the engine file.
 
@@ -11,7 +11,7 @@ against the engine file.
 
 Repo etiquette, the git/PR workflow, LaTeX writing and source style, tooling
 and upkeep are **machine-global**: see the `repo-rules` skill at
-`~/.config/opencode/skills/repo-rules/SKILL.md`.  Do not copy them here.  The
+`~/.config/opencode/skills/repo-rules/SKILL.md`. Do not copy them here. The
 only local exception is that the manual's prose is English, so the
 "no code-like strings in the rendered text" rule is applied to identifiers and
 file names only.
@@ -22,8 +22,8 @@ punctuation model, the decoration mechanism, or the `ctex` adapter.
 
 ## Environment
 
-TeX Live 2026 with LuaLaTeX; no conda, no Python.  Every command runs from the
-repository root, where `build.lua` lives.  Entry points:
+TeX Live 2026 with LuaLaTeX; no conda, no Python. Every command runs from the
+repository root, where `build.lua` lives. Entry points:
 
 - `l3build` (unpack, check, save, doc, ctan, tag) for the package itself;
 - `scripts/ctex-subset.sh` for the `ctex` integration;
@@ -46,7 +46,7 @@ repository root, where `build.lua` lives.  Entry points:
 
 Generated, never edited by hand: `*.sty`, `*.lua`, `*.def` in the root,
 `README.md` (from the `<readme>` block), `LuaCJK.pdf`, `*.zip`, `*.glo`,
-`.codemo.vrb`, `build/`.  `test/` is gitignored scratch space for ad-hoc
+`.codemo.vrb`, `build/`. `test/` is gitignored scratch space for ad-hoc
 compilation; leave whatever is there alone.
 
 DocStrip blocks inside `LuaCJK.dtx`, in file order: `internal`, `readme`,
@@ -57,19 +57,19 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 ## Conventions and pitfalls
 
 - **One source.** Edit `LuaCJK.dtx` only; `l3build unpack` regenerates
-  everything else.  A change to a derived file that is not in the `dtx` is lost
+  everything else. A change to a derived file that is not in the `dtx` is lost
   at the next unpack.
 - **Internal names use `@@`.**  The `dtx` sets `%<@@=LuaCJK>` once, before the
   first implementation line, and every private name is written as
   `\l_@@_…`, `\g_@@_…`, `\c_@@_…`, or `\@@_…`; DocStrip expands the leading
-  `@@` to `__LuaCJK`.  Documenting them as `\@@_…` lets `l3doc` print the same
-  expansion.  Never write `@@` inside a Lua block or a Lua string: DocStrip
+  `@@` to `__LuaCJK`. Documenting them as `\@@_…` lets `l3doc` print the same
+  expansion. Never write `@@` inside a Lua block or a Lua string: DocStrip
   rewrites it there too, and the Lua side would no longer match the TeX
-  register it looks up.  Names that Lua must see are passed in with
+  register it looks up. Names that Lua must see are passed in with
   `\cs_to_str:N` (see `LuaCJK.name_ccglue` in the initialisation block).
 - **Every behaviour change needs a test.**  Add or extend a `.lvt`, run
   `l3build save <name>`, then read the `.tlg` diff and confirm the numbers are
-  the values you designed, not merely "whatever came out".  `save` takes bare
+  the values you designed, not merely "whatever came out". `save` takes bare
   test names without the extension.
 - **New options must reach the settings snapshot.**  A key that describes how
   text is set needs an entry in `DEFAULT_SETTINGS`, a parameter of
@@ -83,26 +83,26 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **The decorations adjust `lua-ul`, they do not draw.**  `lua-ul` emits a
   leaders glue of width *w* followed by a glue of width *-w*; the adjustment
   replaces the leaders with kerns and shorter leaders so that the total stays
-  *w*.  Any new decoration must keep that invariant.
+  *w*. Any new decoration must keep that invariant.
 - **Two Lua modules, one module table.**  `LuaCJK-core.lua` owns the load-time
   state and passes; `LuaCJKfntef.lua` may read `LuaCJK.punct_class` but must not
   redefine core behaviour.
 - **No narration in the Lua code.**  What a function or a pass does is prose in
   the dtx, above its `macrocode` chunk, so it reaches the manual; only a
   comment that explains one expression (a magic number, an invariant) stays as
-  a Lua comment.  The licence header of the three modules comes from
+  a Lua comment. The licence header of the three modules comes from
   `\declarepreamble` in `LuaCJK.ins`, not from the dtx body.
 - **`l3doc` bookkeeping.**  Follow the global `repo-rules` section "l3doc source
   style": `macrocode` is `%` plus exactly four spaces, every other documentation
   line is `%` plus one space, internal objects are `[int]`, and entries are
-  separated by a blank `%` line.  A `variable` whose name is a Lua identifier
+  separated by a blank `%` line. A `variable` whose name is a Lua identifier
   (dots, underscores) must carry `[int]`, or the PDF reports an undefined
-  reference.  Environments documented with `\begin{environment}{...}` in the
+  reference. Environments documented with `\begin{environment}{...}` in the
   user part must use `environment`, not `macro`, in the implementation part.
 - **Fixed names are braces, not metavariables.**  `\tn{begin}\{document\}`,
   not `\tn{begin}\marg{document}` (which prints `{⟨document⟩}`); `\marg*`
-  and `\oarg*` do not exist in this `l3doc`.  `\file` takes plain text only,
-  so keep `\meta` outside it.  Every line of a `quote` but the last ends
+  and `\oarg*` do not exist in this `l3doc`. `\file` takes plain text only,
+  so keep `\meta` outside it. Every line of a `quote` but the last ends
   with `\\`.
 - **Check the markup before committing.**  Two greps catch nearly everything:
 
@@ -110,13 +110,18 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   grep -nE '^%[ ]{0,3}\\(begin|end)\{macrocode\}' LuaCJK.dtx   # must be empty
   grep -c 'Reference `doc' build/doc/LuaCJK.log                      # must be 0
   ```
+- **Spacing in prose.**  One space after a sentence-ending full stop, question
+  mark, or exclamation mark, and no trailing space at the end of a line. TeX
+  collapses runs of spaces and breaks lines itself, so neither controls the
+  output; alignment padding in code, `syntax` blocks, docstrip tables, and
+  licence boxes stays as it is.
 - **Key names.**  An option name in running text is `\keys{name}`, not
-  `\texttt{name}`, even outside a `keyval` environment.  Inside one it appends
+  `\texttt{name}`, even outside a `keyval` environment. Inside one it appends
   `=`, so a cross-reference inside a `keyval` description stays `\texttt`.
 - **Demos.**  A command without arguments gets no `syntax` block; a command with a
-  visible effect gets a `codemo`.  In a demo, parallel commands align their
+  visible effect gets a `codemo`. In a demo, parallel commands align their
   arguments, a command is not split from the text it affects, and font options
-  come before the font name.  Align a `syntax` continuation with `\` plus spaces,
+  come before the font name. Align a `syntax` continuation with `\` plus spaces,
   not `\phantom`.
 - **The manual describes the package, not the repository.**  No `.lvt` files,
   CI, build commands, or script names in the documentation part: how the
@@ -152,7 +157,7 @@ checkout needs the network.
 ## Validation
 
 - `l3build check` must print `All checks passed`; the `.tlg` baselines must
-  match byte for byte.  A difference is a behaviour change until proven
+  match byte for byte. A difference is a behaviour change until proven
   otherwise.
 - `l3build doc` must finish with no `^!` error, no `Reference ... undefined`,
   and no `Missing character`.
@@ -161,7 +166,7 @@ checkout needs the network.
   glue strings that prove the `ctex` option plumbing reached LuaCJK.
 - The `ctex` baselines cannot be compared: they were produced with LuaTeX-ja
   and describe a different line-breaking implementation, so the subset script
-  only compiles the files and checks for the fallback.  `ctex01.lvt` covers
+  only compiles the files and checks for the fallback. `ctex01.lvt` covers
   the real path inside `l3build check`, because `testsupport/` holds the
   redirect and the engine file; the subset script needs a `ctex` checkout and
   therefore stays outside the normal run.
@@ -172,7 +177,7 @@ checkout needs the network.
 ## CI
 
 `.github/workflows/test.yaml` runs on every push to any branch and on pull
-requests.  Two jobs, each on `ubuntu-latest`, `macos-latest`, and
+requests. Two jobs, each on `ubuntu-latest`, `macos-latest`, and
 `windows-latest`:
 
 - `l3build`: `l3build check`, then `l3build doc` (only if the check passed);
@@ -181,12 +186,12 @@ requests.  Two jobs, each on `ubuntu-latest`, `macos-latest`, and
 
 On failure the `l3build` job uploads `build/**/*.diff` and `build/**/*.log` as
 `luacjk-diff-<short-sha>-<os>`; download it with `gh run download` through the
-proxy (see the `network-access` skill).  Local and CI run the same commands;
+proxy (see the `network-access` skill). Local and CI run the same commands;
 the only parity risk is a missing entry in `.github/tl_packages`.
 
 ## Git style
 
 See the global `repo-rules` skill: `type(scope): summary`, commit only when
-asked, never commit generated output or secrets.  Scopes used in this
+asked, never commit generated output or secrets. Scopes used in this
 repository: `core`, `fonts`, `chars`, `punct`, `spacing`, `breaks`, `verbatim`,
 `options`, `load`, `fntef`, `listings`, `ctex`, `build`, `ci`, `docs`.

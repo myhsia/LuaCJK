@@ -17,7 +17,7 @@
   start a line, opening punctuation cannot end a line, and long punctuation
   runs are kept together.
 - Add `CJKmath` and `\setCJKmathfont` for typing CJK characters directly in
-  math mode, including nested math lists such as fractions.  A one-time
+  math mode, including nested math lists such as fractions. A one-time
   warning is issued when CJK characters appear in math mode while `CJKmath`
   is off.
 - The ctex shadow test now asserts punctuation, kinsoku, and CJK math
@@ -25,7 +25,7 @@
 - Document the package with `l3doc` and `docext` under LuaLaTeX.
 - Use the `LuaCJK` spelling for the package and derived files; the l3build/CTAN module stays `luacjk`.
 - Accept the same keys as package options, for example
-  `\usepackage[PunctStyle = banjiao]{LuaCJK}`.  Unknown keys warn instead of
+  `\usepackage[PunctStyle = banjiao]{LuaCJK}`. Unknown keys warn instead of
   raising an error.
 - Use the public LaTeX3 Lua interfaces (`\lua_now:e`, `\lua_escape:e`,
   `\lua_load_module:n`) instead of `\directlua` and `kpse.findfile`.
@@ -92,7 +92,7 @@
 - `subtract` and `skip` now work for `\CJKunderdblline`, `\CJKunderwave`,
   `\CJKxout`, and `\CJKunderdot` as well as `\CJKunderline`.
 - `\CJKunderline` accepts `subtract` (inset at both ends) and `skip`
-  (leave out the punctuation).  The decoration boxes of lua-ul are adjusted
+  (leave out the punctuation). The decoration boxes of lua-ul are adjusted
   in place: the leaders width is reduced and a matching kern and negative
   glue keep the text where it was.
 - Add the fntef option `hidden`, which keeps the dimensions of the text but
@@ -104,29 +104,29 @@
   and the ellipses in the Latin font instead of the CJK font.
 - Every setting now travels with the characters: a snapshot of the options is
   stored once and recorded on the glyphs, so a group that ends before the
-  paragraph does still decides how its own text is set.  This covers
+  paragraph does still decides how its own text is set. This covers
   `CJKglue`, `CJKecglue`, `PunctStyle`, `PunctKinsoku`, `LatinPunct`,
   `CJKmath`, `PunctWidth`, `PunctBoundWidth`, `CheckSingle`, `WidowPenalty`,
   and `AllowBreakBetweenPuncts`.
 - The default `CJKglue` and `CJKecglue` are recomputed at every font
   selection, so they follow `\small`, `\Large`, and `\zihao` instead of
   staying at the value of the 10pt size.
-- `AutoFallBack` and the cancelled sub-blocks follow the group now.  Both
+- `AutoFallBack` and the cancelled sub-blocks follow the group now. Both
   are part of the settings snapshot, so `{\LuaCJKsetup{AutoFallBack=true} ...}`
   and `{\LuaCJKCancelSubCJKBlock{...} ...}` end with their group.
 - `\LuaCJKnobreak` and `\LuaCJKVerbAddon` keep their prohibition when
   `PunctKinsoku` is off; the switch only controls the punctuation rules.
 - The manual now separates the settings that follow the text from the global
   and load-time keys.
-- Ship `ctex-engine-luacjk.def` as the LuaTeX backend for ctex.  The name
+- Ship `ctex-engine-luacjk.def` as the LuaTeX backend for ctex. The name
   differs from the file that ctex installs, so both packages can be installed
   side by side and CTAN has no duplicate file.
 - Add `\LuaCJKwriteCtexConfig`, which writes a `ctexopts.cfg` redirect into
-  the document directory.  ctex inputs that file after it has fixed the
+  the document directory. ctex inputs that file after it has fixed the
   engine file name and before it loads the engine file, so the redirect takes
   effect in the same run; `ctexbackend.cfg` is read too early and `ctex.cfg`
   too late.
-- The test-only `support/ctex` directory is gone.  The ctex smoke test is a
+- The test-only `support/ctex` directory is gone. The ctex smoke test is a
   normal test file now (`testfiles/ctex01.lvt`), so `l3build check` exercises
   the engine file on every run; the subset script fails if any of the ctex
   tests falls back to LuaTeX-ja.
@@ -139,7 +139,7 @@
   `format` and `subtract`; a bare color name is still accepted.
 - Add `LuaCJK-listings`, which keeps CJK characters in place inside a
   `listings` block, counts each of them as two columns, and turns the spacing
-  adjustments off.  LuaCJK loads it automatically with `listings`.
+  adjustments off. LuaCJK loads it automatically with `listings`.
 - `\LuaCJKDeclareCharClass` accepts the class names of `xeCJK`
   (`FullLeft`, `FullRight`, `HalfLeft`, `HalfRight`, `NormalSpace`,
   `CJStarter`, `CM`, `Boundary`); `\LuaCJKResetCharClass` also restores the
@@ -164,15 +164,15 @@
   the slash is lowered again by that amount.
 - The drawn patterns of `\CJKunderwave`, `\CJKunderdot`, and `\CJKxout`
   are built in a box whose height and depth are zero, so a decoration no
-  longer opens up the line it sits on.  The wave and the dots used to add
-  about `0.25em` of depth.  The `boxdepth` key, which only existed to limit
+  longer opens up the line it sits on. The wave and the dots used to add
+  about `0.25em` of depth. The `boxdepth` key, which only existed to limit
   that growth, is removed; it also erased the rule of a `\vrule`-based
   decoration when used there.
 - `\CJKunderanysymbol` now puts one symbol per em, centred in the cell, so
-  a row of symbols lines up with the characters above them.  Its depth
+  a row of symbols lines up with the characters above them. Its depth
   argument is the distance from the baseline to the top of the symbol, so
   `0pt` sets the symbol right under the characters; `sep` no longer
-  applies, because the cell is fixed at one em.  The symbol of
+  applies, because the cell is fixed at one em. The symbol of
   `\CJKunderdot[symbol = ...]` and `\CJKunderwave[symbol = ...]` follows the
   same placement.
 - The manual now shows `\CJKunderanyline` with em-based geometry, so the

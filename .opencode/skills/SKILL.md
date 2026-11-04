@@ -12,16 +12,16 @@ metadata:
 
 LuaCJK sets Chinese text through LuaTeX node callbacks: a CJK glyph carries
 its font in a LuaTeX attribute and is replaced before line breaking and box
-packing.  This skill carries the
+packing. This skill carries the
 architecture: which callback does what, what each attribute means, how a
 punctuation style is expressed, and why the decorations are adjusted rather
-than drawn.  It exists so that a change to the pipeline does not have to be
+than drawn. It exists so that a change to the pipeline does not have to be
 reverse-engineered from the Lua source first.
 
 ## Repository rules
 
 Repo etiquette, the git/PR workflow, LaTeX style, tooling and upkeep are
-**machine-global**: see the `repo-rules` skill.  Build commands, the file
+**machine-global**: see the `repo-rules` skill. Build commands, the file
 layout, and the validation criteria are in the repository's `AGENTS.md`.
 
 ## Background
@@ -46,7 +46,7 @@ The character-level passes run in `pre_linebreak_filter` and in
 `post_linebreak_filter` runs `hang_punctuation` on the packed lines: it shifts
 the ink of a mark at the start or the end of a line (hanging punctuation), and
 with `PunctBoundWidth` it shifts a line-final mark so that only the given
-advance stays inside the line.  Only `xoffset` changes, never a width, so
+advance stays inside the line. Only `xoffset` changes, never a width, so
 justification is untouched.
 
 `pre_mlist_to_hlist_filter` runs `rewrite_math`, which turns a CJK character in
@@ -74,25 +74,25 @@ Ten attributes carry the per-node state; all are read through
 
 Every option used to be read from a TeX register at the moment the paragraph
 was broken, which silently lost a setting whose group had closed before
-`\par`, and made `{\small ...}` use the glue of the outer size.  Now
+`\par`, and made `{\small ...}` use the glue of the outer size. Now
 `\@@_settings_push:` (called at the end of `\LuaCJKsetup` and after every
 `\selectfont`) sends the current options to `LuaCJK.new_settings`, which
 dedupes them by a signature string, stores the entry, and records its number in
-the `settings` attribute.  Lua reads `settings_of(node)` and never the TeX
-side.  Adding an option means touching all five places listed in `AGENTS.md`.
+the `settings` attribute. Lua reads `settings_of(node)` and never the TeX
+side. Adding an option means touching all five places listed in `AGENTS.md`.
 
 `CJKglue` and `CJKecglue` keep their registers, but the defaults
 (`0pt plus 0.08\baselineskip` and `0.3333em plus 0.1667em minus 0.1111em`) are
 recomputed at each font selection unless the document set them; a document
-value is used as written.  That is what the `ccglue_touched` flags are for.
+value is used as written. That is what the `ccglue_touched` flags are for.
 
 ### The punctuation model
 
 Every mark gets a group from `PUNCT_CLASS`: `open`, `close`, `middle`, `dash`,
-`ellipsis`.  Four character sets are editable at run time
+`ellipsis`. Four character sets are editable at run time
 (`M.charsets`): `kaiming` (marks that stay full width in the `kaiming` style),
 `middle`, `long` (never compressed against each other), and `nobreak` (never
-separated by a line break).  A style (`M.punct_styles`) is a table of six
+separated by a line break). A style (`M.punct_styles`) is a table of six
 optional fields:
 
 | field | effect |
@@ -104,7 +104,7 @@ optional fields:
 
 The prohibitions in `forbids_break` are the ones that matter for correctness:
 a closing or middle mark may not start a line, an opening mark may not end one,
-and a run of `nobreak` long marks is one unit.  `AllowBreakBetweenPuncts` and
+and a run of `nobreak` long marks is one unit. `AllowBreakBetweenPuncts` and
 `PunctKinsoku` gate these, but an explicit `nobreak` attribute bypasses both.
 
 ### Decorations adjust, they do not draw
@@ -115,7 +115,7 @@ glue of width *w* followed by a glue of width *-w* that gives the space back.
 `pre_append_to_vlist_filter`, and replaces the leaders by a sequence of kerns
 and shorter leaders whose total is still *w*; the text therefore does not move
 while the rule is inset (`subtract`), left out over punctuation (`skip`), or
-capped in depth (`boxdepth`).  The settings of one call live in
+capped in depth (`boxdepth`). The settings of one call live in
 `LuaCJKfntef.settings`, numbered by the decoration attribute, so two
 decorations in one paragraph keep their own settings.
 
@@ -129,9 +129,9 @@ a colour name rather than code.
 `ctex` asks for an engine file under a name of its own choosing, so LuaCJK
 ships `ctex-engine-luacjk.def` — the `ctex` interface (`\ctex_add_to_selectfont:n`,
 `\ccwd`, `\CTEX@alchar`, `\ctex_set_jfm:n`, the `kanjiskip`/`xkanjiskip` keys)
-implemented on top of LuaCJK.  Because the name differs, `ctex` only picks it
+implemented on top of LuaCJK. Because the name differs, `ctex` only picks it
 up when `ctexopts.cfg` redirects it; `\LuaCJKwriteCtexConfig` writes that file
-once per directory.  `ctex` keeps its own copies of the two glues so it can
+once per directory. `ctex` keeps its own copies of the two glues so it can
 tell whether the document changed them; the engine file keeps the copies in
 step and sets the `*_touched` flags, otherwise the next `\selectfont` would
 restore the default and undo the user's `kanjiskip`.
@@ -149,7 +149,7 @@ Deliberately absent, with the reason recorded in the manual: `PoZheHaoLigature`
 (LuaTeX shapes one glyph at a time), `RubberPunctSkip` (the advance is a fixed
 kern, not stretchable glue), `CheckFullRight` (the node list no longer shows the
 following control sequence — use `\LuaCJKnobreak`), and `ulem`'s option list
-(`LuaCJKfntef` builds on `lua-ul`).  Picking a backend inside `ctex` still needs
+(`LuaCJKfntef` builds on `lua-ul`). Picking a backend inside `ctex` still needs
 the agreement of the `ctex` maintainers; the redirect is the interim route.
 
 ## Conventions
@@ -167,15 +167,15 @@ the agreement of the `ctex` maintainers; the redirect is the interim route.
 - The manual is English; the package's user-facing prose keeps the same
   terminology as the code (`CJKglue`, `PunctStyle`, `subtract`) rather than
   inventing translations.
-- The code carries no narration.  Each pass is introduced by prose in the dtx
+- The code carries no narration. Each pass is introduced by prose in the dtx
   between `\end{macrocode}` and `\begin{macrocode}`; a Lua comment survives
-  only when it explains a single expression.  The three module headers are
+  only when it explains a single expression. The three module headers are
   DocStrip preambles declared in `LuaCJK.ins`, in Lua comment syntax, so the
   generated files are valid Lua from the first line.
 
 ## Workflows and validation
 
-The commands are in `AGENTS.md`.  For this skill the points that matter are:
+The commands are in `AGENTS.md`. For this skill the points that matter are:
 
 ```bash
 l3build check                       # 37 tests, must print "All checks passed"
@@ -185,7 +185,7 @@ bash scripts/ctex-subset.sh         # 21/21, and no log may mention luatexja
 
 When a change touches a pass, add a test that inspects nodes rather than
 guessing from widths alone: walk `tex.box[0].head` and report the glue, kern,
-and penalty nodes, then assert the numbers in the `.tlg`.  Existing examples
+and penalty nodes, then assert the numbers in the `.tlg`. Existing examples
 are `decoration01` (the leaders pair), `settingsscope01` (a group that closes
 before `\par`), `nobreak01`/`nobreak02` (penalties), and `listings01` (glyph
 order inside a listing).
