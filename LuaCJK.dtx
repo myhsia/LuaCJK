@@ -92,7 +92,7 @@ LaTeX Project Public License, version 1.3c or later.
 %
 %<*package|fntef|listings|ctex>
 \NeedsTeXFormat{LaTeX2e}[2026/06/01]
-\RequirePackage{expl3}
+\RequirePackage { expl3 }
 \GetIdInfo $Id: LuaCJK.dtx v0.0.1 2026-11-02 myhsia<myhsia@outlook.com>$
 %<package>  {A LuaTeX CJK typesetting package}
 %<package>\ProvidesExplPackage {\ExplFileName}
@@ -1233,9 +1233,7 @@ $ x + 中文 $ and 中文
     \msg_critical:nn { LuaCJK } { engine }
     \tex_endinput:D
   }
-\RequirePackage { l3keys2e }
 \RequirePackage { fontspec }
-\RequirePackage { xparse }
 %    \end{macrocode}
 %
 % \begin{macro}{\LuaCJKversion}
@@ -1290,23 +1288,23 @@ $ x + 中文 $ and 中文
 % the allocated attribute numbers for the Lua side.
 %    \begin{macrocode}
 \newattribute \g_@@_font_attr
-\int_const:Nn \c_@@_font_attr_int { \the \allocationnumber }
+\int_const:Nn \c_@@_font_attr_int { \int_use:N \allocationnumber }
 \newattribute \g_@@_cjk_space_attr
-\int_const:Nn \c_@@_cjk_space_attr_int { \the \allocationnumber }
+\int_const:Nn \c_@@_cjk_space_attr_int { \int_use:N \allocationnumber }
 \newattribute \g_@@_xecglue_attr
-\int_const:Nn \c_@@_xecglue_attr_int { \the \allocationnumber }
+\int_const:Nn \c_@@_xecglue_attr_int { \int_use:N \allocationnumber }
 \newattribute \g_@@_inserted_attr
-\int_const:Nn \c_@@_inserted_attr_int { \the \allocationnumber }
+\int_const:Nn \c_@@_inserted_attr_int { \int_use:N \allocationnumber }
 \newattribute \g_@@_math_font_attr
-\int_const:Nn \c_@@_math_font_attr_int { \the \allocationnumber }
+\int_const:Nn \c_@@_math_font_attr_int { \int_use:N \allocationnumber }
 \newattribute \g_@@_disabled_attr
-\int_const:Nn \c_@@_disabled_attr_int { \the \allocationnumber }
+\int_const:Nn \c_@@_disabled_attr_int { \int_use:N \allocationnumber }
 \newattribute \g_@@_punct_font_attr
-\int_const:Nn \c_@@_punct_font_attr_int { \the \allocationnumber }
+\int_const:Nn \c_@@_punct_font_attr_int { \int_use:N \allocationnumber }
 \newattribute \g_@@_settings_attr
-\int_const:Nn \c_@@_settings_attr_int { \the \allocationnumber }
+\int_const:Nn \c_@@_settings_attr_int { \int_use:N \allocationnumber }
 \newattribute \g_@@_nobreak_attr
-\int_const:Nn \c_@@_nobreak_attr_int { \the \allocationnumber }
+\int_const:Nn \c_@@_nobreak_attr_int { \int_use:N \allocationnumber }
 \g_@@_math_font_attr  = 0
 \g_@@_punct_font_attr = 0
 \g_@@_settings_attr   = 0
@@ -2061,9 +2059,7 @@ $ x + 中文 $ and 中文
     \keys_set:nn { LuaCJK / options } {#1}
     \@@_settings_push:
   }
-\cs_if_exist:NTF \ProcessKeyOptions
-  { \ProcessKeyOptions [ LuaCJK / options ] }
-  { \ProcessKeysOptions { LuaCJK / options } }
+\ProcessKeyOptions [ LuaCJK / options ]
 %    \end{macrocode}
 % \end{macro}
 %
@@ -3013,7 +3009,7 @@ $ x + 中文 $ and 中文
   }
 \cs_new_protected:Npn \@@_ctex_config_copy:
   {
-    \exp_args:NNV \iow_open:Nn \l_@@_ctex_config_iow
+    \iow_open:NV \l_@@_ctex_config_iow
       \l_@@_ctex_config_path_tl
     \iow_now:Nx \l_@@_ctex_config_iow
       {
@@ -5127,7 +5123,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \RequirePackage { l3draw   }
 \lua_load_module:n { LuaCJKfntef }
 \newattribute \g_@@_fntef_settings_attr
-\int_const:Nn \c_@@_fntef_settings_attr_int { \the \allocationnumber }
+\int_const:Nn \c_@@_fntef_settings_attr_int { \int_use:N \allocationnumber }
 \g_@@_fntef_settings_attr = 0
 \lua_now:e
   { LuaCJKfntef.attr = \int_use:N \c_@@_fntef_settings_attr_int }
