@@ -5260,7 +5260,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
           [ \dim_to_decimal_in_sp:n { 1ex } @ \luaul_context_color: ]
           {
             \luaul_apply_color:
-            \leaders \vrule
+            \tex_leaders:D \tex_vrule:D
               height \l_@@_fntef_rule_height_dim
               depth \l_@@_fntef_rule_depth_dim
           }
@@ -5316,7 +5316,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
             \exp_args:Nc \newunderlinetype
               { \l_@@_fntef_cache_name_tl }
               {
-                \leaders \vrule
+                \tex_leaders:D \tex_vrule:D
                   height \dim_eval:n
                     {
                       \l_@@_fntef_height_dim
@@ -5335,7 +5335,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
               [ \dim_to_decimal_in_sp:n { 1ex } @ \luaul_context_color: ]
               {
                 \luaul_apply_color:
-                \leaders \vrule
+                \tex_leaders:D \tex_vrule:D
                   height \dim_eval:n
                     {
                       \l_@@_fntef_height_dim
@@ -5384,7 +5384,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       }
     \tl_set:Ne \l_@@_fntef_any_code_tl
       {
-        \exp_not:N \leaders \exp_not:N \vrule
+        \exp_not:N \tex_leaders:D \exp_not:N \tex_vrule:D
           height \dim_eval:n { -\l_@@_fntef_depth_dim }
           depth \dim_eval:n
             { \l_@@_fntef_depth_dim + \l_@@_fntef_thickness_dim }
@@ -5400,7 +5400,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       }
     \tl_set:Ne \l_@@_fntef_any_code_tl
       {
-        \exp_not:N \leaders \exp_not:N \vrule
+        \exp_not:N \tex_leaders:D \exp_not:N \tex_vrule:D
           height \dim_eval:n
             {
               -\l_@@_fntef_depth_dim
@@ -5529,28 +5529,31 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \begin{macrocode}
 \newunderlinetype \@@_fntef_wave
   {
-    \leaders \hbox to .5em
+    \tex_leaders:D \hbox_to_wd:nn { .5em }
       {
-        \hss
+        \tex_hss:D
         \hbox_set:Nn \l_@@_fntef_pattern_box
           {
-            \raise -.42em \hbox
+            \box_move_up:nn { -.42em }
               {
-                \draw_begin:
-                  \draw_set_linewidth:n { .04em }
-                  \draw_path_moveto:n { 0em , 0em }
-                  \draw_path_curveto:nnn { .0625em , .16em }
-                    { .1875em , .16em } { .25em , 0em }
-                  \draw_path_curveto:nnn { .3125em , -.16em }
-                    { .4375em , -.16em } { .5em , 0em }
-                  \draw_path_use_clear:n { stroke }
-                \draw_end:
+                \hbox:n
+                  {
+                    \draw_begin:
+                      \draw_set_linewidth:n { .04em }
+                      \draw_path_moveto:n { 0em , 0em }
+                      \draw_path_curveto:nnn { .0625em , .16em }
+                        { .1875em , .16em } { .25em , 0em }
+                      \draw_path_curveto:nnn { .3125em , -.16em }
+                        { .4375em , -.16em } { .5em , 0em }
+                      \draw_path_use_clear:n { stroke }
+                    \draw_end:
+                  }
               }
           }
         \box_set_ht:Nn \l_@@_fntef_pattern_box { \c_zero_dim }
         \box_set_dp:Nn \l_@@_fntef_pattern_box { \c_zero_dim }
         \box_use_drop:N \l_@@_fntef_pattern_box
-        \hss
+        \tex_hss:D
       }
   }
 \cs_new_protected:Npn \@@_fntef_use_symbol:n #1
@@ -5558,7 +5561,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \dim_set:Nn \l_@@_fntef_any_depth_dim {#1}
     \tl_set:Ne \l_@@_fntef_any_code_tl
       {
-        \exp_not:N \leaders \exp_not:N \hbox
+        \exp_not:N \tex_leaders:D \exp_not:N \hbox:n
           {
             \exp_not:N \hbox_set:Nn \exp_not:N \l_@@_fntef_pattern_box
               { \exp_not:V \l_@@_fntef_symbol_tl }
@@ -5584,8 +5587,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
               { \exp_not:N \c_zero_dim }
             \exp_not:N \skip_horizontal:n
               { \exp_not:N \l_@@_fntef_symbol_kern_dim }
-            \exp_not:N \raise \exp_not:N \l_@@_fntef_symbol_raise_dim
-              \exp_not:N \box_use_drop:N \l_@@_fntef_pattern_box
+            \exp_not:N \box_move_up:nn
+              { \exp_not:N \l_@@_fntef_symbol_raise_dim }
+              { \exp_not:N \box_use_drop:N \l_@@_fntef_pattern_box }
             \exp_not:N \skip_horizontal:n
               { \exp_not:N \l_@@_fntef_symbol_kern_dim }
           }
@@ -5627,18 +5631,21 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \begin{macrocode}
 \newunderlinetype \@@_fntef_slash
   {
-    \leaders \hbox
+    \tex_leaders:D \hbox:n
       {
         \hbox_set:Nn \l_@@_fntef_pattern_box
           {
-            \raise -.17em \hbox
+            \box_move_up:nn { -.17em }
               {
-                \draw_begin:
-                  \draw_set_linewidth:n { .04em }
-                  \draw_path_moveto:n { 0em , -.15em }
-                  \draw_path_lineto:n { .42em , .8em }
-                  \draw_path_use_clear:n { stroke }
-                \draw_end:
+                \hbox:n
+                  {
+                    \draw_begin:
+                      \draw_set_linewidth:n { .04em }
+                      \draw_path_moveto:n { 0em , -.15em }
+                      \draw_path_lineto:n { .42em , .8em }
+                      \draw_path_use_clear:n { stroke }
+                    \draw_end:
+                  }
               }
           }
         \box_set_ht:Nn \l_@@_fntef_pattern_box { \c_zero_dim }
@@ -5693,10 +5700,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       \dim_set:Nn \l_@@_fntef_any_depth_dim { -#1 }
       \tl_set:Ne \l_@@_fntef_any_code_tl
         {
-          \exp_not:N \leaders \exp_not:N \hbox
+          \exp_not:N \tex_leaders:D \exp_not:N \hbox:n
             {
-              \exp_not:N \raise \dim_use:N \l_@@_fntef_any_depth_dim
-              \exp_not:N \hbox { \exp_not:n {#2} }
+              \exp_not:N \box_move_up:nn
+                { \dim_use:N \l_@@_fntef_any_depth_dim }
+                { \exp_not:N \hbox:n { \exp_not:n {#2} } }
             }
         }
       \tl_set:Ne \l_@@_fntef_cache_key_tl
@@ -5754,14 +5762,18 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \begin{macrocode}
 \newunderlinetype \@@_fntef_dots
   {
-    \leaders \hbox
+    \tex_leaders:D \hbox:n
       {
         \hbox_set:Nn \l_@@_fntef_pattern_box
           {
             \skip_horizontal:n { .12em }
-            \raise -.4em \hbox
+            \box_move_up:nn { -.4em }
               {
-                \vrule width .06em height .06em depth \c_zero_dim
+                \hbox:n
+                  {
+                    \tex_vrule:D width .06em height .06em
+                      depth \c_zero_dim
+                  }
               }
             \skip_horizontal:n { .12em }
           }
@@ -5812,13 +5824,13 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \dim_set:Nn \l_@@_fntef_fill_width_dim {#2}
     \vbox_set:Nw \l_@@_fntef_fill_box
       \dim_compare:nNnT { \l_@@_fntef_fill_width_dim } > { 0pt }
-        { \hsize = \l_@@_fntef_fill_width_dim }
-      \let \\ \par
-      \noindent \ignorespaces
+        { \dim_set:Nn \tex_hsize:D { \l_@@_fntef_fill_width_dim } }
+      \cs_set_eq:NN \\ \tex_par:D
+      \tex_noindent:D \tex_ignorespaces:D
   }
 \cs_new_protected:Npn \@@_fntef_fill_end:
   {
-    \par
+    \tex_par:D
     \vbox_set_end:
     \str_case:Vn \l_@@_fntef_fill_position_tl
       {
@@ -6012,7 +6024,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   {
     \dim_set:Nn \cwd { \ccwd }
     \dim_set:Nn \cht { \f@size \p@ }
-    \dim_set:Nn \cdp { \z@ }
+    \dim_set:Nn \cdp { \c_zero_dim }
   }
 %</ctex>
 %    \end{macrocode}
