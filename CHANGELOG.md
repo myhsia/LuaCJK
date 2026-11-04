@@ -159,6 +159,9 @@
   the middle of a CJK glyph; `height=0.5ex` restores the Latin position.
 - The slash of `\CJKxout` now runs from `-0.15em` to `0.8em`, so it crosses
   the whole body of a CJK glyph instead of stopping in its upper half.
+  `l3draw` lifts a drawing by the part of its bounding box that lies below
+  the baseline, which used to put the bottom of the slash on the baseline;
+  the slash is lowered again by that amount.
 - The drawn patterns of `\CJKunderwave`, `\CJKunderdot`, and `\CJKxout`
   are built in a box whose height and depth are zero, so a decoration no
   longer opens up the line it sits on.  The wave and the dots used to add

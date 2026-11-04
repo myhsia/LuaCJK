@@ -5543,6 +5543,12 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % |.04em| like the wave.  The slash runs from |-.15em| to |.8em|, so it
 % crosses the whole body of a CJK glyph instead of stopping in its upper
 % half.
+%
+% \pkg{l3draw} moves a drawing so that the bottom of its bounding box sits
+% on the baseline of the box, which shifts a path that goes below the
+% baseline upwards.  The \tn{raise} of |-.17em| takes the slash back down by
+% the part that lies below the baseline (|.15em|) plus half the stroke, so
+% the ink lands where the path says.
 %    \begin{macrocode}
 \newunderlinetype \LuaCJKfntef_slash
   {
@@ -5550,12 +5556,15 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       {
         \hbox_set:Nn \l_LuaCJKfntef_pattern_box
           {
-            \draw_begin:
-              \draw_set_linewidth:n { .04em }
-              \draw_path_moveto:n { 0em , -.15em }
-              \draw_path_lineto:n { .42em , .8em }
-              \draw_path_use_clear:n { stroke }
-            \draw_end:
+            \raise -.17em \hbox
+              {
+                \draw_begin:
+                  \draw_set_linewidth:n { .04em }
+                  \draw_path_moveto:n { 0em , -.15em }
+                  \draw_path_lineto:n { .42em , .8em }
+                  \draw_path_use_clear:n { stroke }
+                \draw_end:
+              }
           }
         \box_set_ht:Nn \l_LuaCJKfntef_pattern_box { \c_zero_dim }
         \box_set_dp:Nn \l_LuaCJKfntef_pattern_box { \c_zero_dim }
