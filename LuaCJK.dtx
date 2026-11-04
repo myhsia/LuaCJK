@@ -640,7 +640,7 @@ LaTeX Project Public License, version 1.3c or later.
 %
 % \pkg{xeCJK} needs the \texttt{NewLineCS}, \texttt{EnvCS},
 % \texttt{InlineEnv}, and \texttt{PlainEquation} options to recognise
-% \TeX{} constructs while it scans tokens.  LuaCJK looks at the finished
+% \TeX\ constructs while it scans tokens.  LuaCJK looks at the finished
 % node list instead, so these options have no counterpart and are not
 % accepted.
 %
@@ -1143,7 +1143,7 @@ a’a\quad 字！字
 % \end{quote}
 % The command writes \file{ctexopts.cfg} into the current directory.  Every
 % \pkg{ctex} document in that directory, or in a directory below it, then
-% uses LuaCJK, while \XeLaTeX{} documents in the same place keep their own
+% uses LuaCJK, while \XeLaTeX\ documents in the same place keep their own
 % backend.  Writing that file by hand has the same effect.
 %
 % \begin{function}{\LuaCJKwriteCtexConfig}
@@ -1162,8 +1162,8 @@ a’a\quad 字！字
 %
 % \pkg{LuaCJK} follows the \pkg{xeCJK} interface where the two engines allow
 % it, so a document that already uses \pkg{xeCJK} mostly needs no change.
-% This section lists only the places where the two differ: a \LuaTeX{} node
-% list is not an \XeTeX{} character class table, so some options mean
+% This section lists only the places where the two differ: a \LuaTeX\ node
+% list is not an \XeTeX\ character class table, so some options mean
 % something slightly different here, and some have no counterpart at all.
 %
 % \subsection{Different behaviour}
@@ -1192,7 +1192,7 @@ a’a\quad 字！字
 % \begin{itemize}
 %   \item \texttt{NewLineCS}, \texttt{EnvCS}, \texttt{InlineEnv}, and
 %     \texttt{PlainEquation}.  They exist so that \pkg{xeCJK} can recognise
-%     \TeX{} constructs while it scans tokens; LuaCJK looks at the finished
+%     \TeX\ constructs while it scans tokens; LuaCJK looks at the finished
 %     node list and needs no hint.
 %   \item \texttt{PoZheHaoLigature}, because \LuaTeX\ shapes one glyph at a
 %     time, so two dashes cannot be merged into the ligature of the font.
@@ -2102,7 +2102,7 @@ a’a\quad 字！字
 %
 % \begin{macro}{\LuaCJKdisable, \LuaCJKenable}
 % Set the node attribute that makes the Lua callbacks skip the
-% adjustments.  The attribute follows the \TeX{} grouping.
+% adjustments.  The attribute follows the \TeX\ grouping.
 %    \begin{macrocode}
 \NewDocumentCommand \LuaCJKdisable { }
   { \g_LuaCJK_disabled_attr = 1 }
@@ -2983,6 +2983,12 @@ a’a\quad 字！字
 % Write such a file.  Without a star an existing file is left alone, so that
 % a hand-written configuration is not lost; the star overwrites it.  The
 % optional argument is a directory to write into.
+%
+% The file is written in plain \LaTeXe\ without any comment character, so
+% that it works whatever the category codes and the state of \pkg{expl3}
+% are when \pkg{ctex} inputs it.  The existence check names the directory
+% explicitly, because a plain name would also match the file that
+% \pkg{ctex} installs.
 % \begin{variable}[int]
 % {\l_LuaCJK_ctex_config_iow, \l_LuaCJK_ctex_config_path_tl,
 % \c_LuaCJK_ctex_engine_file_tl}
@@ -3003,9 +3009,6 @@ a’a\quad 字！字
   {
     \exp_args:NNV \iow_open:Nn \l_LuaCJK_ctex_config_iow
       \l_LuaCJK_ctex_config_path_tl
-    % The file must work whatever the category codes and the state of
-    % \pkg{expl3} are when \pkg{ctex} inputs it, so it is written in plain
-    % \LaTeXe{} and without any comment character.
     \iow_now:Nx \l_LuaCJK_ctex_config_iow
       {
         \token_to_str:N \ProvidesFile { ctexopts.cfg }
@@ -3037,8 +3040,6 @@ a’a\quad 字！字
 \NewDocumentCommand \LuaCJKwriteCtexConfig { s O{.} }
   {
     \tl_set:Nx \l_LuaCJK_ctex_config_path_tl { #2 / ctexopts.cfg }
-    % A plain name would also match the file that ctex installs, so the check
-    % has to name the directory explicitly.
     \file_if_exist:nTF { \l_LuaCJK_ctex_config_path_tl }
       {
         \IfBooleanTF {#1}
@@ -3173,7 +3174,7 @@ local set_attribute = node.set_attribute
 % \begin{variable}[int]
 % {LuaCJK.attr_font, LuaCJK.attr_cjk_space, LuaCJK.attr_xecglue,
 % LuaCJK.attr_inserted, LuaCJK.attr_math_font}
-% The attribute numbers.  The \TeX{} side fills them in after loading the
+% The attribute numbers.  The \TeX\ side fills them in after loading the
 % module.
 %    \begin{macrocode}
 M.attr_font = M.attr_font or nil
@@ -3470,7 +3471,7 @@ end
 %
 % \begin{macro}[int]{LuaCJK.set_charset}
 % Replace, extend, or reduce one of the sets above.  The ranges arrive from
-% \TeX{} as a list of \texttt{\{first, last\}} pairs.
+% \TeX\ as a list of \texttt{\{first, last\}} pairs.
 %    \begin{macrocode}
 function M.set_charset (kind, mode, ranges)
   local target = M.charsets[kind]
@@ -3537,7 +3538,7 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{punct_style}
-% Read the style name from the \TeX{} token list and return the matching
+% Read the style name from the \TeX\ token list and return the matching
 % table, falling back to \texttt{plain}.
 %    \begin{macrocode}
 M.punct_width = {}
@@ -3807,10 +3808,6 @@ local function rewrite_fonts (head)
         target = fallback_font(target, cur.char, settings_of(cur)) or target
       end
       if target and target > 0 and target ~= cur.font then
-        -- A font without the character leaves a placeholder glyph behind:
-        -- luaotfload uses either the private-use range or a .notdef glyph
-        -- with character 0.  Once the CJK glyph is replaced, that
-        -- placeholder is no longer needed and would add a spurious advance.
         if nxt and nxt.id == GLYPH and nxt.font == cur.font
            and (nxt.char == 0
              or (nxt.char >= 0xF0000 and nxt.char <= 0x10FFFD)) then
@@ -3938,7 +3935,7 @@ end
 %
 % \begin{macro}[int]{inherit_attributes}
 % Give a new node the attribute list of the node it is spliced next to.
-% LuaCJK creates glue, kerns, and penalties after \TeX{} has attached the
+% LuaCJK creates glue, kerns, and penalties after \TeX\ has attached the
 % surrounding attributes to the text, so a package that marks spans with
 % attributes, such as \pkg{lua-ul}, would otherwise read the new node as
 % the end of its span and start a new one.  Assigning to the
@@ -4021,11 +4018,13 @@ end
 % \begin{macro}[int]{spacing}
 % Walk a list and insert the glue between CJK and Latin material.  The
 % walk tracks the last visible node and the class at its end, so that a
-% formula is treated as one Latin atom.
+% formula acts as one Latin atom at its left edge; inside the formula the
+% boundary rules are not applied.
 % \begin{macro}[int]{handle_boundary}
 % Decide what to do at the boundary between two visible nodes.  Only
 % source-generated glue is a candidate for replacement; other glue and
-% penalties are left alone.
+% penalties are left alone, a penalty being an explicit barrier and a
+% discretionary opaque, so neither is bridged.
 % \begin{macro}[int]{insert_boundary_glue}
 % Insert the CJK--CJK or CJK--Latin glue, or the compression kern for
 % two adjacent punctuation marks.
@@ -4110,12 +4109,12 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{handle_source_space}
-% Remove or retime a space typed in the source.
+% Remove or retime a space typed in the source.  Only a space that came
+% from the source is a candidate; an explicit \tn{hskip} or \tn{hfill}
+% has a different subtype and is left alone.
 %    \begin{macrocode}
 local function handle_source_space (head, glue, before, prev_end, cur,
                                     cur_start, settings)
-  -- Only source-generated spaces are candidates.  Explicit \hskip, \hfill
-  -- and similar glue have a different subtype and must be preserved.
   if glue.subtype ~= SPACESKIP then
     return head
   end
@@ -4159,9 +4158,7 @@ local function handle_boundary (head, prev, before, prev_visible,
         head, prev, before, prev_end, cur, start_class, settings)
     end
   elseif prev and prev.id == PENALTY then
-    -- A penalty is an explicit barrier: do not bridge it.
   elseif prev and prev.id == DISC then
-    -- Discretionaries are opaque in this first boundary version.
   else
     return insert_boundary_glue(
       head, prev, prev_end, cur, start_class, settings)
@@ -4184,7 +4181,6 @@ local function spacing (head)
     if cur.id == MATH then
       if cur.subtype == 0 then
         if math_level == 0 then
-          -- The formula behaves like a Latin atom at its left edge.
           head = handle_boundary(
             head, prev, before, prev_visible, prev_end, cur, "LATIN",
             settings_of(prev_visible or cur))
@@ -4202,7 +4198,6 @@ local function spacing (head)
         end
       end
     elseif math_level > 0 then
-      -- Inside a formula the boundary rules do not apply.
     else
       local start_class, end_class = class_of_node(cur)
       if start_class then
@@ -4228,12 +4223,14 @@ end
 %
 % \subsection{Line-breaking prohibitions}
 %
-% \TeX{} may break at glue and at kern.  Both are places where LuaCJK inserts
+% \TeX\ may break at glue and at kern.  Both are places where LuaCJK inserts
 % its own nodes, so after building the list a second pass puts a penalty
 % 10000 in front of every break opportunity that must not be used.
 %
 % \begin{macro}[int]{apply_kinsoku}
-% Add the prohibitions.
+% Add the prohibitions where the settings of the text ask for them.  A node
+% marked by \cs{LuaCJKnobreak} or by the verbatim addon is prohibited
+% regardless, because the mark itself is the prohibition.
 %    \begin{macrocode}
 %    \end{macrocode}
 % \begin{macro}[int]{class_char}
@@ -4288,15 +4285,12 @@ local function forbids_break (prev_char, next_char, settings)
   if settings and settings.allow_break and prev_punct and next_punct then
     return false
   end
-  -- A closing or middle punctuation must not start a line.
   if next_punct == "close" or next_punct == "middle" then
     return true
   end
-  -- An opening punctuation must not end a line.
   if prev_punct == "open" then
     return true
   end
-  -- Long punctuation is one unit: no break inside a run.
   if M.charsets.nobreak[prev_char] and M.charsets.nobreak[next_char] then
     return true
   end
@@ -4331,8 +4325,6 @@ local function apply_kinsoku (head)
     elseif is_break_point(cur) and last_visible then
       local nxt = next_visible(cur.next)
       local settings = settings_of(last_visible)
-      -- \LuaCJKnobreak and the verbatim addon mark nodes themselves, so their
-      -- prohibition must not depend on the punctuation switch.
       if nxt and (no_break_mark(last_visible) or no_break_mark(nxt)
                   or (settings.kinsoku
                       and not disabled(last_visible) and not disabled(nxt)
@@ -4368,7 +4360,7 @@ end
 % \begin{macro}[int]{apply_fixed_widths}
 % Styles such as \texttt{banjiao} give every punctuation mark a fixed
 % advance.  The glyph advance cannot be changed, so a compensating kern
-% goes right after the glyph.  A penalty in front of that kern keeps \TeX{}
+% goes right after the glyph.  A penalty in front of that kern keeps \TeX\
 % from treating it as an extra break opportunity.
 %    \begin{macrocode}
 local function apply_fixed_widths (head)
@@ -4755,7 +4747,7 @@ end
 %
 % \subsection{Widow control}
 %
-% \TeX{} can break at the glue that LuaCJK inserts between CJK characters.
+% \TeX\ can break at the glue that LuaCJK inserts between CJK characters.
 % At the end of a paragraph the last two such break points get a penalty, so
 % that at least three CJK characters travel to the last line together instead
 % of a single one.
@@ -4899,7 +4891,9 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
 % width $w$ and a glue of width $-w$ that gives the space back, so the text
 % does not move.  Changing those numbers is enough to inset the decoration
 % and to leave out the punctuation, which is why LuaCJK adjusts the box
-% instead of drawing the decoration itself.
+% instead of drawing the decoration itself.  \TeX\ numbers the glue
+% subtypes, and 100 is \tn{leaders}, the one both \pkg{lua-ul} and this
+% package use.
 %
 % \begin{variable}[int]
 % {LuaCJKfntef.attr, LuaCJKfntef.settings}
@@ -4913,8 +4907,6 @@ LuaCJKfntef = LuaCJKfntef or {}
 local M = LuaCJKfntef
 local GLYPH = node.id("glyph")
 local GLUE = node.id("glue")
--- TeX numbers the glue subtypes: 100 is \leaders, which both lua-ul and the
--- decorations of this package use.
 local LEADERS = 100
 local KERN = node.id("kern")
 
@@ -5993,7 +5985,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % it through |ctexopts.cfg|, which \pkg{ctex} inputs after the name has been
 % fixed and before the file is read; changing the name there therefore takes
 % effect for the current run.  The redirect acts only on \LuaTeX, so an
-% \XeLaTeX{} document in the same directory keeps its own backend.
+% \XeLaTeX\ document in the same directory keeps its own backend.
 %
 % The file defines the handful of \cs{ctex_...} commands that the \pkg{ctex}
 % kernel calls, and maps the parts of the \pkg{luatexja} interface that
