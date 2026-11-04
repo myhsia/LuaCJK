@@ -35,7 +35,7 @@ the repository root, where `build.lua` lives. Entry points:
 | --- | --- |
 | `LuaCJK.dtx` | the single source: user documentation, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
-| `build.lua` | `l3build` configuration: module `luacjk`, version `v0.0.1`, `tdslocations`, the `update_tag` hack, `docinit_hook` (copies the generated README back to the root), and `tex()` (runs `latexmk` with the `l3doc` index style) |
+| `build.lua` | `l3build` configuration: module `luacjk`, version `v0.0.1`, `tdslocations`, the `update_tag` hack, `docinit_hook` (copies the generated README back to the root), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly and sets `LUAINPUTS` so that the documentation can load the generated Lua modules |
 | `testfiles/NN.lvt` + `.tlg` | 37 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`) and `ctexopts.cfg` (the redirect that makes `ctex01` and the `ctex` subset load the engine file), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends the redirect to the `ctexopts.cfg` of the `ctex` test tree |
@@ -96,16 +96,33 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   `\@@_settings_push:`, and a read through `settings_of(node)` in Lua.
   Skipping any of the five makes the option global, which contradicts the
   documented grouping.
+- **Options and `\LuaCJKsetup` share one key path.**  Every key is defined in
+  `LuaCJK / options` and read by `\ProcessKeyOptions`, so a new key is a
+  package option for free. Do not add a second path or a separate option
+  list.
 - **Inserted nodes must inherit attributes.**  Glue, kern, and penalty nodes
   created after TeX attached the attributes need `inherit_attributes(...)`, or
   attribute-driven packages such as `lua-ul` see the span end there.
-- **The decorations adjust `lua-ul`, they do not draw.**  `lua-ul` emits a
+- **Suspension is the verbatim hook.**  `\LuaCJKdisable` and `\LuaCJKenable`
+  set the `disabled` attribute, which every pass checks per node; `\verb`,
+  `verbatim`, `fancyvrb`, and `lstlisting` are already wired to it. A new
+  verbatim-like environment joins that list, or its content is adjusted.
+- **A rule decoration adjusts `lua-ul`, it does not draw.**  `lua-ul` emits a
   leaders glue of width *w* followed by a glue of width *-w*; the adjustment
   replaces the leaders with kerns and shorter leaders so that the total stays
-  *w*. Any new decoration must keep that invariant.
-- **Two Lua modules, one module table.**  `LuaCJK-core.lua` owns the load-time
-  state and passes; `LuaCJKfntef.lua` may read `LuaCJK.punct_class` but must not
-  redefine core behaviour.
+  *w*. Any rule-based decoration must keep that invariant.
+- **A drawn decoration stays out of the line metrics.**  The wave, the emphasis
+  dots, and the xout slash are built at use time in
+  `\l_@@_fntef_pattern_box`, which is then set to zero height and depth.
+  `l3draw` sizes a box by the stroked bounding box, one stroke width wider than
+  the path, and places it by its bottom edge, so the period is forced with
+  `\hbox to .5em` plus `\hss` and a path below the baseline is lowered again
+  with `\raise`. Without the zeroed box a decoration opens up every decorated
+  line.
+- **Three Lua modules, one module table.**  `LuaCJK.lua` only loads the core;
+  `LuaCJK-core.lua` owns the load-time state and the passes;
+  `LuaCJKfntef.lua` owns the decoration settings, may read what the core
+  publishes (`LuaCJK.punct_class`), and must not redefine core behaviour.
 - **No narration in the Lua code.**  What a function or a pass does is prose in
   the dtx, above its `macrocode` chunk, so it reaches the manual; only a
   comment that explains one expression (a magic number, an invariant) stays as
@@ -218,9 +235,9 @@ the only parity risk is a missing entry in `.github/tl_packages`.
 
 See the global `repo-rules` skill: `type(scope): summary`, commit only when
 asked, never commit generated output or secrets. Scopes used in this
-repository: `core`, `fonts`, `chars`, `punct`, `spacing`, `breaks`, `verbatim`,
-`options`, `load`, `fntef`, `listings`, `ctex`, `build`, `ci`, `docs`,
-`layout`, `style`.
+repository, one per subsystem: `core`, `fonts`, `chars`, `punct`, `spacing`,
+`breaks`, `verbatim`, `options`, `load`, `fntef`, `listings`, `ctex`, `math`,
+`manual`, `readme`, `doc`, `build`, `ci`, `layout`, `style`.
 
 expl3 source style — names through `@@`, the interface over the primitive,
 hooks, alignment, and spaces around the slashes — is global; see the
