@@ -81,6 +81,14 @@ dedupes them by a signature string, stores the entry, and records its number in
 the `settings` attribute. Lua reads `settings_of(node)` and never the TeX side.
 Adding an option means touching all five places listed in `AGENTS.md`.
 
+Two kernel hooks drive the push, both labelled `LuaCJK`:
+`\hook_gput_code:nnn { selectfont }` fires while the size is being selected,
+and `\hook_gput_code:nnn { cmd / selectfont / after }` repeats the push once
+`\baselineskip` has settled, so the glue belongs to the new size; the guard
+inside `\@@_update_font:` keeps the temporary font selections from pushing
+twice. `cmd / rmfamily / after`, `cmd / sffamily / after`, and
+`cmd / ttfamily / after` switch the family in the same way.
+
 The snapshot is also where state that used to be a Lua global now lives, so a
 group cannot leak it: `AutoFallBack` and the list of cancelled sub-blocks are
 fields of the entry, resolved per node, rather than flags on the module. When

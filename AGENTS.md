@@ -40,9 +40,9 @@ Python 3 is available when a task needs it. Entry points:
 | `testfiles/NN.lvt` + `.tlg` | 37 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`) and `ctexopts.cfg` (the redirect that makes `ctex01` and the `ctex` subset load the engine file), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends the redirect to the `ctexopts.cfg` of the `ctex` test tree |
-| `scripts/check-docs.sh` | compares the facts in the two guides with their sources: version, test count, DocStrip blocks, installed file types, `\RequirePackage` against `DEPENDS.txt`, `DEPENDS.txt` against `.github/tl_packages`, and the subset count |
+| `scripts/check-docs.sh` | compares the facts in the two guides with their sources: version, test count, DocStrip blocks, installed file types, attribute and decoration counts, `\RequirePackage` against `DEPENDS.txt` (a package loaded from the listings guard must be `soft`), `DEPENDS.txt` against `.github/tl_packages`, and the subset count.  A `\RequirePackage` name is resolved to its TeX Live package with `tlmgr search --global --file`, falling back to `expl3 -> l3kernel` and `l3draw -> l3experimental` when `tlmgr` is absent |
 | `.github/workflows/test.yaml` | the CI workflow |
-| `.github/tl_packages` | the package list CI installs; a new dependency must be added here or the Ubuntu job fails first |
+| `.github/tl_packages` | the package list CI installs; a dependency must be added **or removed** here or the Ubuntu job fails first |
 | `CHANGELOG.md` | user-visible changes, newest first |
 | `DEPENDS.txt` | the TeX Live packages the package needs at run time, one per line as `hard <bundle>` and `soft <bundle>`; `soft` marks a dependency that only an optional output needs |
 
@@ -203,7 +203,10 @@ checkout needs the network.
 
 - `bash scripts/check-docs.sh` must print `OK: the guides agree with the
   sources`; it is the first thing CI runs and the thing to run before a
-  commit that touches a number in either guide.
+  commit that touches a number in either guide.  The `hard` and `soft` words
+  of `DEPENDS.txt` are what the script reads to decide whether a dependency
+  belongs to the package proper or only to an optional output, so the word
+  is part of the check, not a comment.
 - `l3build check` must print `All checks passed`; the `.tlg` baselines must
   match byte for byte. A difference is a behaviour change until proven
   otherwise.
@@ -240,7 +243,7 @@ requests. Two jobs, each on `ubuntu-latest`, `macos-latest`, and
 On failure the `l3build` job uploads `build/**/*.diff` and `build/**/*.log` as
 `luacjk-diff-<short-sha>-<os>`; download it with `gh run download` through the
 proxy (see the `network-access` skill). Local and CI run the same commands;
-the only parity risk is a missing entry in `.github/tl_packages`.
+the only parity risk is a missing or surplus entry in `.github/tl_packages`.
 
 ## Git style
 
