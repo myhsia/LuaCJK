@@ -1261,7 +1261,7 @@ $ x + 中文 $ and 中文
   }
 \cs_if_exist:cT { ver@luatexja.sty }
   { \msg_critical:nn { LuaCJK } { luatexja-conflict } }
-\hook_gput_code:nnn { package/luatexja/before } { LuaCJK }
+\hook_gput_code:nnn { package / luatexja / before } { LuaCJK }
   { \msg_critical:nn { LuaCJK } { luatexja-conflict } }
 %    \end{macrocode}
 %
@@ -2119,7 +2119,7 @@ $ x + 中文 $ and 中文
 % the \texttt{shipout/before} hook and therefore follows its rules.
 %    \begin{macrocode}
 \NewDocumentCommand \LuaCJKShipoutHook { m }
-  { \hook_gput_code:nnn { shipout/before } { LuaCJK } {#1} }
+  { \hook_gput_code:nnn { shipout / before } { LuaCJK } {#1} }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -2300,9 +2300,9 @@ $ x + 中文 $ and 中文
     BVerbatim , LVerbatim , lstlisting
   }
   {
-    \hook_gput_code:nnn { env/#1/begin } { LuaCJK }
+    \hook_gput_code:nnn { env / #1 / begin } { LuaCJK }
       { \@@_verbatim_env_begin: }
-    \hook_gput_code:nnn { env/#1/end } { LuaCJK }
+    \hook_gput_code:nnn { env / #1 / end   } { LuaCJK }
       { \@@_verbatim_env_end: }
   }
 %    \end{macrocode}
@@ -2662,7 +2662,7 @@ $ x + 中文 $ and 中文
 % from doing the same twice.
 %    \begin{macrocode}
 \hook_gput_code:nnn { selectfont } { LuaCJK } { \@@_update_font: }
-\hook_gput_code:nnn { cmd/selectfont/after } { LuaCJK }
+\hook_gput_code:nnn { cmd / selectfont / after } { LuaCJK }
   {
     \bool_if:NF \l_@@_selectfont_bool
       {
@@ -2849,8 +2849,8 @@ $ x + 中文 $ and 中文
 %    \begin{macrocode}
 \NewDocumentCommand \setCJKmathfont { o m o }
   {
-    \@@_set_family_with_options:nnnn { LuaCJK/math } {#1} {#2} {#3}
-    \tl_set:Nn \l_@@_math_family_tl { LuaCJK/math }
+    \@@_set_family_with_options:nnnn { LuaCJK / math } {#1} {#2} {#3}
+    \tl_set:Nn \l_@@_math_family_tl { LuaCJK / math }
     \@@_update_font:
   }
 %    \end{macrocode}
@@ -2869,7 +2869,7 @@ $ x + 中文 $ and 中文
   {
     \int_gincr:N \g_@@_fontspec_int
     \tl_set:Ne \l_@@_tmpa_tl
-      { LuaCJK/fontspec/ \int_use:N \g_@@_fontspec_int }
+      { LuaCJK / fontspec / \int_use:N \g_@@_fontspec_int }
     \exp_args:NV \@@_set_family_with_options:nnnn
       \l_@@_tmpa_tl {#1} {#2} { \NoValue }
     \exp_args:NV \@@_switch_family:n \l_@@_tmpa_tl
@@ -2888,11 +2888,11 @@ $ x + 中文 $ and 中文
 \cs_new_protected:Npn \kaishu { \CJKfamily { zhkai  } }
 \cs_new_protected:Npn \lishu { \CJKfamily { zhli   } }
 \cs_new_protected:Npn \youyuan { \CJKfamily { zhyou  } }
-\hook_gput_code:nnn { cmd/rmfamily/after } { LuaCJK }
+\hook_gput_code:nnn { cmd / rmfamily / after } { LuaCJK }
   { \exp_args:NV \@@_switch_family:n \CJKrmdefault }
-\hook_gput_code:nnn { cmd/sffamily/after } { LuaCJK }
+\hook_gput_code:nnn { cmd / sffamily / after } { LuaCJK }
   { \exp_args:NV \@@_switch_family:n \CJKsfdefault }
-\hook_gput_code:nnn { cmd/ttfamily/after } { LuaCJK }
+\hook_gput_code:nnn { cmd / ttfamily / after } { LuaCJK }
   { \exp_args:NV \@@_switch_family:n \CJKttdefault }
 %    \end{macrocode}
 % \end{macro}
@@ -3115,7 +3115,7 @@ $ x + 中文 $ and 中文
   }
 \@@_load_local_config:
 \@@_check_ctex_redirect:
-\hook_gput_code:nnn { package/listings/after } { LuaCJK }
+\hook_gput_code:nnn { package / listings / after } { LuaCJK }
   { \RequirePackage { LuaCJK-listings } }
 \cs_if_exist:cT { ver@listings.sty }
   { \RequirePackage { LuaCJK-listings } }
@@ -5284,7 +5284,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       {
         \int_gincr:N \g_@@_fntef_format_int
         \tl_set:Ne \l_@@_fntef_cache_name_tl
-          { LuaCJKfntef/ul/ \int_use:N \g_@@_fntef_format_int }
+          { LuaCJKfntef / ul / \int_use:N \g_@@_fntef_format_int }
         \exp_args:Nc \newunderlinetype { \l_@@_fntef_cache_name_tl }
           [ \dim_to_decimal_in_sp:n { 1ex } @ \luaul_context_color: ]
           {
@@ -5339,7 +5339,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       {
         \int_gincr:N \g_@@_fntef_format_int
         \tl_set:Ne \l_@@_fntef_cache_name_tl
-          { LuaCJKfntef/st/ \int_use:N \g_@@_fntef_format_int }
+          { LuaCJKfntef / st / \int_use:N \g_@@_fntef_format_int }
         \tl_if_empty:NTF \l_@@_fntef_format_tl
           {
             \exp_args:Nc \newunderlinetype
@@ -5714,7 +5714,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       {
         \int_gincr:N \g_@@_fntef_format_int
         \tl_set:Ne \l_@@_fntef_cache_name_tl
-          { LuaCJKfntef/ul/ \int_use:N \g_@@_fntef_format_int }
+          { LuaCJKfntef / ul / \int_use:N \g_@@_fntef_format_int }
         \exp_args:Nc \newunderlinetype { \l_@@_fntef_cache_name_tl }
           [ \int_use:N \g_@@_fntef_format_int ] {#2}
         \prop_gput:NnV \g_@@_fntef_format_prop {#1}
