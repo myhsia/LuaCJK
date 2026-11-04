@@ -40,8 +40,8 @@ redirect once, in any document:
 
 That writes `ctexopts.cfg` into the current directory. `ctex` inputs that file
 before it loads its engine file, so every `ctex` document compiled from that
-directory then uses LuaCJK instead of LuaTeX-ja. The redirect only acts on
-LuaTeX, so XeLaTeX documents in the same directory keep their own backend.
+directory then uses LuaCJK instead of LuaTeX-ja. The redirect only acts
+on LuaTeX, so XeLaTeX documents in the same directory keep their own backend.
 
 ## License
 

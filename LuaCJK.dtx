@@ -81,8 +81,8 @@ redirect once, in any document:
 
 That writes `ctexopts.cfg` into the current directory. `ctex` inputs that file
 before it loads its engine file, so every `ctex` document compiled from that
-directory then uses LuaCJK instead of LuaTeX-ja. The redirect only acts on
-LuaTeX, so XeLaTeX documents in the same directory keep their own backend.
+directory then uses LuaCJK instead of LuaTeX-ja. The redirect only acts
+on LuaTeX, so XeLaTeX documents in the same directory keep their own backend.
 
 ## License
 
@@ -118,8 +118,8 @@ LaTeX Project Public License, version 1.3c or later.
 %
 %<*driver>
 \documentclass[11pt, letterpaper]{l3doc}
-% Long function names in the prose cannot be broken, so allow the spaces to
-% stretch a little more before TeX gives up and overflows the line.
+% Long function names in the prose cannot be broken, so allow the spaces
+% to stretch a little more before TeX gives up and overflows the line.
 \setlength{\emergencystretch}{3em}
 \providecommand*\LuaLaTeX{\hologo{LuaLaTeX}}
 \providecommand*\XeLaTeX{\hologo{XeLaTeX}}
@@ -186,9 +186,9 @@ LaTeX Project Public License, version 1.3c or later.
 % \maketitle
 %
 % \begin{abstract}
-%   \pkg{LuaCJK} provides Chinese typesetting for \LuaLaTeX. It records
-%   the current CJK font in a \LuaTeX\ attribute and replaces CJK glyph
-%   nodes before line breaking and box packing.
+%   \pkg{LuaCJK} provides Chinese typesetting for \LuaLaTeX.
+%   It records the current CJK font in a \LuaTeX\ attribute
+%   and replaces CJK glyph nodes before line breaking and box packing.
 % \end{abstract}
 %
 % \tableofcontents
@@ -201,8 +201,8 @@ LaTeX Project Public License, version 1.3c or later.
 % interface is \cs{setCJKmainfont}, \cs{setCJKsansfont}, \cs{setCJKmonofont},
 % \cs{setCJKfamilyfont}, \cs{CJKfamily}, and \cs{LuaCJKsetup}.
 %
-% The current CJK font is recorded in a \LuaTeX\ attribute, and CJK glyph
-% nodes are replaced before line breaking and box packing.
+% The current CJK font is recorded in a \LuaTeX\ attribute,
+% and CJK glyph nodes are replaced before line breaking and box packing.
 %
 % \section{Loading}
 %
@@ -210,8 +210,8 @@ LaTeX Project Public License, version 1.3c or later.
 %   \cs{usepackage}\oarg{options}"{LuaCJK}"
 % \end{quote}
 %
-% LuaCJK requires \LuaLaTeX. It conflicts with \pkg{luatexja}: loading
-% either package before or after the other raises an error.
+% LuaCJK requires \LuaLaTeX. It conflicts with \pkg{luatexja}:
+% loading either package before or after the other raises an error.
 %
 % \begin{function}{\LuaCJKversion}
 %   Print the version of LuaCJK.
@@ -221,27 +221,27 @@ LaTeX Project Public License, version 1.3c or later.
 %   \begin{syntax}
 %     \tn{LuaCJKsetup} \marg{key-value list}
 %   \end{syntax}
-%   Configure LuaCJK. The keys are the ones documented in the following
-%   sections.
+%   Configure LuaCJK.
+%   The keys are the ones documented in the following sections.
 % \end{function}
 %
 % The keys fall into two groups.
 %
 % The settings that describe how text is set are local to the current group,
-% and they are recorded on the characters themselves, so text inside a group
-% keeps its settings even when the group has already ended by the time the
-% paragraph is broken:
+% and they are recorded on the characters themselves,
+% so text inside a group keeps its settings even when the group has already
+% ended by the time the paragraph is broken:
 % \begin{quote}
 %   |\vbox{\begingroup\LuaCJKsetup{CJKglue=10pt}中中\endgroup\par}|
 % \end{quote}
-% uses the 10pt glue, although the group is closed before |\par|. This group
-% contains
+% uses the 10pt glue, although the group is closed before |\par|.
+% This group contains
 % \begin{itemize}
 %   \item \keys{CJKglue}, \keys{CJKecglue}, \keys{CJKspace}, and
 %     \keys{xCJKecglue};
 %   \item \keys{PunctStyle}, \keys{PunctKinsoku},
-%     \keys{AllowBreakBetweenPuncts}, \keys{PunctWidth}, and
-%     \keys{PunctBoundWidth};
+%     \keys{AllowBreakBetweenPuncts}, \keys{PunctWidth},
+%     and \keys{PunctBoundWidth};
 %   \item \keys{LatinPunct} and \keys{CJKmath};
 %   \item \keys{CheckSingle} and \keys{WidowPenalty};
 %   \item \keys{AutoFallBack} and \keys{Verb};
@@ -254,15 +254,15 @@ LaTeX Project Public License, version 1.3c or later.
 %   \item \keys{KaiMingPunct}, \keys{MiddlePunct}, \keys{LongPunct},
 %     and \keys{NoBreakLongPunct} edit character sets;
 %   \item \keys{AutoFakeBold}, \keys{AutoFakeSlant},
-%     \keys{EmboldenFactor}, and \keys{SlantFactor} act when a family is
-%     registered;
+%     \keys{EmboldenFactor},
+%     and \keys{SlantFactor} act when a family is registered;
 %   \item \keys{LoadFandol} and \keys{LocalConfig} act while the package
 %     is loaded.
 % \end{itemize}
 % The declarations \cs{LuaCJKDeclareCharClass},
 % \cs{LuaCJKDeclarePunctClass}, \cs{LuaCJKDeclareSubCJKBlock},
-% \cs{LuaCJKsetwidth}, and \cs{LuaCJKsetkern} are global as well, as noted
-% with each of them.
+% \cs{LuaCJKsetwidth}, and \cs{LuaCJKsetkern} are global as well,
+% as noted with each of them.
 %
 % The same keys may be given as package options:
 % \begin{quote}
@@ -271,16 +271,16 @@ LaTeX Project Public License, version 1.3c or later.
 %
 % \begin{keyval}
 %   \item[\keys{LocalConfig}]\val{\TTF, name}
-%   Read local settings from a configuration file. \texttt{true} loads
-%   \file{luacjk.cfg}, \meta{name} loads
-%   \file{luacjk-}\meta{name}\file{.cfg}, and \texttt{false} (the
-%   initial value) loads nothing. The file is read at
-%   the end of the package, so it may use every command LuaCJK defines. A
-%   missing file only warns.
+%   Read local settings from a configuration file.
+%   \texttt{true} loads \file{luacjk.cfg},
+%   \meta{name} loads \file{luacjk-}\meta{name}\file{.cfg},
+%   and \texttt{false} (the initial value) loads nothing.
+%   The file is read at the end of the package, so it may use every
+%   command LuaCJK defines. A missing file only warns.
 % \end{keyval}
 %
-% To use LuaCJK with \pkg{ctex}, run \cs{LuaCJKwriteCtexConfig} once in a
-% plain document; it writes \file{ctexopts.cfg}, and every \pkg{ctex}
+% To use LuaCJK with \pkg{ctex}, run \cs{LuaCJKwriteCtexConfig} once
+% in a plain document; it writes \file{ctexopts.cfg}, and every \pkg{ctex}
 % document in that directory or below it then uses LuaCJK, while \XeLaTeX\
 % documents keep their own backend. Writing the file by hand works as well.
 %
@@ -337,8 +337,8 @@ LaTeX Project Public License, version 1.3c or later.
 %   \begin{syntax}
 %     \tn{newCJKfontfamily}\oarg{family}\meta{command}\oarg{options}\marg{font}
 %   \end{syntax}
-%   Define a command that switches to a newly declared family. The command is
-%   local to the current group, like \cs{newfontfamily}.
+%   Define a command that switches to a newly declared family.
+%   The command is local to the current group, like \cs{newfontfamily}.
 % \end{function}
 %
 % \begin{function}{\CJKfontspec}
@@ -354,26 +354,26 @@ LaTeX Project Public License, version 1.3c or later.
 % \end{function}
 %
 % \begin{variable}
-%   {\CJKrmdefault, \CJKsfdefault, \CJKttdefault, \CJKfamilydefault}
-%   The CJK families selected by \tn{rmfamily}, \tn{sffamily}, and
-%   \tn{ttfamily}.
+%   {\CJKrmdefault, \CJKsfdefault, \CJKttdefault,
+%   \CJKfamilydefault} The CJK families selected by \tn{rmfamily},
+%   \tn{sffamily}, and \tn{ttfamily}.
 % \end{variable}
 
 % \subsection{Sub-blocks}
 %
-% One CJK font rarely covers every block of \textsc{Unicode}. A sub-block
-% gives a range of characters its own font inside a family; the block then
-% becomes an option of the font commands.
+% One CJK font rarely covers every block of \textsc{Unicode}.
+% A sub-block gives a range of characters its own font inside a family;
+% the block then becomes an option of the font commands.
 %
 % \begin{function}{\LuaCJKDeclareSubCJKBlock}
 %   \begin{syntax}
 %     \tn{LuaCJKDeclareSubCJKBlock} \marg{block} \marg{range list}
 %   \end{syntax}
-%   Declare \meta{block} with the given ranges, in the same spelling as
-%   \cs{LuaCJKDeclareCharClass}. The name becomes a font option, as the
-%   example below shows: a family that sets it uses the second font for the
-%   characters of the block, and a family that does not leaves them in the
-%   main font. Overlapping blocks are resolved in declaration order.
+%   Declare \meta{block} with the given ranges, in the same spelling
+%   as \cs{LuaCJKDeclareCharClass}. The name becomes a font option,
+%   as the example below shows: a family that sets it uses the second font
+%   for the characters of the block, and a family that does not leaves them
+%   in the main font. Overlapping blocks are resolved in declaration order.
 % \end{function}
 %
 % \begin{function}{\LuaCJKCancelSubCJKBlock, \LuaCJKRestoreSubCJKBlock}
@@ -382,9 +382,9 @@ LaTeX Project Public License, version 1.3c or later.
 %     \tn{LuaCJKRestoreSubCJKBlock} \marg{block list}
 %   \end{syntax}
 %   Turn the listed blocks off or on again for the rest of the group.
-%   Because the choice of font is recorded per font identifier, two families
-%   that supply the same font share one setting: the family that selected the
-%   font last decides.
+%   Because the choice of font is recorded per font identifier,
+%   two families that supply the same font share one setting:
+%   the family that selected the font last decides.
 % \end{function}
 %
 % \iffalse
@@ -403,9 +403,9 @@ LaTeX Project Public License, version 1.3c or later.
 %
 % \subsection{Fallback fonts}
 %
-% A CJK font rarely covers every character one needs. Fallback fonts are
-% tried in the order they were declared when the selected CJK font has no
-% glyph for a character.
+% A CJK font rarely covers every character one needs.
+% Fallback fonts are tried in the order they were declared when
+% the selected CJK font has no glyph for a character.
 %
 % \begin{function}{\setCJKfallbackfamilyfont}
 %   \begin{syntax}
@@ -443,9 +443,9 @@ LaTeX Project Public License, version 1.3c or later.
 % \begin{keyval}
 %   \item[\keys{LoadFandol}]\val{\TTF}
 %   When the document does not declare any CJK font, load the four Fandol
-%   faces at \tn{begin}\{document\}: Song as the main font, Hei as the
-%   sans serif font, Fang as the monospaced font, and all of Song, Hei, Kai,
-%   and Fang as the named families.
+%   faces at \tn{begin}\{document\}: Song as the main font,
+%   Hei as the sans serif font, Fang as the monospaced font,
+%   and all of Song, Hei, Kai, and Fang as the named families.
 % \end{keyval}
 %
 % \subsection{Fake bold and slant}
@@ -458,11 +458,11 @@ LaTeX Project Public License, version 1.3c or later.
 %
 % \begin{keyval}
 %   \item[\keys{AutoFakeBold}]\val{\TFF, number}
-%   Embolden the regular face when the bold shape is requested. A number
-%   also sets \texttt{EmboldenFactor}.
+%   Embolden the regular face when the bold shape is requested.
+%   A number also sets \texttt{EmboldenFactor}.
 %   \item[\keys{AutoFakeSlant}]\val{\TFF, number}
-%   Slant the regular face when the italic shape is requested. A number
-%   also sets \texttt{SlantFactor}.
+%   Slant the regular face when the italic shape is requested.
+%   A number also sets \texttt{SlantFactor}.
 %   \item[\keys{EmboldenFactor}]\val{number}: The amount of emboldening.
 %   The initial value is \texttt{4}.
 %   \item[\keys{SlantFactor}]\val{number}: The amount of slanting, between
@@ -488,17 +488,17 @@ LaTeX Project Public License, version 1.3c or later.
 %     \tn{defaultCJKfontfeatures} \marg{font features}
 %   \end{syntax}
 %   Set the features prepended to every CJK family registered afterwards.
-%   The initial value is |Script = CJK|. Families registered before the
-%   call keep the features they were given.
+%   The initial value is |Script = CJK|.
+%   Families registered before the call keep the features they were given.
 % \end{function}
 %
 % \begin{function}{\addCJKfontfeatures}
 %   \begin{syntax}
 %     \tn{addCJKfontfeatures} \oarg{ignored} \marg{font features}
 %   \end{syntax}
-%   Add features to the current CJK family for the rest of the group, for
-%   example |\addCJKfontfeatures{Scale = 1.2}|. A leading \texttt{*} is
-%   accepted; both forms act on the same font.
+%   Add features to the current CJK family for the rest of the group,
+%   for example |\addCJKfontfeatures{Scale = 1.2}|.
+%   A leading \texttt{*} is accepted; both forms act on the same font.
 % \end{function}
 %
 % \section{Text layout}
@@ -507,14 +507,14 @@ LaTeX Project Public License, version 1.3c or later.
 %
 % \begin{keyval}
 %   \item[\keys{CJKglue}]\val{glue}: Glue inserted between adjacent CJK
-%   characters. The initial value is
-%   \texttt{0pt plus 0.08\cs{baselineskip}}, recomputed at every font
-%   selection, so it follows the size; a value given by the document is used
-%   as written and does not change with the size.
+%   characters.
+%   The initial value is \texttt{0pt plus 0.08\cs{baselineskip}}, recomputed
+%   at every font selection, so it follows the size; a value given
+%   by the document is used as written and does not change with the size.
 %   \item[\keys{CJKecglue}]\val{glue}: Glue inserted between CJK and Latin
-%   characters. The initial value is
-%   \texttt{0.3333em plus 0.1667em minus 0.1111em}, which follows the size in
-%   the same way.
+%   characters.
+%   The initial value is \texttt{0.3333em plus 0.1667em minus 0.1111em},
+%   which follows the size in the same way.
 %   \item[\keys{CJKspace}]\val{\TFF}: Whether to keep source spaces between
 %   CJK characters.
 %   \item[\keys{xCJKecglue}]\val{\TFF}: Whether to replace source spaces
@@ -547,9 +547,9 @@ LaTeX Project Public License, version 1.3c or later.
 %   \begin{syntax}
 %     \tn{normalspacedchars} \marg{character list}
 %   \end{syntax}
-%   The listed characters get no glue on either side, so that a hyphen or a
-%   slash inside Latin text does not pull the surrounding text apart. The
-%   initial list is |/|, |\|, and |-|. The setting is global.
+%   The listed characters get no glue on either side, so that a hyphen
+%   or a slash inside Latin text does not pull the surrounding text apart.
+%   The initial list is |/|, |\|, and |-|. The setting is global.
 % \end{function}
 %
 % \iffalse
@@ -569,39 +569,39 @@ LaTeX Project Public License, version 1.3c or later.
 % \subsection{Punctuation}
 %
 % \begin{keyval}
-%   \item[\keys{PunctStyle}]\val{style}: Select a punctuation style. The
-%   implemented styles are
-%   \texttt{quanjiao} (the default), \texttt{plain}, \texttt{banjiao},
-%   \texttt{kaiming}, \texttt{CCT}, and \texttt{hangmobanjiao}. An unknown
-%   name issues a warning and falls back to \texttt{plain}.
+%   \item[\keys{PunctStyle}]\val{style}: Select a punctuation style.
+%   The implemented styles are \texttt{quanjiao} (the default),
+%   \texttt{plain}, \texttt{banjiao}, \texttt{kaiming}, \texttt{CCT},
+%   and \texttt{hangmobanjiao}.
+%   An unknown name issues a warning and falls back to \texttt{plain}.
 %   \item[\keys{PunctWidth}]\val{length, false}: Give
-%   every punctuation mark the same advance, whatever the style says. A
-%   width set with \cs{LuaCJKsetwidth} still wins for that mark.
+%   every punctuation mark the same advance, whatever the style says.
+%   A width set with \cs{LuaCJKsetwidth} still wins for that mark.
 %   \item[\keys{PunctBoundWidth}]\val{length, false}: How much of a mark's
-%   advance stays inside the line when the mark ends the line; the rest of
-%   the ink hangs into the margin, and the line keeps its width. This
-%   replaces the fixed half-em shift of \texttt{hangmobanjiao} at the end of
-%   a line, while a mark at the start of a line is still shifted by the
-%   style. \texttt{false} turns the option off.
+%   advance stays inside the line when the mark ends the line;
+%   the rest of the ink hangs into the margin, and the line keeps its width.
+%   This replaces the fixed half-em shift of \texttt{hangmobanjiao}
+%   at the end of a line, while a mark at the start of a line is still
+%   shifted by the style. \texttt{false} turns the option off.
 %   \item[\keys{LatinPunct}]\val{\TFF}: Treat the quotation marks
-%   (U+2018, U+2019, U+201C, U+201D), the middle dot (U+00B7), and the
-%   ellipses (U+2026, U+2027, U+22EF) as Latin punctuation: they stay in the
-%   current Latin
-%   font and are not compressed. This keeps an apostrophe inside an English
-%   word from turning into a full-width form. The em dash is not affected.
+%   (U+2018, U+2019, U+201C, U+201D), the middle dot (U+00B7),
+%   and the ellipses (U+2026, U+2027, U+22EF) as Latin punctuation:
+%   they stay in the current Latin font and are not compressed.
+%   This keeps an apostrophe inside an English word from turning into
+%   a full-width form. The em dash is not affected.
 %   \item[\keys{PunctFamily}]\val{family, false}: Use a
-%   different CJK family for the punctuation marks. The family must be
-%   declared with \cs{setCJKfamilyfont}; \texttt{false} (the initial value)
-%   makes the marks follow the text again.
+%   different CJK family for the punctuation marks.
+%   The family must be declared with \cs{setCJKfamilyfont}; \texttt{false}
+%   (the initial value) makes the marks follow the text again.
 %   \item[\keys{AllowBreakBetweenPuncts}]\val{\TFF}: Whether two adjacent
-%   punctuation marks may be separated by a line break. The marks are still
-%   compressed.
+%   punctuation marks may be separated by a line break.
+%   The marks are still compressed.
 %   \item[\keys{PunctKinsoku}]\val{\TTF}: Whether to apply line-breaking
-%   prohibitions for punctuation. A closing
-%   or middle punctuation cannot start a line, an opening punctuation cannot
-%   end a line, and a run of long punctuation is kept together. The
-%   prohibitions are independent of \texttt{PunctStyle}, so they stay active
-%   with |PunctStyle = plain|.
+%   prohibitions for punctuation.
+%   A closing or middle punctuation cannot start a line, an opening punctuation
+%   cannot end a line, and a run of long punctuation is kept together.
+%   The prohibitions are independent of \texttt{PunctStyle},
+%   so they stay active with |PunctStyle = plain|.
 % \end{keyval}
 %
 % \iffalse
@@ -647,19 +647,19 @@ a’a\quad 字！字
 % The character sets that the punctuation code works with come next. Each
 % of their keys has three forms: the plain one replaces the set, the form
 % with \texttt{+} adds characters, and the form with \texttt{-} removes
-% them. Ranges use the same spelling as \cs{LuaCJKDeclareCharClass}. The
-% sets are global: a group does not bring the previous members back.
+% them. Ranges use the same spelling as \cs{LuaCJKDeclareCharClass}.
+% The sets are global: a group does not bring the previous members back.
 %
 % \begin{keyval}
 %   \item[\keys{KaiMingPunct<+->}]\val{char list}:
 %   The marks that keep a full width in the \texttt{kaiming} style.
 %   Initially \texttt{。}、\texttt{．}、\texttt{？}、\texttt{！}.
 %   \item[\keys{MiddlePunct<+->}]\val{char list}:
-%   The marks centred between the two halves of their box. A middle mark
-%   cannot start a line.
+%   The marks centred between the two halves of their box.
+%   A middle mark cannot start a line.
 %   \item[\keys{LongPunct<+->}]\val{char list}: The
-%   marks that are never compressed against each other, such as dashes and
-%   ellipses.
+%   marks that are never compressed against each other,
+%   such as dashes and ellipses.
 %   \item[\keys{NoBreakLongPunct<+->}]
 %   \val{char list}: The long marks that must not be separated by a line
 %   break. Initially the same as \texttt{LongPunct}.
@@ -669,43 +669,43 @@ a’a\quad 字！字
 %   \begin{syntax}
 %     \tn{LuaCJKDeclareCharClass} \marg{class} \marg{range list}
 %   \end{syntax}
-%   Override the class of a code-point range. Ranges are written in
-%   hexadecimal with a leading |"|, and |"START -> "END| gives a range; the
-%   list is comma separated.
+%   Override the class of a code-point range.
+%   Ranges are written in hexadecimal with a leading |"|,
+%   and |"START -> "END| gives a range; the list is comma separated.
 %
 %   The classes are: \texttt{CJK} and \texttt{Default} make the range
-%   behave like CJK
-%   or Latin text; \texttt{FullLeft} and \texttt{HalfLeft} treat it as an
-%   opening mark, \texttt{FullRight} and \texttt{HalfRight} as a closing
-%   mark, so the line-breaking prohibitions apply; \texttt{NormalSpace}
-%   takes the range out of the CJK/Latin glue, like
-%   \cs{normalspacedchars}; \texttt{CJStarter}, \texttt{CM}, and
-%   \texttt{Boundary} are treated as \texttt{CJK}, because \LuaTeX\ has no
-%   model of combining marks or run boundaries.
+%   behave like CJK or Latin text;
+%   \texttt{FullLeft} and \texttt{HalfLeft} treat it as an opening mark,
+%   \texttt{FullRight} and \texttt{HalfRight} as a closing mark,
+%   so the line-breaking prohibitions apply;
+%   \texttt{NormalSpace} takes the range out of the CJK/Latin glue,
+%   like \cs{normalspacedchars}; \texttt{CJStarter}, \texttt{CM},
+%   and \texttt{Boundary} are treated as \texttt{CJK},
+%   because \LuaTeX\ has no model of combining marks or run boundaries.
 % \end{function}
 %
 % \begin{function}{\LuaCJKDeclarePunctClass}
 %   \begin{syntax}
 %     \tn{LuaCJKDeclarePunctClass} \marg{group} \marg{range list}
 %   \end{syntax}
-%   Override the punctuation group of a range. The groups are
-%   \texttt{open}, \texttt{close}, \texttt{middle}, \texttt{dash}, and
-%   \texttt{ellipsis}; \texttt{none} removes the punctuation treatment, so
-%   the characters are no longer compressed or hung.
+%   Override the punctuation group of a range. The groups
+%   are \texttt{open}, \texttt{close}, \texttt{middle}, \texttt{dash},
+%   and \texttt{ellipsis}; \texttt{none} removes the punctuation
+%   treatment, so the characters are no longer compressed or hung.
 % \end{function}
 %
 % \begin{function}{\LuaCJKResetCharClass}
-%   Drop every class and punctuation override declared so far, and put the
-%   normal-spaced set back to the characters of
-%   \cs{normalspacedchars}.
+%   Drop every class and punctuation override declared so far,
+%   and put the normal-spaced set back to the characters
+%   of \cs{normalspacedchars}.
 % \end{function}
 %
 % \begin{function}{\LuaCJKEditPunctStyle}
 %   \begin{syntax}
 %     \tn{LuaCJKEditPunctStyle} \marg{style} \marg{key-value list}
 %   \end{syntax}
-%   Change the parameters of an existing style. The keys are
-%   \keys{compress-adjacent}, \keys{adjacent-ratio}, and
+%   Change the parameters of an existing style.
+%   The keys are \keys{compress-adjacent}, \keys{adjacent-ratio}, and
 %   \keys{keep-open-close}; a key that is not given keeps its value.
 % \end{function}
 %
@@ -713,21 +713,21 @@ a’a\quad 字！字
 %   \begin{syntax}
 %     \tn{LuaCJKsetwidth} \marg{punctuation list} \marg{length}
 %   \end{syntax}
-%   Give the listed punctuation marks a fixed advance, overriding the
-%   selected \keys{PunctStyle} and \keys{PunctWidth}. The setting is
-%   global: a group does not restore the previous width, and a later call
-%   adds to the table rather than replacing it. A leading \texttt{*} is
-%   accepted; the width it would set at the start or end of a line is not
-%   implemented, and the star warns once.
+%   Give the listed punctuation marks a fixed advance,
+%   overriding the selected \keys{PunctStyle} and \keys{PunctWidth}.
+%   The setting is global: a group does not restore the previous width,
+%   and a later call adds to the table rather than replacing it.
+%   A leading \texttt{*} is accepted; the width it would set at the start
+%   or end of a line is not implemented, and the star warns once.
 % \end{function}
 %
 % \begin{function}{\LuaCJKsetkern}
 %   \begin{syntax}
 %     \tn{LuaCJKsetkern} \marg{before} \marg{after} \marg{length}
 %   \end{syntax}
-%   Set the gap between two adjacent punctuation marks, overriding the
-%   style. Only the first character of each argument is used. Like
-%   \cs{LuaCJKsetwidth}, the setting is global.
+%   Set the gap between two adjacent punctuation marks, overriding
+%   the style. Only the first character of each argument is used.
+%   Like \cs{LuaCJKsetwidth}, the setting is global.
 % \end{function}
 %
 % \iffalse
@@ -747,9 +747,9 @@ a’a\quad 字！字
 %   \begin{syntax}
 %     \tn{LuaCJKDeclarePunctStyle} \marg{name} \marg{key-value list}
 %   \end{syntax}
-%   Define a punctuation style. The available keys are
-%   \keys{compress-adjacent}, \keys{adjacent-ratio}, and
-%   \keys{keep-open-close}.
+%   Define a punctuation style.
+%   The available keys are \keys{compress-adjacent},
+%   \keys{adjacent-ratio}, and \keys{keep-open-close}.
 % \end{function}
 %
 % \iffalse
@@ -770,8 +770,8 @@ a’a\quad 字！字
 %   is CJK are made unbreakable, so a single character cannot end up alone
 %   on the last line. The initial value is \meta{false}.
 %   \item[\keys{WidowPenalty}]\val{penalty}: The penalty used by
-%   \texttt{CheckSingle}. The initial value is \texttt{10000}; a lower
-%   value allows the break when it is worth the cost.
+%   \texttt{CheckSingle}. The initial value is \texttt{10000};
+%   a lower value allows the break when it is worth the cost.
 % \end{keyval}
 %
 % \iffalse
@@ -791,24 +791,24 @@ a’a\quad 字！字
 %   \begin{syntax}
 %     \tn{LuaCJKnobreak} \marg{text}
 %   \end{syntax}
-%   Keep \meta{text} on one line. The nodes of the argument are marked and
-%   the line-breaking pass forbids a break at any of their boundaries. The
-%   marking ends with the current group.
+%   Keep \meta{text} on one line. The nodes of the argument are marked
+%   and the line-breaking pass forbids a break at any of their boundaries.
+%   The marking ends with the current group.
 % \end{function}
 %
 % \subsection{Suspending and hooks}
 %
 % \begin{function}{\LuaCJKdisable, \LuaCJKenable}
 %   \tn{LuaCJKdisable} stops the typographic adjustments: no \keys{CJKglue}
-%   or \keys{CJKecglue} is inserted, punctuation is not compressed, no
-%   line-breaking prohibitions are added, punctuation is not hung, and CJK
-%   characters in math mode are left alone. CJK characters are still
-%   typeset in the CJK font, so text stays readable. The switch is local to
-%   the current group; \tn{LuaCJKenable} turns the adjustments back on.
+%   or \keys{CJKecglue} is inserted, punctuation is not compressed,
+%   no line-breaking prohibitions are added, punctuation is not hung, and
+%   CJK characters in math mode are left alone. CJK characters are still
+%   typeset in the CJK font, so text stays readable. The switch is local
+%   to the current group; \tn{LuaCJKenable} turns the adjustments back on.
 % \end{function}
 %
-% This is the hook verbatim-like environments use, and it is also useful when
-% measuring raw node lists.
+% This is the hook verbatim-like environments use,
+% and it is also useful when measuring raw node lists.
 %
 % \iffalse
 %<*example>
@@ -835,14 +835,14 @@ a’a\quad 字！字
 % \begin{function}{\LuaCJKVerbAddon, \LuaCJKOffVerbAddon}
 %   Make one CJK character as wide as two spaces of the current monospaced
 %   font, which keeps columns aligned when a code listing contains CJK text.
-%   The gap is added as \keys{CJKglue}, so the CJK font itself is not
-%   scaled; a negative gap only raises a warning and adds nothing. Breaks
-%   between CJK characters are forbidden until the group ends, as in Latin
-%   verbatim text.
+%   The gap is added as \keys{CJKglue}, so the CJK font itself
+%   is not scaled; a negative gap only raises a warning and adds nothing.
+%   Breaks between CJK characters are forbidden until the group ends,
+%   as in Latin verbatim text.
 %
-%   The command does nothing at the outermost group level, so it is meant to
-%   be used inside the environment that needs it, for example in the
-%   \texttt{formatcom} option of \pkg{fancyvrb}.
+%   The command does nothing at the outermost group level,
+%   so it is meant to be used inside the environment that needs it,
+%   for example in the \texttt{formatcom} option of \pkg{fancyvrb}.
 %   \tn{LuaCJKOffVerbAddon} cancels it again inside the same group.
 % \end{function}
 %
@@ -862,8 +862,8 @@ a’a\quad 字！字
 % \begin{keyval}
 %   \item[\keys{Verb}]\val{\TTF, env, env+}
 %   What to do inside \tn{verb} and the verbatim-like environments
-%   (\env{verbatim}, \env{Verbatim}, \env{lstlisting}, and their
-%   relatives). \texttt{true} suspends the adjustments in both;
+%   (\env{verbatim}, \env{Verbatim}, \env{lstlisting},
+%   and their relatives). \texttt{true} suspends the adjustments in both;
 %   \texttt{env} keeps them inside the environments but not in \tn{verb},
 %   which preserves column alignment when the code contains CJK text;
 %   \texttt{env+} keeps them everywhere; \texttt{false} leaves verbatim
@@ -872,18 +872,18 @@ a’a\quad 字！字
 % \end{keyval}
 %
 % \pkg{listings} processes one character at a time and typesets a character
-% that is outside its character table at the moment it is read. CJK
-% characters are outside that table, so they end up in front of the
-% surrounding Latin text. The companion package
-% \pkg{LuaCJK-listings} fixes this: it adds the CJK characters to the
-% character table of \pkg{listings}, so they stay in place, counts each of
-% them as two columns, and turns the spacing adjustments off inside the
-% listing. LuaCJK loads it automatically when \pkg{listings} is used, so no
-% extra command is needed.
+% that is outside its character table at the moment it is read.
+% CJK characters are outside that table, so they end up in front of the
+% surrounding Latin text. The companion package \pkg{LuaCJK-listings} fixes
+% this: it adds the CJK characters to the character table of \pkg{listings},
+% so they stay in place, counts each of them as two columns,
+% and turns the spacing adjustments off inside the listing.
+% LuaCJK loads it automatically when \pkg{listings} is used,
+% so no extra command is needed.
 %
-% \tn{lstinline} reads its argument with changed category codes; the patch
-% would break that scanner, so inline code is left alone and takes the
-% normal handling.
+% \tn{lstinline} reads its argument with changed category codes;
+% the patch would break that scanner,
+% so inline code is left alone and takes the normal handling.
 %
 
 %
@@ -891,10 +891,10 @@ a’a\quad 字！字
 %
 % \subsection{Decorations}
 %
-% The companion package \pkg{LuaCJKfntef} provides underlining, emphasis
-% dots, and strike-through. It builds on \pkg{lua-ul}, so the decorated text
-% may contain arbitrary commands, CJK and Latin text, and may still be
-% hyphenated and broken between lines.
+% The companion package \pkg{LuaCJKfntef} provides underlining,
+% emphasis dots, and strike-through. It builds on \pkg{lua-ul},
+% so the decorated text may contain arbitrary commands, CJK and Latin text,
+% and may still be hyphenated and broken between lines.
 %
 % \begin{function}{\CJKunderline}
 %   \begin{syntax}
@@ -910,22 +910,22 @@ a’a\quad 字！字
 %     \item \keys{format}, the colour of the rule, given as a color name,
 %       for example |format=red|. It affects the rule only, not the text;
 %     \item \keys{subtract}, a length (or \texttt{true} for half an em)
-%       taken off the rule at both ends, so two neighbouring commands do not
-%       run together;
+%       taken off the rule at both ends,
+%       so two neighbouring commands do not run together;
 %     \item \keys{skip}, which leaves the punctuation out of the rule;
 %     \item \keys{hidden}, which hides the text and keeps the rule, with
 %       the width, height, and depth of the hidden text.
 %   \end{itemize}
-%   The initial geometry is \texttt{depth=0.2em} and
-%   \texttt{thickness=0.4pt}. \keys{subtract}, \keys{skip}, and
-%   \keys{hidden} work the same way for \cs{CJKunderdblline},
-%   \cs{CJKunderwave}, \cs{CJKxout}, and \cs{CJKunderdot}. The keys
-%   \texttt{top} and \texttt{bottom} are passed to \pkg{lua-ul} and
-%   override the computed geometry. The drawn patterns of
-%   \cs{CJKunderwave}, \cs{CJKxout}, and \cs{CJKunderdot} never change the
-%   height or depth of the line they decorate, so their leading does not
-%   grow. A leading
-%   \texttt{*} or \texttt{-} is accepted and ignored.
+%   The initial geometry is \texttt{depth=0.2em}
+%   and \texttt{thickness=0.4pt}. \keys{subtract}, \keys{skip},
+%   and \keys{hidden} work the same way for \cs{CJKunderdblline},
+%   \cs{CJKunderwave}, \cs{CJKxout}, and \cs{CJKunderdot}.
+%   The keys \texttt{top} and \texttt{bottom} are passed
+%   to \pkg{lua-ul} and override the computed geometry.
+%   The drawn patterns of \cs{CJKunderwave}, \cs{CJKxout},
+%   and \cs{CJKunderdot} never change the height
+%   or depth of the line they decorate, so their leading does not grow.
+%   A leading \texttt{*} or \texttt{-} is accepted and ignored.
 % \end{function}
 %
 % \iffalse
@@ -960,25 +960,25 @@ a’a\quad 字！字
 %   \begin{syntax}
 %     \tn{CJKunderdblline} \oarg{options} \marg{text}
 %   \end{syntax}
-%   Put two parallel rules under \meta{text}. Besides the keys of
-%   \cs{CJKunderline}, the optional argument takes \keys{gap}, the
-%   distance between the two rules (initial \texttt{1.1pt}); both rules use
-%   \keys{thickness} and the top rule starts at \keys{depth}. A leading
-%   \texttt{*} or \texttt{-} is accepted and ignored.
+%   Put two parallel rules under \meta{text}.
+%   Besides the keys of \cs{CJKunderline}, the optional argument takes
+%   \keys{gap}, the distance between the two rules (initial \texttt{1.1pt});
+%   both rules use \keys{thickness} and the top rule starts at \keys{depth}.
+%   A leading \texttt{*} or \texttt{-} is accepted and ignored.
 % \end{function}
 %
 % \begin{function}{\CJKunderwave}
 %   \begin{syntax}
 %     \tn{CJKunderwave} \oarg{options} \marg{text}
 %   \end{syntax}
-%   Put a wave under \meta{text}. The wave is drawn with \pkg{l3draw} and
-%   repeated with \tn{leaders}, so it has the same phase across the parts of
-%   one line. One period is half an em and the whole pattern scales with
-%   the font size; like the other drawn patterns it leaves the height and
-%   depth of the line alone. The optional argument takes the keys of
-%   \cs{CJKunderline} and, in addition, \keys{symbol} to replace the wave
-%   with another symbol: one symbol per em, centred, its top half an em
-%   below the baseline.
+%   Put a wave under \meta{text}.
+%   The wave is drawn with \pkg{l3draw} and repeated with \tn{leaders},
+%   so it has the same phase across the parts of one line. One period
+%   is half an em and the whole pattern scales with the font size; like the
+%   other drawn patterns it leaves the height and depth of the line alone.
+%   The optional argument takes the keys of \cs{CJKunderline} and,
+%   in addition, \keys{symbol} to replace the wave with another symbol:
+%   one symbol per em, centred, its top half an em below the baseline.
 % \end{function}
 %
 % \iffalse
@@ -1010,13 +1010,13 @@ a’a\quad 字！字
 %   \begin{syntax}
 %     \tn{CJKunderanyline} \marg{depth} \marg{object} \marg{text}
 %   \end{syntax}
-%   Put \meta{object} under \meta{text}, repeated by \tn{leaders}. The
-%   bottom of \meta{object} is placed \meta{depth} below the baseline, so
-%   for a \cs{rule} (which has no depth of its own) the rule occupies
-%   \meta{depth} below the baseline upwards. To cover the body of a CJK
-%   glyph, use the descender of the body and its height, as the example
-%   below does. The type is cached, so the same arguments reuse one
-%   underline type.
+%   Put \meta{object} under \meta{text}, repeated by \tn{leaders}.
+%   The bottom of \meta{object} is placed \meta{depth} below
+%   the baseline, so for a \cs{rule} (which has no depth of its own)
+%   the rule occupies \meta{depth} below the baseline upwards.
+%   To cover the body of a CJK glyph, use the descender
+%   of the body and its height, as the example below does.
+%   The type is cached, so the same arguments reuse one underline type.
 % \end{function}
 %
 % \begin{function}{\CJKunderanysymbol}
@@ -1049,11 +1049,11 @@ a’a\quad 字！字
 %   \begin{syntax}
 %     \tn{CJKunderdot} \oarg{options} \marg{text}
 %   \end{syntax}
-%   Put emphasis dots under \meta{text}. The optional argument takes the
-%   keys of \cs{CJKunderline}. With |symbol=|\meta{symbol} a symbol takes
-%   the place of the dots and is placed like the symbol of
-%   \cs{CJKunderanysymbol}: one per em, centred, its top \texttt{0.3em}
-%   under the baseline.
+%   Put emphasis dots under \meta{text}.
+%   The optional argument takes the keys of \cs{CJKunderline}.
+%   With |symbol=|\meta{symbol} a symbol takes the place of the dots
+%   and is placed like the symbol of \cs{CJKunderanysymbol}: one per em,
+%   centred, its top \texttt{0.3em} under the baseline.
 % \end{function}
 %
 % \begin{function}{\CJKsout}
@@ -1061,14 +1061,14 @@ a’a\quad 字！字
 %     \tn{CJKsout} \oarg{options} \marg{text}
 %   \end{syntax}
 %   Strike \meta{text} through. The optional argument takes
-%   \keys{thickness}, \keys{height} (the distance from the baseline to
-%   the centre of the rule, initial \texttt{0.3em}), \keys{format} (a
-%   color name), and the keys \keys{subtract}, \keys{skip}, and
-%   \keys{hidden}. A bare color name is still
-%   accepted and means |format = |\meta{color}; \texttt{color} is another
-%   name for \keys{format}. The initial height passes through the middle
-%   of a CJK glyph, which sits higher than the middle of the Latin
-%   x-height; use |height = 0.5ex| for text that is entirely Latin.
+%   \keys{thickness}, \keys{height} (the distance from the baseline to the
+%   centre of the rule, initial \texttt{0.3em}), \keys{format} (a color
+%   name), and the keys \keys{subtract}, \keys{skip}, and \keys{hidden}.
+%   A bare color name is still accepted and means |format = |\meta{color};
+%   \texttt{color} is another name for \keys{format}.
+%   The initial height passes through the middle of a CJK glyph,
+%   which sits higher than the middle of the Latin x-height;
+%   use |height = 0.5ex| for text that is entirely Latin.
 % \end{function}
 %
 % \iffalse
@@ -1092,12 +1092,12 @@ a’a\quad 字！字
 %   \   \meta{lines} \\
 %   \tn{end}\{CJKfilltwosides\}
 %   \end{syntax}
-%   Set the lines in a vertical box whose lines are justified to
-%   \meta{width}, separated by |\\|. Its \meta{position} argument puts the
-%   box on the baseline: \texttt{t} for top, \texttt{c} for centred (the
-%   default), or \texttt{b} for bottom. A width of zero or less keeps the
-%   surrounding line width. The starred form behaves the same; it does not
-%   compare against the natural width of the content.
+%   Set the lines in a vertical box whose lines are justified
+%   to \meta{width}, separated by |\\|. Its \meta{position} argument puts
+%   the box on the baseline: \texttt{t} for top, \texttt{c} for centred
+%   (the default), or \texttt{b} for bottom. A width of zero or less keeps
+%   the surrounding line width. The starred form behaves the same;
+%   it does not compare against the natural width of the content.
 % \end{environment}
 %
 % \iffalse
@@ -1116,22 +1116,22 @@ a’a\quad 字！字
 %
 % \begin{keyval}
 %   \item[\keys{CJKmath}]\val{\TFF}: Whether CJK characters may be typed
-%   directly in math mode. When it is
-%   on, such a character is typeset as a box in the CJK math font instead of
-%   being looked up in the math font. Enable it with
-%   |\LuaCJKsetup{CJKmath = true}| or with the package option
-%   |CJKmath = true|. Without it a CJK character in math mode is looked up
-%   in the math font and usually disappears, so LuaCJK issues a one-time
-%   warning in that case.
+%   directly in math mode.
+%   When it is on, such a character is typeset as a box in the CJK math font
+%   instead of being looked up in the math font.
+%   Enable it with |\LuaCJKsetup{CJKmath = true}| or with the package option
+%   |CJKmath = true|.
+%   Without it a CJK character in math mode is looked up in the math font
+%   and usually disappears, so LuaCJK issues a one-time warning in that case.
 % \end{keyval}
 %
 % \begin{function}{\setCJKmathfont}
 %   \begin{syntax}
 %     \tn{setCJKmathfont} \oarg{options} \marg{font} \oarg{options}
 %   \end{syntax}
-%   Select the CJK font used for characters in math mode. Without this
-%   command the CJK main font is used. This manual enables \keys{CJKmath}
-%   and sets this font in its preamble.
+%   Select the CJK font used for characters in math mode.
+%   Without this command the CJK main font is used.
+%   This manual enables \keys{CJKmath} and sets this font in its preamble.
 % \end{function}
 %
 % \iffalse
@@ -1159,18 +1159,18 @@ $ x + 中文 $ and 中文
 %     \texttt{env+} behaves like \texttt{false}: both leave the adjustments
 %     on, so the distinction has no observable effect here.
 %   \item The punctuation geometry is approximate. \texttt{banjiao},
-%     \texttt{kaiming}, and \texttt{CCT} give a mark half, half (with the
-%     sentence-ending marks full), or 0.7 of the current size, and the
-%     hanging shift is half an em. \pkg{xeCJK} instead measures the real
-%     side bearings of each glyph.
+%     \texttt{kaiming}, and \texttt{CCT} give a mark half,
+%     half (with the sentence-ending marks full),
+%     or 0.7 of the current size, and the hanging shift is half an em.
+%     \pkg{xeCJK} instead measures the real side bearings of each glyph.
 %   \item \cs{LuaCJKDeclarePunctStyle} takes \keys{compress-adjacent},
-%     \keys{adjacent-ratio}, and \keys{keep-open-close} instead of the
-%     thirty geometry keys of \pkg{xeCJK}.
+%     \keys{adjacent-ratio}, and \keys{keep-open-close} instead
+%     of the thirty geometry keys of \pkg{xeCJK}.
 %   \item \texttt{CJKfilltwosides*} does not compare with the natural width
 %     of its content.
 %   \item The \pkg{LuaCJKfntef} option \keys{format} takes the colour of
-%     the rule as a name (|format=red|), not as code
-%     (|format=\color{red}|).
+%     the rule as a name (|format=red|),
+%     not as code (|format=\color{red}|).
 % \end{itemize}
 %
 % \subsection{Not available}
@@ -1178,30 +1178,30 @@ $ x + 中文 $ and 中文
 % \begin{itemize}
 %   \item \texttt{NewLineCS}, \texttt{EnvCS}, \texttt{InlineEnv}, and
 %     \texttt{PlainEquation}. They exist so that \pkg{xeCJK} can recognise
-%     \TeX\ constructs while it scans tokens; LuaCJK looks at the finished
-%     node list and needs no hint.
+%     \TeX\ constructs while it scans tokens;
+%     LuaCJK looks at the finished node list and needs no hint.
 %   \item \texttt{PoZheHaoLigature}, because \LuaTeX\ shapes one glyph at a
 %     time, so two dashes cannot be merged into the ligature of the font.
 %   \item \texttt{RubberPunctSkip}, because the advance of a punctuation mark
 %     is a fixed kern rather than stretchable glue.
 %   \item \texttt{CheckFullRight}, because it needs the control sequence that
-%     follows the mark, which the node list no longer shows. Use
-%     \cs{LuaCJKnobreak} for the few places that need it.
+%     follows the mark, which the node list no longer shows.
+%     Use \cs{LuaCJKnobreak} for the few places that need it.
 %   \item The detailed punctuation keys of \pkg{xeCJK}
 %     (\texttt{fixed-punct-*}, \texttt{mixed-*}, \texttt{middle-*},
 %     \texttt{bound-*}, \texttt{kerning-*}, \texttt{optimize-*},
-%     \texttt{margin-minimum}), which describe \pkg{xeCJK}'s model of
-%     adjusting the side bearings.
+%     \texttt{margin-minimum}), which describe \pkg{xeCJK}'s model
+%     of adjusting the side bearings.
 %   \item In \pkg{LuaCJKfntef}: the \texttt{ulem} option, which passes
-%     options to the commands of \pkg{ulem}. \pkg{LuaCJKfntef} builds on
-%     \pkg{lua-ul} instead, and its \tn{underLine} may be configured
-%     directly.
+%     options to the commands of \pkg{ulem}.
+%     \pkg{LuaCJKfntef} builds on \pkg{lua-ul} instead,
+%     and its \tn{underLine} may be configured directly.
 %   \item A \pkg{ctex} backend that is picked up without a redirect.
-%     \pkg{ctex} asks for a file of its own naming, so LuaCJK ships
-%     |ctex-engine-luacjk.def| and a \file{ctexopts.cfg} written by
-%     \cs{LuaCJKwriteCtexConfig} points \pkg{ctex} at it. Choosing a backend
-%     inside \pkg{ctex} itself still needs the agreement of the
-%     \pkg{ctex} maintainers.
+%     \pkg{ctex} asks for a file of its own naming,
+%     so LuaCJK ships |ctex-engine-luacjk.def| and a \file{ctexopts.cfg}
+%     written by \cs{LuaCJKwriteCtexConfig} points \pkg{ctex} at it.
+%     Choosing a backend inside \pkg{ctex} itself still needs the agreement
+%     of the \pkg{ctex} maintainers.
 % \end{itemize}
 %
 % \end{documentation}
@@ -1249,10 +1249,10 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
-% \pkg{luatexja} installs its own CJK font and spacing layer and works on the
-% same callbacks as LuaCJK, so the two are rejected whatever the loading
-% order. \pkg{xeCJK} needs no check here: it stops by itself on any engine
-% other than \XeTeX.
+% \pkg{luatexja} installs its own CJK font and spacing layer and works
+% on the same callbacks as LuaCJK, so the two are rejected
+% whatever the loading order. \pkg{xeCJK} needs no check here:
+% it stops by itself on any engine other than \XeTeX.
 %    \begin{macrocode}
 \msg_new:nnn { LuaCJK } { luatexja-conflict }
   {
@@ -1267,8 +1267,8 @@ $ x + 中文 $ and 中文
 %
 % \subsection{Registers, styles, and options}
 %
-% The runtime state lives in attributes and registers, which the options
-% below fill in.
+% The runtime state lives in attributes and registers,
+% which the options below fill in.
 %
 % \begin{variable}[int]
 %   {
@@ -1328,8 +1328,8 @@ $ x + 中文 $ and 中文
 %
 % \begin{macro}[int]{\@@_set_ccglue:n, \@@_set_ecglue:n}
 % The two glues keep their default relative to the current size, so they
-% are recomputed on every font selection unless the document set them. A
-% value given by the document is taken as it is.
+% are recomputed on every font selection unless the document set them.
+% A value given by the document is taken as it is.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_set_ccglue:n #1
   {
@@ -1357,12 +1357,12 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
-% A punctuation style is a property list, read through the settings of
-% each node.
+% A punctuation style is a property list,
+% read through the settings of each node.
 %
 % \begin{variable}[int]{\g_@@_punct_style_prop}
-% The names of the styles LuaCJK knows about, including those defined by
-% \cs{LuaCJKDeclarePunctStyle}.
+% The names of the styles LuaCJK knows about,
+% including those defined by \cs{LuaCJKDeclarePunctStyle}.
 %    \begin{macrocode}
 \prop_new:N \g_@@_punct_style_prop
 \prop_gput:Nnn \g_@@_punct_style_prop { quanjiao      } { }
@@ -1375,8 +1375,8 @@ $ x + 中文 $ and 中文
 % \end{variable}
 %
 % \begin{macro}[int]{\@@_set_punct_style:n}
-% Store the selected style, or warn and fall back to \texttt{plain} when
-% the name is unknown.
+% Store the selected style,
+% or warn and fall back to \texttt{plain} when the name is unknown.
 % \begin{variable}[int]{\l_@@_punct_style_tl}
 % The style name read by the Lua side.
 %    \begin{macrocode}
@@ -1404,8 +1404,8 @@ $ x + 中文 $ and 中文
 %
 % \begin{macro}{\LuaCJKEditPunctStyle}
 % Change the parameters of an existing style. A key that is not given
-% keeps its current value, which is why the three ``given'' switches are
-% tracked here instead of starting from the defaults.
+% keeps its current value, which is why the three ``given'' switches
+% are tracked here instead of starting from the defaults.
 % \begin{variable}[int]
 %   {
 %     \l_@@_punct_compress_given_bool,
@@ -1516,9 +1516,9 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
-% A single CJK font rarely covers every block of \textsc{Unicode}. A
-% sub-block gives a range of characters its own font inside a family, named
-% by an option of the font commands.
+% A single CJK font rarely covers every block of \textsc{Unicode}.
+% A sub-block gives a range of characters its own font inside a family,
+% named by an option of the font commands.
 %
 % \begin{macro}{\LuaCJKDeclareSubCJKBlock}
 % \begin{variable}[int]
@@ -1545,9 +1545,9 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKCancelSubCJKBlock, \LuaCJKRestoreSubCJKBlock}
-% Turn a block off or on again. The list of cancelled blocks is part of
-% the settings of the text, so the change ends with the group; the fonts
-% of the current family are refreshed so it takes effect at once.
+% Turn a block off or on again. The list of cancelled blocks is part
+% of the settings of the text, so the change ends with the group; the
+% fonts of the current family are refreshed so it takes effect at once.
 %    \begin{macrocode}
 \clist_new:N \l_@@_blocks_off_clist
 \cs_new_protected:Npn \@@_set_block_enabled:nn #1#2
@@ -1572,9 +1572,9 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_extract_blocks:nn}
-% Pull the block options out of a family's option list and register one
-% \pkg{fontspec} family per block font. The remaining options go into
-% \cs{l_@@_features_tl}.
+% Pull the block options out of a family's option list
+% and register one \pkg{fontspec} family per block font.
+% The remaining options go into \cs{l_@@_features_tl}.
 % \begin{variable}[int]
 %   {
 %     \g_@@_family_block_prop, \g_@@_pending_block_prop,
@@ -1638,17 +1638,17 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKDeclareCharClass}
-% Override the class of a code-point range. The range list uses the
-% \pkg{xeCJK} spelling: hexadecimal numbers with a leading |"|, and
-% |"START -> "END| for a range.
+% Override the class of a code-point range.
+% The range list uses the \pkg{xeCJK} spelling: hexadecimal numbers
+% with a leading |"|, and |"START -> "END| for a range.
 % \begin{variable}[int]
 %   {
 %     \l_@@_ranges_tl,     \l_@@_range_seq,
 %     \l_@@_range_pair_tl, \l_@@_hex_tl,
 %     \l_@@_hex_int_tl
 %   }
-% The Lua table being built, the two halves of one range, and the
-% current hexadecimal number and its value.
+% The Lua table being built, the two halves of one range,
+% and the current hexadecimal number and its value.
 %    \begin{macrocode}
 \tl_new:N \l_@@_ranges_tl
 \seq_new:N \l_@@_range_seq
@@ -1721,8 +1721,8 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKDeclarePunctClass}
-% Override the punctuation group of a range, or with \texttt{none} remove
-% the punctuation treatment from it.
+% Override the punctuation group of a range,
+% or with \texttt{none} remove the punctuation treatment from it.
 %    \begin{macrocode}
 \NewDocumentCommand \LuaCJKDeclarePunctClass { m m }
   {
@@ -1763,9 +1763,9 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKResetCharClass}
-% Drop every class and punctuation override declared so far, and put the
-% normal-spaced set back to the characters of
-% \cs{normalspacedchars}.
+% Drop every class and punctuation override declared so far,
+% and put the normal-spaced set back to the characters
+% of \cs{normalspacedchars}.
 %    \begin{macrocode}
 \NewDocumentCommand \LuaCJKResetCharClass { }
   {
@@ -1782,8 +1782,8 @@ $ x + 中文 $ and 中文
 %     \l_@@_punct_compress_bool, \l_@@_punct_ratio_fp,
 %     \l_@@_punct_keep_bool
 %   }
-% The values collected from the keys, with the defaults used when a key
-% is not given.
+% The values collected from the keys,
+% with the defaults used when a key is not given.
 %    \begin{macrocode}
 \bool_new:N \l_@@_punct_compress_bool
 \fp_new:N \l_@@_punct_ratio_fp
@@ -1870,9 +1870,9 @@ $ x + 中文 $ and 中文
 %     \l_@@_fallback_family_tl, \l_@@_fallback_ids_tl,
 %     \l_@@_main_fontid_int
 %   }
-% The switches read by the Lua side, the \keys{Verb} setting, the
-% configuration file name, the fake bold and slant parameters, and the
-% fallback fonts.
+% The switches read by the Lua side, the \keys{Verb} setting,
+% the configuration file name, the fake bold and slant parameters,
+% and the fallback fonts.
 %    \begin{macrocode}
 \tl_new:N  \l_@@_punct_kinsoku_tl
 \tl_set:Nn \l_@@_punct_kinsoku_tl { 1 }
@@ -2064,12 +2064,12 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_settings_push:}
-% Hand the current options to Lua, which stores them once and selects the
-% stored copy with an attribute. Called after \cs{LuaCJKsetup} and after
-% every font selection, because the default glues and the size-dependent
-% distances have to be recomputed for the new size. The attribute is what
-% makes a group that ends before the paragraph still decide how its own
-% text is set.
+% Hand the current options to Lua,
+% which stores them once and selects the stored copy with an attribute.
+% Called after \cs{LuaCJKsetup} and after every font selection,
+% because the default glues and the size-dependent distances have
+% to be recomputed for the new size. The attribute is what makes a group
+% that ends before the paragraph still decide how its own text is set.
 %    \begin{macrocode}
 \cs_new:Npn \@@_bool_js:N #1
   { \str_if_eq:VnTF #1 { 1 } { true } { false } }
@@ -2102,8 +2102,8 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKdisable, \LuaCJKenable}
-% Set the node attribute that makes the Lua callbacks skip the
-% adjustments. The attribute follows the \TeX\ grouping.
+% Set the node attribute that makes the Lua callbacks skip
+% the adjustments. The attribute follows the \TeX\ grouping.
 %    \begin{macrocode}
 \NewDocumentCommand \LuaCJKdisable { }
   { \g_@@_disabled_attr = 1 }
@@ -2113,10 +2113,10 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKShipoutHook}
-% Run code just before every page is shipped out. This is the place for
-% work that must see the finished page; \pkg{xeCJK} calls a macro at the
-% same moment, so the name is kept, but the code goes into the
-% \texttt{shipout/before} hook and therefore follows its rules.
+% Run code just before every page is shipped out. This is the place
+% for work that must see the finished page; \pkg{xeCJK} calls a macro
+% at the same moment, so the name is kept, but the code goes into
+% the \texttt{shipout/before} hook and therefore follows its rules.
 %    \begin{macrocode}
 \NewDocumentCommand \LuaCJKShipoutHook { m }
   { \hook_gput_code:nnn { shipout/before } { LuaCJK } {#1} }
@@ -2140,12 +2140,12 @@ $ x + 中文 $ and 中文
 %
 % \begin{macro}{\LuaCJKVerbAddon, \LuaCJKOffVerbAddon}
 % Align CJK text in a monospaced context: one CJK character plus the glue
-% that follows it should take the width of two spaces. The gap therefore
-% is twice the space of the current font minus the width of one CJK
-% character. The width of the character is measured after switching to
-% the CJK family in a group, because the current font is the monospaced
-% one. A proportional font has no fixed space to align to, so the
-% command adds nothing there.
+% that follows it should take the width of two spaces.
+% The gap therefore is twice the space of the current font minus
+% the width of one CJK character. The width of the character
+% is measured after switching to the CJK family in a group,
+% because the current font is the monospaced one. A proportional font
+% has no fixed space to align to, so the command adds nothing there.
 % \begin{variable}[int]
 %   {
 %     \l_@@_verb_space_dim, \l_@@_verb_cjk_dim,
@@ -2155,9 +2155,9 @@ $ x + 中文 $ and 中文
 %     \l_@@_verb_saved_ecglue_touched_bool,
 %     \l_@@_verb_addon_bool, \l_@@_verb_box
 %   }
-% The width of two spaces, the width of one CJK character, the gap
-% between them, the saved glues, whether the addon is on, and the box
-% used to measure the character.
+% The width of two spaces, the width of one CJK character,
+% the gap between them, the saved glues, whether the addon is on,
+% and the box used to measure the character.
 %    \begin{macrocode}
 \dim_new:N \l_@@_verb_space_dim
 \dim_new:N \l_@@_verb_cjk_dim
@@ -2252,11 +2252,11 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_verbatim@font_hook:}
-% Verbatim-like material must usually be left alone. \tn{verb} opens its
-% own group and selects \tn{verbatim@font} inside it, so extending that
-% command covers \tn{verb} on its own. The hook consults the current
-% \keys{Verb} setting, so that \cs{LuaCJKsetup} can change the behaviour
-% after the package is loaded.
+% Verbatim-like material must usually be left alone.
+% \tn{verb} opens its own group and selects \tn{verbatim@font} inside
+% it, so extending that command covers \tn{verb} on its own.
+% The hook consults the current \keys{Verb} setting, so that
+% \cs{LuaCJKsetup} can change the behaviour after the package is loaded.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_verbatim@font_hook:
   {
@@ -2312,8 +2312,8 @@ $ x + 中文 $ and 中文
 %
 % \begin{macro}[int]{\@@_set_family:nnn}
 % Define a family through \pkg{fontspec} and remember the resulting
-% family name. The family is only registered; the switch happens in
-% \cs{@@_switch_family:n}.
+% family name. The family is only registered;
+% the switch happens in \cs{@@_switch_family:n}.
 % \begin{variable}[int]{\g_@@_family_prop, \l_@@_family_tl}
 % The registered families, and the family name currently selected.
 %    \begin{macrocode}
@@ -2324,8 +2324,8 @@ $ x + 中文 $ and 中文
 % \end{variable}
 % \begin{variable}[int]{\l_@@_fontspec_tl, \l_@@_family_name_tl, \l_@@_tmpa_tl}
 % Scratch variables holding the generated \pkg{fontspec} family name,
-% the family name looked up in the property list, and a temporary
-% value.
+% the family name looked up in the property list,
+% and a temporary value.
 %    \begin{macrocode}
 \tl_new:N \l_@@_fontspec_tl
 \tl_new:N \l_@@_family_name_tl
@@ -2339,9 +2339,9 @@ $ x + 中文 $ and 中文
 %     \g_@@_font_feature_prop,
 %     \l_@@_default_feature_tl
 %   }
-% The font name and the explicit options of each family, kept so that
-% \cs{addCJKfontfeatures} can register the family again, and the
-% features prepended to every family.
+% The font name and the explicit options of each family,
+% kept so that \cs{addCJKfontfeatures} can register the family again,
+% and the features prepended to every family.
 % \begin{variable}[int]
 %   {
 %     \l_@@_autofake_bold_given_bool,
@@ -2377,9 +2377,9 @@ $ x + 中文 $ and 中文
   }
 %    \end{macrocode}
 % \begin{macro}[int]{\@@_build_features:n}
-% Combine the default features, the options given for this family, and
-% the automatic fake bold and slant, unless the family sets them
-% itself.
+% Combine the default features, the options given for this family,
+% and the automatic fake bold and slant,
+% unless the family sets them itself.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_note_feature_key:nn #1#2
   { \@@_note_feature_key:n {#1} }
@@ -2431,8 +2431,8 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{\@@_register_family:n}
-% Build the \pkg{fontspec} family from the stored font name and
-% features, and re-select it if it is the current one.
+% Build the \pkg{fontspec} family from the stored font name
+% and features, and re-select it if it is the current one.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_register_family:n #1
   {
@@ -2618,10 +2618,10 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_push_block_fonts:}
-% Resolve the block fonts of the current family at the current size and
-% hand them to Lua, keyed by the font identifier of the family. Font
-% identifiers depend on the size, so this runs again whenever a font is
-% selected.
+% Resolve the block fonts of the current family at the current size
+% and hand them to Lua, keyed by the font identifier of the family.
+% Font identifiers depend on the size,
+% so this runs again whenever a font is selected.
 %    \begin{macrocode}
 \int_new:N \g_@@_block_fontid_int
 \cs_new_protected:Npn \@@_push_block_fonts:
@@ -2655,11 +2655,11 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
-% The glues and the settings belong to the size that is being selected, but
-% \cs{baselineskip} has not changed yet when the \texttt{selectfont} hook
-% runs, so they are refreshed after the font selection. The guard keeps the
-% temporary font selections inside \cs{@@_update_font:} from doing the
-% same twice.
+% The glues and the settings belong to the size that is being selected,
+% but \cs{baselineskip} has not changed yet when the \texttt{selectfont}
+% hook runs, so they are refreshed after the font selection.
+% The guard keeps the temporary font selections inside \cs{@@_update_font:}
+% from doing the same twice.
 %    \begin{macrocode}
 \hook_gput_code:nnn { selectfont } { LuaCJK } { \@@_update_font: }
 \hook_gput_code:nnn { cmd/selectfont/after } { LuaCJK }
@@ -2674,9 +2674,9 @@ $ x + 中文 $ and 中文
 %
 % \begin{variable}[int]
 %   {\CJKrmdefault, \CJKsfdefault, \CJKttdefault, \CJKfamilydefault}
-% The CJK families used by the standard font commands. The family
-% hooks below re-select the CJK family whenever \tn{rmfamily} and its
-% siblings run.
+% The CJK families used by the standard font commands.
+% The family hooks below re-select the CJK family whenever
+% \tn{rmfamily} and its siblings run.
 %    \begin{macrocode}
 \tl_new:N \CJKrmdefault
 \tl_new:N \CJKsfdefault
@@ -2700,9 +2700,9 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\addCJKfontfeatures}
-% Add features to the current family for the rest of the group. The star
-% form is accepted for compatibility; LuaCJK has no concept of blocks, so
-% both forms act on the same font.
+% Add features to the current family for the rest of the group.
+% The star form is accepted for compatibility;
+% LuaCJK has no concept of blocks, so both forms act on the same font.
 %    \begin{macrocode}
 \NewDocumentCommand \addCJKfontfeatures { s o m }
   {
@@ -2795,8 +2795,8 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{\@@_add_fallback:nn}
-% Register one fallback font for a CJK family, keeping the order in
-% which the fonts were declared.
+% Register one fallback font for a CJK family,
+% keeping the order in which the fonts were declared.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_add_fallback:nn #1#2
   {
@@ -2824,8 +2824,8 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\newCJKfontfamily}
-% Define a control sequence that switches to a new family, and register
-% the family under the same name.
+% Define a control sequence that switches to a new family,
+% and register the family under the same name.
 %    \begin{macrocode}
 \NewDocumentCommand \newCJKfontfamily { o m o m }
   {
@@ -2879,8 +2879,8 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\songti, \heiti, \fangsong, \kaishu, \lishu, \youyuan}
-% Shortcuts for the usual families, plus the family hooks of the standard
-% font commands.
+% Shortcuts for the usual families,
+% plus the family hooks of the standard font commands.
 %    \begin{macrocode}
 \cs_new_protected:Npn \songti { \CJKfamily { zhsong } }
 \cs_new_protected:Npn \heiti { \CJKfamily { zhhei  } }
@@ -2900,13 +2900,13 @@ $ x + 中文 $ and 中文
 % \subsection{Names and configuration}
 %
 % \begin{macro}{\normalspacedchars}
-% The characters in the list get no glue on either side, which is what one
-% wants for slashes, backslashes, and hyphens inside Latin text. The list
-% is kept on the Lua side as a set of code points, so the setting is
-% global: a group does not restore the previous list.
+% The characters in the list get no glue on either side, which is what
+% one wants for slashes, backslashes, and hyphens inside Latin text.
+% The list is kept on the Lua side as a set of code points,
+% so the setting is global: a group does not restore the previous list.
 % \begin{variable}[int]{\g_@@_normal_spaced_chars_tl}
-% The list, initially \texttt{/}, \texttt{\c_backslash_str}, and
-% \texttt{-}.
+% The list, initially \texttt{/}, \texttt{\c_backslash_str},
+% and \texttt{-}.
 %    \begin{macrocode}
 \tl_new:N \g_@@_normal_spaced_chars_tl
 \tl_gset:Nn \g_@@_normal_spaced_chars_tl
@@ -2931,9 +2931,9 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_load_local_config:}
-% Load the file chosen by the \keys{LocalConfig} option. The key is
-% read while the package is being loaded, but the file is only input at
-% the end, so that it can use everything LuaCJK defines.
+% Load the file chosen by the \keys{LocalConfig} option.
+% The key is read while the package is being loaded, but the file is only input
+% at the end, so that it can use everything LuaCJK defines.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_load_local_config:
   {
@@ -2954,10 +2954,10 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_load_fandol:}
-% When the \keys{LoadFandol} option is on and the document did not
-% declare any CJK font, fall back to the four Fandol faces. This runs at
-% \tn{begin}\{document\} so that a family declared anywhere in the
-% preamble still wins.
+% When the \keys{LoadFandol} option is on and the document
+% did not declare any CJK font, fall back to the four Fandol faces.
+% This runs at \tn{begin}\{document\} so that a family declared anywhere
+% in the preamble still wins.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_load_fandol:
   {
@@ -2976,21 +2976,21 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
-% \pkg{ctex} picks its own engine file by name, so LuaCJK cannot install a
-% file of that name without colliding with \pkg{ctex} itself. The redirect
-% therefore lives in a \file{ctexopts.cfg} that \pkg{ctex} inputs after it
-% has fixed the engine file name and before it inputs that file.
+% \pkg{ctex} picks its own engine file by name, so LuaCJK cannot install
+% a file of that name without colliding with \pkg{ctex} itself. The
+% redirect therefore lives in a \file{ctexopts.cfg} that \pkg{ctex} inputs
+% after it has fixed the engine file name and before it inputs that file.
 %
 % \begin{macro}{\LuaCJKwriteCtexConfig}
-% Write such a file. Without a star an existing file is left alone, so that
-% a hand-written configuration is not lost; the star overwrites it. The
-% optional argument is a directory to write into.
+% Write such a file. Without a star an existing file is left alone,
+% so that a hand-written configuration is not lost; the star overwrites it.
+% The optional argument is a directory to write into.
 %
-% The file is written in plain \LaTeXe\ without any comment character, so
-% that it works whatever the category codes and the state of \pkg{expl3}
-% are when \pkg{ctex} inputs it. The existence check names the directory
-% explicitly, because a plain name would also match the file that
-% \pkg{ctex} installs.
+% The file is written in plain \LaTeXe\ without any comment character,
+% so that it works whatever the category codes
+% and the state of \pkg{expl3} are when \pkg{ctex} inputs it.
+% The existence check names the directory explicitly, because a plain
+% name would also match the file that \pkg{ctex} installs.
 % \begin{variable}[int]
 %   {
 %     \l_@@_ctex_config_iow, \l_@@_ctex_config_path_tl,
@@ -3058,8 +3058,8 @@ $ x + 中文 $ and 中文
 % \begin{macro}[int]{\@@_check_ctex_redirect:}
 % When LuaCJK was reached through its own engine file, the redirect must
 % already have been read; otherwise \pkg{ctex} could only have found the
-% file because something else put it in the search path. Say so once, so
-% that a stale or missing \file{ctexopts.cfg} does not stay silent.
+% file because something else put it in the search path. Say so once,
+% so that a stale or missing \file{ctexopts.cfg} does not stay silent.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_check_ctex_redirect:
   {
@@ -3128,8 +3128,8 @@ $ x + 中文 $ and 中文
 % The package ships two Lua modules. \file{LuaCJK.lua} only loads the core
 % module; all node processing lives in \file{LuaCJK-core.lua}.
 % \begin{variable}[int]{LuaCJK}
-% The table shared by the two modules. The core module adds its functions
-% and constants to it.
+% The table shared by the two modules.
+% The core module adds its functions and constants to it.
 %    \begin{macrocode}
 %<*lua>
 LuaCJK = LuaCJK or {}
@@ -3140,8 +3140,8 @@ require("LuaCJK-core")
 % \end{variable}
 %
 % The core module starts by creating the shared table and caching the node
-% identifiers. The callbacks run on every list, so these lookups happen
-% once.
+% identifiers.
+% The callbacks run on every list, so these lookups happen once.
 %    \begin{macrocode}
 %<*lua-core>
 LuaCJK = LuaCJK or {}
@@ -3155,8 +3155,8 @@ LuaCJK = LuaCJK or {}
 %     DISC,     WHATSIT,    LOCAL_PAR,     SPACESKIP,
 %     new_node, free_node,  has_attribute, set_attribute
 %   }
-% Short names for the module table, the node types, and the node
-% functions.
+% Short names for the module table, the node types,
+% and the node functions.
 %    \begin{macrocode}
 local M = LuaCJK
 local GLYPH = node.id("glyph")
@@ -3183,8 +3183,8 @@ local set_attribute = node.set_attribute
 %     LuaCJK.attr_font,     LuaCJK.attr_cjk_space, LuaCJK.attr_xecglue,
 %     LuaCJK.attr_inserted, LuaCJK.attr_math_font
 %   }
-% The attribute numbers. The \TeX\ side fills them in after loading the
-% module.
+% The attribute numbers.
+% The \TeX\ side fills them in after loading the module.
 %    \begin{macrocode}
 M.attr_font = M.attr_font or nil
 M.attr_cjk_space = M.attr_cjk_space or nil
@@ -3201,10 +3201,10 @@ M.attr_settings = M.attr_settings or nil
 % \subsection{Settings and data}
 %
 % Most options describe how text is set, not how the document is configured,
-% so they have to travel with the characters. A snapshot of the current
-% options is registered once and its number is stored in an attribute on the
-% glyphs created afterwards; a group that ends before the paragraph does
-% therefore still decides how its own text is set.
+% so they have to travel with the characters.
+% A snapshot of the current options is registered once and its number is
+% stored in an attribute on the glyphs created afterwards; a group that ends
+% before the paragraph does therefore still decides how its own text is set.
 %
 % \begin{variable}[int]
 %   {LuaCJK.settings, LuaCJK.settings_by_signature, LuaCJK.attr_settings}
@@ -3234,8 +3234,8 @@ M.settings_by_signature = {}
 % \end{variable}
 %
 % \begin{macro}[int]{LuaCJK.new_settings}
-% Read the current glue registers, build a snapshot, and select it. The
-% glue has to be read here rather than passed in, because that is the only
+% Read the current glue registers, build a snapshot, and select it.
+% The glue has to be read here rather than passed in, because that is the only
 % place where the registers still hold the values of the moment.
 %    \begin{macrocode}
 local function glue_spec (name)
@@ -3316,9 +3316,9 @@ M.settings_of = settings_of
 % compressed; the em dash is not in the table, because it stays CJK.
 %
 % \begin{macro}[int]{LuaCJK.is_cjk}
-% Test whether a character is treated as CJK. The ranges cover CJK
-% ideographs, compatibility and presentation forms, kana, Hangul, and the
-% punctuation LuaCJK compresses or hangs.
+% Test whether a character is treated as CJK.
+% The ranges cover CJK ideographs, compatibility and presentation forms,
+% kana, Hangul, and the punctuation LuaCJK compresses or hangs.
 %    \begin{macrocode}
 M.class_override = {}
 M.punct_override = {}
@@ -3355,9 +3355,9 @@ M.is_cjk = is_cjk
 % \end{macro}
 %
 % \begin{variable}[int]{PUNCT_CLASS}
-% The punctuation LuaCJK knows about, grouped as opening, closing, middle,
-% dash, and ellipsis. The group decides compression, line-breaking
-% prohibitions, and hanging.
+% The punctuation LuaCJK knows about, grouped as opening, closing,
+% middle, dash, and ellipsis.
+% The group decides compression, line-breaking prohibitions, and hanging.
 %    \begin{macrocode}
 local PUNCT_CLASS = {
   [0x2018] = "open",  [0x201C] = "open",
@@ -3409,8 +3409,8 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{LuaCJK.declare_ranges}
-% Fill a table with \meta{value} over a list of code-point ranges, each
-% given as \texttt{\{first, last\}}.
+% Fill a table with \meta{value} over a list of code-point ranges,
+% each given as \texttt{\{first, last\}}.
 %    \begin{macrocode}
 local function fill_ranges (target, value, ranges)
   for _, range in ipairs(ranges) do
@@ -3441,10 +3441,10 @@ end
 %
 % \begin{variable}[int]{M.charsets}
 % The four character sets that the punctuation options can replace.
-% \texttt{kaiming} holds the marks that keep a full em width in the
-% \texttt{kaiming} style; \texttt{middle} and \texttt{long} are filled
-% from the punctuation groups below, and \texttt{nobreak} starts as a copy
-% of \texttt{long}.
+% \texttt{kaiming} holds the marks that keep a full
+% em width in the \texttt{kaiming} style; \texttt{middle}
+% and \texttt{long} are filled from the punctuation groups below,
+% and \texttt{nobreak} starts as a copy of \texttt{long}.
 %    \begin{macrocode}
 M.charsets = {
   kaiming = {
@@ -3475,8 +3475,8 @@ end
 % \end{variable}
 %
 % \begin{macro}[int]{LuaCJK.set_charset}
-% Replace, extend, or reduce one of the sets above. The ranges arrive from
-% \TeX\ as a list of \texttt{\{first, last\}} pairs.
+% Replace, extend, or reduce one of the sets above.
+% The ranges arrive from \TeX\ as a list of \texttt{\{first, last\}} pairs.
 %    \begin{macrocode}
 function M.set_charset (kind, mode, ranges)
   local target = M.charsets[kind]
@@ -3504,9 +3504,9 @@ end
 % \end{macro}
 %
 % \begin{variable}[int]{LuaCJK.punct_styles}
-% The built-in styles. Each entry holds the compression switch, the
-% compression ratio, the opening and closing exemption, and optional fixed
-% width or hanging parameters.
+% The built-in styles. Each entry holds the compression switch,
+% the compression ratio, the opening and closing exemption,
+% and optional fixed width or hanging parameters.
 %    \begin{macrocode}
 M.punct_class = function (c, s)
   return punct_class(c, s or M.settings[1])
@@ -3638,14 +3638,14 @@ end
 %
 % \subsection{Node rewriting}
 %
-% A CJK glyph carries the identifier of the family that applies to it in an
-% attribute. The pass below replaces it by a copy in that font, and takes a
-% sub-block font or a fallback font instead when one applies.
+% A CJK glyph carries the identifier of the family that applies
+% to it in an attribute. The pass below replaces it by a copy in that font,
+% and takes a sub-block font or a fallback font instead when one applies.
 %
 % \begin{variable}[int]{M.blocks, M.block_order, M.block_fonts}
-% The declared sub-blocks in declaration order, and the font identifier of
-% each block for each family. The order decides which block wins when two
-% ranges overlap.
+% The declared sub-blocks in declaration order,
+% and the font identifier of each block for each family.
+% The order decides which block wins when two ranges overlap.
 %    \begin{macrocode}
 M.blocks = {}
 M.block_order = {}
@@ -3675,8 +3675,8 @@ end
 % \end{variable}
 %
 % \begin{macro}[int]{block_font}
-% The font of the first block of \meta{main} that contains \meta{char} and
-% is not cancelled in \meta{settings}.
+% The font of the first block of \meta{main} that contains \meta{char}
+% and is not cancelled in \meta{settings}.
 %    \begin{macrocode}
 local function block_font (main, char, settings)
   local row = M.block_fonts[main]
@@ -3701,8 +3701,8 @@ end
 % \end{macro}
 %
 % \begin{variable}[int]{M.fallback}
-% The fallback fonts of each family, as identifiers, in the order in which
-% they were declared.
+% The fallback fonts of each family, as identifiers,
+% in the order in which they were declared.
 %    \begin{macrocode}
 M.fallback = {}
 
@@ -3714,8 +3714,8 @@ end
 % \end{variable}
 %
 % \begin{macro}[int]{has_char}
-% Whether \meta{fid} has a glyph for \meta{char}. The answer is cached per
-% font and code point, because the pass asks it once per glyph.
+% Whether \meta{fid} has a glyph for \meta{char}. The answer is cached
+% per font and code point, because the pass asks it once per glyph.
 % \begin{variable}[int]{has_char_cache}
 % The cache, keyed by the font identifier and the code point packed into
 % one number.
@@ -3784,11 +3784,11 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{rewrite_fonts}
-% Replace each CJK glyph by a copy in the font its attribute names, after
-% giving way to a sub-block font or to a fallback font. A glyph that the
-% old font did not have may sit next to the placeholder \pkg{luaotfload}
-% emitted for it; the placeholder is freed at the same time, because it
-% would otherwise add an advance of its own.
+% Replace each CJK glyph by a copy in the font its attribute names,
+% after giving way to a sub-block font or to a fallback font.
+% A glyph that the old font did not have may sit next to the placeholder
+% \pkg{luaotfload} emitted for it; the placeholder is freed at the same
+% time, because it would otherwise add an advance of its own.
 %    \begin{macrocode}
 local function rewrite_fonts (head)
   local prev = nil
@@ -3855,8 +3855,8 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{class_of_node}
-% Return the class at both edges of a node. Boxes are inspected by
-% looking at their contents, and formulas count as Latin.
+% Return the class at both edges of a node. Boxes are inspected
+% by looking at their contents, and formulas count as Latin.
 % \begin{macro}[int]{first_visible_class}
 % The class of the first visible character of a list.
 %    \begin{macrocode}
@@ -3937,12 +3937,12 @@ end
 %
 % \begin{macro}[int]{inherit_attributes}
 % Give a new node the attribute list of the node it is spliced next to.
-% LuaCJK creates glue, kerns, and penalties after \TeX\ has attached the
-% surrounding attributes to the text, so a package that marks spans with
-% attributes, such as \pkg{lua-ul}, would otherwise read the new node as
-% the end of its span and start a new one. Assigning to the
-% \meta{attr} field is reference counted, and later per-attribute changes
-% are copy-on-write, so the source node is never modified.
+% LuaCJK creates glue, kerns, and penalties after \TeX\ has attached
+% the surrounding attributes to the text, so a package that
+% marks spans with attributes, such as \pkg{lua-ul}, would otherwise read
+% the new node as the end of its span and start a new one. Assigning
+% to the \meta{attr} field is reference counted, and later per-attribute
+% changes are copy-on-write, so the source node is never modified.
 %    \begin{macrocode}
 local function inherit_attributes (new, source)
   if source and source.attr then
@@ -3954,8 +3954,8 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{make_glue}
-% Create a glue node from a skip register, inherit the attributes of
-% \meta{source}, and mark the node as inserted.
+% Create a glue node from a skip register, inherit the attributes
+% of \meta{source}, and mark the node as inserted.
 %    \begin{macrocode}
 local function make_glue (spec, source)
   if not spec then
@@ -3999,8 +3999,8 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{make_kern}
-% Create a kern node, inherit the attributes of \meta{source}, and mark
-% the node as inserted.
+% Create a kern node, inherit the attributes of \meta{source},
+% and mark the node as inserted.
 %    \begin{macrocode}
 local function make_kern (width, source)
   local k = new_node("kern")
@@ -4018,18 +4018,18 @@ end
 % \subsection{The passes}
 %
 % \begin{macro}[int]{spacing}
-% Walk a list and insert the glue between CJK and Latin material. The
-% walk tracks the last visible node and the class at its end, so that a
-% formula acts as one Latin atom at its left edge; inside the formula the
-% boundary rules are not applied.
+% Walk a list and insert the glue between CJK and Latin material.
+% The walk tracks the last visible node and the class at its end,
+% so that a formula acts as one Latin atom at its left edge;
+% inside the formula the boundary rules are not applied.
 % \begin{macro}[int]{handle_boundary}
-% Decide what to do at the boundary between two visible nodes. Only
-% source-generated glue is a candidate for replacement; other glue and
-% penalties are left alone, a penalty being an explicit barrier and a
-% discretionary opaque, so neither is bridged.
+% Decide what to do at the boundary between two visible nodes.
+% Only source-generated glue is a candidate for replacement;
+% other glue and penalties are left alone, a penalty being an explicit
+% barrier and a discretionary opaque, so neither is bridged.
 % \begin{macro}[int]{insert_boundary_glue}
-% Insert the CJK--CJK or CJK--Latin glue, or the compression kern for
-% two adjacent punctuation marks.
+% Insert the CJK--CJK or CJK--Latin glue,
+% or the compression kern for two adjacent punctuation marks.
 %    \begin{macrocode}
 M.normal_spaced = {}
 
@@ -4111,9 +4111,9 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{handle_source_space}
-% Remove or retime a space typed in the source. Only a space that came
-% from the source is a candidate; an explicit \tn{hskip} or \tn{hfill}
-% has a different subtype and is left alone.
+% Remove or retime a space typed in the source.
+% Only a space that came from the source is a candidate; an explicit
+% \tn{hskip} or \tn{hfill} has a different subtype and is left alone.
 %    \begin{macrocode}
 local function handle_source_space (head, glue, before, prev_end, cur,
                                     cur_start, settings)
@@ -4228,9 +4228,9 @@ end
 % 10000 in front of every break opportunity that must not be used.
 %
 % \begin{macro}[int]{apply_kinsoku}
-% Add the prohibitions where the settings of the text ask for them. A node
-% marked by \cs{LuaCJKnobreak} or by the verbatim addon is prohibited
-% regardless, because the mark itself is the prohibition.
+% Add the prohibitions where the settings of the text ask for them.
+% A node marked by \cs{LuaCJKnobreak} or by the verbatim addon
+% is prohibited regardless, because the mark itself is the prohibition.
 %    \begin{macrocode}
 %    \end{macrocode}
 % \begin{macro}[int]{class_char}
@@ -4276,8 +4276,8 @@ end
 % \end{macro}
 % \begin{macro}[int]{forbids_break}
 % The rules: closing and middle punctuation must not start a line,
-% opening punctuation must not end one, and a run of dashes or ellipses
-% stays together.
+% opening punctuation must not end one,
+% and a run of dashes or ellipses stays together.
 %    \begin{macrocode}
 local function forbids_break (prev_char, next_char, settings)
   local prev_punct = prev_char and punct_class(prev_char, settings)
@@ -4300,8 +4300,8 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{is_break_point}
-% Glue and kerns are break opportunities; only the ones LuaCJK inserted
-% and the source spaces are considered.
+% Glue and kerns are break opportunities;
+% only the ones LuaCJK inserted and the source spaces are considered.
 %    \begin{macrocode}
 local function is_break_point (n)
   if n.id == GLUE then
@@ -4433,8 +4433,8 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{any_cjk_math_enabled}
-% Whether any noad of the list asks for CJK in math mode. The switch is
-% part of the settings of the text, so the answer is per list.
+% Whether any noad of the list asks for CJK in math mode. The switch
+% is part of the settings of the text, so the answer is per list.
 %    \begin{macrocode}
 local function any_cjk_math_enabled (head)
   local cur = head
@@ -4459,19 +4459,19 @@ local SUB_MLIST = node.id("sub_mlist")
 % \end{variable}
 %
 % \begin{macro}[int]{rewrite_math}
-% Rewrite the CJK noads of a math list, or warn once when the feature is
-% off.
+% Rewrite the CJK noads of a math list,
+% or warn once when the feature is off.
 % \begin{macro}[int]{rewrite_math_list}
-% Walk a math list, recursing into sub lists (fractions, braces, scripts)
-% so that nested CJK characters are rewritten too. The declaration is
-% split from the definition because of that recursion.
+% Walk a math list, recursing into sub lists (fractions, braces,
+% scripts) so that nested CJK characters are rewritten too.
+% The declaration is split from the definition because of that recursion.
 %    \begin{macrocode}
 local rewrite_math_list
 
 %    \end{macrocode}
 % \begin{macro}[int]{cjk_noad}
-% Build a noad whose nucleus is a box with the character in the CJK
-% font.
+% Build a noad whose nucleus is a box with the character
+% in the CJK font.
 %    \begin{macrocode}
 local function cjk_noad (char, fid)
   local g = new_node("glyph")
@@ -4492,8 +4492,8 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{rewrite_noad}
-% Replace the nucleus of one noad and recurse into the sub lists of its
-% numerator, denominator, superscript, and subscript.
+% Replace the nucleus of one noad and recurse into the sub lists
+% of its numerator, denominator, superscript, and subscript.
 %    \begin{macrocode}
 local function rewrite_noad (noad, fid)
   if disabled(noad) or not settings_of(noad).cjk_math then
@@ -4612,8 +4612,8 @@ end
 % \end{macro}
 %
 % The glyph advance stays inside the line, so shifting the ink sideways lets
-% a line-final closing punctuation hang into the margin without changing the
-% line width. Line-initial opening punctuation is shifted the other way.
+% a line-final closing punctuation hang into the margin without changing
+% the line width. Line-initial opening punctuation is shifted the other way.
 %
 % \begin{macro}[int]{find_first_last_glyph}
 % The first and the last glyph node of a list.
@@ -4635,8 +4635,8 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{shift_glyph}
-% Move the ink of a glyph by a horizontal offset. The advance is not
-% touched, so nothing in the line changes width.
+% Move the ink of a glyph by a horizontal offset.
+% The advance is not touched, so nothing in the line changes width.
 %    \begin{macrocode}
 local function shift_glyph (g, delta)
   if delta == 0 then return end
@@ -4647,9 +4647,9 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{bound_width}
-% The advance that a mark keeps inside the line when it ends one, or
-% nothing when the option is off. Without it the shift is half an em, as
-% the hanging style asks.
+% The advance that a mark keeps inside the line when it ends one,
+% or nothing when the option is off.
+% Without it the shift is half an em, as the hanging style asks.
 %    \begin{macrocode}
 local function bound_width (settings)
   local value = settings and settings.bound_width or 0
@@ -4663,10 +4663,10 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{hang_line}
-% Shift the punctuation glyphs at the two ends of one line. A closing or
-% middle mark at the end, and an opening mark at the start, take their own
-% settings; with a bound width the end shift is the part that would stick
-% out otherwise.
+% Shift the punctuation glyphs at the two ends of one line.
+% A closing or middle mark at the end, and an opening mark at the start,
+% take their own settings; with a bound width the end shift is the part
+% that would stick out otherwise.
 %    \begin{macrocode}
 local function hang_line (line)
   if line.id ~= HLIST then
@@ -4714,8 +4714,8 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{process_lines}
-% Walk a list of lines, descending into nested boxes, and apply
-% \cs{hang_line} to each.
+% Walk a list of lines, descending into nested boxes,
+% and apply \cs{hang_line} to each.
 %    \begin{macrocode}
 local function process_lines (list)
   local n = list
@@ -4743,13 +4743,13 @@ end
 % \end{macro}
 %
 % \TeX\ can break at the glue that LuaCJK inserts between CJK characters.
-% At the end of a paragraph the last two such break points get a penalty, so
-% that at least three CJK characters travel to the last line together instead
-% of a single one.
+% At the end of a paragraph the last two such break points get a penalty,
+% so that at least three CJK characters travel to the last line together
+% instead of a single one.
 %
 % \begin{macro}[int]{apply_check_single}
-% Insert the widow penalties. Only a paragraph whose last visible node is
-% a CJK glyph is examined, and only when its settings ask for it.
+% Insert the widow penalties. Only a paragraph whose last visible node
+% is a CJK glyph is examined, and only when its settings ask for it.
 %    \begin{macrocode}
 local function apply_check_single (head)
   local trail = {}
@@ -4883,19 +4883,19 @@ luatexbase.add_to_callback("post_linebreak_filter",
 %
 % \subsection{Decorations}
 %
-% \pkg{lua-ul} draws each decoration as a pair of nodes: a leaders glue of
-% width $w$ and a glue of width $-w$ that gives the space back, so the text
-% does not move. Changing those numbers is enough to inset the decoration
-% and to leave out the punctuation, which is why LuaCJK adjusts the box
-% instead of drawing the decoration itself. \TeX\ numbers the glue
-% subtypes, and 100 is \tn{leaders}, the one both \pkg{lua-ul} and this
-% package use.
+% \pkg{lua-ul} draws each decoration as a pair of nodes: a leaders glue
+% of width $w$ and a glue of width $-w$ that gives the space back,
+% so the text does not move. Changing those numbers is enough to inset
+% the decoration and to leave out the punctuation, which is why LuaCJK
+% adjusts the box instead of drawing the decoration itself.
+% \TeX\ numbers the glue subtypes, and 100 is \tn{leaders},
+% the one both \pkg{lua-ul} and this package use.
 %
 % \begin{variable}[int]
 %   {LuaCJKfntef.attr, LuaCJKfntef.settings}
 % The attribute that carries the number of a settings entry, and the entry
-% itself: the inset at both ends and whether punctuation is skipped. A
-% separate entry per call keeps two decorations in one paragraph apart.
+% itself: the inset at both ends and whether punctuation is skipped.
+% A separate entry per call keeps two decorations in one paragraph apart.
 %    \begin{macrocode}
 %<*lua-fntef>
 LuaCJKfntef = LuaCJKfntef or {}
@@ -4913,9 +4913,9 @@ M.next_id = M.next_id or 1
 %    \end{macrocode}
 % \end{variable}
 %
-% A decoration records its settings by selecting an entry: the number of the
-% entry goes into the attribute on the decorated text, and attribute zero
-% means that the text carries no decoration of this package.
+% A decoration records its settings by selecting an entry:
+% the number of the entry goes into the attribute on the decorated text, and
+% attribute zero means that the text carries no decoration of this package.
 %
 % \begin{macro}[int]{LuaCJKfntef.new_settings}
 % Register one entry and select it.
@@ -4948,9 +4948,9 @@ end
 % \begin{macro}[int]{segments}
 % The intervals of a span of width \meta{w} that the decoration may cover:
 % the first and the last \meta{inset} are taken off, and with
-% \meta{skip-punct} every punctuation mark inside is cut out as well. A
-% cut is clamped to the span, so a mark that straddles the end keeps the
-% part that fits.
+% \meta{skip-punct} every punctuation mark inside is cut out as well.
+% A cut is clamped to the span,
+% so a mark that straddles the end keeps the part that fits.
 %    \begin{macrocode}
 local function segments (w, start, inset, skip_punct)
   local cuts = {}
@@ -4985,9 +4985,9 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{settings_at}
-% The settings of the decoration whose leaders pair ends just before
-% \meta{node}: the number is read from that node, because the pair itself
-% is inserted before the marked text.
+% The settings of the decoration whose leaders pair ends just
+% before \meta{node}: the number is read from that node,
+% because the pair itself is inserted before the marked text.
 %    \begin{macrocode}
 local function settings_at (node_)
   if not node_ or not M.attr then
@@ -5004,10 +5004,10 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{replace_pair}
-% Replace the leaders glue of one decoration. The pieces are kerns and
-% shorter leaders whose total width stays \meta{w}, so the text does not
-% move; the negative glue that follows the leaders is kept and becomes the
-% tail of the replacement.
+% Replace the leaders glue of one decoration.
+% The pieces are kerns and shorter leaders whose total width stays
+% \meta{w}, so the text does not move; the negative glue that follows
+% the leaders is kept and becomes the tail of the replacement.
 %    \begin{macrocode}
 local function replace_pair (head, prev, leaders, settings)
   local w = leaders.width
@@ -5088,8 +5088,8 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{LuaCJKfntef.hpack}
-% The box-packing callback. The pass also runs before a box is appended to
-% a vertical list, because a box built earlier is not packed again.
+% The box-packing callback. The pass also runs before a box is appended
+% to a vertical list, because a box built earlier is not packed again.
 %    \begin{macrocode}
 function M.hpack (head)
   return adjust(head)
@@ -5107,9 +5107,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \end{macrocode}
 % \end{macro}
 %
-% The \pkg*{LuaCJKfntef} package is a thin layer over \pkg{lua-ul}, which
-% provides the underlining engine. It is generated from this file and may be
-% loaded on its own; it loads LuaCJK first.
+% The \pkg*{LuaCJKfntef} package is a thin layer over \pkg{lua-ul},
+% which provides the underlining engine. It is generated from this file
+% and may be loaded on its own; it loads LuaCJK first.
 %    \begin{macrocode}
 %<*fntef>
 \sys_if_engine_luatex:F
@@ -5142,8 +5142,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %     \l_@@_fntef_textformat_tl, \l_@@_fntef_pass_tl,
 %     \l_@@_fntef_top_dim,       \l_@@_fntef_bottom_dim
 %   }
-% The requested geometry, the format of the text, and the keys that
-% \pkg{lua-ul} receives.
+% The requested geometry, the format of the text,
+% and the keys that \pkg{lua-ul} receives.
 %    \begin{macrocode}
 \dim_new:N \l_@@_fntef_depth_dim
 \dim_new:N \l_@@_fntef_thickness_dim
@@ -5265,9 +5265,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \end{macrocode}
 % \begin{macro}[int]{\@@_fntef_formatted_underline:}
 % A coloured rule needs its own underline type: \pkg{luacolor} colours
-% by attribute, while \tn{color} would emit whatsits in front of
-% \tn{leaders}. The type is cached by colour and geometry, so a
-% document builds one type per distinct combination.
+% by attribute, while \tn{color} would emit whatsits in front
+% of \tn{leaders}. The type is cached by colour and geometry,
+% so a document builds one type per distinct combination.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_formatted_underline:
   {
@@ -5450,9 +5450,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_fntef_decoration_setup:n}
-% The settings that the decoration pass reads. They are pushed on every
-% call, so a command without options starts from the defaults instead of
-% inheriting the previous call.
+% The settings that the decoration pass reads.
+% They are pushed on every call, so a command without options starts
+% from the defaults instead of inheriting the previous call.
 %    \begin{macrocode}
 \keys_define:nn { LuaCJKfntef / decoration }
   {
@@ -5531,24 +5531,24 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKunderwave}
-% A wave drawn with \pkg{l3draw}, one period per half em, repeated by
-% \tn{leaders}. The drawing is kept as code rather than as a box, so the
-% |em| units are resolved when the decoration is used and the pattern
-% follows the current font size.
+% A wave drawn with \pkg{l3draw}, one period per half em, repeated
+% by \tn{leaders}. The drawing is kept as code rather than as a box,
+% so the |em| units are resolved when the decoration is used
+% and the pattern follows the current font size.
 %
 % The period is forced to exactly half an em by \tn{hbox}| to .5em|.
-% \pkg{l3draw} sizes its box by the bounding box of the stroked path, which
-% is a full stroke width wider than the path; repeating that box would leave
-% a gap of one stroke width between two periods. The two \tn{hss} absorb the
-% excess symmetrically, so the ink fills the period exactly and no overfull
-% box is reported. The stroke is set to |.04em|, which is \texttt{0.4pt} at
-% 10pt, so the pattern keeps its look from the previous release while it
-% scales with the font size.
+% \pkg{l3draw} sizes its box by the bounding box of the stroked path,
+% which is a full stroke width wider than the path; repeating that box would
+% leave a gap of one stroke width between two periods.
+% The two \tn{hss} absorb the excess symmetrically, so the ink fills
+% the period exactly and no overfull box is reported. The stroke
+% is set to |.04em|, which is \texttt{0.4pt} at 10pt, so the pattern keeps
+% its look from the previous release while it scales with the font size.
 %   \begin{variable}[int]{\l_@@_fntef_pattern_box}
-%   A scratch box for the drawn patterns. Each pattern is built here and
-%   then has its height and depth set to zero: the ink is a PDF literal, so
-%   only the reported dimensions change, and a decoration never opens up the
-%   line it sits on.
+%   A scratch box for the drawn patterns.
+%   Each pattern is built here and then has its height and depth set to zero:
+%   the ink is a PDF literal, so only the reported dimensions change,
+%   and a decoration never opens up the line it sits on.
 %    \begin{macrocode}
 \box_new:N \l_@@_fntef_pattern_box
 \dim_new:N \l_@@_fntef_symbol_kern_dim
@@ -5646,17 +5646,17 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKxout}
-% A repeated slash, as in \pkg{ulem}'s \tn{xout}. The drawing is kept as
-% code so that it scales with the font size, and the stroke width is
-% |.04em| like the wave. The slash runs from |-.15em| to |.8em|, so it
-% crosses the whole body of a CJK glyph instead of stopping in its upper
-% half.
+% A repeated slash, as in \pkg{ulem}'s \tn{xout}.
+% The drawing is kept as code so that it scales with the font size,
+% and the stroke width is |.04em| like the wave.
+% The slash runs from |-.15em| to |.8em|, so it crosses the whole body
+% of a CJK glyph instead of stopping in its upper half.
 %
 % \pkg{l3draw} moves a drawing so that the bottom of its bounding box sits
 % on the baseline of the box, which shifts a path that goes below the
-% baseline upwards. The \tn{raise} of |-.17em| takes the slash back down by
-% the part that lies below the baseline (|.15em|) plus half the stroke, so
-% the ink lands where the path says.
+% baseline upwards. The \tn{raise} of |-.17em| takes the slash back down
+% by the part that lies below the baseline (|.15em|) plus half the stroke,
+% so the ink lands where the path says.
 %    \begin{macrocode}
 \newunderlinetype \@@_fntef_slash
   {
@@ -5694,10 +5694,10 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKunderanyline}
-% Underline with an arbitrary object: the object is put in a box, lowered
-% by \meta{depth}, and repeated by \tn{leaders}. The underline type is
-% cached by the object and the depth, so repeating a command with the same
-% arguments costs nothing.
+% Underline with an arbitrary object: the object is put in a box,
+% lowered by \meta{depth}, and repeated by \tn{leaders}.
+% The underline type is cached by the object and the depth,
+% so repeating a command with the same arguments costs nothing.
 % \begin{variable}[int]{\l_@@_fntef_any_code_tl}
 % The leader code being built.
 %    \begin{macrocode}
@@ -5747,11 +5747,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKunderanysymbol}
-% One symbol per em, which is what one wants for a repeated mark: the cell
-% is as wide as a CJK character, so a row of symbols lines up with the
-% characters above, and the symbol is centred in its cell. The depth is
-% handed to \cs{LuaCJKfntef_use_symbol:n}, which puts the top of the symbol
-% that far below the baseline.
+% One symbol per em, which is what one wants for a repeated mark:
+% the cell is as wide as a CJK character, so a row of symbols lines up with
+% the characters above, and the symbol is centred in its cell.
+% The depth is handed to \cs{LuaCJKfntef_use_symbol:n},
+% which puts the top of the symbol that far below the baseline.
 %    \begin{macrocode}
 \NewDocumentCommand \CJKunderanysymbol { O{} m m +m }
   {
@@ -5827,17 +5827,17 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %
 % \begin{environment}{CJKfilltwosides}
 %   Set the body in a vertical box whose lines are justified to the given
-%   width, with the lines separated by \tn{}. The optional argument places
-%   the box on the baseline: \texttt{t} for top, \texttt{c} for centred (the
-%   default), and \texttt{b} for bottom. A width of zero or less keeps the
-%   surrounding line width.
+%   width, with the lines separated by \tn{}.
+%   The optional argument places the box on the baseline: \texttt{t} for
+%   top, \texttt{c} for centred (the default), and \texttt{b} for bottom.
+%   A width of zero or less keeps the surrounding line width.
 % \begin{variable}[int]
 %   {
 %     \l_@@_fntef_fill_box,      \l_@@_fntef_fill_width_dim,
 %     \l_@@_fntef_fill_half_dim, \l_@@_fntef_fill_position_tl
 %   }
-% The box being filled, its requested width, the half height used for
-% centring, and the requested baseline position.
+% The box being filled, its requested width, the half height used
+% for centring, and the requested baseline position.
 %    \begin{macrocode}
 \box_new:N \l_@@_fntef_fill_box
 \dim_new:N \l_@@_fntef_fill_width_dim
@@ -5894,8 +5894,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{environment}
 %
 % \begin{environment}{CJKfilltwosides*}
-%   The starred form behaves like the plain one; a width of zero or less
-%   keeps the surrounding line width in both.
+%   The starred form behaves like the plain one;
+%   a width of zero or less keeps the surrounding line width in both.
 %    \begin{macrocode}
 \NewDocumentEnvironment { CJKfilltwosides* } { O{c} m }
   { \@@_fntef_fill_begin:nn {#1} {#2} }
@@ -5960,8 +5960,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   \LuaCJK@listings@ranges\LuaCJK@listings@catcodes}
 %    \end{macrocode}
 %
-% \tn{lstinline} reads its argument with changed category codes, so the
-% patch is limited to the block listing environments.
+% \tn{lstinline} reads its argument with changed category codes,
+% so the patch is limited to the block listing environments.
 %    \begin{macrocode}
 \lst@AddToHook{SelectCharTable}{%
   \ifx\lst@inlinechars\@empty
@@ -5975,19 +5975,19 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %</listings>
 %    \end{macrocode}
 %
-% \pkg{ctex} chooses its \LuaTeX\ backend by inputting a file whose name it
-% fixes itself:
+% \pkg{ctex} chooses its \LuaTeX\ backend by inputting a file whose name
+% it fixes itself:
 % \begin{quote}
 %   |\file_if_exist:nTF { ctex-engine-luatex.def } { ... }|\\
 %   \dots\ |\ctex_file_input:n { \c__ctex_engine_file_str }|
 % \end{quote}
 % A backend can therefore only be provided under that very name, and LuaCJK
 % cannot ship a file of it without colliding with \pkg{ctex}. Its engine file
-% is called |ctex-engine-luacjk.def| instead, and \pkg{ctex} is redirected to
-% it through |ctexopts.cfg|, which \pkg{ctex} inputs after the name has been
-% fixed and before the file is read; changing the name there therefore takes
-% effect for the current run. The redirect acts only on \LuaTeX, so an
-% \XeLaTeX\ document in the same directory keeps its own backend.
+% is called |ctex-engine-luacjk.def| instead, and \pkg{ctex} is redirected
+% to it through |ctexopts.cfg|, which \pkg{ctex} inputs after the name has
+% been fixed and before the file is read; changing the name there therefore
+% takes effect for the current run. The redirect acts only on \LuaTeX,
+% so an \XeLaTeX\ document in the same directory keeps its own backend.
 %
 % The file defines the handful of \cs{ctex_...} commands that the \pkg{ctex}
 % kernel calls, and maps the parts of the \pkg{luatexja} interface that
@@ -6011,8 +6011,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \RequirePackage { LuaCJK }
 %    \end{macrocode}
 %
-% The fontset of \pkg{ctex} defines these shortcuts itself and checks for an
-% existing definition, so the ones of LuaCJK have to go first.
+% The fontset of \pkg{ctex} defines these shortcuts itself and checks
+% for an existing definition, so the ones of LuaCJK have to go first.
 %    \begin{macrocode}
 \clist_map_inline:nn
   { \songti , \heiti , \fangsong , \kaishu , \lishu , \youyuan ,
@@ -6158,8 +6158,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %
 % A very small part of the \pkg{luatexja} parameter interface is kept, for
 % documents that set the skips directly. Only |kanjiskip| and |xkanjiskip|
-% are understood; any other key is silently ignored, because this is not a
-% reimplementation of the \pkg{luatexja} parameter system.
+% are understood; any other key is silently ignored, because this
+% is not a reimplementation of the \pkg{luatexja} parameter system.
 %    \begin{macrocode}
 %<*ctex>
 \keys_define:nn { LuaCJK / ctex / ltj }

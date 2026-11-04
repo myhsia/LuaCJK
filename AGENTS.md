@@ -1,20 +1,20 @@
 # LuaCJK
 
-A Chinese typesetting package for LuaLaTeX, built on LuaTeX node callbacks. Everything ships from the single source `LuaCJK.dtx`:
-three LaTeX packages (`LuaCJK`, `LuaCJKfntef`, `LuaCJK-listings`), the `ctex`
-engine file `ctex-engine-luacjk.def`, three Lua modules, the manual
+A Chinese typesetting package for LuaLaTeX, built on LuaTeX node callbacks.
+Everything ships from the single source `LuaCJK.dtx`: three LaTeX packages (`LuaCJK`, `LuaCJKfntef`, `LuaCJK-listings`),
+the `ctex` engine file `ctex-engine-luacjk.def`, three Lua modules, the manual
 `LuaCJK.pdf`, and `README.md`. `../ctex-kit` is read only, by
 `scripts/ctex-subset.sh`, which compiles a subset of the `ctex` test suite
 against the engine file.
 
 ## Shared rules
 
-Repo etiquette, the git/PR workflow, LaTeX writing and source style, tooling
-and upkeep are **machine-global**: see the `repo-rules` skill at
+Repo etiquette, the git/PR workflow, LaTeX writing and source style,
+tooling and upkeep are **machine-global**: see the `repo-rules` skill at
 `~/.config/opencode/skills/repo-rules/SKILL.md`. Do not copy them here. The
-only local exception is that the manual's prose is English, so the
-"no code-like strings in the rendered text" rule is applied to identifiers and
-file names only.
+only local exception is that the manual's prose is English,
+so the "no code-like strings in the rendered text" rule is applied
+to identifiers and file names only.
 
 The typesetting architecture that the code cannot explain lives in
 `.opencode/skills/SKILL.md`; read it before changing the node pipeline, the
@@ -22,8 +22,8 @@ punctuation model, the decoration mechanism, or the `ctex` adapter.
 
 ## Environment
 
-TeX Live 2026 with LuaLaTeX; no conda, no Python. Every command runs from the
-repository root, where `build.lua` lives. Entry points:
+TeX Live 2026 with LuaLaTeX; no conda, no Python. Every command runs from
+the repository root, where `build.lua` lives. Entry points:
 
 - `l3build` (unpack, check, save, doc, ctan, tag) for the package itself;
 - `scripts/ctex-subset.sh` for the `ctex` integration;
@@ -110,6 +110,11 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   grep -nE '^%[ ]{0,3}\\(begin|end)\{macrocode\}' LuaCJK.dtx   # must be empty
   grep -c 'Reference `doc' build/doc/LuaCJK.log                      # must be 0
   ```
+- **Line breaks in prose.**  Start a sentence on a new line, and break a long
+  sentence at a comma, semicolon, or colon rather than mid-phrase.  The line
+  count of a paragraph and its width do not change; only the break points move.
+  Code, `syntax` blocks, `quote` blocks, tables, and the braced variable lists
+  (the `{ … }` after `\begin{variable}`) are left alone.
 - **Spacing in prose.**  One space after a sentence-ending full stop, question
   mark, or exclamation mark, and no trailing space at the end of a line. TeX
   collapses runs of spaces and breaks lines itself, so neither controls the
