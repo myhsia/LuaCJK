@@ -1263,17 +1263,17 @@ $ x + 中文 $ and 中文
 % The runtime state lives in attributes and registers, which the options below fill in.
 %
 % \begin{variable}[int]
-% {
-% \g_@@_font_attr, \c_@@_font_attr_int,
-% \g_@@_cjk_space_attr, \c_@@_cjk_space_attr_int,
-% \g_@@_xecglue_attr, \c_@@_xecglue_attr_int,
-% \g_@@_inserted_attr, \c_@@_inserted_attr_int,
-% \g_@@_math_font_attr, \c_@@_math_font_attr_int,
-% \g_@@_disabled_attr, \c_@@_disabled_attr_int,
-% \g_@@_punct_font_attr, \c_@@_punct_font_attr_int,
-% \g_@@_settings_attr, \c_@@_settings_attr_int,
-% \g_@@_nobreak_attr, \c_@@_nobreak_attr_int
-% }
+%   {
+%     \g_@@_font_attr,       \c_@@_font_attr_int,
+%     \g_@@_cjk_space_attr,  \c_@@_cjk_space_attr_int,
+%     \g_@@_xecglue_attr,    \c_@@_xecglue_attr_int,
+%     \g_@@_inserted_attr,   \c_@@_inserted_attr_int,
+%     \g_@@_math_font_attr,  \c_@@_math_font_attr_int,
+%     \g_@@_disabled_attr,   \c_@@_disabled_attr_int,
+%     \g_@@_punct_font_attr, \c_@@_punct_font_attr_int,
+%     \g_@@_settings_attr,   \c_@@_settings_attr_int,
+%     \g_@@_nobreak_attr,    \c_@@_nobreak_attr_int
+%   }
 % The attributes record, per node, the CJK font, the space and glue
 % policies, whether the node was inserted by LuaCJK, the CJK math font,
 % and whether the adjustments are suspended.  The integer constants hold
@@ -1398,8 +1398,11 @@ $ x + 中文 $ and 中文
 % keeps its current value, which is why the three ``given'' switches are
 % tracked here instead of starting from the defaults.
 % \begin{variable}[int]
-% {\l_@@_punct_compress_given_bool, \l_@@_punct_ratio_given_bool,
-% \l_@@_punct_keep_given_bool}
+%   {
+%     \l_@@_punct_compress_given_bool,
+%     \l_@@_punct_ratio_given_bool,
+%     \l_@@_punct_keep_given_bool
+%   }
 % Whether the corresponding key was part of the edit.
 %    \begin{macrocode}
 \bool_new:N \l_@@_punct_compress_given_bool
@@ -1510,7 +1513,7 @@ $ x + 中文 $ and 中文
 %
 % \begin{macro}{\LuaCJKDeclareSubCJKBlock}
 % \begin{variable}[int]
-% {\g_@@_block_prop, \g_@@_block_names_clist}
+%   {\g_@@_block_prop, \g_@@_block_names_clist}
 % The ranges of each block, and the declaration order that decides
 % which block wins when the ranges overlap.
 %    \begin{macrocode}
@@ -1564,9 +1567,11 @@ $ x + 中文 $ and 中文
 % \pkg{fontspec} family per block font.  The remaining options go into
 % \cs{l_@@_features_tl}.
 % \begin{variable}[int]
-% {\g_@@_family_block_prop, \g_@@_pending_block_prop,
-% \l_@@_features_tl, \l_@@_block_key_tl,
-% \l_@@_option_key_tl, \l_@@_option_seq}
+%   {
+%     \g_@@_family_block_prop, \g_@@_pending_block_prop,
+%     \l_@@_features_tl,       \l_@@_block_key_tl,
+%     \l_@@_option_key_tl,     \l_@@_option_seq
+%   }
 % The block font of each family and block, the blocks found in the
 % option list being processed, the filtered options, and scratch
 % variables for splitting one option at the equals sign.
@@ -1628,8 +1633,11 @@ $ x + 中文 $ and 中文
 % \pkg{xeCJK} spelling: hexadecimal numbers with a leading |"|, and
 % |"START -> "END| for a range.
 % \begin{variable}[int]
-% {\l_@@_ranges_tl, \l_@@_range_seq, \l_@@_range_pair_tl,
-% \l_@@_hex_tl, \l_@@_hex_int_tl}
+%   {
+%     \l_@@_ranges_tl,     \l_@@_range_seq,
+%     \l_@@_range_pair_tl, \l_@@_hex_tl,
+%     \l_@@_hex_int_tl
+%   }
 % The Lua table being built, the two halves of one range, and the
 % current hexadecimal number and its value.
 %    \begin{macrocode}
@@ -1761,8 +1769,10 @@ $ x + 中文 $ and 中文
 % \begin{macro}{\LuaCJKDeclarePunctStyle}
 % Define a style from a small set of keys and hand the result to Lua.
 % \begin{variable}[int]
-% {\l_@@_punct_compress_bool, \l_@@_punct_ratio_fp,
-% \l_@@_punct_keep_bool}
+%   {
+%     \l_@@_punct_compress_bool, \l_@@_punct_ratio_fp,
+%     \l_@@_punct_keep_bool
+%   }
 % The values collected from the keys, with the defaults used when a key
 % is not given.
 %    \begin{macrocode}
@@ -1775,8 +1785,8 @@ $ x + 中文 $ and 中文
 \keys_define:nn { LuaCJK / punct-style }
   {
     compress-adjacent .bool_set:N = \l_@@_punct_compress_bool,
-    adjacent-ratio .fp_set:N = \l_@@_punct_ratio_fp,
-    keep-open-close .bool_set:N = \l_@@_punct_keep_bool,
+    adjacent-ratio    .fp_set:N   = \l_@@_punct_ratio_fp,
+    keep-open-close   .bool_set:N = \l_@@_punct_keep_bool,
   }
 \NewDocumentCommand \LuaCJKDeclarePunctStyle { m m }
   {
@@ -1838,17 +1848,19 @@ $ x + 中文 $ and 中文
 % \begin{macro}{\LuaCJKsetup}
 % The same key path serves \cs{LuaCJKsetup} and the package options.
 % \begin{variable}[int]
-% {\l_@@_punct_kinsoku_tl, \l_@@_cjk_math_tl,
-% \l_@@_verb_mode_tl, \l_@@_local_config_tl,
-% \l_@@_check_single_tl, \l_@@_widow_penalty_int,
-% \l_@@_punct_width_dim, \l_@@_punct_bound_width_dim,
-% \l_@@_break_between_puncts_bool,
-% \g_@@_autofake_bold_tl, \g_@@_autofake_slant_tl,
-% \g_@@_embolden_factor_tl, \g_@@_slant_factor_tl,
-% \g_@@_fallback_prop, \l_@@_auto_fallback_bool,
-% \g_@@_load_fandol_bool,
-% \l_@@_fallback_family_tl, \l_@@_fallback_ids_tl,
-% \l_@@_main_fontid_int}
+%   {
+%     \l_@@_punct_kinsoku_tl,   \l_@@_cjk_math_tl,
+%     \l_@@_verb_mode_tl,       \l_@@_local_config_tl,
+%     \l_@@_check_single_tl,    \l_@@_widow_penalty_int,
+%     \l_@@_punct_width_dim,    \l_@@_punct_bound_width_dim,
+%     \l_@@_break_between_puncts_bool,
+%     \g_@@_autofake_bold_tl,   \g_@@_autofake_slant_tl,
+%     \g_@@_embolden_factor_tl, \g_@@_slant_factor_tl,
+%     \g_@@_fallback_prop,      \l_@@_auto_fallback_bool,
+%     \g_@@_load_fandol_bool,
+%     \l_@@_fallback_family_tl, \l_@@_fallback_ids_tl,
+%     \l_@@_main_fontid_int
+%   }
 % The switches read by the Lua side, the \keys{Verb} setting, the
 % configuration file name, the fake bold and slant parameters, and the
 % fallback fonts.
@@ -1891,86 +1903,86 @@ $ x + 中文 $ and 中文
 %    \begin{macrocode}
 \keys_define:nn { LuaCJK / options }
   {
-    CJKglue .code:n = { \@@_set_ccglue:n {#1} },
-    CJKecglue .code:n = { \@@_set_ecglue:n {#1} },
-    CJKspace .choice:,
-    CJKspace / true  .code:n = { \g_@@_cjk_space_attr = 1 },
-    CJKspace / false .code:n = { \g_@@_cjk_space_attr = 0 },
-    CJKspace .default:n = { true },
-    CJKspace .initial:n = { false },
-    xCJKecglue .choice:,
-    xCJKecglue / true  .code:n = { \g_@@_xecglue_attr = 1 },
-    xCJKecglue / false .code:n = { \g_@@_xecglue_attr = 0 },
-    xCJKecglue .default:n = { true },
-    xCJKecglue .initial:n = { false },
-    PunctStyle .code:n = { \@@_set_punct_style:n {#1} },
-    PunctStyle .default:n = { quanjiao },
-    PunctKinsoku .choice:,
-    PunctKinsoku / true  .code:n = { \tl_set:Nn \l_@@_punct_kinsoku_tl { 1 } },
-    PunctKinsoku / false .code:n = { \tl_set:Nn \l_@@_punct_kinsoku_tl { 0 } },
-    PunctKinsoku .default:n = { true },
-    CJKmath .choice:,
-    CJKmath / true  .code:n = { \tl_set:Nn \l_@@_cjk_math_tl { 1 } },
-    CJKmath / false .code:n = { \tl_set:Nn \l_@@_cjk_math_tl { 0 } },
-    CJKmath .default:n = { true },
-    Verb .choice:,
-    Verb / true  .code:n = { \tl_set:Nn \l_@@_verb_mode_tl { true } },
-    Verb / env   .code:n = { \tl_set:Nn \l_@@_verb_mode_tl { env } },
-    Verb / env+  .code:n = { \tl_set:Nn \l_@@_verb_mode_tl { env+ } },
-    Verb / false .code:n = { \tl_set:Nn \l_@@_verb_mode_tl { false } },
-    Verb .default:n = { true },
-    KaiMingPunct  .code:n = { \@@_set_charset:nnn { kaiming } { set } {#1} },
-    KaiMingPunct+ .code:n = { \@@_set_charset:nnn { kaiming } { add } {#1} },
-    KaiMingPunct- .code:n = { \@@_set_charset:nnn { kaiming } { remove } {#1} },
-    MiddlePunct   .code:n = { \@@_set_charset:nnn { middle } { set } {#1} },
-    MiddlePunct+  .code:n = { \@@_set_charset:nnn { middle } { add } {#1} },
-    MiddlePunct-  .code:n = { \@@_set_charset:nnn { middle } { remove } {#1} },
-    LongPunct     .code:n = { \@@_set_charset:nnn { long } { set } {#1} },
-    LongPunct+    .code:n = { \@@_set_charset:nnn { long } { add } {#1} },
-    LongPunct-    .code:n = { \@@_set_charset:nnn { long } { remove } {#1} },
-    NoBreakLongPunct  .code:n = { \@@_set_charset:nnn { nobreak } { set } {#1} },
-    NoBreakLongPunct+ .code:n = { \@@_set_charset:nnn { nobreak } { add } {#1} },
-    NoBreakLongPunct- .code:n = { \@@_set_charset:nnn { nobreak } { remove } {#1} },
-    PunctWidth .code:n =
+    CJKglue              .code:n    = { \@@_set_ccglue:n {#1} },
+    CJKecglue            .code:n    = { \@@_set_ecglue:n {#1} },
+    CJKspace             .choice:,
+    CJKspace / true      .code:n    = { \g_@@_cjk_space_attr = 1 },
+    CJKspace / false     .code:n    = { \g_@@_cjk_space_attr = 0 },
+    CJKspace             .default:n = { true },
+    CJKspace             .initial:n = { false },
+    xCJKecglue           .choice:,
+    xCJKecglue / true    .code:n    = { \g_@@_xecglue_attr = 1 },
+    xCJKecglue / false   .code:n    = { \g_@@_xecglue_attr = 0 },
+    xCJKecglue           .default:n = { true },
+    xCJKecglue           .initial:n = { false },
+    PunctStyle           .code:n    = { \@@_set_punct_style:n {#1} },
+    PunctStyle           .default:n = { quanjiao },
+    PunctKinsoku         .choice:,
+    PunctKinsoku / true  .code:n    = { \tl_set:Nn \l_@@_punct_kinsoku_tl { 1 } },
+    PunctKinsoku / false .code:n    = { \tl_set:Nn \l_@@_punct_kinsoku_tl { 0 } },
+    PunctKinsoku         .default:n = { true },
+    CJKmath              .choice:,
+    CJKmath / true       .code:n    = { \tl_set:Nn \l_@@_cjk_math_tl { 1 } },
+    CJKmath / false      .code:n    = { \tl_set:Nn \l_@@_cjk_math_tl { 0 } },
+    CJKmath              .default:n = { true },
+    Verb                 .choice:,
+    Verb / true          .code:n    = { \tl_set:Nn \l_@@_verb_mode_tl { true } },
+    Verb / env           .code:n    = { \tl_set:Nn \l_@@_verb_mode_tl { env } },
+    Verb / env+          .code:n    = { \tl_set:Nn \l_@@_verb_mode_tl { env+ } },
+    Verb / false         .code:n    = { \tl_set:Nn \l_@@_verb_mode_tl { false } },
+    Verb                 .default:n = { true },
+    KaiMingPunct         .code:n    = { \@@_set_charset:nnn { kaiming } { set } {#1} },
+    KaiMingPunct+        .code:n    = { \@@_set_charset:nnn { kaiming } { add } {#1} },
+    KaiMingPunct-        .code:n    = { \@@_set_charset:nnn { kaiming } { remove } {#1} },
+    MiddlePunct          .code:n    = { \@@_set_charset:nnn { middle } { set } {#1} },
+    MiddlePunct+         .code:n    = { \@@_set_charset:nnn { middle } { add } {#1} },
+    MiddlePunct-         .code:n    = { \@@_set_charset:nnn { middle } { remove } {#1} },
+    LongPunct            .code:n    = { \@@_set_charset:nnn { long } { set } {#1} },
+    LongPunct+           .code:n    = { \@@_set_charset:nnn { long } { add } {#1} },
+    LongPunct-           .code:n    = { \@@_set_charset:nnn { long } { remove } {#1} },
+    NoBreakLongPunct     .code:n    = { \@@_set_charset:nnn { nobreak } { set } {#1} },
+    NoBreakLongPunct+    .code:n    = { \@@_set_charset:nnn { nobreak } { add } {#1} },
+    NoBreakLongPunct-    .code:n    = { \@@_set_charset:nnn { nobreak } { remove } {#1} },
+    PunctWidth           .code:n    =
       {
         \str_if_eq:nnTF {#1} { false }
           { \dim_zero:N \l_@@_punct_width_dim }
           { \dim_set:Nn \l_@@_punct_width_dim {#1} }
       },
-    PunctWidth .default:n = { false },
-    PunctFamily .code:n =
+    PunctWidth  .default:n = { false },
+    PunctFamily .code:n    =
       {
         \str_if_eq:nnTF {#1} { false }
           { \tl_clear:N \l_@@_punct_family_tl }
           { \tl_set:Nn \l_@@_punct_family_tl {#1} }
         \@@_update_font:
       },
-    PunctFamily .default:n = { false },
-    PunctBoundWidth .code:n =
+    PunctFamily     .default:n = { false },
+    PunctBoundWidth .code:n    =
       {
         \str_if_eq:nnTF {#1} { false }
           { \dim_zero:N \l_@@_punct_bound_width_dim }
           { \dim_set:Nn \l_@@_punct_bound_width_dim {#1} }
       },
-    PunctBoundWidth .default:n = { false },
-    LatinPunct .choice:,
-    LatinPunct / true  .code:n =
+    PunctBoundWidth   .default:n = { false },
+    LatinPunct        .choice:,
+    LatinPunct / true .code:n    =
       { \tl_set:Nn \l_@@_latin_punct_tl { 1 } },
     LatinPunct / false .code:n =
       { \tl_set:Nn \l_@@_latin_punct_tl { 0 } },
-    LatinPunct .default:n = { true },
-    LatinPunct .initial:n = { false },
-    AllowBreakBetweenPuncts .choice:,
-    AllowBreakBetweenPuncts / true .code:n =
+    LatinPunct                     .default:n = { true },
+    LatinPunct                     .initial:n = { false },
+    AllowBreakBetweenPuncts        .choice:,
+    AllowBreakBetweenPuncts / true .code:n    =
       { \bool_set_true:N \l_@@_break_between_puncts_bool },
     AllowBreakBetweenPuncts / false .code:n =
       { \bool_set_false:N \l_@@_break_between_puncts_bool },
     AllowBreakBetweenPuncts .default:n = { true },
-    CheckSingle .choice:,
-    CheckSingle / true .code:n = { \tl_set:Nn \l_@@_check_single_tl { 1 } },
-    CheckSingle / false .code:n = { \tl_set:Nn \l_@@_check_single_tl { 0 } },
-    CheckSingle .default:n = { true },
-    WidowPenalty .code:n =
+    CheckSingle             .choice:,
+    CheckSingle / true      .code:n    = { \tl_set:Nn \l_@@_check_single_tl { 1 } },
+    CheckSingle / false     .code:n    = { \tl_set:Nn \l_@@_check_single_tl { 0 } },
+    CheckSingle             .default:n = { true },
+    WidowPenalty            .code:n    =
       { \int_set:Nn \l_@@_widow_penalty_int {#1} },
     LocalConfig .code:n =
       {
@@ -1981,20 +1993,20 @@ $ x + 中文 $ and 中文
           }
           { \tl_set:Nn \l_@@_local_config_tl { luacjk-#1.cfg } }
       },
-    LocalConfig .default:n = { true },
-    AutoFakeBold .code:n = { \@@_set_autofake:nn { bold } {#1} },
-    AutoFakeBold .default:n = { true },
-    AutoFakeBold .initial:n = { false },
-    AutoFakeSlant .code:n = { \@@_set_autofake:nn { slant } {#1} },
-    AutoFakeSlant .default:n = { true },
-    AutoFakeSlant .initial:n = { false },
-    EmboldenFactor .code:n =
+    LocalConfig    .default:n = { true },
+    AutoFakeBold   .code:n    = { \@@_set_autofake:nn { bold } {#1} },
+    AutoFakeBold   .default:n = { true },
+    AutoFakeBold   .initial:n = { false },
+    AutoFakeSlant  .code:n    = { \@@_set_autofake:nn { slant } {#1} },
+    AutoFakeSlant  .default:n = { true },
+    AutoFakeSlant  .initial:n = { false },
+    EmboldenFactor .code:n    =
       {
         \tl_gset:Nn \g_@@_embolden_factor_tl {#1}
         \tl_if_empty:NF \g_@@_autofake_bold_tl
           { \tl_gset:Nn \g_@@_autofake_bold_tl {#1} }
       },
-    AutoFallBack .choice:,
+    AutoFallBack        .choice:,
     AutoFallBack / true .code:n =
       {
         \bool_set_true:N \l_@@_auto_fallback_bool
@@ -2002,12 +2014,12 @@ $ x + 中文 $ and 中文
       },
     AutoFallBack / false .code:n =
       { \bool_set_false:N \l_@@_auto_fallback_bool },
-    AutoFallBack .default:n = { true },
-    LoadFandol .choice:,
-    LoadFandol / true .code:n = { \bool_gset_true:N \g_@@_load_fandol_bool },
-    LoadFandol / false .code:n = { \bool_gset_false:N \g_@@_load_fandol_bool },
-    LoadFandol .default:n = { true },
-    SlantFactor .code:n =
+    AutoFallBack       .default:n = { true },
+    LoadFandol         .choice:,
+    LoadFandol / true  .code:n    = { \bool_gset_true:N \g_@@_load_fandol_bool },
+    LoadFandol / false .code:n    = { \bool_gset_false:N \g_@@_load_fandol_bool },
+    LoadFandol         .default:n = { true },
+    SlantFactor        .code:n    =
       {
         \tl_gset:Nn \g_@@_slant_factor_tl {#1}
         \tl_if_empty:NF \g_@@_autofake_slant_tl
@@ -2118,12 +2130,14 @@ $ x + 中文 $ and 中文
 % one.  A proportional font has no fixed space to align to, so the
 % command adds nothing there.
 % \begin{variable}[int]
-% {\l_@@_verb_space_dim, \l_@@_verb_cjk_dim,
-% \l_@@_verb_gap_dim, \l_@@_verb_saved_ccglue_skip,
-% \l_@@_verb_saved_ecglue_skip,
-% \l_@@_verb_saved_ccglue_touched_bool,
-% \l_@@_verb_saved_ecglue_touched_bool, \l_@@_verb_addon_bool,
-% \l_@@_verb_box}
+%   {
+%     \l_@@_verb_space_dim, \l_@@_verb_cjk_dim,
+%     \l_@@_verb_gap_dim,   \l_@@_verb_saved_ccglue_skip,
+%     \l_@@_verb_saved_ecglue_skip,
+%     \l_@@_verb_saved_ccglue_touched_bool,
+%     \l_@@_verb_saved_ecglue_touched_bool,
+%     \l_@@_verb_addon_bool, \l_@@_verb_box
+%   }
 % The width of two spaces, the width of one CJK character, the gap
 % between them, the saved glues, whether the addon is on, and the box
 % used to measure the character.
@@ -2301,21 +2315,21 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{variable}
 % \begin{variable}[int]
-% {
-% \g_@@_font_name_prop,
-% \g_@@_font_feature_prop,
-% \l_@@_default_feature_tl
-% }
+%   {
+%     \g_@@_font_name_prop,
+%     \g_@@_font_feature_prop,
+%     \l_@@_default_feature_tl
+%   }
 % The font name and the explicit options of each family, kept so that
 % \cs{addCJKfontfeatures} can register the family again, and the
 % features prepended to every family.
 % \begin{variable}[int]
-% {
-% \l_@@_autofake_bold_given_bool,
-% \l_@@_autofake_slant_given_bool,
-% \l_@@_bold_font_given_bool,
-% \l_@@_italic_font_given_bool
-% }
+%   {
+%     \l_@@_autofake_bold_given_bool,
+%     \l_@@_autofake_slant_given_bool,
+%     \l_@@_bold_font_given_bool,
+%     \l_@@_italic_font_given_bool
+%   }
 % Whether one family's options already mention \keys{AutoFakeBold},
 % \keys{AutoFakeSlant}, \texttt{BoldFont}, or \texttt{ItalicFont}.
 %    \begin{macrocode}
@@ -2512,8 +2526,10 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{variable}
 % \begin{variable}[int]
-% {\l_@@_math_family_tl, \g_@@_math_fontid_int,
-% \l_@@_punct_family_tl}
+%   {
+%     \l_@@_math_family_tl, \g_@@_math_fontid_int,
+%     \l_@@_punct_family_tl
+%   }
 % The math family registered by \cs{setCJKmathfont}, the font identifier
 % resolved from it, and the family chosen by \keys{PunctFamily}.
 %    \begin{macrocode}
@@ -2635,7 +2651,7 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 %
 % \begin{variable}[int]
-% {\CJKrmdefault, \CJKsfdefault, \CJKttdefault, \CJKfamilydefault}
+%   {\CJKrmdefault, \CJKsfdefault, \CJKttdefault, \CJKfamilydefault}
 % The CJK families used by the standard font commands.  The family
 % hooks below re-select the CJK family whenever \tn{rmfamily} and its
 % siblings run.
@@ -2702,7 +2718,7 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}
-% {\setCJKmainfont, \setCJKsansfont, \setCJKmonofont, \setCJKfamilyfont}
+%   {\setCJKmainfont, \setCJKsansfont, \setCJKmonofont, \setCJKfamilyfont}
 % The public font commands, all built on
 % \cs{@@_set_family_with_options:nnnn}.
 %    \begin{macrocode}
@@ -2954,8 +2970,10 @@ $ x + 中文 $ and 中文
 % explicitly, because a plain name would also match the file that
 % \pkg{ctex} installs.
 % \begin{variable}[int]
-% {\l_@@_ctex_config_iow, \l_@@_ctex_config_path_tl,
-% \c_@@_ctex_engine_file_tl}
+%   {
+%     \l_@@_ctex_config_iow, \l_@@_ctex_config_path_tl,
+%     \c_@@_ctex_engine_file_tl
+%   }
 % The stream, the target path, and the name of the engine file.
 %    \begin{macrocode}
 \iow_new:N \l_@@_ctex_config_iow
@@ -3109,8 +3127,12 @@ LuaCJK = LuaCJK or {}
 %    \end{macrocode}
 %
 % \begin{variable}[int]
-% {M, GLYPH, GLUE, HLIST, VLIST, KERN, PENALTY, MATH, DISC, WHATSIT,
-% LOCAL_PAR, SPACESKIP, new_node, free_node, has_attribute, set_attribute}
+%   {
+%     M,        GLYPH,      GLUE,          HLIST,
+%     VLIST,    KERN,       PENALTY,       MATH,
+%     DISC,     WHATSIT,    LOCAL_PAR,     SPACESKIP,
+%     new_node, free_node,  has_attribute, set_attribute
+%   }
 % Short names for the module table, the node types, and the node
 % functions.
 %    \begin{macrocode}
@@ -3135,8 +3157,10 @@ local set_attribute = node.set_attribute
 % \end{variable}
 %
 % \begin{variable}[int]
-% {LuaCJK.attr_font, LuaCJK.attr_cjk_space, LuaCJK.attr_xecglue,
-% LuaCJK.attr_inserted, LuaCJK.attr_math_font}
+%   {
+%     LuaCJK.attr_font,     LuaCJK.attr_cjk_space, LuaCJK.attr_xecglue,
+%     LuaCJK.attr_inserted, LuaCJK.attr_math_font
+%   }
 % The attribute numbers.  The \TeX\ side fills them in after loading the
 % module.
 %    \begin{macrocode}
@@ -3161,7 +3185,7 @@ M.attr_settings = M.attr_settings or nil
 % therefore still decides how its own text is set.
 %
 % \begin{variable}[int]
-% {LuaCJK.settings, LuaCJK.settings_by_signature, LuaCJK.attr_settings}
+%   {LuaCJK.settings, LuaCJK.settings_by_signature, LuaCJK.attr_settings}
 % The snapshots, an index from a signature to a snapshot so that
 % repeated font selections reuse one entry, and the attribute number.
 %    \begin{macrocode}
@@ -4839,7 +4863,7 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
 % package use.
 %
 % \begin{variable}[int]
-% {LuaCJKfntef.attr, LuaCJKfntef.settings}
+%   {LuaCJKfntef.attr, LuaCJKfntef.settings}
 % The attribute that carries the number of a settings entry, and the entry
 % itself: the inset at both ends and whether punctuation is skipped.  A
 % separate entry per call keeps two decorations in one paragraph apart.
@@ -5084,9 +5108,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % other key is passed on to \pkg{lua-ul}, which understands
 % \texttt{top}, \texttt{bottom}, and \texttt{height}.
 % \begin{variable}[int]
-% {\l_@@_fntef_depth_dim, \l_@@_fntef_thickness_dim,
-% \l_@@_fntef_textformat_tl, \l_@@_fntef_pass_tl,
-% \l_@@_fntef_top_dim, \l_@@_fntef_bottom_dim}
+%   {
+%     \l_@@_fntef_depth_dim,     \l_@@_fntef_thickness_dim,
+%     \l_@@_fntef_textformat_tl, \l_@@_fntef_pass_tl,
+%     \l_@@_fntef_top_dim,       \l_@@_fntef_bottom_dim
+%   }
 % The requested geometry, the format of the text, and the keys that
 % \pkg{lua-ul} receives.
 %    \begin{macrocode}
@@ -5119,13 +5145,13 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \begin{macrocode}
 \keys_define:nn { LuaCJKfntef / underline }
   {
-    thickness .dim_set:N = \l_@@_fntef_thickness_dim,
-    thickness .value_required:n = true,
-    depth .dim_set:N = \l_@@_fntef_depth_dim,
-    depth .value_required:n = true,
-    textformat .tl_set:N = \l_@@_fntef_textformat_tl,
-    format .tl_set:N = \l_@@_fntef_format_tl,
-    subtract .code:n =
+    thickness  .dim_set:N        = \l_@@_fntef_thickness_dim,
+    thickness  .value_required:n = true,
+    depth      .dim_set:N        = \l_@@_fntef_depth_dim,
+    depth      .value_required:n = true,
+    textformat .tl_set:N         = \l_@@_fntef_textformat_tl,
+    format     .tl_set:N         = \l_@@_fntef_format_tl,
+    subtract   .code:n           =
       {
         \str_if_eq:nnTF {#1} { true }
           { \dim_set:Nn \l_@@_fntef_subtract_dim { .5em } }
@@ -5136,16 +5162,16 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
           }
       },
     subtract .default:n = { true },
-    skip .code:n =
+    skip     .code:n    =
       {
         \str_if_eq:nnTF {#1} { true }
           { \tl_set:Nn \l_@@_fntef_skip_tl { 1 } }
           { \tl_set:Nn \l_@@_fntef_skip_tl { 0 } }
       },
-    skip .default:n = { true },
-    hidden .bool_set:N = \l_@@_fntef_hidden_bool,
-    hidden .default:n = { true },
-    unknown .code:n =
+    skip    .default:n  = { true },
+    hidden  .bool_set:N = \l_@@_fntef_hidden_bool,
+    hidden  .default:n  = { true },
+    unknown .code:n     =
       {
         \tl_put_right:Nx \l_@@_fntef_pass_tl
           {
@@ -5412,30 +5438,30 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
           }
       },
     subtract .default:n = { true },
-    skip .code:n =
+    skip     .code:n    =
       {
         \str_if_eq:nnTF {#1} { true }
           { \tl_set:Nn \l_@@_fntef_skip_tl { 1 } }
           { \tl_set:Nn \l_@@_fntef_skip_tl { 0 } }
       },
-    skip .default:n = { true },
-    hidden .bool_set:N = \l_@@_fntef_hidden_bool,
-    hidden .default:n = { true },
-    depth .dim_set:N = \l_@@_fntef_depth_dim,
-    depth .value_required:n = true,
-    thickness .dim_set:N = \l_@@_fntef_thickness_dim,
+    skip      .default:n        = { true },
+    hidden    .bool_set:N       = \l_@@_fntef_hidden_bool,
+    hidden    .default:n        = { true },
+    depth     .dim_set:N        = \l_@@_fntef_depth_dim,
+    depth     .value_required:n = true,
+    thickness .dim_set:N        = \l_@@_fntef_thickness_dim,
     thickness .value_required:n = true,
-    gap .dim_set:N = \l_@@_fntef_gap_dim,
-    gap .value_required:n = true,
-    height .dim_set:N = \l_@@_fntef_height_dim,
-    height .value_required:n = true,
-    format .tl_set:N = \l_@@_fntef_format_tl,
-    color .tl_set:N = \l_@@_fntef_format_tl,
-    color .value_required:n = true,
-    symbol .tl_set:N = \l_@@_fntef_symbol_tl,
-    sep .dim_set:N = \l_@@_fntef_symbol_sep_dim,
-    sep .value_required:n = true,
-    unknown .code:n = { },
+    gap       .dim_set:N        = \l_@@_fntef_gap_dim,
+    gap       .value_required:n = true,
+    height    .dim_set:N        = \l_@@_fntef_height_dim,
+    height    .value_required:n = true,
+    format    .tl_set:N         = \l_@@_fntef_format_tl,
+    color     .tl_set:N         = \l_@@_fntef_format_tl,
+    color     .value_required:n = true,
+    symbol    .tl_set:N         = \l_@@_fntef_symbol_tl,
+    sep       .dim_set:N        = \l_@@_fntef_symbol_sep_dim,
+    sep       .value_required:n = true,
+    unknown   .code:n           = { },
   }
 \cs_new_protected:Npn \@@_fntef_reset_decoration:
   {
@@ -5765,8 +5791,10 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   default), and \texttt{b} for bottom.  A width of zero or less keeps the
 %   surrounding line width.
 % \begin{variable}[int]
-% {\l_@@_fntef_fill_box, \l_@@_fntef_fill_width_dim,
-% \l_@@_fntef_fill_half_dim, \l_@@_fntef_fill_position_tl}
+%   {
+%     \l_@@_fntef_fill_box,      \l_@@_fntef_fill_width_dim,
+%     \l_@@_fntef_fill_half_dim, \l_@@_fntef_fill_position_tl
+%   }
 % The box being filled, its requested width, the half height used for
 % centring, and the requested baseline position.
 %    \begin{macrocode}
@@ -6017,7 +6045,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   {
     \skip_if_eq:nnTF
       { \l__ctex_ccglue_skip } { \l_@@_ccglue_skip }
-      { \prg_return_false: } { \prg_return_true: }
+      { \prg_return_false: }   { \prg_return_true: }
   }
 \ctex_at_end:n
   {
@@ -6106,9 +6134,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %<*ctex>
 \keys_define:nn { LuaCJK / ctex / ltj }
   {
-    kanjiskip .code:n = { \@@_set_ccglue:n {#1} },
+    kanjiskip  .code:n = { \@@_set_ccglue:n {#1} },
     xkanjiskip .code:n = { \@@_set_ecglue:n {#1} },
-    unknown .code:n = { },
+    unknown    .code:n = { },
   }
 \NewDocumentCommand \ltjsetparameter { m }
   { \keys_set:nn { LuaCJK / ctex / ltj } {#1} }
@@ -6116,7 +6144,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   {
     \str_case:nnF {#1}
       {
-        { kanjiskip } { \skip_use:N \l_@@_ccglue_skip }
+        { kanjiskip }  { \skip_use:N \l_@@_ccglue_skip }
         { xkanjiskip } { \skip_use:N \l_@@_ecglue_skip }
       }
       { 0pt }
