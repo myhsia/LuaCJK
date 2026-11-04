@@ -63,6 +63,15 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   check` copies each entry into the test directory), in `tdslocations` (the
   TDS zip and `l3build install`), and in the generated-file list above. A
   file that is generated but missing from `installfiles` reaches no test.
+- **A new derived file declares itself in the shared preamble.**
+  `\NeedsTeXFormat`, `\RequirePackage { expl3 }`, the single `\GetIdInfo` and
+  the `\Provides…` lines live in one block guarded
+  `%<*package|fntef|listings|ctex>`.  A new file adds its guard there and one
+  description line, followed by its own `\ProvidesExplPackage` or
+  `\ProvidesExplFile`; `LuaCJK-listings` keeps the LaTeX2e
+  `\ProvidesPackage` and repeats the date, version and description in its
+  optional argument.  `l3build tag` rewrites the one `$Id$`, so a second copy
+  of the information would silently go stale.
 - **The engine file name is fixed.**  It is `ctex-engine-luacjk.def`, never
   `ctex-engine-luatex.def`: `ctex` installs a file of that name, CTAN rejects
   the duplicate, and kpathsea resolves within one tree by the smallest full
@@ -155,6 +164,7 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 ```bash
 l3build unpack          # ~5 s, regenerates the derived files
 l3build check           # ~3 min, 37 tests, both test runs
+l3build check <name>    # one test, the first thing to run after a change
 l3build save <name>     # rewrite one baseline after an intended change
 l3build doc             # ~2 min, builds the manual and copies README back
 l3build ctan            # builds luacjk-ctan.zip
@@ -209,4 +219,9 @@ the only parity risk is a missing entry in `.github/tl_packages`.
 See the global `repo-rules` skill: `type(scope): summary`, commit only when
 asked, never commit generated output or secrets. Scopes used in this
 repository: `core`, `fonts`, `chars`, `punct`, `spacing`, `breaks`, `verbatim`,
-`options`, `load`, `fntef`, `listings`, `ctex`, `build`, `ci`, `docs`.
+`options`, `load`, `fntef`, `listings`, `ctex`, `build`, `ci`, `docs`,
+`layout`, `style`.
+
+expl3 source style — names through `@@`, the interface over the primitive,
+hooks, alignment, and spaces around the slashes — is global; see the
+`expl3 source style` section of `repo-rules`, not a copy here.
