@@ -22,7 +22,7 @@ description         = "LuaCJK provides Chinese typesetting for LuaLaTeX, inspire
 packtdszip          = true
 sourcefiles         = {"LuaCJK.dtx", "LuaCJK.ins"}
 unpackfiles         = {"LuaCJK.ins"}
-installfiles        = {"*.sty", "*.lua"}
+installfiles        = {"*.sty", "*.lua", "*.def"}
 typesetfiles        = {"LuaCJK.dtx"}
 testfiledir         = "./testfiles"
 testsuppdir         = "./testsupport"
@@ -44,6 +44,7 @@ tdslocations        = {
   "tex/latex/luacjk/LuaCJK.sty",
   "tex/latex/luacjk/LuaCJKfntef.sty",
   "tex/latex/luacjk/LuaCJK-listings.sty",
+  "tex/latex/luacjk/ctex-engine-luatex.def",
   "tex/luatex/luacjk/LuaCJK.lua",
   "tex/luatex/luacjk/LuaCJK-core.lua",
   "tex/luatex/luacjk/LuaCJKfntef.lua"

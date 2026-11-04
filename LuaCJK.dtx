@@ -67,6 +67,15 @@ underlining, emphasis dots, and strike-through through `lua-ul`.
 
 LuaCJK requires LuaLaTeX. It must not be loaded together with `luatexja`.
 
+## Using it with ctex
+
+`ctex` looks for a file named `ctex-engine-luatex.def` and inputs it, so
+LuaCJK ships that file and `ctex` then uses LuaCJK instead of LuaTeX-ja.
+Since `ctex` installs a file of the same name, the LuaCJK copy has to be
+found first: keep it in the document directory, or install it into a tree
+that comes before the TeX Live main tree. A copy next to the one of `ctex`
+is ignored.
+
 ## License
 
 This work may be distributed and/or modified under the conditions of the
@@ -953,6 +962,57 @@ $ x + 中文 $ and 中文
 % would break that scanner, so inline code is left alone and takes the
 % normal handling.
 %
+% \section{Using LuaCJK with \pkg{ctex}}
+%
+% \pkg{ctex} chooses its LuaTeX backend by inputting a file named after the
+% engine:
+% \begin{quote}
+%   |\file_if_exist:nTF { ctex-engine-luatex.def } { ... }|
+% \end{quote}
+% so a backend can only be provided under that exact name.  LuaCJK therefore
+% ships |ctex-engine-luatex.def|; loading it pulls in LuaCJK and defines the
+% handful of \cs{ctex_...} commands that the \pkg{ctex} kernel asks for.
+%
+% \subsection{Where the file has to be found}
+%
+% kpathsea returns the first file it finds while walking the search path, and
+% inside one tree it takes the lexicographically smallest path.  A copy in
+% |tex/latex/luacjk/| is therefore never used when \pkg{ctex} also provides
+% |tex/latex/ctex/ctex-engine-luatex.def| in the same tree.  To let LuaCJK
+% take over, put the file where it is found first:
+%
+% \begin{itemize}
+%   \item in the directory of the document, because \tn{input} looks there
+%     first --- this is what the tests of LuaCJK do;
+%   \item in a tree that comes before the TeX Live main tree, such as
+%     \texttt{TEXMFHOME} or \texttt{TEXMFLOCAL}.
+% \end{itemize}
+%
+% Installing LuaCJK into the same tree as \pkg{ctex} is harmless but has no
+% effect: \pkg{ctex} keeps using its own file and LuaTeX-ja.
+%
+% \subsection{What the file provides}
+%
+% The parts of the \pkg{ctex} kernel interface that the classes rely on ---
+% the \cs{ctex_...} commands, \cs{ccwd} and friends, the |kanjiskip| and
+% |xkanjiskip| bridges, and the |punct| option, which selects a
+% \texttt{PunctStyle}.  A small part of the \pkg{luatexja} parameter
+% interface is kept as well:
+% \begin{quote}
+%   |\ltjsetparameter{kanjiskip = ...}| and
+%   |\ltjgetparameter{xkanjiskip}|
+% \end{quote}
+% Only these two parameters are understood; any other key of
+% \cs{ltjsetparameter} is silently ignored.  They exist for the \pkg{ctex}
+% tests and for documents that set the skips directly, not as a general
+% reimplementation of LuaTeX-ja.
+%
+% The engine file cannot be tested against the baselines of \pkg{ctex}: those
+% were produced with LuaTeX-ja and describe a different line-breaking
+% implementation.  LuaCJK's tests compile a subset of the \pkg{ctex} test
+% files and check that they run, and compare behaviour through the \pkg{ctex}
+% options where the result is comparable.
+%
 % \section{Comparison with \pkg{xeCJK}}
 %
 % \pkg{LuaCJK} follows the \pkg{xeCJK} interface where the two engines allow
@@ -993,6 +1053,8 @@ $ x + 中文 $ and 中文
 %     are approximated, as described with the command.
 %   \item \cs{setCJKfallbackfamilyfont} and \texttt{AutoFallBack},
 %     \texttt{LoadFandol}, and \texttt{LocalConfig}.
+%   \item The \pkg{ctex} LuaTeX backend, as the engine file described in the
+%     previous section.
 %   \item The \pkg{xeCJK-listings} support, as \pkg{LuaCJK-listings}; LuaCJK
 %     loads it together with \pkg{listings}.
 %   \item The \pkg{LuaCJKfntef} keys \texttt{thickness}, \texttt{depth},
@@ -1050,9 +1112,11 @@ $ x + 中文 $ and 中文
 %     options to the commands of \pkg{ulem}.  \pkg{LuaCJKfntef} builds on
 %     \pkg{lua-ul} instead, and its \tn{underLine} may be configured
 %     directly.
-%   \item A \pkg{ctex} backend.  The package is not wired into
-%     \pkg{ctex} yet; that needs the agreement of the \pkg{ctex}
-%     maintainers.
+%   \item A \pkg{ctex} backend that is picked up automatically.  LuaCJK ships
+%     |ctex-engine-luatex.def|, but \pkg{ctex} asks for that name itself, so
+%     the file only wins when it is found before the copy of \pkg{ctex};
+%     see the section on \pkg{ctex}.  Wiring the backend into \pkg{ctex}
+%     proper still needs the agreement of the \pkg{ctex} maintainers.
 % \end{itemize}
 %
 % \end{documentation}
@@ -5599,6 +5663,202 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   \fi}
 \makeatother
 %</listings>
+%    \end{macrocode}
+%
+% \subsection{The ctex engine file}
+%
+% \pkg{ctex} looks for a file named after the engine and inputs it, so a
+% backend can only be provided under that same name.  LuaCJK therefore ships
+% |ctex-engine-luatex.def| itself; the manual explains where it has to be
+% found, because a copy inside the same tree as \pkg{ctex} loses under
+% kpathsea's path ordering.
+%
+% The file defines the handful of \cs{ctex_...} commands that the \pkg{ctex}
+% kernel calls, and maps the parts of the \pkg{luatexja} interface that
+% \pkg{ctex} and some documents still use.
+%    \begin{macrocode}
+%<*ctex>
+\NeedsTeXFormat{LaTeX2e}
+\RequirePackage { expl3 }
+\GetIdInfo $Id: LuaCJK.dtx 0.1.0 2026-11-02 myhsia<myhsia@outlook.com>$
+  {LuaTeX adapter for ctex (LuaCJK)}
+\ProvidesExplFile {ctex-engine-luatex.def}
+  {\ExplFileDate} {\ExplFileVersion} {\ExplFileDescription}
+\typeout{LuaCJK~ctex~engine~loaded}
+\sys_if_engine_luatex:F
+  {
+    \msg_new:nnn { LuaCJK } { ctex-engine }
+      { The~ctex~engine~file~of~LuaCJK~requires~LuaTeX. }
+    \msg_critical:nn { LuaCJK } { ctex-engine }
+    \tex_endinput:D
+  }
+\RequirePackage { LuaCJK }
+% The fontset of ctex defines these shortcuts itself, and it checks for an
+% existing definition, so LuaCJK's own ones have to go first.
+\clist_map_inline:nn
+  { \songti , \heiti , \fangsong , \kaishu , \lishu , \youyuan ,
+    \yahei , \pingfang }
+  { \cs_undefine:N #1 }
+%</ctex>
+%    \end{macrocode}
+%
+% The interface that the \pkg{ctex} kernel and its classes rely on.
+%    \begin{macrocode}
+%<*ctex>
+\cs_new_protected:Npn \ctex_add_to_selectfont:n #1
+  { \AddToHook { selectfont } {#1} }
+\cs_new_eq:NN \ctex_ltj_zero_globaldefs: \prg_do_nothing:
+\cs_new_protected:Npn \CTEX@alchar #1 {#1}
+\cs_new_eq:NN \CTEX@beginallalchar \prg_do_nothing:
+\cs_new_eq:NN \CTEX@endallalchar \prg_do_nothing:
+\dim_new:N \ccwd
+\dim_new:N \cht
+\dim_new:N \cdp
+\dim_new:N \cwd
+\cs_new_protected:Npn \ctex_update_ccwd:
+  { \dim_set:Nn \ccwd { \f@size \p@ } }
+\cs_new_protected:Npn \ctex_update_em_unit:
+  { \dim_set:Nn \ccwd { \f@size \p@ } }
+\cs_new_protected:Npn \ctex_update_kanjisize:
+  {
+    \dim_set:Nn \cwd { \ccwd }
+    \dim_set:Nn \cht { \f@size \p@ }
+    \dim_set:Nn \cdp { \z@ }
+  }
+%</ctex>
+%    \end{macrocode}
+%
+% \pkg{ctex} keeps its own copy of the CJK glue so that it can tell whether
+% the document changed it.  The two copies are kept in step here.
+%    \begin{macrocode}
+%<*ctex>
+\skip_new:N \l__ctex_ccglue_skip
+\skip_set_eq:NN \l__ctex_ccglue_skip \l_LuaCJK_ccglue_skip
+\cs_new_protected:Npn \ctex_ltj_set_kanjiskip:N #1
+  {
+    \skip_set_eq:NN \l_LuaCJK_ccglue_skip #1
+    \bool_set_true:N \l_LuaCJK_ccglue_touched_bool
+    \LuaCJK_settings_push:
+  }
+\cs_new_protected:Npn \ctex_ltj_set_xkanjiskip:N #1
+  {
+    \skip_set_eq:NN \l_LuaCJK_ecglue_skip #1
+    \bool_set_true:N \l_LuaCJK_ecglue_touched_bool
+    \LuaCJK_settings_push:
+  }
+\cs_new_protected:Npn \ctex_update_ccglue:
+  {
+    \skip_set_eq:NN \l_LuaCJK_ccglue_skip \l__ctex_ccglue_skip
+    \bool_set_true:N \l_LuaCJK_ccglue_touched_bool
+    \LuaCJK_settings_push:
+  }
+\prg_new_conditional:Npnn \ctex_if_ccglue_touched: { TF }
+  {
+    \skip_if_eq:nnTF
+      { \l__ctex_ccglue_skip } { \l_LuaCJK_ccglue_skip }
+      { \prg_return_false: } { \prg_return_true: }
+  }
+\ctex_at_end:n
+  {
+    \cs_set_protected:Npn \__ctex_update_stretch_auxii:
+      {
+        \ctex_if_ccglue_touched:TF
+          { \ctex_update_ccwd: }
+          { \__ctex_update_stretch_auxiii: }
+      }
+  }
+%</ctex>
+%    \end{macrocode}
+%
+% The gap between CJK and Latin text has its own default under \pkg{ctex},
+% |.25em|, and follows the size in the same way.
+%    \begin{macrocode}
+%<*ctex>
+\skip_set:Nn \l_LuaCJK_ecglue_skip { .25em plus 1pt minus 1pt }
+\skip_new:N \l__ctex_xkanjiskip_skip
+\skip_set_eq:NN \l__ctex_xkanjiskip_skip \l_LuaCJK_ecglue_skip
+\tl_new:N \l__ctex_xkanjiskip_tl
+\tl_set:Nn \l__ctex_xkanjiskip_tl { .25em plus 1pt minus 1pt }
+\cs_new_protected:Npn \ctex_update_xkanjiskip:
+  {
+    \skip_if_eq:nnT
+      { \l_LuaCJK_ecglue_skip } { \l__ctex_xkanjiskip_skip }
+      {
+        \skip_set:Nn \l__ctex_xkanjiskip_skip { \l__ctex_xkanjiskip_tl }
+        \skip_set_eq:NN
+          \l_LuaCJK_ecglue_skip \l__ctex_xkanjiskip_skip
+        \bool_set_true:N \l_LuaCJK_ecglue_touched_bool
+        \LuaCJK_settings_push:
+      }
+  }
+\ctex_add_to_selectfont:n { \ctex_update_xkanjiskip: }
+\ctex_add_to_selectfont:n { \ctex_update_kanjisize: }
+%</ctex>
+%    \end{macrocode}
+%
+% The \pkg{ctex} option |punct| selects a punctuation style, and |space|
+% has no counterpart here.
+%    \begin{macrocode}
+%<*ctex>
+\cs_new_protected:Npn \ctex_set_jfm:n #1
+  {
+    \tl_set:Nn \l__ctex_jfm_tl {#1}
+    \LuaCJKsetup { PunctStyle = {#1} }
+  }
+\cs_generate_variant:Nn \ctex_set_jfm:n { o }
+\tl_new:N \l__ctex_jfm_tl
+\ctex_define:n
+  {
+    space .code:n =
+      { \msg_warning:nn { ctex } { invalid-option } }
+  }
+\ctex_define:n
+  {
+    punct .code:n =
+      {
+        \tl_set:Ne \l__ctex_punct_tl {#1}
+        \ctex_set_jfm:o { \l__ctex_punct_tl }
+      },
+    punct .default:n = { quanjiao },
+  }
+\ctex_define:n
+  { experiment .meta:nn = { ctex / experiment } {#1} }
+\keys_define:nn { ctex / experiment }
+  {
+    CJKecglue .code:n =
+      {
+        \tl_set:Nn \l__ctex_xkanjiskip_tl {#1}
+        \skip_set:Nn \l__ctex_xkanjiskip_skip {#1}
+        \ctex_ltj_set_xkanjiskip:N \l__ctex_xkanjiskip_skip
+      },
+    CJKecglue .value_required:n = true
+  }
+\ctex_set_jfm:o { \l__ctex_punct_tl }
+%</ctex>
+%    \end{macrocode}
+%
+% A very small part of the \pkg{luatexja} parameter interface is kept, for
+% the \pkg{ctex} tests and for documents that set the skips directly.
+%    \begin{macrocode}
+%<*ctex>
+\keys_define:nn { LuaCJK / ctex / ltj }
+  {
+    kanjiskip .code:n = { \LuaCJK_set_ccglue:n {#1} },
+    xkanjiskip .code:n = { \LuaCJK_set_ecglue:n {#1} },
+    unknown .code:n = { },
+  }
+\NewDocumentCommand \ltjsetparameter { m }
+  { \keys_set:nn { LuaCJK / ctex / ltj } {#1} }
+\cs_new:Npn \ltjgetparameter #1
+  {
+    \str_case:nnF {#1}
+      {
+        { kanjiskip } { \skip_use:N \l_LuaCJK_ccglue_skip }
+        { xkanjiskip } { \skip_use:N \l_LuaCJK_ecglue_skip }
+      }
+      { 0pt }
+  }
+%</ctex>
 %    \end{macrocode}
 %
 % \end{implementation}

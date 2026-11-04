@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Test-only bridge: run ctex from CTAN/TeX Live with the LuaCJK shadow
-# engine file.  The shadow file is never installed into the TeX tree.
+# Run ctex from CTAN/TeX Live with the engine file that LuaCJK ships.
+# The file is copied into the run directory, because \input searches the
+# current directory first; that is also how a document can pick it up
+# without touching the ctex installation.
 
 set -euo pipefail
 
@@ -26,23 +28,13 @@ if [ "$skip_unpack" -eq 0 ]; then
   fi
 fi
 
-stage="$root/build/ctex-shadow"
 run="$root/build/ctex-shadow-run"
-rm -rf "$stage" "$run"
-mkdir -p "$stage" "$run"
+rm -rf "$run"
+mkdir -p "$run"
 
-echo "== building shadow ctex-engine-luatex.def =="
-cp support/ctex/ctex-engine-luatex.dtx \
-   support/ctex/ctex-engine-luatex.ins "$stage/"
-if ! (cd "$stage" &&
-      pdftex -interaction=nonstopmode ctex-engine-luatex.ins >ins.log 2>&1); then
-  cat "$stage/ins.log"
-  exit 1
-fi
-
-cp build/unpacked/LuaCJK.sty "$run/"
+cp build/unpacked/*.sty "$run/"
+cp build/unpacked/ctex-engine-luatex.def "$run/"
 cp build/unpacked/*.lua "$run/"
-cp "$stage/ctex-engine-luatex.def" "$run/"
 cp test/ctex/ctex-smoke.tex "$run/"
 
 echo "== running ctex smoke test =="
@@ -53,11 +45,13 @@ if ! lualatex -interaction=nonstopmode -halt-on-error \
   exit 1
 fi
 
-echo "== verifying shadow engine =="
-grep -q 'LuaCJK ctex shadow engine loaded' ctex-smoke.log
+echo "== verifying the engine file =="
+grep -q 'LuaCJK ctex engine loaded' ctex-smoke.log
+# The path TeX resolved must be the copy in the run directory.
 grep -q 'ctex-engine-luatex.def' ctex-smoke.log
+grep -qE '^\(./ctex-engine-luatex\.def' ctex-smoke.log
 if grep -q 'luatexja.sty' ctex-smoke.log; then
-  echo "LuaTeX-ja was loaded; the shadow engine was not used" >&2
+  echo "LuaTeX-ja was loaded; the LuaCJK engine file was not used" >&2
   exit 1
 fi
 
@@ -75,4 +69,4 @@ grep -q '^PENALTIES [1-9]' ctex-smoke.log
 grep -q '^LINE_START_PERIODS 0$' ctex-smoke.log
 grep -q '^GLYPH 20013$' ctex-smoke.log
 
-echo "ctex shadow test passed"
+echo "ctex engine test passed"

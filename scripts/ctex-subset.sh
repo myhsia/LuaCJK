@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Compile a small subset of ctex's own .lvt tests with the LuaCJK shadow
-# engine.  This is a compilation smoke test: ctex's .tlg baselines are for
+# Compile a small subset of ctex's own .lvt tests with the engine file that
+# LuaCJK ships.  This is a compilation smoke test: ctex's .tlg baselines are for
 # LuaTeX-ja and are deliberately not used here.
 
 set -euo pipefail
@@ -36,23 +36,13 @@ if [ ! -d "$ctex_kit/ctex/test/testfiles" ]; then
     https://github.com/CTeX-org/ctex-kit.git "$ctex_kit"
 fi
 
-stage="$root/build/ctex-shadow"
 run="$root/build/ctex-subset-run"
-rm -rf "$stage" "$run"
-mkdir -p "$stage" "$run"
+rm -rf "$run"
+mkdir -p "$run"
 
-echo "== building shadow ctex-engine-luatex.def =="
-cp support/ctex/ctex-engine-luatex.dtx \
-   support/ctex/ctex-engine-luatex.ins "$stage/"
-if ! (cd "$stage" &&
-      pdftex -interaction=nonstopmode ctex-engine-luatex.ins >ins.log 2>&1); then
-  cat "$stage/ins.log"
-  exit 1
-fi
-
-cp build/unpacked/LuaCJK.sty "$run/"
+cp build/unpacked/*.sty "$run/"
+cp build/unpacked/ctex-engine-luatex.def "$run/"
 cp build/unpacked/*.lua "$run/"
-cp "$stage/ctex-engine-luatex.def" "$run/"
 cp "$ctex_kit"/ctex/test/support/* "$run/"
 
 tests="

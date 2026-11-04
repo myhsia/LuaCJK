@@ -26,6 +26,15 @@ underlining, emphasis dots, and strike-through through `lua-ul`.
 
 LuaCJK requires LuaLaTeX. It must not be loaded together with `luatexja`.
 
+## Using it with ctex
+
+`ctex` looks for a file named `ctex-engine-luatex.def` and inputs it, so
+LuaCJK ships that file and `ctex` then uses LuaCJK instead of LuaTeX-ja.
+Since `ctex` installs a file of the same name, the LuaCJK copy has to be
+found first: keep it in the document directory, or install it into a tree
+that comes before the TeX Live main tree. A copy next to the one of `ctex`
+is ignored.
+
 ## License
 
 This work may be distributed and/or modified under the conditions of the
