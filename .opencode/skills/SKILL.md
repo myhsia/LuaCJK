@@ -81,6 +81,12 @@ dedupes them by a signature string, stores the entry, and records its number in
 the `settings` attribute. Lua reads `settings_of(node)` and never the TeX side.
 Adding an option means touching all five places listed in `AGENTS.md`.
 
+The snapshot is also where state that used to be a Lua global now lives, so a
+group cannot leak it: `AutoFallBack` and the list of cancelled sub-blocks are
+fields of the entry, resolved per node, rather than flags on the module. When
+a setting is described as "for the rest of the group", it belongs here; only
+the character sets, the fake bold factors, and the load-time keys stay global.
+
 `CJKglue` and `CJKecglue` keep their registers, but the defaults
 (`0pt plus 0.08\baselineskip` and `0.3333em plus 0.1667em minus 0.1111em`)
 are recomputed at each font selection unless the document set them; a document
@@ -135,6 +141,17 @@ file once per directory. `ctex` keeps its own copies of the two glues
 so it can tell whether the document changed them; the engine file
 keeps the copies in step and sets the `*_touched` flags, otherwise the next
 `\selectfont` would restore the default and undo the user's `kanjiskip`.
+
+Two consequences for testing. The redirect a test uses lives in
+`testsupport/ctexopts.cfg`; the subset script cannot use it as-is, because the
+`ctex` test tree brings its own `ctexopts.cfg` that selects a fontset, so the
+script appends the redirect to that file and both settings apply. And the
+proof that the backend was actually taken over is the absence of `luatexja` in
+every log, not a marker line: the redirect can be missing while LuaCJK is
+still loaded from somewhere else. The redirect file itself must stay plain
+LaTeX2e without comment characters — `ctex` reads it at a point where the
+category codes and the `expl3` state are not the ones the writing document
+had.
 
 ## Current work
 

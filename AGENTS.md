@@ -37,8 +37,8 @@ the repository root, where `build.lua` lives. Entry points:
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
 | `build.lua` | `l3build` configuration: module `luacjk`, version `v0.0.1`, `tdslocations`, the `update_tag` hack, `docinit_hook` (copies the generated README back to the root), and `tex()` (runs `latexmk` with the `l3doc` index style) |
 | `testfiles/NN.lvt` + `.tlg` | 37 regression tests and their baselines, one pair per feature |
-| `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), `ctexopts.cfg` (the redirect used by the `ctex` subset), and nothing else |
-| `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines) |
+| `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`) and `ctexopts.cfg` (the redirect that makes `ctex01` and the `ctex` subset load the engine file), and nothing else |
+| `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends the redirect to the `ctexopts.cfg` of the `ctex` test tree |
 | `.github/workflows/test.yaml` | the CI workflow |
 | `.github/tl_packages` | the package list CI installs; a new dependency must be added here or the Ubuntu job fails first |
 | `CHANGELOG.md` | user-visible changes, newest first |
@@ -46,8 +46,7 @@ the repository root, where `build.lua` lives. Entry points:
 
 Generated, never edited by hand: `*.sty`, `*.lua`, `*.def` in the root,
 `README.md` (from the `<readme>` block), `LuaCJK.pdf`, `*.zip`, `*.glo`,
-`.codemo.vrb`, `build/`. `test/` is gitignored scratch space for ad-hoc
-compilation; leave whatever is there alone.
+`.codemo.vrb`, `build/`.
 
 DocStrip blocks inside `LuaCJK.dtx`, in file order: `internal`, `readme`,
 `driver`, `example` (one guard per demo, so demos can be extracted and run
@@ -59,6 +58,17 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **One source.** Edit `LuaCJK.dtx` only; `l3build unpack` regenerates
   everything else. A change to a derived file that is not in the `dtx` is lost
   at the next unpack.
+- **A new installed file type needs three edits.**  A file that the package
+  installs must appear in `installfiles` (CI installs from it, and `l3build
+  check` copies each entry into the test directory), in `tdslocations` (the
+  TDS zip and `l3build install`), and in the generated-file list above. A
+  file that is generated but missing from `installfiles` reaches no test.
+- **The engine file name is fixed.**  It is `ctex-engine-luacjk.def`, never
+  `ctex-engine-luatex.def`: `ctex` installs a file of that name, CTAN rejects
+  the duplicate, and kpathsea resolves within one tree by the smallest full
+  path, so a same-named copy in `tex/latex/luacjk/` silently loses to the one
+  in `tex/latex/ctex/`. `ctex` is redirected through `ctexopts.cfg` instead;
+  renaming the file back breaks the redirect without any error.
 - **Internal names use `@@`.**  The `dtx` sets `%<@@=LuaCJK>` once, before the
   first implementation line, and every private name is written as
   `\l_@@_…`, `\g_@@_…`, `\c_@@_…`, or `\@@_…`; DocStrip expands the leading
