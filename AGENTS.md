@@ -35,7 +35,7 @@ the repository root, where `build.lua` lives. Entry points:
 | --- | --- |
 | `LuaCJK.dtx` | the single source: user documentation, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
-| `build.lua` | `l3build` configuration: module `luacjk`, version `0.1.0`, `tdslocations`, the `update_tag` hack, `docinit_hook` (copies the generated README back to the root), and `tex()` (runs `latexmk` with the `l3doc` index style) |
+| `build.lua` | `l3build` configuration: module `luacjk`, version `v0.0.1`, `tdslocations`, the `update_tag` hack, `docinit_hook` (copies the generated README back to the root), and `tex()` (runs `latexmk` with the `l3doc` index style) |
 | `testfiles/NN.lvt` + `.tlg` | 37 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), `ctexopts.cfg` (the redirect used by the `ctex` subset), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines) |
