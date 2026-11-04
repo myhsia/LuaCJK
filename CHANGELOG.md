@@ -95,8 +95,8 @@
   (leave out the punctuation).  The decoration boxes of lua-ul are adjusted
   in place: the leaders width is reduced and a matching kern and negative
   glue keep the text where it was.
-- Add the fntef options `hidden`, which keeps the dimensions of the text but
-  draws no glyph, and `boxdepth`, which limits the depth the rule adds.
+- Add the fntef option `hidden`, which keeps the dimensions of the text but
+  draws no glyph.
 - Add `\LuaCJKVerbAddon` and `\LuaCJKOffVerbAddon`, which make one CJK
   character as wide as two spaces of the current monospaced font and forbid
   breaks between CJK characters, so columns in code listings stay aligned.
@@ -157,3 +157,11 @@
   loaded.
 - `\CJKsout` now strikes at `height=0.3em` by default, which passes through
   the middle of a CJK glyph; `height=0.5ex` restores the Latin position.
+- The slash of `\CJKxout` now runs from `-0.15em` to `0.8em`, so it crosses
+  the whole body of a CJK glyph instead of stopping in its upper half.
+- The drawn patterns of `\CJKunderwave`, `\CJKunderdot`, and `\CJKxout`
+  are built in a box whose height and depth are zero, so a decoration no
+  longer opens up the line it sits on.  The wave and the dots used to add
+  about `0.25em` of depth.  The `boxdepth` key, which only existed to limit
+  that growth, is removed; it also erased the rule of a `\vrule`-based
+  decoration when used there.

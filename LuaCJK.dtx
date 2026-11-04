@@ -838,17 +838,17 @@ $ x + 中文 $ and 中文
 %       run together;
 %     \item \texttt{skip}, which leaves the punctuation out of the rule;
 %     \item \texttt{hidden}, which hides the text and keeps the rule, with
-%       the width, height, and depth of the hidden text;
-%     \item \texttt{boxdepth}, the depth that the rule may add to the box.
-%       The ink is not moved, so the rule still shows; |boxdepth=0pt| keeps
-%       the rule from changing the line spacing.
+%       the width, height, and depth of the hidden text.
 %   \end{itemize}
 %   The initial geometry is \texttt{depth=0.2em} and
-%   \texttt{thickness=0.4pt}.  \texttt{subtract}, \texttt{skip},
-%   \texttt{hidden}, and \texttt{boxdepth} work the same way for
-%   \cs{CJKunderdblline}, \cs{CJKunderwave}, \cs{CJKxout}, and
-%   \cs{CJKunderdot}.  The keys \texttt{top} and \texttt{bottom} are passed
-%   to \pkg{lua-ul} and override the computed geometry.  A leading
+%   \texttt{thickness=0.4pt}.  \texttt{subtract}, \texttt{skip}, and
+%   \texttt{hidden} work the same way for \cs{CJKunderdblline},
+%   \cs{CJKunderwave}, \cs{CJKxout}, and \cs{CJKunderdot}.  The keys
+%   \texttt{top} and \texttt{bottom} are passed to \pkg{lua-ul} and
+%   override the computed geometry.  The drawn patterns of
+%   \cs{CJKunderwave}, \cs{CJKxout}, and \cs{CJKunderdot} never change the
+%   height or depth of the line they decorate, so their leading does not
+%   grow.  A leading
 %   \texttt{*} or \texttt{-} is accepted for compatibility with
 %   \pkg{xeCJKfntef} and ignored.
 % \end{function}
@@ -871,7 +871,8 @@ $ x + 中文 $ and 中文
 %   Put a wave under \meta{text}.  The wave is drawn with \pkg{l3draw} and
 %   repeated with \tn{leaders}, so it has the same phase across the parts of
 %   one line.  One period is half an em and the whole pattern scales with
-%   the font size.  The optional argument takes the keys of \cs{CJKunderline}
+%   the font size; like the other drawn patterns it leaves the height and
+%   depth of the line alone.  The optional argument takes the keys of \cs{CJKunderline}
 %   and, in addition, \texttt{symbol} to replace the wave with another
 %   symbol, and \texttt{sep} for the space on each side of it (initial
 %   \texttt{0.1em}).
@@ -882,8 +883,9 @@ $ x + 中文 $ and 中文
 %     \tn{CJKxout} \oarg{options} \marg{text}
 %   \end{syntax}
 %   Strike \meta{text} out with a repeated slash, like \pkg{ulem}'s
-%   \tn{xout}.  The optional argument takes the same keys as
-%   \cs{CJKunderline}.
+%   \tn{xout}.  The slash runs from \texttt{-0.15em} to \texttt{0.8em}
+%   relative to the baseline, so it crosses the whole body of a CJK glyph.
+%   The optional argument takes the same keys as \cs{CJKunderline}.
 % \end{function}
 %
 % \begin{function}{\CJKunderanyline}
@@ -921,8 +923,8 @@ $ x + 中文 $ and 中文
 %   Strike \meta{text} through.  The optional argument takes
 %   \texttt{thickness}, \texttt{height} (the distance from the baseline to
 %   the centre of the rule, initial \texttt{0.3em}), \texttt{format} (a
-%   color name), and the keys \texttt{subtract}, \texttt{skip},
-%   \texttt{hidden}, and \texttt{boxdepth}.  A bare color name is still
+%   color name), and the keys \texttt{subtract}, \texttt{skip}, and
+%   \texttt{hidden}.  A bare color name is still
 %   accepted and means |format = |\meta{color}; \texttt{color} is another
 %   name for \texttt{format}.  The initial height passes through the middle
 %   of a CJK glyph, which sits higher than the middle of the Latin
@@ -4836,10 +4838,10 @@ M.next_id = M.next_id or 1
 % \begin{macro}[int]{LuaCJKfntef.new_settings}
 % Register one entry and select it.
 %    \begin{macrocode}
-function M.new_settings (subtract, skip, boxdepth)
+function M.new_settings (subtract, skip)
   local id = M.next_id
   M.next_id = id + 1
-  M.settings[id] = { subtract = subtract, skip = skip, boxdepth = boxdepth }
+  M.settings[id] = { subtract = subtract, skip = skip }
   if M.attr then
     tex.setattribute(M.attr, id)
   end
@@ -4950,15 +4952,6 @@ local function replace_pair (head, prev, leaders, settings)
     copy.stretch = 0
     copy.shrink = 0
     copy.next = nil
-    -- A limited box depth only changes what the line reports; the ink of the
-    -- pattern is unchanged, so the dots still show.
-    if settings.boxdepth and settings.boxdepth >= 0 and copy.leader then
-      local leader = node.copy(copy.leader)
-      if leader.depth > settings.boxdepth then
-        leader.depth = settings.boxdepth
-      end
-      copy.leader = leader
-    end
     append(copy)
     cursor = part[2]
   end
@@ -5067,10 +5060,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \begin{variable}[int]
 % {\l_LuaCJKfntef_depth_dim, \l_LuaCJKfntef_thickness_dim,
 % \l_LuaCJKfntef_textformat_tl, \l_LuaCJKfntef_pass_tl,
-% \l_LuaCJKfntef_top_dim, \l_LuaCJKfntef_bottom_dim,
-% \l_LuaCJKfntef_boxdepth_given_bool}
-% The requested geometry, the format of the text, the keys that
-% \pkg{lua-ul} receives, and whether the geometry keys were given.
+% \l_LuaCJKfntef_top_dim, \l_LuaCJKfntef_bottom_dim}
+% The requested geometry, the format of the text, and the keys that
+% \pkg{lua-ul} receives.
 %    \begin{macrocode}
 \dim_new:N \l_LuaCJKfntef_depth_dim
 \dim_new:N \l_LuaCJKfntef_thickness_dim
@@ -5080,9 +5072,6 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \tl_new:N \l_LuaCJKfntef_skip_tl
 \tl_new:N \l_LuaCJKfntef_skip_js_tl
 \bool_new:N \l_LuaCJKfntef_hidden_bool
-\dim_new:N \l_LuaCJKfntef_boxdepth_dim
-\bool_new:N \l_LuaCJKfntef_boxdepth_given_bool
-\tl_new:N \l_LuaCJKfntef_boxdepth_js_tl
 \dim_new:N \l_LuaCJKfntef_rule_height_dim
 \dim_new:N \l_LuaCJKfntef_rule_depth_dim
 \prop_new:N \g_LuaCJKfntef_format_prop
@@ -5130,11 +5119,6 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     skip .default:n = { true },
     hidden .bool_set:N = \l_LuaCJKfntef_hidden_bool,
     hidden .default:n = { true },
-    boxdepth .code:n =
-      {
-        \dim_set:Nn \l_LuaCJKfntef_boxdepth_dim {#1}
-        \bool_set_true:N \l_LuaCJKfntef_boxdepth_given_bool
-      },
     unknown .code:n =
       {
         \tl_put_right:Nx \l_LuaCJKfntef_pass_tl
@@ -5154,19 +5138,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   }
 \cs_new_protected:Npn \LuaCJKfntef_push_settings:
   {
-    \bool_if:NTF \l_LuaCJKfntef_boxdepth_given_bool
-      {
-        \tl_set:Ne \l_LuaCJKfntef_boxdepth_js_tl
-          { \dim_to_decimal_in_sp:n { \l_LuaCJKfntef_boxdepth_dim } }
-      }
-      { \tl_set:Nn \l_LuaCJKfntef_boxdepth_js_tl { -1 } }
     \bool_lazy_and:nnTF
       { \dim_compare_p:nNn { \l_LuaCJKfntef_subtract_dim } = { 0pt } }
-      {
-        \bool_lazy_and_p:nn
-          { \str_if_eq_p:Vn \l_LuaCJKfntef_skip_tl { 0 } }
-          { \bool_not_p:n { \l_LuaCJKfntef_boxdepth_given_bool } }
-      }
+      { \str_if_eq_p:Vn \l_LuaCJKfntef_skip_tl { 0 } }
       {
         \lua_now:e
           {
@@ -5182,8 +5156,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
           {
             LuaCJKfntef.new_settings
               ( \dim_to_decimal_in_sp:n { \l_LuaCJKfntef_subtract_dim } ,
-                \l_LuaCJKfntef_skip_js_tl ,
-                \l_LuaCJKfntef_boxdepth_js_tl )
+                \l_LuaCJKfntef_skip_js_tl )
           }
       }
   }
@@ -5422,11 +5395,6 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     skip .default:n = { true },
     hidden .bool_set:N = \l_LuaCJKfntef_hidden_bool,
     hidden .default:n = { true },
-    boxdepth .code:n =
-      {
-        \dim_set:Nn \l_LuaCJKfntef_boxdepth_dim {#1}
-        \bool_set_true:N \l_LuaCJKfntef_boxdepth_given_bool
-      },
     depth .dim_set:N = \l_LuaCJKfntef_depth_dim,
     depth .value_required:n = true,
     thickness .dim_set:N = \l_LuaCJKfntef_thickness_dim,
@@ -5448,7 +5416,6 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \dim_zero:N \l_LuaCJKfntef_subtract_dim
     \tl_set:Nn \l_LuaCJKfntef_skip_tl { 0 }
     \bool_set_false:N \l_LuaCJKfntef_hidden_bool
-    \bool_set_false:N \l_LuaCJKfntef_boxdepth_given_bool
     \dim_set:Nn \l_LuaCJKfntef_depth_dim { .2em }
     \dim_set:Nn \l_LuaCJKfntef_thickness_dim { .4pt }
     \dim_set:Nn \l_LuaCJKfntef_gap_dim { 1.1pt }
@@ -5496,24 +5463,39 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % box is reported.  The stroke is set to |.04em|, which is \texttt{0.4pt} at
 % 10pt, so the pattern keeps its look from the previous release while it
 % scales with the font size.
+%   \begin{variable}[int]{\l_LuaCJKfntef_pattern_box}
+%   A scratch box for the drawn patterns.  Each pattern is built here and
+%   then has its height and depth set to zero: the ink is a PDF literal, so
+%   only the reported dimensions change, and a decoration never opens up the
+%   line it sits on.
+%    \begin{macrocode}
+\box_new:N \l_LuaCJKfntef_pattern_box
+%    \end{macrocode}
+%   \end{variable}
 %    \begin{macrocode}
 \newunderlinetype \LuaCJKfntef_wave
   {
     \leaders \hbox to .5em
       {
         \hss
-        \raise -.42em \hbox
+        \hbox_set:Nn \l_LuaCJKfntef_pattern_box
           {
-            \draw_begin:
-              \draw_set_linewidth:n { .04em }
-              \draw_path_moveto:n { 0em , 0em }
-              \draw_path_curveto:nnn { .0625em , .16em }
-                { .1875em , .16em } { .25em , 0em }
-              \draw_path_curveto:nnn { .3125em , -.16em }
-                { .4375em , -.16em } { .5em , 0em }
-              \draw_path_use_clear:n { stroke }
-            \draw_end:
+            \raise -.42em \hbox
+              {
+                \draw_begin:
+                  \draw_set_linewidth:n { .04em }
+                  \draw_path_moveto:n { 0em , 0em }
+                  \draw_path_curveto:nnn { .0625em , .16em }
+                    { .1875em , .16em } { .25em , 0em }
+                  \draw_path_curveto:nnn { .3125em , -.16em }
+                    { .4375em , -.16em } { .5em , 0em }
+                  \draw_path_use_clear:n { stroke }
+                \draw_end:
+              }
           }
+        \box_set_ht:Nn \l_LuaCJKfntef_pattern_box { \c_zero_dim }
+        \box_set_dp:Nn \l_LuaCJKfntef_pattern_box { \c_zero_dim }
+        \box_use_drop:N \l_LuaCJKfntef_pattern_box
         \hss
       }
   }
@@ -5558,18 +5540,26 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \begin{macro}{\CJKxout}
 % A repeated slash, as in \pkg{ulem}'s \tn{xout}.  The drawing is kept as
 % code so that it scales with the font size, and the stroke width is
-% |.04em| like the wave.
+% |.04em| like the wave.  The slash runs from |-.15em| to |.8em|, so it
+% crosses the whole body of a CJK glyph instead of stopping in its upper
+% half.
 %    \begin{macrocode}
 \newunderlinetype \LuaCJKfntef_slash
   {
     \leaders \hbox
       {
-        \draw_begin:
-          \draw_set_linewidth:n { .04em }
-          \draw_path_moveto:n { 0em , -.25em }
-          \draw_path_lineto:n { .42em , .55em }
-          \draw_path_use_clear:n { stroke }
-        \draw_end:
+        \hbox_set:Nn \l_LuaCJKfntef_pattern_box
+          {
+            \draw_begin:
+              \draw_set_linewidth:n { .04em }
+              \draw_path_moveto:n { 0em , -.15em }
+              \draw_path_lineto:n { .42em , .8em }
+              \draw_path_use_clear:n { stroke }
+            \draw_end:
+          }
+        \box_set_ht:Nn \l_LuaCJKfntef_pattern_box { \c_zero_dim }
+        \box_set_dp:Nn \l_LuaCJKfntef_pattern_box { \c_zero_dim }
+        \box_use_drop:N \l_LuaCJKfntef_pattern_box
       }
   }
 \NewDocumentCommand \CJKxout { s t- o +m }
@@ -5700,12 +5690,18 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   {
     \leaders \hbox
       {
-        \skip_horizontal:n { .12em }
-        \raise -.4em \hbox
+        \hbox_set:Nn \l_LuaCJKfntef_pattern_box
           {
-            \vrule width .06em height .06em depth \c_zero_dim
+            \skip_horizontal:n { .12em }
+            \raise -.4em \hbox
+              {
+                \vrule width .06em height .06em depth \c_zero_dim
+              }
+            \skip_horizontal:n { .12em }
           }
-        \skip_horizontal:n { .12em }
+        \box_set_ht:Nn \l_LuaCJKfntef_pattern_box { \c_zero_dim }
+        \box_set_dp:Nn \l_LuaCJKfntef_pattern_box { \c_zero_dim }
+        \box_use_drop:N \l_LuaCJKfntef_pattern_box
       }
   }
 %    \end{macrocode}

@@ -106,11 +106,15 @@
   \nodes
 }
 
-\TEST{boxdepth limits the depth the rule adds}{
+\TEST{drawn decorations do not add height or depth}{
+  \setbox2=\hbox{中文}
+  \TYPE{plain: \the\ht2, \the\dp2}
   \setbox0=\hbox{\CJKunderdot{中文}}
-  \TYPE{depth: \the\dp0}
-  \setbox0=\hbox{\CJKunderdot[boxdepth = 0pt]{中文}}
-  \TYPE{depth: \the\dp0}
+  \TYPE{dots: \the\ht0, \the\dp0}
+  \setbox0=\hbox{\CJKunderwave{中文}}
+  \TYPE{wave: \the\ht0, \the\dp0}
+  \setbox0=\hbox{\CJKxout{中文}}
+  \TYPE{slash: \the\ht0, \the\dp0}
 }
 
 \TEST{each decoration keeps its own settings}{

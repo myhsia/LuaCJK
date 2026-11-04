@@ -25,7 +25,7 @@ TEST 4: emphasis dots keep the text width
 ============================================================
 dotted: 39.49pt
 plain: 39.49pt
-depth difference: 2.37994pt
+depth difference: 0.0pt
 ============================================================
 ============================================================
 TEST 5: nested effects
@@ -93,24 +93,24 @@ RUNS anysymbol 1
 ============================================================
 TEST 12: wave period is half an em and closes the gap
 ============================================================
-LEADER width=327680 height=0 depth=275250
+LEADER width=327680 height=0 depth=0
 ============================================================
 ============================================================
 TEST 13: wave scales with the font size
 ============================================================
-LEADER width=655360 height=0 depth=550500
+LEADER width=655360 height=0 depth=0
 ============================================================
 ============================================================
 TEST 14: emphasis dots scale with the font size
 ============================================================
-LEADER width=196600 height=0 depth=262140
-LEADER width=393200 height=0 depth=524280
+LEADER width=196600 height=0 depth=0
+LEADER width=393200 height=0 depth=0
 ============================================================
 ============================================================
 TEST 15: xout slash scales with the font size
 ============================================================
-LEADER width=301465 height=550502 depth=0
-LEADER width=602930 height=1101004 depth=0
+LEADER width=301465 height=0 depth=0
+LEADER width=602930 height=0 depth=0
 ============================================================
 ============================================================
 TEST 16: strike-through crosses the middle of a CJK glyph

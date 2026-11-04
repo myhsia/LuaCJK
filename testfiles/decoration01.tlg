@@ -163,10 +163,12 @@ width: 20.0pt, height: 7.78pt, depth: 2.39996pt
 NODES leaders:1310720 glue:-1310720
 ============================================================
 ============================================================
-TEST 14: boxdepth limits the depth the rule adds
+TEST 14: drawn decorations do not add height or depth
 ============================================================
-depth: 3.99994pt
-depth: 1.62pt
+plain: 7.78pt, 1.62pt
+dots: 7.78pt, 1.62pt
+wave: 7.78pt, 1.62pt
+slash: 7.78pt, 1.62pt
 ============================================================
 ============================================================
 TEST 15: each decoration keeps its own settings
