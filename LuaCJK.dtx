@@ -264,7 +264,16 @@ LaTeX Project Public License, version 1.3c or later.
 %   |\usepackage[PunctStyle = banjiao]{LuaCJK}|
 % \end{quote}
 %
-% \section{Font selection}
+% \begin{keyval}
+%   \item[\keys{LocalConfig}]\val{\TTF, name}
+%   Read local settings from a configuration file.  \texttt{true} loads
+%   \file{luacjk.cfg}, \meta{name} loads \file{luacjk-}\meta{name}\file{.cfg}, and
+%   \texttt{false} (the initial value) loads nothing.  The file is read at
+%   the end of the package, so it may use every command LuaCJK defines.  A
+%   missing file only warns.
+% \end{keyval}
+%
+% \section{Fonts}
 %
 % The main font commands take an optional list of \pkg{fontspec} options.
 % Options may be written before or after the font name.
@@ -472,7 +481,9 @@ LaTeX Project Public License, version 1.3c or later.
 %   sub-blocks; LuaCJK has no blocks, so both forms act on the same font.
 % \end{function}
 %
-% \section{Spacing}
+% \section{Text layout}
+%
+% \subsection{Spacing}
 %
 % \begin{keyval}
 %   \item[\keys{CJKglue}]\val{glue}: Glue inserted between adjacent CJK
@@ -521,58 +532,6 @@ LaTeX Project Public License, version 1.3c or later.
 %   initial list is |/|, |\|, and |-|.  The setting is global.
 % \end{function}
 %
-% \section{Suspending the adjustments}
-%
-% \begin{function}{\LuaCJKdisable, \LuaCJKenable}
-%   \tn{LuaCJKdisable} stops the typographic adjustments: no \keys{CJKglue}
-%   or \keys{CJKecglue} is inserted, punctuation is not compressed, no
-%   line-breaking prohibitions are added, punctuation is not hung, and CJK
-%   characters in math mode are left alone.  CJK characters are still
-%   typeset in the CJK font, so text stays readable.  The switch is local to
-%   the current group; \tn{LuaCJKenable} turns the adjustments back on.
-% \end{function}
-%
-% This is the hook verbatim-like environments use, and it is also useful when
-% measuring raw node lists.
-%
-% \iffalse
-%<*example>
-% \fi
-\begingroup
-\begin{codemo}
-\LuaCJKdisable 中 文
-\end{codemo}
-\endgroup
-% \iffalse
-%</example>
-% \fi
-%
-% \begin{keyval}
-%   \item[\keys{LocalConfig}]\val{\TTF, name}
-%   Read local settings from a configuration file.  \texttt{true} loads
-%   \file{luacjk.cfg}, \meta{name} loads \file{luacjk-}\meta{name}\file{.cfg}, and
-%   \texttt{false} (the initial value) loads nothing.  The file is read at
-%   the end of the package, so it may use every command LuaCJK defines.  A
-%   missing file only warns.
-% \end{keyval}
-%
-% \begin{function}{\LuaCJKShipoutHook}
-%   \begin{syntax}
-%     \tn{LuaCJKShipoutHook} \marg{code}
-%   \end{syntax}
-%   Run \meta{code} before every page is shipped out.  The code is added to
-%   the \texttt{shipout/before} hook, so it obeys the usual hook ordering.
-% \end{function}
-%
-% \begin{function}{\LuaCJKnobreak}
-%   \begin{syntax}
-%     \tn{LuaCJKnobreak} \marg{text}
-%   \end{syntax}
-%   Keep \meta{text} on one line.  The nodes of the argument are marked and
-%   the line-breaking pass forbids a break at any of their boundaries.  The
-%   marking ends with the current group.
-% \end{function}
-%
 % \iffalse
 %<*example>
 % \fi
@@ -587,109 +546,7 @@ LaTeX Project Public License, version 1.3c or later.
 %</example>
 % \fi
 %
-% \begin{function}{\LuaCJKVerbAddon, \LuaCJKOffVerbAddon}
-%   Make one CJK character as wide as two spaces of the current monospaced
-%   font, which keeps columns aligned when a code listing contains CJK text.
-%   The gap is added as \keys{CJKglue}, so the CJK font itself is not
-%   scaled; a negative gap only raises a warning and adds nothing.  Breaks
-%   between CJK characters are forbidden until the group ends, as in Latin
-%   verbatim text.
-%
-%   The command does nothing at the outermost group level, so it is meant to
-%   be used inside the environment that needs it, for example in the
-%   \texttt{formatcom} option of \pkg{fancyvrb}.
-%   \tn{LuaCJKOffVerbAddon} cancels it again inside the same group.
-% \end{function}
-%
-% \iffalse
-%<*example>
-% \fi
-\begingroup
-\begin{codemo}
-\ttfamily 中中\\
-\ttfamily\LuaCJKVerbAddon 中中
-\end{codemo}
-\endgroup
-% \iffalse
-%</example>
-% \fi
-%
-% \begin{keyval}
-%   \item[\keys{Verb}]\val{\TTF, env, env+}
-%   What to do inside \tn{verb} and the verbatim-like environments
-%   (\env{verbatim}, \env{Verbatim}, \env{lstlisting}, and their
-%   relatives).  \texttt{true} suspends the adjustments in both;
-%   \texttt{env} keeps them inside the environments but not in \tn{verb},
-%   which preserves column alignment when the code contains CJK text;
-%   \texttt{env+} keeps them everywhere; \texttt{false} leaves verbatim
-%   material entirely alone.  Since \texttt{env+} and \texttt{false} both
-%   leave the adjustments on, they behave the same in LuaCJK.
-% \end{keyval}
-%
-% \section{Paragraph endings}
-%
-% \begin{keyval}
-%   \item[\keys{CheckSingle}]\val{\TFF}
-%   When on, the last two break points of a paragraph whose final character
-%   is CJK are made unbreakable, so a single character cannot end up alone
-%   on the last line.  The initial value is \meta{false}.
-%   \item[\keys{WidowPenalty}]\val{penalty}: The penalty used by
-%   \texttt{CheckSingle}.  The initial value is \texttt{10000}; a lower
-%   value allows the break when it is worth the cost.
-% \end{keyval}
-%
-% \pkg{xeCJK} needs the \texttt{NewLineCS}, \texttt{EnvCS},
-% \texttt{InlineEnv}, and \texttt{PlainEquation} options to recognise
-% \TeX\ constructs while it scans tokens.  LuaCJK looks at the finished
-% node list instead, so these options have no counterpart and are not
-% accepted.
-%
-% \iffalse
-%<*example>
-% \fi
-\begingroup
-\begin{codemo}
-\LuaCJKsetup{CheckSingle = true}
-\parbox{4em}{字字字字字字\par}
-\end{codemo}
-\endgroup
-% \iffalse
-%</example>
-% \fi
-%
-% \section{CJK in mathematics}
-%
-% \begin{keyval}
-%   \item[\keys{CJKmath}]\val{\TFF}: Whether CJK characters may be typed
-%   directly in math mode.  When it is
-%   on, such a character is typeset as a box in the CJK math font instead of
-%   being looked up in the math font.  Enable it with
-%   |\LuaCJKsetup{CJKmath = true}| or with the package option
-%   |CJKmath = true|.  Without it a CJK character in math mode is looked up
-%   in the math font and usually disappears, so LuaCJK issues a one-time
-%   warning in that case.
-% \end{keyval}
-%
-% \begin{function}{\setCJKmathfont}
-%   \begin{syntax}
-%     \tn{setCJKmathfont} \oarg{options} \marg{font} \oarg{options}
-%   \end{syntax}
-%   Select the CJK font used for characters in math mode.  Without this
-%   command the CJK main font is used.  This manual enables \keys{CJKmath}
-%   and sets this font in its preamble.
-% \end{function}
-%
-% \iffalse
-%<*example>
-% \fi
-\begin{codemo}
-$ x + 中文 $ and 中文
-\end{codemo}
-% \iffalse
-%</example>
-% \fi
-%
-% \section{Punctuation}
+% \subsection{Punctuation}
 %
 % \begin{keyval}
 %   \item[\keys{PunctStyle}]\val{style}: Select a punctuation style.  The
@@ -767,7 +624,7 @@ a’a\quad 字！字
 %</example>
 % \fi
 %
-% \subsection{Punctuation character sets}
+% \subsubsection{Punctuation character sets}
 %
 % Each of these keys comes in three forms: the plain one replaces the set,
 % the form with \texttt{+} adds characters, and the form with \texttt{-}
@@ -888,7 +745,50 @@ a’a\quad 字！字
 %</example>
 % \fi
 
-% \section{Font effects}
+
+% \subsection{Line breaking}
+%
+% \begin{keyval}
+%   \item[\keys{CheckSingle}]\val{\TFF}
+%   When on, the last two break points of a paragraph whose final character
+%   is CJK are made unbreakable, so a single character cannot end up alone
+%   on the last line.  The initial value is \meta{false}.
+%   \item[\keys{WidowPenalty}]\val{penalty}: The penalty used by
+%   \texttt{CheckSingle}.  The initial value is \texttt{10000}; a lower
+%   value allows the break when it is worth the cost.
+% \end{keyval}
+%
+% \pkg{xeCJK} needs the \texttt{NewLineCS}, \texttt{EnvCS},
+% \texttt{InlineEnv}, and \texttt{PlainEquation} options to recognise
+% \TeX\ constructs while it scans tokens.  LuaCJK looks at the finished
+% node list instead, so these options have no counterpart and are not
+% accepted.
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\LuaCJKsetup{CheckSingle = true}
+\parbox{4em}{字字字字字字\par}
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \begin{function}{\LuaCJKnobreak}
+%   \begin{syntax}
+%     \tn{LuaCJKnobreak} \marg{text}
+%   \end{syntax}
+%   Keep \meta{text} on one line.  The nodes of the argument are marked and
+%   the line-breaking pass forbids a break at any of their boundaries.  The
+%   marking ends with the current group.
+% \end{function}
+%
+% \section{Decorations and mathematics}
+%
+% \subsection{Decorations}
 %
 % The companion package \pkg{LuaCJKfntef} provides underlining, emphasis
 % dots, and strike-through.  It builds on \pkg{lua-ul}, so the decorated text
@@ -1115,7 +1015,114 @@ a’a\quad 字！字
 %</example>
 % \fi
 %
-% \section{Code listings}
+% \subsection{Mathematics}
+%
+% \begin{keyval}
+%   \item[\keys{CJKmath}]\val{\TFF}: Whether CJK characters may be typed
+%   directly in math mode.  When it is
+%   on, such a character is typeset as a box in the CJK math font instead of
+%   being looked up in the math font.  Enable it with
+%   |\LuaCJKsetup{CJKmath = true}| or with the package option
+%   |CJKmath = true|.  Without it a CJK character in math mode is looked up
+%   in the math font and usually disappears, so LuaCJK issues a one-time
+%   warning in that case.
+% \end{keyval}
+%
+% \begin{function}{\setCJKmathfont}
+%   \begin{syntax}
+%     \tn{setCJKmathfont} \oarg{options} \marg{font} \oarg{options}
+%   \end{syntax}
+%   Select the CJK font used for characters in math mode.  Without this
+%   command the CJK main font is used.  This manual enables \keys{CJKmath}
+%   and sets this font in its preamble.
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+$ x + 中文 $ and 中文
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
+%
+% \section{Material left alone}
+%
+% \subsection{Suspending and hooks}
+%
+% \begin{function}{\LuaCJKdisable, \LuaCJKenable}
+%   \tn{LuaCJKdisable} stops the typographic adjustments: no \keys{CJKglue}
+%   or \keys{CJKecglue} is inserted, punctuation is not compressed, no
+%   line-breaking prohibitions are added, punctuation is not hung, and CJK
+%   characters in math mode are left alone.  CJK characters are still
+%   typeset in the CJK font, so text stays readable.  The switch is local to
+%   the current group; \tn{LuaCJKenable} turns the adjustments back on.
+% \end{function}
+%
+% This is the hook verbatim-like environments use, and it is also useful when
+% measuring raw node lists.
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\LuaCJKdisable 中 文
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \begin{function}{\LuaCJKShipoutHook}
+%   \begin{syntax}
+%     \tn{LuaCJKShipoutHook} \marg{code}
+%   \end{syntax}
+%   Run \meta{code} before every page is shipped out.  The code is added to
+%   the \texttt{shipout/before} hook, so it obeys the usual hook ordering.
+% \end{function}
+%
+% \subsection{Verbatim and listings}
+%
+% \begin{function}{\LuaCJKVerbAddon, \LuaCJKOffVerbAddon}
+%   Make one CJK character as wide as two spaces of the current monospaced
+%   font, which keeps columns aligned when a code listing contains CJK text.
+%   The gap is added as \keys{CJKglue}, so the CJK font itself is not
+%   scaled; a negative gap only raises a warning and adds nothing.  Breaks
+%   between CJK characters are forbidden until the group ends, as in Latin
+%   verbatim text.
+%
+%   The command does nothing at the outermost group level, so it is meant to
+%   be used inside the environment that needs it, for example in the
+%   \texttt{formatcom} option of \pkg{fancyvrb}.
+%   \tn{LuaCJKOffVerbAddon} cancels it again inside the same group.
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\ttfamily 中中\\
+\ttfamily\LuaCJKVerbAddon 中中
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \begin{keyval}
+%   \item[\keys{Verb}]\val{\TTF, env, env+}
+%   What to do inside \tn{verb} and the verbatim-like environments
+%   (\env{verbatim}, \env{Verbatim}, \env{lstlisting}, and their
+%   relatives).  \texttt{true} suspends the adjustments in both;
+%   \texttt{env} keeps them inside the environments but not in \tn{verb},
+%   which preserves column alignment when the code contains CJK text;
+%   \texttt{env+} keeps them everywhere; \texttt{false} leaves verbatim
+%   material entirely alone.  Since \texttt{env+} and \texttt{false} both
+%   leave the adjustments on, they behave the same in LuaCJK.
+% \end{keyval}
 %
 % \pkg{listings} processes one character at a time and typesets a character
 % that is outside its character table at the moment it is read.  CJK
@@ -1220,7 +1227,8 @@ a’a\quad 字！字
 %
 % \end{documentation}
 %
-% \StopEventually{\clearpage\PrintIndex}
+% \StopEventually{\PrintIndex}
+% \clearpage \appendix
 %
 % \begin{implementation}
 %
@@ -5111,8 +5119,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \end{macrocode}
 % \end{macro}
 %
-
-% \subsection{Font effects}
+% \subsection{Decorations}
 %
 % The \pkg*{LuaCJKfntef} package is a thin layer over \pkg{lua-ul}, which
 % provides the underlining engine.  It is generated from this file and may be
