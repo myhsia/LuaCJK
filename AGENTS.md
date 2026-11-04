@@ -103,6 +103,11 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   grep -nE '^%[ ]{0,3}\\(begin|end)\{macrocode\}' LuaCJK.dtx   # must be empty
   grep -c 'Reference `doc' build/doc/LuaCJK.log                      # must be 0
   ```
+- **Demos.**  A command without arguments gets no `syntax` block; a command with a
+  visible effect gets a `codemo`.  In a demo, parallel commands align their
+  arguments, a command is not split from the text it affects, and font options
+  come before the font name.  Align a `syntax` continuation with `\` plus spaces,
+  not `\phantom`.
 - **The manual describes the package, not the repository.**  No `.lvt` files,
   CI, build commands, or script names in the documentation part: how the
   package is tested and released belongs in this guide, and the principle
