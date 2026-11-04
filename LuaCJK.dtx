@@ -273,6 +273,21 @@ LaTeX Project Public License, version 1.3c or later.
 %   missing file only warns.
 % \end{keyval}
 %
+% To use LuaCJK with \pkg{ctex}, run \cs{LuaCJKwriteCtexConfig} once in a
+% plain document; it writes \file{ctexopts.cfg}, and every \pkg{ctex}
+% document in that directory or below it then uses LuaCJK, while \XeLaTeX\
+% documents keep their own backend.  Writing the file by hand works as well.
+%
+% \begin{function}{\LuaCJKwriteCtexConfig}
+%   \begin{syntax}
+%     \tn{LuaCJKwriteCtexConfig} \oarg{directory}
+%   \end{syntax}
+%   Write the redirect into \meta{directory}, the current directory by
+%   default.  An existing file is left alone; the starred form overwrites it.
+%   The class then finds the \cs{ctex_...} commands it calls, \cs{ccwd},
+%   and the |punct| option.
+% \end{function}
+%
 % \section{Fonts}
 %
 % The main font commands take an optional list of \pkg{fontspec} options.
@@ -624,13 +639,11 @@ a’a\quad 字！字
 %</example>
 % \fi
 %
-% \subsubsection{Punctuation character sets}
-%
-% Each of these keys comes in three forms: the plain one replaces the set,
-% the form with \texttt{+} adds characters, and the form with \texttt{-}
-% removes them.  Ranges use the same spelling as
-% \cs{LuaCJKDeclareCharClass}.  The sets are global: a group does not bring
-% the previous members back.
+% The character sets that the punctuation code works with come next.  Each
+% of their keys has three forms: the plain one replaces the set, the form
+% with \texttt{+} adds characters, and the form with \texttt{-} removes
+% them.  Ranges use the same spelling as \cs{LuaCJKDeclareCharClass}.  The
+% sets are global: a group does not bring the previous members back.
 %
 % \begin{keyval}
 %   \item[\keys{KaiMingPunct<+->}]\val{char list}:
@@ -744,8 +757,7 @@ a’a\quad 字！字
 % \iffalse
 %</example>
 % \fi
-
-
+%
 % \subsection{Line breaking}
 %
 % \begin{keyval}
@@ -785,6 +797,97 @@ a’a\quad 字！字
 %   the line-breaking pass forbids a break at any of their boundaries.  The
 %   marking ends with the current group.
 % \end{function}
+%
+% \subsection{Suspending and hooks}
+%
+% \begin{function}{\LuaCJKdisable, \LuaCJKenable}
+%   \tn{LuaCJKdisable} stops the typographic adjustments: no \keys{CJKglue}
+%   or \keys{CJKecglue} is inserted, punctuation is not compressed, no
+%   line-breaking prohibitions are added, punctuation is not hung, and CJK
+%   characters in math mode are left alone.  CJK characters are still
+%   typeset in the CJK font, so text stays readable.  The switch is local to
+%   the current group; \tn{LuaCJKenable} turns the adjustments back on.
+% \end{function}
+%
+% This is the hook verbatim-like environments use, and it is also useful when
+% measuring raw node lists.
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\LuaCJKdisable 中 文
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \begin{function}{\LuaCJKShipoutHook}
+%   \begin{syntax}
+%     \tn{LuaCJKShipoutHook} \marg{code}
+%   \end{syntax}
+%   Run \meta{code} before every page is shipped out.  The code is added to
+%   the \texttt{shipout/before} hook, so it obeys the usual hook ordering.
+% \end{function}
+%
+% \subsection{Verbatim and listings}
+%
+% \begin{function}{\LuaCJKVerbAddon, \LuaCJKOffVerbAddon}
+%   Make one CJK character as wide as two spaces of the current monospaced
+%   font, which keeps columns aligned when a code listing contains CJK text.
+%   The gap is added as \keys{CJKglue}, so the CJK font itself is not
+%   scaled; a negative gap only raises a warning and adds nothing.  Breaks
+%   between CJK characters are forbidden until the group ends, as in Latin
+%   verbatim text.
+%
+%   The command does nothing at the outermost group level, so it is meant to
+%   be used inside the environment that needs it, for example in the
+%   \texttt{formatcom} option of \pkg{fancyvrb}.
+%   \tn{LuaCJKOffVerbAddon} cancels it again inside the same group.
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\ttfamily 中中\\
+\ttfamily\LuaCJKVerbAddon 中中
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \begin{keyval}
+%   \item[\keys{Verb}]\val{\TTF, env, env+}
+%   What to do inside \tn{verb} and the verbatim-like environments
+%   (\env{verbatim}, \env{Verbatim}, \env{lstlisting}, and their
+%   relatives).  \texttt{true} suspends the adjustments in both;
+%   \texttt{env} keeps them inside the environments but not in \tn{verb},
+%   which preserves column alignment when the code contains CJK text;
+%   \texttt{env+} keeps them everywhere; \texttt{false} leaves verbatim
+%   material entirely alone.  Since \texttt{env+} and \texttt{false} both
+%   leave the adjustments on, they behave the same in LuaCJK.
+% \end{keyval}
+%
+% \pkg{listings} processes one character at a time and typesets a character
+% that is outside its character table at the moment it is read.  CJK
+% characters are outside that table, so they end up in front of the
+% surrounding Latin text.  The companion package
+% \pkg{LuaCJK-listings} fixes this: it adds the CJK characters to the
+% character table of \pkg{listings}, so they stay in place, counts each of
+% them as two columns, and turns the spacing adjustments off inside the
+% listing.  LuaCJK loads it automatically when \pkg{listings} is used, so no
+% extra command is needed.
+%
+% \tn{lstinline} reads its argument with changed category codes; the patch
+% would break that scanner, so inline code is left alone and takes the
+% normal handling.
+%
+
 %
 % \section{Decorations and mathematics}
 %
@@ -1047,124 +1150,6 @@ $ x + 中文 $ and 中文
 %</example>
 % \fi
 %
-% \section{Material left alone}
-%
-% \subsection{Suspending and hooks}
-%
-% \begin{function}{\LuaCJKdisable, \LuaCJKenable}
-%   \tn{LuaCJKdisable} stops the typographic adjustments: no \keys{CJKglue}
-%   or \keys{CJKecglue} is inserted, punctuation is not compressed, no
-%   line-breaking prohibitions are added, punctuation is not hung, and CJK
-%   characters in math mode are left alone.  CJK characters are still
-%   typeset in the CJK font, so text stays readable.  The switch is local to
-%   the current group; \tn{LuaCJKenable} turns the adjustments back on.
-% \end{function}
-%
-% This is the hook verbatim-like environments use, and it is also useful when
-% measuring raw node lists.
-%
-% \iffalse
-%<*example>
-% \fi
-\begingroup
-\begin{codemo}
-\LuaCJKdisable 中 文
-\end{codemo}
-\endgroup
-% \iffalse
-%</example>
-% \fi
-%
-% \begin{function}{\LuaCJKShipoutHook}
-%   \begin{syntax}
-%     \tn{LuaCJKShipoutHook} \marg{code}
-%   \end{syntax}
-%   Run \meta{code} before every page is shipped out.  The code is added to
-%   the \texttt{shipout/before} hook, so it obeys the usual hook ordering.
-% \end{function}
-%
-% \subsection{Verbatim and listings}
-%
-% \begin{function}{\LuaCJKVerbAddon, \LuaCJKOffVerbAddon}
-%   Make one CJK character as wide as two spaces of the current monospaced
-%   font, which keeps columns aligned when a code listing contains CJK text.
-%   The gap is added as \keys{CJKglue}, so the CJK font itself is not
-%   scaled; a negative gap only raises a warning and adds nothing.  Breaks
-%   between CJK characters are forbidden until the group ends, as in Latin
-%   verbatim text.
-%
-%   The command does nothing at the outermost group level, so it is meant to
-%   be used inside the environment that needs it, for example in the
-%   \texttt{formatcom} option of \pkg{fancyvrb}.
-%   \tn{LuaCJKOffVerbAddon} cancels it again inside the same group.
-% \end{function}
-%
-% \iffalse
-%<*example>
-% \fi
-\begingroup
-\begin{codemo}
-\ttfamily 中中\\
-\ttfamily\LuaCJKVerbAddon 中中
-\end{codemo}
-\endgroup
-% \iffalse
-%</example>
-% \fi
-%
-% \begin{keyval}
-%   \item[\keys{Verb}]\val{\TTF, env, env+}
-%   What to do inside \tn{verb} and the verbatim-like environments
-%   (\env{verbatim}, \env{Verbatim}, \env{lstlisting}, and their
-%   relatives).  \texttt{true} suspends the adjustments in both;
-%   \texttt{env} keeps them inside the environments but not in \tn{verb},
-%   which preserves column alignment when the code contains CJK text;
-%   \texttt{env+} keeps them everywhere; \texttt{false} leaves verbatim
-%   material entirely alone.  Since \texttt{env+} and \texttt{false} both
-%   leave the adjustments on, they behave the same in LuaCJK.
-% \end{keyval}
-%
-% \pkg{listings} processes one character at a time and typesets a character
-% that is outside its character table at the moment it is read.  CJK
-% characters are outside that table, so they end up in front of the
-% surrounding Latin text.  The companion package
-% \pkg{LuaCJK-listings} fixes this: it adds the CJK characters to the
-% character table of \pkg{listings}, so they stay in place, counts each of
-% them as two columns, and turns the spacing adjustments off inside the
-% listing.  LuaCJK loads it automatically when \pkg{listings} is used, so no
-% extra command is needed.
-%
-% \tn{lstinline} reads its argument with changed category codes; the patch
-% would break that scanner, so inline code is left alone and takes the
-% normal handling.
-%
-% \section{Using LuaCJK with \pkg{ctex}}
-%
-% \pkg{ctex} always inputs an engine file of its own naming, so it has to be
-% told to use the one LuaCJK ships.  Run \cs{LuaCJKwriteCtexConfig} once in a
-% plain document:
-% \begin{quote}
-%   |\documentclass{article}|\\
-%   |\usepackage{LuaCJK}|\\
-%   |\LuaCJKwriteCtexConfig|
-% \end{quote}
-% The command writes \file{ctexopts.cfg} into the current directory.  Every
-% \pkg{ctex} document in that directory, or in a directory below it, then
-% uses LuaCJK, while \XeLaTeX\ documents in the same place keep their own
-% backend.  Writing that file by hand has the same effect.
-%
-% \begin{function}{\LuaCJKwriteCtexConfig}
-%   \begin{syntax}
-%     \tn{LuaCJKwriteCtexConfig} \oarg{directory}
-%   \end{syntax}
-%   Write the redirect into \meta{directory}, the current directory by
-%   default.  An existing file is left alone; the starred form overwrites it.
-% \end{function}
-%
-% A \pkg{ctex} document then works as usual: the class finds the
-% \cs{ctex_...} commands it calls, \cs{ccwd}, the |kanjiskip| and
-% |xkanjiskip| settings, and the |punct| option.
-%
 % \section{Comparison with \pkg{xeCJK}}
 %
 % \pkg{LuaCJK} follows the \pkg{xeCJK} interface where the two engines allow
@@ -1242,7 +1227,7 @@ $ x + 中文 $ and 中文
 %<@@=LuaCJK>
 %    \end{macrocode}
 %
-% \subsection{Engine check and package loading}
+% \subsection{Loading and conflicts}
 %
 % LuaCJK only works with \LuaTeX.  The engine test runs before any other
 % package is loaded, so that a wrong engine stops with a clear message.
@@ -1272,8 +1257,6 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Conflicting packages}
-%
 % \pkg{luatexja} installs its own CJK font and spacing layer and works on the
 % same callbacks as LuaCJK, so the two are rejected whatever the loading
 % order.  \pkg{xeCJK} needs no check here: it stops by itself on any engine
@@ -1290,7 +1273,9 @@ $ x + 中文 $ and 中文
   { \msg_critical:nn { LuaCJK } { luatexja-conflict } }
 %    \end{macrocode}
 %
-% \subsection{Attributes and registers}
+% \subsection{Registers, styles, and options}
+%
+% The runtime state lives in attributes and registers, which the options below fill in.
 %
 % \begin{variable}[int]
 % {
@@ -1379,7 +1364,7 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Punctuation styles}
+% A punctuation style is a property list, read through the settings of each node.
 %
 % \begin{variable}[int]{\g_LuaCJK_punct_style_prop}
 % The names of the styles LuaCJK knows about, including those defined by
@@ -1533,8 +1518,6 @@ $ x + 中文 $ and 中文
   }
 %    \end{macrocode}
 % \end{macro}
-%
-% \subsection{Sub-blocks}
 %
 % A single CJK font rarely covers every block of \textsc{Unicode}.  A
 % sub-block gives a range of characters its own font inside a family, named
@@ -1867,8 +1850,6 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Options}
-%
 % \begin{macro}{\LuaCJKsetup}
 % The same key path serves \cs{LuaCJKsetup} and the package options.
 % \begin{variable}[int]
@@ -2106,8 +2087,6 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Suspending the adjustments}
-%
 % \begin{macro}{\LuaCJKdisable, \LuaCJKenable}
 % Set the node attribute that makes the Lua callbacks skip the
 % adjustments.  The attribute follows the \TeX\ grouping.
@@ -2311,7 +2290,7 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{CJK families}
+% \subsection{Fonts}
 %
 % \begin{macro}[int]{\LuaCJK_set_family:nnn}
 % Define a family through \pkg{fontspec} and remember the resulting
@@ -2670,8 +2649,6 @@ $ x + 中文 $ and 中文
   }
 %    \end{macrocode}
 %
-% \subsection{Font selection commands}
-%
 % \begin{variable}[int]
 % {\CJKrmdefault, \CJKsfdefault, \CJKttdefault, \CJKfamilydefault}
 % The CJK families used by the standard font commands.  The family
@@ -2897,7 +2874,7 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Characters without CJK/Latin glue}
+% \subsection{Names and configuration}
 %
 % \begin{macro}{\normalspacedchars}
 % The characters in the list get no glue on either side, which is what one
@@ -2930,8 +2907,6 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Local configuration}
-%
 % \begin{macro}[int]{\LuaCJK_load_local_config:}
 % Load the file chosen by the \keys{LocalConfig} option.  The key is
 % read while the package is being loaded, but the file is only input at
@@ -2955,8 +2930,6 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Loading Fandol}
-%
 % \begin{macro}[int]{\LuaCJK_load_fandol:}
 % When the \keys{LoadFandol} option is on and the document did not
 % declare any CJK font, fall back to the four Fandol faces.  This runs at
@@ -2979,8 +2952,6 @@ $ x + 中文 $ and 中文
   }
 %    \end{macrocode}
 % \end{macro}
-%
-% \subsection{The ctex redirect}
 %
 % \pkg{ctex} picks its own engine file by name, so LuaCJK cannot install a
 % file of that name without colliding with \pkg{ctex} itself.  The redirect
@@ -3083,7 +3054,7 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Loading the Lua core}
+% \subsection{The Lua module}
 %
 % The Lua module reads the attribute numbers and installs its callbacks.
 % The current font is resolved once the document starts.
@@ -3126,8 +3097,6 @@ $ x + 中文 $ and 中文
 %</package>
 %    \end{macrocode}
 %
-% \subsection{The Lua entry point}
-%
 % The package ships two Lua modules.  \file{LuaCJK.lua} only loads the core
 % module; all node processing lives in \file{LuaCJK-core.lua}.
 % \begin{variable}[int]{LuaCJK}
@@ -3141,8 +3110,6 @@ require("LuaCJK-core")
 %</lua>
 %    \end{macrocode}
 % \end{variable}
-%
-% \subsection{Module state and node types}
 %
 % The core module starts by creating the shared table and caching the node
 % identifiers.  The callbacks run on every list, so these lookups happen
@@ -3197,7 +3164,7 @@ M.attr_settings = M.attr_settings or nil
 %    \end{macrocode}
 % \end{variable}
 %
-% \subsection{Settings that follow the text}
+% \subsection{Settings and data}
 %
 % Most options describe how text is set, not how the document is configured,
 % so they have to travel with the characters.  A snapshot of the current
@@ -3310,8 +3277,6 @@ M.settings_of = settings_of
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Character classes}
-%
 % The quotation marks, the middle dot, and the ellipses are shared with Latin
 % scripts.  With \keys{LatinPunct} on, they use the Latin font and are not
 % compressed; the em dash is not in the table, because it stays CJK.
@@ -3354,8 +3319,6 @@ M.is_cjk = is_cjk
 
 %    \end{macrocode}
 % \end{macro}
-%
-% \subsection{Punctuation data}
 %
 % \begin{variable}[int]{PUNCT_CLASS}
 % The punctuation LuaCJK knows about, grouped as opening, closing, middle,
@@ -3615,8 +3578,6 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Suspension}
-%
 % \begin{variable}[int]{LuaCJK.attr_disabled}
 % The attribute number of the suspension switch.
 %    \begin{macrocode}
@@ -3639,7 +3600,7 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Font rewriting}
+% \subsection{Node rewriting}
 %
 % A CJK glyph carries the identifier of the family that applies to it in an
 % attribute.  The pass below replaces it by a copy in that font, and takes a
@@ -3843,8 +3804,6 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Node classes}
-%
 % \begin{macro}[int]{class_of_char}
 % Map a character to \texttt{CJK} or \texttt{LATIN}.
 %    \begin{macrocode}
@@ -3927,8 +3886,6 @@ end
 
 %    \end{macrocode}
 % \end{macro}
-%
-% \subsection{Glue and kern helpers}
 %
 % \begin{macro}[int]{is_inserted}
 % Test whether a node was inserted by LuaCJK.
@@ -4021,7 +3978,7 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Spacing}
+% \subsection{The passes}
 %
 % \begin{macro}[int]{spacing}
 % Walk a list and insert the glue between CJK and Latin material.  The
@@ -4229,8 +4186,6 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Line-breaking prohibitions}
-%
 % \TeX\ may break at glue and at kern.  Both are places where LuaCJK inserts
 % its own nodes, so after building the list a second pass puts a penalty
 % 10000 in front of every break opportunity that must not be used.
@@ -4411,8 +4366,6 @@ end
 
 %    \end{macrocode}
 % \end{macro}
-%
-% \subsection{CJK in mathematics}
 %
 % A CJK character in math mode reaches the math list as a \texttt{math_char}
 % noad.  Its family points at the math font, which usually has no CJK glyph,
@@ -4620,8 +4573,6 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Hanging punctuation}
-%
 % The glyph advance stays inside the line, so shifting the ink sideways lets
 % a line-final closing punctuation hang into the margin without changing the
 % line width.  Line-initial opening punctuation is shifted the other way.
@@ -4753,8 +4704,6 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% \subsection{Widow control}
-%
 % \TeX\ can break at the glue that LuaCJK inserts between CJK characters.
 % At the end of a paragraph the last two such break points get a penalty, so
 % that at least three CJK characters travel to the last line together instead
@@ -4821,8 +4770,6 @@ end
 
 %    \end{macrocode}
 % \end{macro}
-%
-% \subsection{Callbacks}
 %
 % \begin{macro}[int]{LuaCJK.process}
 % Run the passes over a list, in the order in which they depend on each
@@ -4893,7 +4840,7 @@ luatexbase.add_to_callback("post_linebreak_filter", M.post_linebreak, "LuaCJK.ha
 %</lua-core>
 %    \end{macrocode}
 %
-% \subsection{Adjusting the decoration boxes}
+% \subsection{Decorations}
 %
 % \pkg{lua-ul} draws each decoration as a pair of nodes: a leaders glue of
 % width $w$ and a glue of width $-w$ that gives the space back, so the text
@@ -5118,8 +5065,6 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %</lua-fntef>
 %    \end{macrocode}
 % \end{macro}
-%
-% \subsection{Decorations}
 %
 % The \pkg*{LuaCJKfntef} package is a thin layer over \pkg{lua-ul}, which
 % provides the underlining engine.  It is generated from this file and may be
@@ -5902,7 +5847,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \end{macrocode}
 % \end{environment}
 %
-% \subsection{Support for \pkg{listings}}
+% \subsection{Listings and ctex}
 %
 % The block listing environments are patched by making the CJK characters
 % active while the character table of a listing is built.  The active
@@ -5977,8 +5922,6 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \makeatother
 %</listings>
 %    \end{macrocode}
-%
-% \subsection{The ctex engine file}
 %
 % \pkg{ctex} chooses its \LuaTeX\ backend by inputting a file whose name it
 % fixes itself:
