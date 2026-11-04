@@ -21,7 +21,7 @@
   warning is issued when CJK characters appear in math mode while `CJKmath`
   is off.
 - The ctex shadow test now asserts punctuation, kinsoku, and CJK math
-  behaviour instead of only checking that the document compiles.
+  behavior instead of only checking that the document compiles.
 - Document the package with `l3doc` and `docext` under LuaLaTeX.
 - Use the `LuaCJK` spelling for the package and derived files; the l3build/CTAN module stays `luacjk`.
 - Accept the same keys as package options, for example
@@ -77,8 +77,8 @@
 - Document a comparison with `xeCJK` that separates what is available with
   the same meaning, what differs, and what is missing.
 - Add `\LuaCJKnobreak` and the `PunctWidth` option.
-- `\CJKunderline` accepts `format` for the colour of the rule; it takes a
-  colour name rather than code.
+- `\CJKunderline` accepts `format` for the color of the rule; it takes a
+  color name rather than code.
 - Add `\CJKunderanyline` and `\CJKunderanysymbol` for arbitrary rules and
   repeated symbols; the underline type is cached by the arguments.
 - Add `\LuaCJKDeclareSubCJKBlock` with `\LuaCJKCancelSubCJKBlock` and
@@ -111,7 +111,7 @@
 - The default `CJKglue` and `CJKecglue` are recomputed at every font
   selection, so they follow `\small`, `\Large`, and `\zihao` instead of
   staying at the value of the 10pt size.
-- `AutoFallBack` and the cancelled sub-blocks follow the group now. Both
+- `AutoFallBack` and the canceled sub-blocks follow the group now. Both
   are part of the settings snapshot, so `{\LuaCJKsetup{AutoFallBack=true} ...}`
   and `{\LuaCJKCancelSubCJKBlock{...} ...}` end with their group.
 - `\LuaCJKnobreak` and `\LuaCJKVerbAddon` keep their prohibition when
@@ -168,7 +168,7 @@
   about `0.25em` of depth. The `boxdepth` key, which only existed to limit
   that growth, is removed; it also erased the rule of a `\vrule`-based
   decoration when used there.
-- `\CJKunderanysymbol` now puts one symbol per em, centred in the cell, so
+- `\CJKunderanysymbol` now puts one symbol per em, centered in the cell, so
   a row of symbols lines up with the characters above them. Its depth
   argument is the distance from the baseline to the top of the symbol, so
   `0pt` sets the symbol right under the characters; `sep` no longer

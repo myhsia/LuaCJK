@@ -207,7 +207,7 @@ LaTeX Project Public License, version 1.3c or later.
 % \section{Loading}
 %
 % \begin{quote}
-%   \cs{usepackage}\oarg{options}"{LuaCJK}"
+%   \cs{usepackage}\oarg{options}\{LuaCJK\}
 % \end{quote}
 %
 % LuaCJK requires \LuaLaTeX. It conflicts with \pkg{luatexja}:
@@ -655,7 +655,7 @@ a’a\quad 字！字
 %   The marks that keep a full width in the \texttt{kaiming} style.
 %   Initially \texttt{。}、\texttt{．}、\texttt{？}、\texttt{！}.
 %   \item[\keys{MiddlePunct<+->}]\val{char list}:
-%   The marks centred between the two halves of their box.
+%   The marks centered between the two halves of their box.
 %   A middle mark cannot start a line.
 %   \item[\keys{LongPunct<+->}]\val{char list}: The
 %   marks that are never compressed against each other,
@@ -907,7 +907,7 @@ a’a\quad 字！字
 %       rule;
 %     \item \keys{textformat}, code applied to the text, for example
 %       |textformat=\bfseries|;
-%     \item \keys{format}, the colour of the rule, given as a color name,
+%     \item \keys{format}, the color of the rule, given as a name,
 %       for example |format=red|. It affects the rule only, not the text;
 %     \item \keys{subtract}, a length (or \texttt{true} for half an em)
 %       taken off the rule at both ends,
@@ -978,7 +978,7 @@ a’a\quad 字！字
 %   other drawn patterns it leaves the height and depth of the line alone.
 %   The optional argument takes the keys of \cs{CJKunderline} and,
 %   in addition, \keys{symbol} to replace the wave with another symbol:
-%   one symbol per em, centred, its top half an em below the baseline.
+%   one symbol per em, centered, its top half an em below the baseline.
 % \end{function}
 %
 % \iffalse
@@ -1023,7 +1023,7 @@ a’a\quad 字！字
 %   \begin{syntax}
 %   \tn{CJKunderanysymbol}\oarg{options}\marg{depth}\marg{symbol}\marg{text}
 %   \end{syntax}
-%   The same, with one \meta{symbol} per em: the symbol is centred in a cell
+%   The same, with one \meta{symbol} per em: the symbol is centered in a cell
 %   as wide as a CJK character, so a row of symbols lines up with the
 %   characters above them. \meta{depth} is the distance from the baseline
 %   to the top of the symbol; |0pt| puts the top of the symbol right under
@@ -1053,7 +1053,7 @@ a’a\quad 字！字
 %   The optional argument takes the keys of \cs{CJKunderline}.
 %   With |symbol=|\meta{symbol} a symbol takes the place of the dots
 %   and is placed like the symbol of \cs{CJKunderanysymbol}: one per em,
-%   centred, its top \texttt{0.3em} under the baseline.
+%   centered, its top \texttt{0.3em} under the baseline.
 % \end{function}
 %
 % \begin{function}{\CJKsout}
@@ -1062,7 +1062,7 @@ a’a\quad 字！字
 %   \end{syntax}
 %   Strike \meta{text} through. The optional argument takes
 %   \keys{thickness}, \keys{height} (the distance from the baseline to the
-%   centre of the rule, initial \texttt{0.3em}), \keys{format} (a color
+%   center of the rule, initial \texttt{0.3em}), \keys{format} (a color
 %   name), and the keys \keys{subtract}, \keys{skip}, and \keys{hidden}.
 %   A bare color name is still accepted and means |format = |\meta{color};
 %   \texttt{color} is another name for \keys{format}.
@@ -1094,7 +1094,7 @@ a’a\quad 字！字
 %   \end{syntax}
 %   Set the lines in a vertical box whose lines are justified
 %   to \meta{width}, separated by |\\|. Its \meta{position} argument puts
-%   the box on the baseline: \texttt{t} for top, \texttt{c} for centred
+%   the box on the baseline: \texttt{t} for top, \texttt{c} for centered
 %   (the default), or \texttt{b} for bottom. A width of zero or less keeps
 %   the surrounding line width. The starred form behaves the same;
 %   it does not compare against the natural width of the content.
@@ -1152,7 +1152,7 @@ $ x + 中文 $ and 中文
 % list is not an \XeTeX\ character class table, so some options mean
 % something slightly different here, and some have no counterpart at all.
 %
-% \subsection{Different behaviour}
+% \subsection{Different behavior}
 %
 % \begin{itemize}
 %   \item \keys{Verb} accepts the four \pkg{xeCJK} values, but
@@ -1168,7 +1168,7 @@ $ x + 中文 $ and 中文
 %     of the thirty geometry keys of \pkg{xeCJK}.
 %   \item \texttt{CJKfilltwosides*} does not compare with the natural width
 %     of its content.
-%   \item The \pkg{LuaCJKfntef} option \keys{format} takes the colour of
+%   \item The \pkg{LuaCJKfntef} option \keys{format} takes the color of
 %     the rule as a name (|format=red|),
 %     not as code (|format=\color{red}|).
 % \end{itemize}
@@ -1177,7 +1177,7 @@ $ x + 中文 $ and 中文
 %
 % \begin{itemize}
 %   \item \texttt{NewLineCS}, \texttt{EnvCS}, \texttt{InlineEnv}, and
-%     \texttt{PlainEquation}. They exist so that \pkg{xeCJK} can recognise
+%     \texttt{PlainEquation}. They exist so that \pkg{xeCJK} can recognize
 %     \TeX\ constructs while it scans tokens;
 %     LuaCJK looks at the finished node list and needs no hint.
 %   \item \texttt{PoZheHaoLigature}, because \LuaTeX\ shapes one glyph at a
@@ -1545,7 +1545,7 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKCancelSubCJKBlock, \LuaCJKRestoreSubCJKBlock}
-% Turn a block off or on again. The list of cancelled blocks is part
+% Turn a block off or on again. The list of canceled blocks is part
 % of the settings of the text, so the change ends with the group; the
 % fonts of the current family are refreshed so it takes effect at once.
 %    \begin{macrocode}
@@ -2256,7 +2256,7 @@ $ x + 中文 $ and 中文
 % \tn{verb} opens its own group and selects \tn{verbatim@font} inside
 % it, so extending that command covers \tn{verb} on its own.
 % The hook consults the current \keys{Verb} setting, so that
-% \cs{LuaCJKsetup} can change the behaviour after the package is loaded.
+% \cs{LuaCJKsetup} can change the behavior after the package is loaded.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_verbatim@font_hook:
   {
@@ -3676,7 +3676,7 @@ end
 %
 % \begin{macro}[int]{block_font}
 % The font of the first block of \meta{main} that contains \meta{char}
-% and is not cancelled in \meta{settings}.
+% and is not canceled in \meta{settings}.
 %    \begin{macrocode}
 local function block_font (main, char, settings)
   local row = M.block_fonts[main]
@@ -5264,9 +5264,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   }
 %    \end{macrocode}
 % \begin{macro}[int]{\@@_fntef_formatted_underline:}
-% A coloured rule needs its own underline type: \pkg{luacolor} colours
+% A colored rule needs its own underline type: \pkg{luacolor} colors
 % by attribute, while \tn{color} would emit whatsits in front
-% of \tn{leaders}. The type is cached by colour and geometry,
+% of \tn{leaders}. The type is cached by color and geometry,
 % so a document builds one type per distinct combination.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_formatted_underline:
@@ -5749,7 +5749,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \begin{macro}{\CJKunderanysymbol}
 % One symbol per em, which is what one wants for a repeated mark:
 % the cell is as wide as a CJK character, so a row of symbols lines up with
-% the characters above, and the symbol is centred in its cell.
+% the characters above, and the symbol is centered in its cell.
 % The depth is handed to \cs{LuaCJKfntef_use_symbol:n},
 % which puts the top of the symbol that far below the baseline.
 %    \begin{macrocode}
@@ -5829,7 +5829,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   Set the body in a vertical box whose lines are justified to the given
 %   width, with the lines separated by \tn{}.
 %   The optional argument places the box on the baseline: \texttt{t} for
-%   top, \texttt{c} for centred (the default), and \texttt{b} for bottom.
+%   top, \texttt{c} for centered (the default), and \texttt{b} for bottom.
 %   A width of zero or less keeps the surrounding line width.
 % \begin{variable}[int]
 %   {
