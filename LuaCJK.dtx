@@ -3553,11 +3553,54 @@ end
 %
 % \begin{macro}[int]{LuaCJK.is_cjk}
 % Test whether a character is treated as CJK.
-% The ranges cover CJK ideographs, compatibility and presentation forms,
-% kana, Hangul, and the punctuation LuaCJK compresses or hangs.
+% The table is the set of code points this package sets with the CJK class.
+% It is a policy rather than a Unicode property: the punctuation that CJK
+% text shares with Latin (U+2014, the quotation marks, U+2026) is listed
+% here even though its script is Common, and the combining Bopomofo tone
+% marks U+02EA and U+02EB are left out on purpose, because they attach to the
+% preceding letter and a glue between the two would break the attachment.
+% The script \file{scripts/check-charclass.lua} compares the table with
+% \file{Scripts.txt} and reports a code point whose script is Han, Hiragana,
+% Katakana, Bopomofo, or Hangul but which the table does not list.
 %    \begin{macrocode}
 M.class_override = {}
 M.punct_override = {}
+
+local CJK_RANGES = {
+  { 0x1100, 0x11FF },   -- Hangul Jamo
+  { 0x2014, 0x2014 },   -- em dash, shared with Latin
+  { 0x2018, 0x2019 },   -- single quotation marks
+  { 0x201C, 0x201D },   -- double quotation marks
+  { 0x2026, 0x2026 },   -- horizontal ellipsis, shared with Latin
+  { 0x2E80, 0x9FFF },   -- radicals, punctuation, kana, ideographs
+  { 0xA960, 0xA97C },   -- Hangul Jamo Extended-A
+  { 0xAC00, 0xD7C6 },   -- Hangul syllables and Jamo Extended-B
+  { 0xD7CB, 0xD7FB },   -- Hangul Jamo Extended-B
+  { 0xF900, 0xFAFF },   -- compatibility ideographs
+  { 0xFE30, 0xFE4F },   -- compatibility forms
+  { 0xFF00, 0xFFEF },   -- fullwidth forms
+  { 0x16FE2, 0x16FE3 }, -- Old Chinese hook and iteration marks
+  { 0x16FF0, 0x16FF6 }, -- Han, Vietnamese alternate reading marks
+  { 0x1AFF0, 0x1AFF3 }, -- Kana Extended-B
+  { 0x1AFF5, 0x1AFFB },
+  { 0x1AFFD, 0x1AFFE },
+  { 0x1B000, 0x1B128 }, -- Kana Supplement and Kana Extended-A
+  { 0x1B132, 0x1B132 },
+  { 0x1B150, 0x1B152 },
+  { 0x1B155, 0x1B155 },
+  { 0x1B164, 0x1B168 },
+  { 0x1F200, 0x1F200 }, -- square hiragana hoka
+  { 0x20000, 0x3FFFF }, -- ideographic planes
+}
+
+local function in_ranges (c, ranges)
+  for i = 1, #ranges do
+    if c >= ranges[i][1] and c <= ranges[i][2] then
+      return true
+    end
+  end
+  return false
+end
 
 local LATIN_PUNCT = {
   [0x00B7] = true, [0x2018] = true, [0x2019] = true,
@@ -3573,16 +3616,7 @@ local function is_cjk (c, s)
   if s and s.latin_punct and LATIN_PUNCT[c] then
     return false
   end
-  return (c >= 0x2E80 and c <= 0x9FFF)
-      or (c >= 0xF900 and c <= 0xFAFF)
-      or (c >= 0xFE30 and c <= 0xFE4F)
-      or (c >= 0xFF00 and c <= 0xFFEF)
-      or (c >= 0x20000 and c <= 0x3FFFF)
-      or (c >= 0x3040 and c <= 0x30FF)
-      or (c >= 0xAC00 and c <= 0xD7AF)
-      or (c >= 0x1100 and c <= 0x11FF)
-      or c == 0x2014 or c == 0x2018 or c == 0x2019
-      or c == 0x201C or c == 0x201D or c == 0x2026
+  return in_ranges(c, CJK_RANGES)
 end
 
 M.is_cjk = is_cjk
