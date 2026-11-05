@@ -40,6 +40,7 @@ local function read_table (path)
   end
   local source = file:read("*a")
   file:close()
+  source = source:gsub("\r\n", "\n")
   local start = source:find("local CJK_RANGES = {\n", 1, true)
   if not start then
     die("no CJK_RANGES table in " .. path)
