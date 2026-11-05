@@ -81,6 +81,22 @@
   \LuaCJKsetup{PunctBoundWidth = false}
 }
 
+\TEST{a line-initial mark hangs by the bound width}{
+  \begingroup
+    \LuaCJKsetup{PunctBoundWidth = 0.3em}
+    \setbox0=\vbox{\hsize=20em\noindent （中文文\par}
+    \showoffsets
+  \endgroup
+}
+
+\TEST{the bound width wins over the hanging shift at the start}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle = hangmobanjiao, PunctBoundWidth = 0.3em}
+    \setbox0=\vbox{\hsize=20em\noindent （中文文\par}
+    \showoffsets
+  \endgroup
+}
+
 \END
 
 \end{document}
