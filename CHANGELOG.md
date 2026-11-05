@@ -29,6 +29,7 @@
 - Suspend the adjustments automatically in `\verb`, `verbatim`, `fancyvrb` and `listings` environments; `\LuaCJKdisable` now records its state per node.
 - Warn only once for an unknown CJK family.
 - Add `PunctFamily`, which sets a separate CJK family for the punctuation marks.
+- A CJK character in a math list now keeps the size of the math style it is set in: the CJK family is registered as a math family and the character points at it instead of being boxed.
 - Add `\defaultCJKfontfeatures` and `\addCJKfontfeatures`.
 - Provide the CJK font family interface (`\setCJKmainfont`, `\setCJKsansfont`, `\setCJKmonofont`, `\setCJKfamilyfont`, `\CJKfamily`, `\newCJKfontfamily`, `\CJKfontspec`).
 - Add `\setCJKfallbackfamilyfont` and `AutoFallBack` for characters that the selected CJK font does not have.
@@ -54,6 +55,7 @@
 - A fixed punctuation advance now moves the ink of an opening or middle mark as well, so that `banjiao` and `kaiming` no longer let an opening mark collide with the following character.
 - A dash or an ellipsis keeps its advance under a style with a fixed width, so that a run of long punctuation is not collapsed.
 - Add `CJKmath` and `\setCJKmathfont` for typing CJK characters directly in math mode, including nested math lists such as fractions. A one-time warning is issued when CJK characters appear in math mode while `CJKmath` is off.
+- A CJK noad now points at the math family of its CJK family instead of carrying a box, so a character in a script or a fraction is set at the size of that math style.
 - Find the first and the last glyph of a line inside its boxes, so that a line ending with `\mbox``{。}` hangs the mark as well.
 - Add `PunctBoundWidth`, which leaves only the given advance inside the line and hangs the rest of the mark into the margin; it replaces the fixed half-em shift of `hangmobanjiao`.
 - Apply the hanging shift only to the lines of the paragraph, not to a box in the middle of a line: a punctuation mark inside `\mbox` used to be shifted even when the line went on.
