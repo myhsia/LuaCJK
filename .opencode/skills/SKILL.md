@@ -208,6 +208,38 @@ LaTeX2e without comment characters — `ctex` reads it at a point where the
 category codes and the `expl3` state are not the ones the writing document
 had.
 
+### The manual's two languages
+
+The user part of the manual (the `documentation` environment) is written
+twice: Simplified Chinese first, English second, with the same block sequence
+and the same markup; only the prose and the section titles are translated, and
+every edit to one part is an edit to the other in the same task.  The
+Implementation part is English only.  `scripts/check-bilingual.lua`, run by
+`scripts/check-docs.sh`, compares the ordered structure (environment nesting,
+the documented objects, the section levels, the list items) and the multiset of
+interface references, so a change to one part alone fails the build.
+
+`docext` restarts the `section` counter before every `documentation`
+environment (the `env / documentation / before` hook), and the Chinese part
+ends with an explicit `\setcounter{section}{0}`, so the two parts both number
+from one.  The repeated numbers would also repeat the l3doc labels
+(`doc/function//<name>`) and the PDF destinations (`section.1`): LaTeX then
+warns `multiply defined` and the PDF backend drops the second target, so the
+English TOC entries would jump into the Chinese part.  The manual therefore
+tags each part: a `\LuaCJKdoclang{zh|en}` call sets a token that is a component
+of `\theHpart` (whence `\theHsection` and `\theHsubsection`) and, through the
+driver's redefinition of l3doc's `\__codedoc_get_hyper_target:nN`, of every
+`doc/function/…` label.  The section anchors become `section.zh.1` /
+`section.en.1`, the appendix stays `appendix.A`, and the index merges the two
+pages of a documented name into one entry, because the index key is the name
+alone.
+
+The Chinese prose is set by LuaCJK itself: the driver's Fandol families give it
+its CJK font, full-width punctuation is CJK punctuation and is compressed and
+hung by the punctuation passes, and the space around a Latin word or code span
+stays an interword space because `xCJKecglue` is off by default.  `LatinPunct`
+stays on, so the ASCII quotes and apostrophes inside code spans remain Latin.
+
 ## Current work
 
 Implemented: font family layer with fake bold and slant, fallback fonts
@@ -264,6 +296,7 @@ The commands are in `AGENTS.md`. For this skill the points that matter are:
 l3build check                       # 45 tests, must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
 bash scripts/ctex-subset.sh         # 21/21, and no log may mention luatexja
+bash scripts/check-docs.sh          # guides, and the two documentation languages
 ```
 
 When a change touches a pass, add a test that inspects nodes rather than

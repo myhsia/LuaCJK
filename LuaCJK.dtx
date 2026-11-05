@@ -168,6 +168,30 @@ LaTeX Project Public License, version 1.3c or later.
 \usepackage{LuaCJKfntef}
 \LuaCJKsetup{CJKmath=true, LatinPunct=true}
 \setCJKmathfont{FandolSong-Regular.otf}
+% The user documentation is written twice, Chinese first and English second.
+% The language tag becomes a component of the PDF anchors and of the labels
+% that l3doc attaches to a documented object: the section counter restarts for
+% each part, so without the tag the second part would reuse the labels and the
+% destinations of the first.
+% The table-of-contents heading enters the PDF bookmark, which cannot carry a
+% skip, so the printed form and the bookmark text are given separately.
+\renewcommand \contentsname
+  {\texorpdfstring{目录\quad Contents}{目录 Contents}}
+\renewcommand \abstractname {摘要 \texttt\textbar\ Abstract}
+\ExplSyntaxOn
+\tl_new:N \LuaCJKdoclang_tl
+\tl_set:Nn \LuaCJKdoclang_tl { en }
+\NewDocumentCommand \LuaCJKdoclang { m }
+  { \tl_set:Nn \LuaCJKdoclang_tl {#1} }
+\cs_set:Npn \theHpart { \tl_use:N \LuaCJKdoclang_tl }
+\cs_set_protected:Npn \__codedoc_get_hyper_target:nN #1#2
+  {
+    \__kernel_tl_set:Nx #2 { \tl_to_str:n {#1} }
+    \tl_replace_all:NVn #2 \c_underscore_str { / }
+    \tl_remove_all:NV   #2 \c_backslash_str
+    \tl_put_left:Nx #2 { doc / function / \tl_use:N \LuaCJKdoclang_tl / }
+  }
+\ExplSyntaxOff
 \begin{document}
   \DocInput{\jobname.dtx}
   \clearpage
@@ -191,9 +215,10 @@ LaTeX Project Public License, version 1.3c or later.
 % \changes{v0.0.1}{2026/11/11}{Refuse to load with \pkg{luatexja}.}
 
 % \title{\bfseries
+%   \pkg{LuaCJK} 宏包\\
 %   The \pkg{LuaCJK} package\thanks{^^A
-%   \url{https://ctan.org/pkg/luacjk},\
-%   \url{https://github.com/myhsia/LuaCJK}^^A
+%     \url{https://ctan.org/pkg/luacjk},\
+%     \url{https://github.com/myhsia/LuaCJK}^^A
 %   }^^A
 % }
 % \author{Mingyu Xia\thanks{\mail{xiamingyu@westlake.edu.cn}}}
@@ -201,12 +226,1020 @@ LaTeX Project Public License, version 1.3c or later.
 % \maketitle
 %
 % \begin{abstract}
+%   \pkg{LuaCJK} 为 \LuaLaTeX\ 提供中文排版。
+%   它把当前的 CJK 字体记录在一个 \LuaTeX\ 属性里，
+%   并在断行与盒子打包之前替换 CJK 字形节点。
+%   \setlength \parindent {1.5em}\par
 %   \pkg{LuaCJK} provides Chinese typesetting for \LuaLaTeX.
 %   It records the current CJK font in a \LuaTeX\ attribute
 %   and replaces CJK glyph nodes before line breaking and box packing.
 % \end{abstract}
 %
 % \tableofcontents
+%
+% \LuaCJKdoclang{zh}
+% \clearpage
+%
+% \begin{documentation}
+%
+% \section{简介}
+%
+% \pkg{LuaCJK} 是一个只用于 \LuaTeX\ 的中文排版宏包。它的主要接口是
+% \cs{setCJKmainfont}、\cs{setCJKsansfont}、\cs{setCJKmonofont}、
+% \cs{setCJKfamilyfont}、\cs{CJKfamily} 与 \cs{LuaCJKsetup}。
+%
+% 当前的 CJK 字体记录在一个 \LuaTeX\ 属性里，
+% 并在断行与盒子打包之前替换 CJK 字形节点。
+%
+% \section{加载}
+%
+% \begin{quote}
+%   \cs{usepackage}\oarg{options}"{LuaCJK}"
+% \end{quote}
+%
+% LuaCJK 需要 \LuaLaTeX。它与 \pkg{luatexja} 冲突：
+% 无论先后加载哪一个，都会报错。
+%
+% \begin{function}{\LuaCJKversion}
+%   打印 LuaCJK 的版本。
+% \end{function}
+%
+% \begin{function}{\LuaCJKsetup}
+%   \begin{syntax}
+%     \tn{LuaCJKsetup} \marg{key-value list}
+%   \end{syntax}
+%   配置 LuaCJK。
+%   这些键就是随后各节中记录的那些键。
+% \end{function}
+%
+% 这些键分为两组。
+%
+% 描述文字如何排版的设置只作用于当前分组，
+% 并且记录在字符本身上，
+% 所以分组中的文字即使在该分组已经结束之后才断行，也仍然保留它的设置：
+% \begin{quote}
+%   |\vbox{\begingroup\LuaCJKsetup{CJKglue=10pt}中中\endgroup\par}|
+% \end{quote}
+% 用的就是 10pt 的胶，尽管分组在 |\par| 之前已经关闭。
+% 这一组包含
+% \begin{itemize}
+%   \item \keys{CJKglue, CJKecglue, CJKspace} 与 \keys{xCJKecglue}；
+%   \item \keys{PunctStyle, PunctKinsoku, AllowBreakBetweenPuncts, PunctWidth}
+%   与 \keys{PunctBoundWidth}；
+%   \item \keys{LatinPunct} 与 \keys{CJKmath}；
+%   \item \keys{CheckSingle, WidowPenalty} 与 \keys{CJLineBreak}；
+%   \item \keys{AutoFallBack} 与 \keys{Verb}；
+%   \item 两个命令 \cs{LuaCJKCancelSubCJKBlock} 与
+%   \cs{LuaCJKRestoreSubCJKBlock}。
+% \end{itemize}
+%
+% 其余的键是全局的，或者在加载宏包时起作用：
+% \begin{itemize}
+%   \item \keys{KaiMingPunct, MiddlePunct, LongPunct}
+%   与 \keys{NoBreakLongPunct} 修改字符集合；
+%   \item \keys{AutoFakeBold, AutoFakeSlant, EmboldenFactor}
+%   与 \keys{SlantFactor} 在注册字族时起作用；
+%   \item \keys{LoadFandol} 与 \keys{LocalConfig} 在加载宏包时起作用。
+% \end{itemize}
+% 声明 \cs{LuaCJKDeclareCharClass}、\cs{LuaCJKDeclarePunctClass}、
+% \cs{LuaCJKDeclareSubCJKBlock}、\cs{LuaCJKsetwidth} 与 \cs{LuaCJKsetkern}
+% 同样是全局的，这一点在各自的说明里都提到了。
+%
+% 同样的键也可以作为宏包选项给出：
+% \begin{quote}
+%   |\usepackage[PunctStyle = banjiao]{LuaCJK}|
+% \end{quote}
+%
+% \begin{keyval}
+%   \item[\keys{LocalConfig}]\val{\TTF, name}
+%   从配置文件读取本地设置。
+%   \texttt{true} 加载 \file{luacjk.cfg}，
+%   \meta{name} 加载 \file{luacjk-}\meta{name}\file{.cfg}，
+%   而 \texttt{false}（初始值）什么都不加载。
+%   文件在宏包末尾读取，所以它可以使用 LuaCJK 定义的每一个命令。
+%   文件不存在时只给出警告。
+% \end{keyval}
+%
+% 要在 \pkg{ctex} 中使用 LuaCJK，可在一个普通文档里运行一次
+% \cs{LuaCJKwriteCtexConfig}：它写出 \file{ctexopts.cfg}，
+% 此后该目录及其子目录中的每个 \pkg{ctex} 文档都使用 LuaCJK，
+% 而 \XeLaTeX\ 文档保持它们自己的后端。手写这个文件同样可行。
+%
+% \begin{function}{\LuaCJKwriteCtexConfig}
+%   \begin{syntax}
+%     \tn{LuaCJKwriteCtexConfig} \oarg{directory}
+%   \end{syntax}
+%   把重定向写入 \meta{directory}，默认为当前目录。
+%   已存在的文件保持不动；带星号的形式会覆盖它。
+%   此后类文件就能找到它调用的 \cs{ctex_...} 命令、\cs{ccwd} 与
+%   |punct| 选项。
+% \end{function}
+%
+% \section{字体}
+%
+% 主要的字体命令接受一个可选的 \pkg{fontspec} 选项列表。
+% 选项既可以写在字体名之前，也可以写在字体名之后。
+%
+% \begin{function}{\setCJKmainfont,\setCJKsansfont,\setCJKmonofont}
+%   \begin{syntax}
+%     \tn{setCJKmainfont} \oarg{options} \marg{font} \oarg{options}
+%   \end{syntax}
+%   为罗马、无衬线与等宽字族设置 CJK 字体。
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+\CJKfamily{zhsong}中文宋体\quad
+\CJKfamily{zhhei}中文黑体\\
+\CJKfamily{zhkai}中文楷体\quad
+\CJKfamily{zhfs}中文仿宋
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
+%
+% \begin{function}{\setCJKfamilyfont}
+%   \begin{syntax}
+%     \tn{setCJKfamilyfont}\marg{family}\oarg{options}\marg{font}\oarg{options}
+%   \end{syntax}
+%   定义一个具名的 CJK 字族。
+% \end{function}
+%
+% \begin{function}{\CJKfamily}
+%   \begin{syntax}
+%     \tn{CJKfamily} \marg{family}
+%   \end{syntax}
+%   切换到具名的 CJK 字族。
+% \end{function}
+%
+% \begin{function}{\newCJKfontfamily}
+%   \begin{syntax}
+%     \tn{newCJKfontfamily}\oarg{family}\meta{command}\oarg{options}\marg{font}
+%   \end{syntax}
+%   定义一个切换到新声明字族的命令。
+%   与 \cs{newfontfamily} 一样，该命令只作用于当前分组。
+% \end{function}
+%
+% \begin{function}{\CJKfontspec}
+%   \begin{syntax}
+%     \tn{CJKfontspec} \oarg{options} \marg{font}
+%   \end{syntax}
+%   为当前分组选择一个 CJK 字体。
+% \end{function}
+%
+% \begin{function}{\songti, \heiti, \fangsong, \kaishu, \lishu, \youyuan}
+%   名为 \texttt{zhsong}、\texttt{zhhei}、\texttt{zhfs}、\texttt{zhkai}、
+%   \texttt{zhli} 与 \texttt{zhyou} 的字族的快捷方式。
+% \end{function}
+%
+% \begin{variable}
+%   {\CJKrmdefault, \CJKsfdefault, \CJKttdefault,
+%   \CJKfamilydefault} 由 \tn{rmfamily}、\tn{sffamily} 与 \tn{ttfamily}
+%   选择的 CJK 字族。
+% \end{variable}
+%
+% \subsection{子区块}
+%
+% 一种 CJK 字体很少覆盖 \textsc{Unicode} 的每一个区块。
+% 子区块让一个范围之内的字符在一个字族里拥有自己的字体；
+% 这个区块随后成为字体命令的一个选项。
+%
+% \begin{function}{\LuaCJKDeclareSubCJKBlock}
+%   \begin{syntax}
+%     \tn{LuaCJKDeclareSubCJKBlock} \marg{block} \marg{range list}
+%   \end{syntax}
+%   用给定的范围声明 \meta{block}，写法与 \cs{LuaCJKDeclareCharClass} 相同。
+%   这个名字随后成为一个字体选项，正如下例所示：
+%   设置了它的字族对该区块的字符使用第二个字体，
+%   没有设置它的字族则把这些字符留在主字体里。
+%   重叠的区块按声明顺序解决。
+% \end{function}
+%
+% \begin{function}{\LuaCJKCancelSubCJKBlock, \LuaCJKRestoreSubCJKBlock}
+%   \begin{syntax}
+%     \tn{LuaCJKCancelSubCJKBlock}  \marg{block list} \\
+%     \tn{LuaCJKRestoreSubCJKBlock} \marg{block list}
+%   \end{syntax}
+%   在当前分组的剩余部分关闭或重新打开列出的区块。
+%   因为字体的选择是按字体标识符记录的，
+%   所以提供同一字体的两个字族共享同一个设置：
+%   最后选择该字体的字族说了算。
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\LuaCJKDeclareSubCJKBlock{Kana}{3040 -> 30FF}
+\setCJKmainfont[Kana = FandolKai-Regular.otf]
+  {FandolSong-Regular.otf}中 あ
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \subsection{后备字体}
+%
+% 一种 CJK 字体很少覆盖需要的每一个字符。
+% 当所选的 CJK 字体没有某个字符的字形时，后备字体按声明的顺序依次尝试。
+%
+% \begin{function}{\setCJKfallbackfamilyfont}
+%   \begin{syntax}
+%     \tn{setCJKfallbackfamilyfont} \marg{family} \oarg{options} \\
+%        \                          \marg{font}   \oarg{options}
+%   \end{syntax}
+%   把 \meta{font} 加入 \meta{family} 的后备列表。字族可以用
+%   \cs{CJKrmdefault} 之类的名字给出。多次调用该命令可以建立一条链；
+%   第一个拥有该字符的字体胜出。
+% \end{function}
+%
+% \begin{keyval}
+%   \item[\keys{AutoFallBack}]\val{\TFF}
+%   是否使用声明过的后备字体。这个开关像间距的那些键一样跟随文字，
+%   所以可以只在一个分组里打开它。
+% \end{keyval}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKfallbackfamilyfont{\CJKrmdefault}
+  {FandolKai-Regular.otf}
+\LuaCJKsetup{AutoFallBack = true}中文
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \subsection{加载 Fandol}
+%
+% \begin{keyval}
+%   \item[\keys{LoadFandol}]\val{\TTF}
+%   当文档没有声明任何 CJK 字体时，在 \tn{begin}\{document\} 处加载
+%   四款 Fandol 字体：宋体作为主字体，
+%   黑体作为无衬线字体，仿宋作为等宽字体，
+%   并且把宋、黑、楷、仿宋全部注册为具名字族。
+% \end{keyval}
+%
+% \subsection{伪粗体与伪斜体}
+%
+% 一种 CJK 字族常常没有粗体或斜体。下面这些键让 LuaCJK 请求
+% \pkg{fontspec} 加粗或倾斜常规字体，而不去使用粗体或斜体。
+% 它们作用于此后注册的字族，并且在字族自己设置了 \texttt{BoldFont} 或
+% \texttt{ItalicFont} 时不生效。它们是全局的：
+% 分组不会改变一个已经注册的字族所用的设置。
+%
+% \begin{keyval}
+%   \item[\keys{AutoFakeBold}]\val{\TFF, number}
+%   在请求粗体形状时加粗常规字体。
+%   给出一个数字时同时设置 \texttt{EmboldenFactor}。
+%   \item[\keys{AutoFakeSlant}]\val{\TFF, number}
+%   在请求斜体形状时倾斜常规字体。
+%   给出一个数字时同时设置 \texttt{SlantFactor}。
+%   \item[\keys{EmboldenFactor}]\val{number}: 加粗的量。
+%   初始值是 \texttt{4}。
+%   \item[\keys{SlantFactor}]\val{number}: 倾斜的量，介于
+%   $-0.999$ 与 $0.999$ 之间。初始值是 \texttt{0.167}。
+% \end{keyval}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\LuaCJKsetup{AutoFakeBold = true}
+\setCJKmainfont{FandolSong-Regular.otf}
+\textbf{中文} and 中文
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \begin{function}{\defaultCJKfontfeatures}
+%   \begin{syntax}
+%     \tn{defaultCJKfontfeatures} \marg{font features}
+%   \end{syntax}
+%   设置前置到此后注册的每一个 CJK 字族的特性。
+%   初始值是 |Script = CJK|。
+%   在调用之前注册的字族保留它们当时得到的特性。
+% \end{function}
+%
+% \begin{function}{\addCJKfontfeatures}
+%   \begin{syntax}
+%     \tn{addCJKfontfeatures} \oarg{ignored} \marg{font features}
+%   \end{syntax}
+%   为当前 CJK 字族添加特性，直到分组结束，
+%   例如 |\addCJKfontfeatures{Scale = 1.2}|。
+%   开头的一个 \texttt{*} 也可以接受；两种形式作用于同一个字体。
+% \end{function}
+%
+% \subsection{数学模式中的汉字}
+%
+% \begin{keyval}
+%   \item[\keys{CJKmath}]\val{\TFF}: 是否允许在数学模式里直接输入汉字。
+%   打开时，这样的字符用它自己的一个数学字族的 CJK 字体排出，
+%   而不是到数学字体里去找，
+%   所以上标或分数里的字符会取那个数学样式的尺寸。
+%   可以用 |\LuaCJKsetup{CJKmath = true}| 打开它，也可以用宏包选项
+%   |CJKmath = true|。
+%   不打开它时，数学模式里的汉字会到数学字体里去找，通常就此消失，
+%   所以这种情况下 LuaCJK 给出一次性的警告。
+% \end{keyval}
+%
+% \begin{function}{\setCJKmathfont}
+%   \begin{syntax}
+%     \tn{setCJKmathfont} \oarg{options} \marg{font} \oarg{options}
+%   \end{syntax}
+%   选择数学模式里的字符所用的 CJK 字体。
+%   不用这个命令时，使用 CJK 主字体。
+%   本手册在前导区打开 \keys{CJKmath} 并设置了这个字体。
+%   与其他的字体命令一样，这个选择只作用于当前分组：
+%   分组里的公式使用该分组里选择的字族。
+% \end{function}
+%
+% 数学模式里出现的每一个 CJK 字族都被注册成一个独立的数学字族，
+% 这样 \TeX\ 就能取它的文本、脚本或脚脚本尺寸。
+% 字族号取自 240--255 这一段，位于 \pkg{LaTeX} 自己使用的十六个字族之上，
+% 一个文档如果在数学里用到十六个以上的 CJK 字族，就会报错停止。
+% 脚本尺寸是当前正文尺寸的百分之七十五，
+% 也就是标准尺寸表里的比例。
+% 数学参数不取自 CJK 字体，因为它没有
+% \texttt{MathConstants} 表：这些参数仍然是文档数学字体的，
+% 这就是为什么两个汉字组成的分数用的是周围数学的横线与间距。
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+$ x + 中文 $ and 中文
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
+%
+% \section{文本排版}
+%
+% \subsection{间距}
+%
+% \begin{keyval}
+%   \item[\keys{CJKglue}]\val{glue}: 插入相邻 CJK 字符之间的胶。
+%   初始值是 \texttt{0pt plus 0.08\cs{baselineskip}}，在每次选择字体时重新计算，
+%   所以它跟随字号；文档给出的值按原样使用，不随字号变化。
+%   \item[\keys{CJKecglue}]\val{glue}: 插入 CJK 与拉丁字符之间的胶。
+%   初始值是 \texttt{0.3333em plus 0.1667em minus 0.1111em}，
+%   它同样跟随字号。
+%   \item[\keys{CJKspace}]\val{\TFF}: 是否保留源文件中 CJK 字符之间的空格。
+%   \item[\keys{xCJKecglue}]\val{\TFF}: 是否把源文件中 CJK 与拉丁字符之间的
+%   空格替换为 \texttt{CJKecglue}。
+% \end{keyval}
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+中文 English 中文
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\LuaCJKsetup{CJKspace = true}中 文 中 文
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \begin{function}{\normalspacedchars}
+%   \begin{syntax}
+%     \tn{normalspacedchars} \marg{character list}
+%   \end{syntax}
+%   列出的字符两侧都不加胶，
+%   这样拉丁文字中的连字符或斜线不会把周围的文字拉开。
+%   初始列表是 |/|、|\| 与 |-|。这个设置是全局的。
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+中x中\\
+\normalspacedchars{x}中x中
+\end{codemo}
+\normalspacedchars{/,\,,-}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% 只用于控制文字、本身没有进距的字符
+% （U+200B、U+200C、U+200D、U+2060、U+180E、U+FEFF 以及各个变体选择符）
+% 在输入时就已删除。因此它们既不占胶，也不把两个 CJK 字符分开：
+% 零宽空格不会加上本来会在它两侧出现的两个 \keys{CJKecglue}，
+% 而它想提供的断行机会在周围的胶上本来就存在。
+% 用 \tn{char} 请求的字符不会被删除，因为 \tn{char} 要的就是字形本身。
+%
+% \begin{environment}{CJKfilltwosides}
+%   \begin{syntax}
+%   \tn{begin}\{CJKfilltwosides\}\oarg{position}\marg{width}
+%   \   \meta{lines} \\
+%   \tn{end}\{CJKfilltwosides\}
+%   \end{syntax}
+%   把各行排进一个竖直盒子里，
+%   盒中的行两端对齐到 \meta{width}，各行之间用 |\\| 分开。
+%   它的 \meta{position} 参数决定盒子在基线上的位置：
+%   \texttt{t} 表示顶部，\texttt{c} 表示居中（默认），\texttt{b} 表示底部。
+%   宽度为零或为负时沿用周围的行宽。
+%   带星号的形式行为相同；它不与内容的自然宽度作比较。
+% \end{environment}
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+\begin{CJKfilltwosides}{6em}
+  瞻彼阕者，\\虚室生白
+\end{CJKfilltwosides}
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
+%
+% \subsection{标点}
+%
+% \begin{keyval}
+%   \item[\keys{PunctStyle}]\val{style}: 选择一种标点样式。
+%   已经实现的样式有 \texttt{quanjiao}（默认）、
+%   \texttt{plain}、\texttt{banjiao}、\texttt{kaiming}、\texttt{CCT}
+%   与 \texttt{hangmobanjiao}。
+%   未知的名字给出警告并回退到 \texttt{plain}。
+%   \item[\keys{PunctWidth}]\val{length, false}: 不管样式怎么说，
+%   给每个标点同样的进距。
+%   用 \cs{LuaCJKsetwidth} 为某个标点设置的宽度仍然优先。
+%   \item[\keys{PunctBoundWidth}]\val{length, false}: 标点出现在行尾或行首时，
+%   它的进距中有多少留在行内；
+%   其余的墨迹悬挂到页边，或者悬挂到段落开头的缩进里，
+%   而这一行保持它的宽度。
+%   这取代了 \texttt{hangmobanjiao} 在行两端固定的半字位移。
+%   \texttt{false} 关闭这个选项。
+%   \item[\keys{LatinPunct}]\val{\TFF}: 把引号
+%   （U+2018、U+2019、U+201C、U+201D）、间隔号（U+00B7）
+%   与省略号（U+2026、U+2027、U+22EF）当作拉丁标点：
+%   它们留在当前的拉丁字体里，也不被压缩。
+%   这样英文单词里的撇号就不会变成一个全角形式。破折号不受影响。
+%   \item[\keys{PunctFamily}]\val{family, false}: 为标点使用
+%   另一个 CJK 字族。
+%   该字族必须用 \cs{setCJKfamilyfont} 声明；\texttt{false}
+%   （初始值）让标点重新跟随文字。
+%   \item[\keys{AllowBreakBetweenPuncts}]\val{\TFF}: 两个相邻的标点是否可以
+%   被断行分开。标点仍然会被压缩。
+%   \item[\keys{PunctKinsoku}]\val{\TTF}: 是否对标点施加断行禁则。
+%   收尾的或中间的标点不能出现在行首，开头的标点不能出现在行尾，
+%   一串连续的破折号或省略号保持在一起。
+%   这些禁则与 \texttt{PunctStyle} 无关，
+%   所以 |PunctStyle = plain| 时它们仍然有效。
+% \end{keyval}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+字，字\\
+\LuaCJKsetup{PunctFamily = zhkai}字，字
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+a’a\quad 字！字\\
+\LuaCJKsetup{LatinPunct, PunctWidth = .8em}
+a’a\quad 字！字
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+字字。\\
+\LuaCJKsetup{PunctBoundWidth=.5em}字字。\\
+（字字
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% 接下来是标点代码所用的字符集合。每个集合的键都有三种形式：
+% 不带符号的形式替换整个集合，带 \texttt{+} 的形式添加字符，
+% 带 \texttt{-} 的形式去掉字符。范围的写法与 \cs{LuaCJKDeclareCharClass} 相同。
+% 这些集合是全局的：分组不会把先前的成员带回来。
+%
+% \begin{keyval}
+%   \item[\keys{KaiMingPunct<+->}]\val{char list}:
+%   在 \texttt{kaiming} 样式里保持全角宽度的标点。
+%   初始为 \texttt{。}、\texttt{．}、\texttt{？}、\texttt{！}。
+%   \item[\keys{MiddlePunct<+->}]\val{char list}:
+%   居中的标点，放在自己盒子的两半之间。居中的标点不能出现在行首。
+%   \item[\keys{LongPunct<+->}]\val{char list}:
+%   彼此之间从不压缩的标点，例如破折号与省略号。
+%   \item[\keys{NoBreakLongPunct<+->}]\val{char list}:
+%   不能被断行分开的长标点。初始与 \texttt{LongPunct} 相同。
+% \end{keyval}
+%
+% \begin{function}{\LuaCJKDeclareCharClass}
+%   \begin{syntax}
+%     \tn{LuaCJKDeclareCharClass} \marg{class} \marg{range list}
+%   \end{syntax}
+%   改写一段码位的类别。
+%   范围用十六进制书写并带一个前导 |"|，|"START -> "END| 表示一段范围；
+%   列表用逗号分隔。
+%   类别有：\texttt{CJK} 与 \texttt{Default} 让这段范围表现得像 CJK 或拉丁文字；
+%   \texttt{FullLeft} 与 \texttt{HalfLeft} 把它当作开头的标点，
+%   \texttt{FullRight} 与 \texttt{HalfRight} 把它当作收尾的标点，
+%   于是断行禁则适用；
+%   \texttt{NormalSpace} 把这段范围移出 CJK/拉丁胶，
+%   就像 \cs{normalspacedchars} 那样；
+%   \texttt{CJStarter}、\texttt{CM} 与 \texttt{Boundary} 当作 \texttt{CJK} 处理，
+%   因为 \LuaTeX\ 没有组合标记或文字段边界的模型。
+% \end{function}
+%
+% \begin{function}{\LuaCJKDeclarePunctClass}
+%   \begin{syntax}
+%     \tn{LuaCJKDeclarePunctClass} \marg{group} \marg{range list}
+%   \end{syntax}
+%   改写一段范围的标点组。组有 \texttt{open}、\texttt{close}、
+%   \texttt{middle}、\texttt{dash} 与 \texttt{ellipsis}；
+%   \texttt{none} 去掉标点处理，于是这些字符不再被压缩或悬挂。
+% \end{function}
+%
+% \begin{function}{\LuaCJKResetCharClass}
+%   丢弃迄今声明的每一个类别与标点改写，
+%   并把正常间距集合恢复为 \cs{normalspacedchars} 的字符。
+% \end{function}
+%
+% \begin{function}{\LuaCJKEditPunctStyle}
+%   \begin{syntax}
+%     \tn{LuaCJKEditPunctStyle} \marg{style} \marg{key-value list}
+%   \end{syntax}
+%   修改一个已有样式的参数。
+%   键是 \keys{compress-adjacent, adjacent-ratio, keep-open-close}；
+%   没有给出的键保持它原来的值。
+% \end{function}
+%
+% \begin{function}{\LuaCJKsetwidth}
+%   \begin{syntax}
+%     \tn{LuaCJKsetwidth} \marg{punctuation list} \marg{length}
+%   \end{syntax}
+%   给列出的标点一个固定的进距，
+%   覆盖所选的 \keys{PunctStyle} 与 \keys{PunctWidth}。
+%   这个设置是全局的：分组不会恢复先前的宽度，
+%   后一次调用是在表中添加，而不是替换。
+%   开头的一个 \texttt{*} 可以接受；它会在行首或行尾设置的宽度没有实现，
+%   星号只警告一次。
+% \end{function}
+%
+% \begin{function}{\LuaCJKsetkern}
+%   \begin{syntax}
+%     \tn{LuaCJKsetkern} \marg{before} \marg{after} \marg{length}
+%   \end{syntax}
+%   设置两个相邻标点之间的空隙，覆盖样式的设置。
+%   每个参数只使用第一个字符。
+%   与 \cs{LuaCJKsetwidth} 一样，这个设置是全局的。
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\LuaCJKsetwidth{「}{1.5em}字「字\\
+\LuaCJKsetkern{「}{」}{.3em}字「」字
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \begin{function}{\LuaCJKDeclarePunctStyle}
+%   \begin{syntax}
+%     \tn{LuaCJKDeclarePunctStyle} \marg{name} \marg{key-value list}
+%   \end{syntax}
+%   定义一种标点样式。
+%   可用的键是 \keys{compress-adjacent}、
+%   \keys{adjacent-ratio} 与 \keys{keep-open-close}。
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+字，，字
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
+%
+% \subsection{断行}
+%
+% 一串破折号或省略号（U+2013、U+2014、U+2015、U+FF0D、U+2026
+% 与 U+22EF）是一个整体：这些标点之间不加胶，所以两端对齐不会把一个
+% 两字宽的破折号拆开，它们之间也不提供断行机会。
+% 键 \keys{LongPunct} 替换这个集合。
+%
+% \begin{keyval}
+%   \item[\keys{CheckSingle}]\val{\TFF}
+%   打开时，末字符是 CJK 的段落的最后两个断行点被设为不可断开，
+%   这样单个字符就不会孤零零地落在最后一行上。初始值是 \meta{false}。
+%   \item[\keys{WidowPenalty}]\val{penalty}: \texttt{CheckSingle} 使用的惩罚值。
+%   初始值是 \texttt{10000}；
+%   较小的值在值得这个代价时允许断开。
+%   \item[\keys{CJLineBreak}]\val{normal, strict}: 在 \texttt{strict}
+%   模式下，Unicode 的 \texttt{Line\_Break} 属性为
+%   \texttt{CJ} 的字符（小假名之类）不能出现在行首。
+%   这个模式只增加禁则，不取消任何禁则。
+%   初始值是 \texttt{normal}，它把这些字符当作其他 CJK 字符。
+%   这个集合从 \pkg{unicode-data} 宏包集的 \file{LineBreak.txt} 读取，
+%   所以严格模式需要这个宏包集。
+% \end{keyval}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\LuaCJKsetup{CheckSingle = true}
+\parbox{4em}{字字字字字字\par}
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \begin{function}{\LuaCJKnobreak}
+%   \begin{syntax}
+%     \tn{LuaCJKnobreak} \marg{text}
+%   \end{syntax}
+%   把 \meta{text} 保持在一行之内。参数的节点被打上标记，
+%   断行的处理不在它们的任何边界处断开。标记随当前分组结束。
+% \end{function}
+%
+% \subsection{暂停与钩子}
+%
+% \begin{function}{\LuaCJKdisable, \LuaCJKenable}
+%   \tn{LuaCJKdisable} 停止排版调整：不再插入 \keys{CJKglue}
+%   或 \keys{CJKecglue}，标点不再压缩，
+%   不再添加断行禁则，标点不再悬挂，
+%   数学模式里的 CJK 字符也不再处理。
+%   CJK 字符仍然用 CJK 字体排出，所以文字依然可读。
+%   这个开关只作用于当前分组；\tn{LuaCJKenable} 重新打开这些调整。
+% \end{function}
+%
+% 这就是抄录类环境使用的钩子，
+% 在测量原始节点列表时也用得上。
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\LuaCJKdisable 中 文
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \begin{function}{\LuaCJKShipoutHook}
+%   \begin{syntax}
+%     \tn{LuaCJKShipoutHook} \marg{code}
+%   \end{syntax}
+%   在每一页输出之前运行 \meta{code}。代码被加入
+%   \texttt{shipout/before} 钩子，所以它遵守通常的钩子顺序。
+% \end{function}
+%
+% \subsection{抄录与 \pkg{listings}}
+%
+% \begin{function}{\LuaCJKVerbAddon, \LuaCJKOffVerbAddon}
+%   让一个 CJK 字符和当前等宽字体的两个空格一样宽，
+%   这样代码列表里含有 CJK 文字时各列仍然对齐。
+%   空隙以 \keys{CJKglue} 的形式加入，所以 CJK 字体本身并没有被缩放；
+%   负的空隙只给出警告，什么也不加。
+%   CJK 字符之间的断行被禁止，直到分组结束，与拉丁文的抄录文字一样。
+%
+%   这条命令在最外层的分组里不起作用，
+%   所以它应当在需要它的环境内部使用，
+%   例如 \pkg{fancyvrb} 的 \texttt{formatcom} 选项里。
+%   \tn{LuaCJKOffVerbAddon} 在同一个分组里再次取消它。
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\ttfamily 中中\\
+\ttfamily\LuaCJKVerbAddon 中中
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \begin{keyval}
+%   \item[\keys{Verb}]\val{\TTF, env, env+}
+%   \tn{verb} 与抄录类环境（\env{verbatim}、\env{Verbatim}、\env{lstlisting}
+%   以及它们的近亲）里做什么。\texttt{true} 在两者中都暂停调整；
+%   \texttt{env} 在环境里保留调整，但在 \tn{verb} 里不保留，
+%   这样代码里含有 CJK 文字时各列仍然对齐；
+%   \texttt{env+} 在所有地方都保留调整；\texttt{false} 完全不碰抄录材料。
+%   既然 \texttt{env+} 与 \texttt{false} 都保留调整，
+%   它们在 LuaCJK 里行为相同。
+% \end{keyval}
+%
+% \pkg{listings} 一次处理一个字符，并且在读到字符的那一刻就把
+% 字符表之外的字符排出来。CJK 字符在它那张表之外，
+% 于是会跑到周围拉丁文字的前面。配套的 \pkg{LuaCJK-listings} 修正了这一点：
+% 它把 CJK 字符加入 \pkg{listings} 的字符表，所以它们留在原处，
+% 把每个字符算作两列，并在列表内部关掉间距调整。
+% 使用 \pkg{listings} 时 LuaCJK 自动加载它，所以不需要额外的命令。
+%
+% \tn{lstinline} 以改变了的类别码读取参数；
+% 补丁会破坏那个扫描器，所以行内代码保持不动，按通常的方式处理。
+%
+% \subsection{装饰}
+%
+% 配套的 \pkg{LuaCJKfntef} 提供下划线、着重号与删除线。
+% 它建立在 \pkg{lua-ul} 之上，
+% 所以被装饰的文字可以包含任意命令、CJK 与拉丁文字，
+% 也仍然可以被断字并跨行断开。
+%
+% \begin{function}{\CJKunderline}
+%   \begin{syntax}
+%     \tn{CJKunderline} \oarg{options} \marg{text}
+%   \end{syntax}
+%   给 \meta{text} 加下划线。选项有
+%   \begin{itemize}
+%     \item \keys{thickness}，横线的粗细；
+%     \item \keys{depth}，从基线到横线顶部的距离；
+%     \item \keys{textformat}，作用于文字的代码，例如
+%     |textformat=\bfseries|；
+%     \item \keys{format}，横线的颜色，用名字给出，
+%     例如 |format=red|。它只影响横线，不影响文字；
+%     \item \keys{subtract}，一个长度（或表示半字宽的 \texttt{true}），
+%     在横线的两端各去掉这么多，
+%     这样相邻的两个命令不会连在一起；
+%     \item \keys{skip}，把标点排除在横线之外；
+%     \item \keys{hidden}，隐藏文字而保留横线，横线取隐藏文字的
+%     宽度、高度与深度。
+%   \end{itemize}
+%   初始几何是 \texttt{depth=0.2em} 与
+%   \texttt{thickness=0.4pt}。\keys{subtract, skip, hidden} 对
+%   \cs{CJKunderdblline}、\cs{CJKunderwave}、\cs{CJKxout}
+%   与 \cs{CJKunderdot} 的作用方式相同。
+%   键 \texttt{top} 与 \texttt{bottom} 被传给 \pkg{lua-ul}，
+%   覆盖计算出来的几何。
+%   \cs{CJKunderwave}、\cs{CJKxout} 与 \cs{CJKunderdot} 画出的图案
+%   从不改变被装饰行的高度或深度，所以它们的行距不会变大。
+%   开头的一个 \texttt{*} 或 \texttt{-} 可以接受，并且被忽略。
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\CJKunderline[thickness = 1pt]{中}\\
+\CJKunderline[format = red]{中}\\
+\CJKunderline[textformat = \bfseries]{中}
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\CJKunderline{中文}\CJKunderline{中文}\\
+\CJKunderline[subtract]{中文}\\
+\CJKunderline[skip]{中，文}
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \begin{function}{\CJKunderdblline}
+%   \begin{syntax}
+%     \tn{CJKunderdblline} \oarg{options} \marg{text}
+%   \end{syntax}
+%   在 \meta{text} 下面画两条平行的横线。
+%   除了 \cs{CJKunderline} 的键之外，可选参数还接受
+%   \keys{gap}，两条横线之间的距离（初始 \texttt{1.1pt}）；
+%   两条横线都使用 \keys{thickness}，上面那条从 \keys{depth} 开始。
+%   开头的一个 \texttt{*} 或 \texttt{-} 可以接受，并且被忽略。
+% \end{function}
+%
+% \begin{function}{\CJKunderwave}
+%   \begin{syntax}
+%     \tn{CJKunderwave} \oarg{options} \marg{text}
+%   \end{syntax}
+%   在 \meta{text} 下面画一条波浪线。
+%   波浪线用 \pkg{l3draw} 画出，并用 \tn{leaders} 重复，
+%   所以在一行的各部分之间相位相同。一个周期是半字宽，
+%   整个图案随字号缩放；与其他画出的图案一样，
+%   它不改变行的高度与深度。
+%   可选参数接受 \cs{CJKunderline} 的键，
+%   另外还有 \keys{symbol}，用来把波浪线换成别的符号：
+%   每字宽一个符号，居中，符号顶部在基线之下半字宽处。
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\CJKunderwave{中文}\quad
+\CJKunderwave[symbol = \textbullet]{中文}\\
+\CJKunderdot {中文}\quad
+\CJKunderdot [symbol = \textbullet]{中文}
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \begin{function}{\CJKxout}
+%   \begin{syntax}
+%     \tn{CJKxout} \oarg{options} \marg{text}
+%   \end{syntax}
+%   用重复的斜线划掉 \meta{text}，像 \pkg{ulem} 的 \tn{xout} 那样。
+%   斜线从基线之上 \texttt{0.8em} 延伸到基线之下 \texttt{-0.15em}，
+%   所以它穿过一个 CJK 字形的整个字身。
+%   可选参数接受与 \cs{CJKunderline} 相同的键。
+% \end{function}
+%
+% \begin{function}{\CJKunderanyline}
+%   \begin{syntax}
+%     \tn{CJKunderanyline} \marg{depth} \marg{object} \marg{text}
+%   \end{syntax}
+%   把 \meta{object} 放在 \meta{text} 下面，并用 \tn{leaders} 重复。
+%   \meta{object} 的底部放在基线之下 \meta{depth} 处，
+%   所以对于一个（本身没有深度的）\cs{rule} 来说，
+%   横线从基线之下 \meta{depth} 处向上占据。
+%   要覆盖一个 CJK 字形的字身，就用字身的下伸部分与它的高度，
+%   正如下例所做的那样。
+%   类型会被缓存，所以相同的参数复用一个下划线类型。
+% \end{function}
+%
+% \begin{function}{\CJKunderanysymbol}
+%   \begin{syntax}
+%   \tn{CJKunderanysymbol}\oarg{options}\marg{depth}\marg{symbol}\marg{text}
+%   \end{syntax}
+%   用法相同，只是每字宽放一个 \meta{symbol}：
+%   符号在一个和一个 CJK 字符一样宽的格子里居中，
+%   所以一排符号与它们上方的字符对齐。
+%   \meta{depth} 是从基线到符号顶部的距离；
+%   |0pt| 把符号的顶部正好放在字符下面。
+%   为了兼容，接受选项 \keys{sep}，但它没有作用，
+%   因为格子固定为一个字宽。
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\CJKunderanyline{.16em}
+  {\color{yellow}\rule{1pt}{.94em}}{中}\\
+\CJKunderanysymbol{.02em}{\tiny$\triangle$}{中}
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \begin{function}{\CJKunderdot}
+%   \begin{syntax}
+%     \tn{CJKunderdot} \oarg{options} \marg{text}
+%   \end{syntax}
+%   在 \meta{text} 下面加着重号。
+%   可选参数接受 \cs{CJKunderline} 的键。
+%   用 |symbol=|\meta{symbol} 时，一个符号取代着重号，
+%   放置方式与 \cs{CJKunderanysymbol} 的符号相同：
+%   每字宽一个，居中，符号顶部在基线之下 \texttt{0.3em} 处。
+% \end{function}
+%
+% \begin{function}{\CJKsout}
+%   \begin{syntax}
+%     \tn{CJKsout} \oarg{options} \marg{text}
+%   \end{syntax}
+%   给 \meta{text} 加删除线。可选参数接受
+%   \keys{thickness}、\keys{height}（从基线到横线中心的距离，
+%   初始 \texttt{0.3em}）、\keys{format}（一个颜色名），
+%   以及键 \keys{subtract, skip, hidden}。
+%   只给一个颜色名仍然可以接受，意思是 |format = |\meta{color}；
+%   \texttt{color} 是 \keys{format} 的另一个名字。
+%   初始高度穿过一个 CJK 字形的中部，
+%   它比拉丁 x 高度的中部要高；
+%   对于完全是拉丁文的文字，可以用 |height = 0.5ex|。
+% \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+\CJKunderline   {中文 test 中文}\\
+\CJKunderdblline{中文 test 中文}\\
+\CJKunderwave   {中文 test 中文}\\
+\CJKunderdot    {中文 test 中文}\\
+\CJKsout        {中文 test 中文}\\
+\CJKxout        {中文 test 中文}
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
+%
+% \section{与 \pkg{xeCJK} 的比较}
+%
+% \pkg{LuaCJK} 只要两个引擎允许，就沿用 \pkg{xeCJK} 的接口，
+% 所以一个已经在用 \pkg{xeCJK} 的文档大多不需要改动。
+% 这里只列出不同之处。
+%
+% \subsection{行为差异}
+%
+% \begin{itemize}
+%   \item \keys{Verb}：\texttt{env+} 的行为与 \texttt{false} 一样，
+%   因为两者都保留调整。
+%   \item 标点几何。样式把标点的尺寸给成一半，或者一半但句末标点保持全角，
+%   或者 0.7 倍，并且墨迹按类别随进距移动：
+%   开头的标点移动整个量，中间的标点移动一半，收尾的标点完全不移动。
+%   \pkg{xeCJK} 则是测量每个字形的真实侧边距。
+%   \item \cs{LuaCJKDeclarePunctStyle} 接受三个键
+%   \keys{compress-adjacent}、\keys{adjacent-ratio} 与
+%   \keys{keep-open-close}；\pkg{xeCJK} 的三十个几何键描述它的侧边距模型，
+%   在这里没有对应物。
+%   \item \texttt{CJKfilltwosides*} 不与自然宽度作比较。
+%   \item CJK 字体是在文字用当前字体定形之后才应用到字形节点上的，
+%   所以 CJK 字体的 OpenType 特性（连字、\texttt{locl}、\texttt{palt}、
+%   变体序列）不生效：间距、标点进距与禁则都来自 LuaCJK 自己。
+%   \item 在 \pkg{LuaCJKfntef} 里，\keys{format} 接受颜色名而不是代码，
+%   而且装饰由 \pkg{lua-ul} 画出，所以 \texttt{ulem} 的选项列表不存在，
+%   \tn{underLine} 直接配置。
+% \end{itemize}
+%
+% \subsection{未提供的功能}
+%
+% \begin{itemize}
+%   \item \texttt{NewLineCS}、\texttt{EnvCS}、\texttt{InlineEnv} 与
+%   \texttt{PlainEquation}：它们的存在是为了让 \pkg{xeCJK} 在扫描记号时
+%   认出 \TeX\ 构造，而一个已经完成的节点列表不需要提示。
+%   \item \texttt{PoZheHaoLigature}，理由同上：字体的两字宽破折号连字
+%   在 LuaCJK 应用 CJK 字体之前就已经定了。
+%   \item \texttt{RubberPunctSkip}：标点的进距是一个 kern，
+%   它既不是断行机会，也不参与两端对齐，
+%   而正是这一点让固定宽度的样式保持稳定。
+%   \item \texttt{CheckFullRight}：它需要标点之后的控制序列，
+%   节点列表并不显示这个；请改用 \cs{LuaCJKnobreak}。
+%   \item 没有重定向的 \pkg{ctex} 后端：\pkg{ctex} 会请求一个它自己命名的文件，
+%   所以 LuaCJK 附带 |ctex-engine-luacjk.def|，
+%   并由 \cs{LuaCJKwriteCtexConfig} 把 \pkg{ctex} 指向它；
+%   在 \pkg{ctex} 内部选择后端仍然需要维护者同意。
+% \end{itemize}
+%
+% \end{documentation}
+%
+% \setcounter{section}{0}
+% \LuaCJKdoclang{en}
+% \clearpage
 %
 % \begin{documentation}
 %
