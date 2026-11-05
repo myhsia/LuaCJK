@@ -13,17 +13,20 @@ jobs:
         include:
           - os: ubuntu-latest
             font-dir: /usr/share/fonts/truetype
-            font-shell: bash
+            shell: bash
             tl-packages: ""
           - os: macos-latest
             font-dir: /Library/Fonts
-            font-shell: bash
+            shell: bash
             tl-packages: ""
           - os: windows-latest
             font-dir: /c/Windows/Fonts
-            font-shell: "C:\\msys64\\usr\\bin\\bash.exe -e {0}"
+            shell: "C:\\msys64\\usr\\bin\\bash.exe -e {0}"
             tl-packages: wintools.windows
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -39,7 +42,6 @@ jobs:
           path: ${{ github.workspace }}/.font-cache
           key: luacjk-fonts-${{ runner.os }}-${{ hashFiles('.github/font-urls.txt') }}-v1
       - name: Install Noto fonts
-        shell: ${{ matrix.font-shell }}
         run: |
           # The *.ttc collections the manual's Noto faces live in are not in
           # TeX Live, so they are downloaded, unpacked, kept in a cache keyed
