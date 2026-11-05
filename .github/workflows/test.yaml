@@ -21,6 +21,8 @@ jobs:
         uses: zauguin/install-texlive@v4
         with:
           package_file: .github/tl_packages
+      - name: Check the CJK range table
+        run: texlua scripts/check-charclass.lua
       - name: CHANGELOG.md must be up to date
         shell: bash
         run: |

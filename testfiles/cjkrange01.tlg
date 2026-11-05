@@ -1,0 +1,26 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: the CJK blocks are CJK
+============================================================
+CJ 1100=true 2014=true 2E80=true 4E2D=true A960=true A97C=true AC00=true
+CJ D7B0=true D7CB=true F900=true FE30=true FF0C=true
+CJ 16FE2=true 16FF0=true 1AFF0=true 1B000=true 1B132=true
+CJ 1B150=true 1B155=true 1B164=true 1F200=true 20000=true 30000=true
+============================================================
+============================================================
+TEST 2: Latin, an unassigned gap, and a combining mark are not
+============================================================
+CJ 0041=false 1B170=false 2060=false 1F600=false 02EA=false 02EB=false
+============================================================
+============================================================
+TEST 3: LatinPunct turns the shared punctuation into Latin
+============================================================
+LP 8230=false 8212=true
+============================================================
+============================================================
+TEST 4: a declared class wins over the table
+============================================================
+CJ A960=false A97C=true
+CJ A960=true A97C=true
+============================================================
