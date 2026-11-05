@@ -36,8 +36,12 @@ The character-level passes run in `pre_linebreak_filter` and in
    if one applies, then at a fallback font when the target lacks the glyph.
 2. `spacing` — remove the source space between CJK characters, and insert
    `CJKglue`/`CJKecglue` at every boundary between two classes of character.
+   A run of dashes or ellipses is joined without glue, so justification cannot
+   pull a two-em dash apart.
 3. `apply_fixed_widths` — give punctuation the advance the style asks for, by
-   inserting a penalty and a kern before the mark.
+   inserting a penalty and a kern after the mark. The ink is moved by class:
+   an opening mark by the whole amount, a middle mark by half, a closing mark
+   not at all. A dash or an ellipsis keeps its advance.
 4. `apply_kinsoku` — insert a `\penalty 10000` at a break point the
    line-breaking prohibitions forbid.
 5. `apply_check_single` — raise the penalty at the last two break points of a
@@ -120,6 +124,10 @@ The prohibitions in `forbids_break` are the ones that matter for correctness:
 a closing or middle mark may not start a line, an opening mark may not end one,
 and a run of `nobreak` long marks is one unit. `AllowBreakBetweenPuncts` and
 `PunctKinsoku` gate these, but an explicit `nobreak` attribute bypasses both.
+`CJLineBreak = strict` adds one rule of its own, from the Unicode
+`Line_Break = CJ` set: those characters may not start a line. The set is read
+from `LineBreak.txt` on the first use of the key, so the default pays nothing
+for it; the key is independent of `PunctKinsoku`.
 
 ### Rule decorations adjust `lua-ul`
 
@@ -189,16 +197,23 @@ had.
 Implemented: font family layer with fake bold and slant, fallback fonts
 and sub-blocks, `\CJKglue`/`\CJKecglue`/`xCJKecglue`/`CJKspace` with per-node
 settings, six punctuation styles plus the character-set and style editing keys,
-punctuation hanging and bound width, `CheckSingle`, `CJKmath`, `\LuaCJKnobreak`,
-`\LuaCJKVerbAddon`, `\LuaCJKShipoutHook`, `LocalConfig`, `LoadFandol`, eight
-decorations in `LuaCJKfntef` with twelve options, and `LuaCJK-listings`.
+punctuation hanging and bound width, `CheckSingle`, `CJLineBreak`, `CJKmath`,
+`\LuaCJKnobreak`, `\LuaCJKVerbAddon`, `\LuaCJKShipoutHook`, `LocalConfig`,
+`LoadFandol`, eight decorations in `LuaCJKfntef` with twelve options, and
+`LuaCJK-listings`.
+
+Two inputs are handled before the passes: the zero-width format characters and
+the variation selectors are given category code 9 at load time, so they neither
+take glue nor split a CJK run.
 
 Deliberately absent, with the reason recorded in the manual: `PoZheHaoLigature`
-(LuaTeX shapes one glyph at a time), `RubberPunctSkip` (the advance is a fixed
-kern, not stretchable glue), `CheckFullRight` (the node list no longer shows
-the following control sequence — use `\LuaCJKnobreak`), and `ulem`'s option list
-(`LuaCJKfntef` builds on `lua-ul`). Picking a backend inside `ctex` still needs
-the agreement of the `ctex` maintainers; the redirect is the interim route.
+(the CJK font is applied after the text was shaped with the Latin font, so its
+ligatures cannot be asked for), `RubberPunctSkip` (the advance is a fixed kern,
+which is not a break opportunity and takes no part in justification),
+`CheckFullRight` (the node list no longer shows the following control
+sequence — use `\LuaCJKnobreak`), and `ulem`'s option list (`LuaCJKfntef` builds
+on `lua-ul`). Picking a backend inside `ctex` still needs the agreement of the
+`ctex` maintainers; the redirect is the interim route.
 
 ## Conventions
 
