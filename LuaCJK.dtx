@@ -2014,9 +2014,9 @@ a’a\quad 字！字
       { \tl_set:Nn \l_@@_punct_kinsoku_tl { 0 } },
     PunctKinsoku        .default:n   = { true  },
     CJLineBreak         .choice:,
-    CJLineBreak / normal .code:n     =
+    CJLineBreak / normal.code:n      =
       { \tl_set:Nn \l_@@_cj_strict_tl { 0 } },
-    CJLineBreak / strict .code:n     =
+    CJLineBreak / strict.code:n      =
       {
         \tl_set:Nn \l_@@_cj_strict_tl { 1 }
         \@@_load_cj:
@@ -2116,7 +2116,7 @@ a’a\quad 字！字
           } { \tl_set:Nn \l_@@_local_config_tl { luacjk-#1.cfg } }
       },
     LocalConfig         .default:n   = { true  },
-    AutoFakeBold        .code:n      = { \@@_set_autofake:nn { bold } {#1} },
+    AutoFakeBold        .code:n      = { \@@_set_autofake:nn { bold  } {#1} },
     AutoFakeBold        .default:n   = { true  },
     AutoFakeBold        .initial:n   = { false },
     AutoFakeSlant       .code:n      = { \@@_set_autofake:nn { slant } {#1} },
