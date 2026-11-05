@@ -39,6 +39,7 @@
 - Add `\LuaCJKwriteCtexConfig`, which writes a `ctexopts.cfg` redirect into the document directory. `ctex` inputs that file after it has fixed the engine file name and before it loads the engine file, so the redirect takes effect in the same run; `ctexbackend.cfg` is read too early and `ctex.cfg` too late.
 - Use the public LaTeX3 Lua interfaces (`\lua_now:e`, `\lua_escape:e`, `\lua_load_module:n`) instead of `\directlua` and `kpse.findfile`.
 - Split the Lua code into `LuaCJK.lua` (entry point) and `LuaCJK-core.lua`.
+- Add `CJLineBreak`, which reads the `Line_Break` property `CJ` from `LineBreak.txt` and forbids a line break before those characters.
 - Add `KaiMingPunct`, `MiddlePunct`, `LongPunct`, and `NoBreakLongPunct`, each with `+` and `-` forms, to edit the punctuation character sets.
 - Drop the placeholder glyph that a font without the character leaves behind (one `.notdef` glyph in some fonts, a private-use glyph in others).
 - Replace CJK glyph nodes in `pre_linebreak_filter` and `hpack_filter` using a LuaTeX attribute that records the current CJK font.
@@ -52,7 +53,9 @@
 - A fixed punctuation advance now moves the ink of an opening or middle mark as well, so that `banjiao` and `kaiming` no longer let an opening mark collide with the following character.
 - A dash or an ellipsis keeps its advance under a style with a fixed width, so that a run of long punctuation is not collapsed.
 - Add `CJKmath` and `\setCJKmathfont` for typing CJK characters directly in math mode, including nested math lists such as fractions. A one-time warning is issued when CJK characters appear in math mode while `CJKmath` is off.
+- Find the first and the last glyph of a line inside its boxes, so that a line ending with `\mbox``{。}` hangs the mark as well.
 - Add `PunctBoundWidth`, which leaves only the given advance inside the line and hangs the rest of the mark into the margin; it replaces the fixed half-em shift of `hangmobanjiao`.
+- Apply the hanging shift only to the lines of the paragraph, not to a box in the middle of a line: a punctuation mark inside `\mbox` used to be shifted even when the line went on.
 - Add `CheckSingle` and `WidowPenalty`, which stop a single CJK character from ending up alone on the last line of a paragraph.
 - `\CJKunderline` accepts `subtract` (inset at both ends) and `skip` (leave out the punctuation). The decoration boxes of `lua-ul` are adjusted in place: the leaders width is reduced and a matching kern and negative glue keep the text where it was.
 - Add `LuaCJKfntef`, a `lua-ul` based companion package providing `\CJKunderline`, `\CJKunderdot`, and `\CJKsout`.
