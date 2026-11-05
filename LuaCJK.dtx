@@ -522,8 +522,9 @@ LaTeX Project Public License, version 1.3c or later.
 % \begin{keyval}
 %   \item[\keys{CJKmath}]\val{\TFF}: Whether CJK characters may be typed
 %   directly in math mode.
-%   When it is on, such a character is typeset as a box in the CJK math font
-%   instead of being looked up in the math font.
+%   When it is on, such a character is set in the CJK font of a math family
+%   of its own instead of being looked up in the math font, so a character in
+%   a superscript or a fraction takes the size of that math style.
 %   Enable it with |\LuaCJKsetup{CJKmath = true}| or with the package option
 %   |CJKmath = true|.
 %   Without it a CJK character in math mode is looked up in the math font
@@ -537,7 +538,21 @@ LaTeX Project Public License, version 1.3c or later.
 %   Select the CJK font used for characters in math mode.
 %   Without this command the CJK main font is used.
 %   This manual enables \keys{CJKmath} and sets this font in its preamble.
+%   The selection is local to the current group, like the other font commands:
+%   a formula in a group uses the family selected in that group.
 % \end{function}
+%
+% Each CJK family that appears in math is registered as a math family of its
+% own, so that \TeX\ can pick the text, script, or scriptscript size of it.
+% The family number comes from the range 240--255, above the sixteen families
+% that \pkg{LaTeX} itself uses, and a document with more than sixteen CJK
+% families in math stops with an error.
+% The script sizes are seven and five tenths of the current text size, the
+% ratio of the standard size tables.
+% The math parameters are not taken from the CJK font, which has no
+% \texttt{MathConstants} table: they stay those of the document's math font,
+% which is why a fraction of two CJK characters has the rule and the gaps of
+% the surrounding math.
 %
 % \iffalse
 %<*example>
@@ -2029,8 +2044,10 @@ a’a\quad 字！字
       },
     CJLineBreak         .default:n   = { strict },
     CJKmath             .choice:,
-    CJKmath / true      .code:n      = { \tl_set:Nn \l_@@_cjk_math_tl { 1 } },
-    CJKmath / false     .code:n      = { \tl_set:Nn \l_@@_cjk_math_tl { 0 } },
+    CJKmath / true      .code:n      =
+      { \tl_set:Nn \l_@@_cjk_math_tl { 1 } \@@_update_font: },
+    CJKmath / false     .code:n      =
+      { \tl_set:Nn \l_@@_cjk_math_tl { 0 } \@@_update_font: },
     CJKmath             .default:n   = { true  },
     Verb                .choice:,
     Verb / true         .code:n      =
@@ -2467,6 +2484,8 @@ a’a\quad 字！字
 \tl_new:N \l_@@_fontspec_tl
 \tl_new:N \l_@@_family_name_tl
 \tl_new:N \l_@@_tmpa_tl
+\tl_new:N \l_@@_tmpb_tl
+\int_new:N \l_@@_tmpa_int
 \tl_new:N \l_@@_registered_name_tl
 %    \end{macrocode}
 % \end{variable}
@@ -2682,16 +2701,34 @@ a’a\quad 字！字
 % \end{variable}
 % \begin{variable}[int]
 %   {
-%     \l_@@_math_family_tl, \g_@@_math_fontid_int,
-%     \l_@@_punct_family_tl
+%     \l_@@_math_family_tl, \l_@@_punct_family_tl,
+%     \g_@@_punct_fontid_int
 %   }
-% The math family registered by \cs{setCJKmathfont}, the font identifier
-% resolved from it, and the family chosen by \keys{PunctFamily}.
+% The math family registered by \cs{setCJKmathfont}, the family chosen by
+% \keys{PunctFamily}, and the font identifier resolved for the latter.
 %    \begin{macrocode}
 \tl_new:N \l_@@_math_family_tl
 \tl_new:N \l_@@_punct_family_tl
 \int_new:N \g_@@_punct_fontid_int
-\int_new:N \g_@@_math_fontid_int
+%    \end{macrocode}
+% \end{variable}
+% \begin{variable}[int]
+%   {
+%     \g_@@_math_family_int, \g_@@_math_family_prop,
+%     \c_@@_math_family_max_int
+%   }
+% The last math family number handed out, the map from a CJK family name to
+% its number, and the upper bound.
+% A CJK character in a math list needs a math family of its own, because the
+% family is what selects the font \emph{and} its size for the three math
+% styles.  \pkg{LaTeX} uses the families below 16, so the numbers start at
+% 240; a document with more than sixteen CJK families is out of luck and gets
+% an error.
+%    \begin{macrocode}
+\int_new:N \g_@@_math_family_int
+\int_gset:Nn \g_@@_math_family_int { 239 }
+\int_const:Nn \c_@@_math_family_max_int { 255 }
+\prop_new:N \g_@@_math_family_prop
 %    \end{macrocode}
 % \end{variable}
 %    \begin{macrocode}
@@ -2710,27 +2747,21 @@ a’a\quad 字！字
             \group_end:
             \g_@@_font_attr = \g_@@_fontid_int
           }
-          { \g_@@_font_attr = \c_zero_int }
-        \tl_if_empty:NTF \l_@@_math_family_tl
           {
-            \int_gset:Nn \g_@@_math_fontid_int
-              { \int_use:N \g_@@_fontid_int }
+            \g_@@_font_attr = \c_zero_int
+            \tl_clear:N \l_@@_family_name_tl
           }
+        \tl_if_eq:NnTF \l_@@_cjk_math_tl { 1 }
           {
-            \prop_get:NVNTF \g_@@_family_prop \l_@@_math_family_tl
-              \l_@@_tmpa_tl
-              {
-                \group_begin:
-                  \exp_args:NV \fontfamily \l_@@_tmpa_tl
-                  \selectfont
-                  \int_gset:Nn \g_@@_math_fontid_int
-                    { \tex_fontid:D \tex_font:D }
-                \group_end:
-              }
-              { \int_gzero:N \g_@@_math_fontid_int }
+            \tl_if_empty:NTF \l_@@_math_family_tl
+              { \tl_set_eq:NN \l_@@_tmpa_tl \l_@@_family_tl }
+              { \tl_set_eq:NN \l_@@_tmpa_tl \l_@@_math_family_tl }
+            \prop_get:NVNTF \g_@@_family_prop \l_@@_tmpa_tl \l_@@_tmpb_tl
+              { \exp_args:NV \@@_register_math_family:n \l_@@_tmpb_tl }
+              { \g_@@_math_font_attr = \c_zero_int }
           }
+          { \g_@@_math_font_attr = \c_zero_int }
         \@@_push_block_fonts:
-        \g_@@_math_font_attr = \g_@@_math_fontid_int
         \tl_if_empty:NTF \l_@@_punct_family_tl
           { \g_@@_punct_font_attr = \c_zero_int }
           {
@@ -2752,6 +2783,57 @@ a’a\quad 字！字
   }
 %    \end{macrocode}
 % \end{macro}
+%
+% \begin{macro}[int]{\@@_register_math_family:n}
+% Give a CJK family a math family number and fill the three style fonts of
+% that number from the family at the current size.
+% A CJK character in a math list needs a family rather than a box, because the
+% family is what selects the font \emph{and} its size for text, script, and
+% scriptscript style; a box is built once and keeps the size it was built at.
+% The script sizes are seven and five tenths of the text size, which is the
+% ratio of the standard \LaTeX\ size tables.  The family is selected inside a
+% group, so the caller's font is not disturbed, and the assignments are global
+% because a math font belongs to a family, not to a group.
+%    \begin{macrocode}
+\msg_new:nnn { LuaCJK } { math-family-exhausted }
+  { Too~many~CJK~families~for~the~math~families~240--255. }
+\cs_new_protected:Npn \@@_math_family:n #1
+  {
+    \prop_if_in:NnF \g_@@_math_family_prop {#1}
+      {
+        \int_gincr:N \g_@@_math_family_int
+        \int_compare:nNnT \g_@@_math_family_int > \c_@@_math_family_max_int
+          { \msg_error:nn { LuaCJK } { math-family-exhausted } }
+        \prop_gput:NnV \g_@@_math_family_prop {#1}
+          \g_@@_math_family_int
+      }
+  }
+\cs_new_protected:Npn \@@_register_math_family:n #1
+  {
+    \@@_math_family:n {#1}
+    \int_set:Nn \l_@@_tmpa_int
+      { \prop_item:Nn \g_@@_math_family_prop {#1} }
+    \group_begin:
+      \fontfamily {#1}
+      \fontsize { \use:c { f@size } pt } { \baselineskip }
+      \selectfont
+      \global \textfont \l_@@_tmpa_int = \font
+      \fontsize
+        { \dim_eval:n { \use:c { f@size } pt * 7 / 10 } }
+        { \baselineskip }
+      \selectfont
+      \global \scriptfont \l_@@_tmpa_int = \font
+      \fontsize
+        { \dim_eval:n { \use:c { f@size } pt * 5 / 10 } }
+        { \baselineskip }
+      \selectfont
+      \global \scriptscriptfont \l_@@_tmpa_int = \font
+    \group_end:
+    \g_@@_math_font_attr = \l_@@_tmpa_int
+  }
+%    \end{macrocode}
+% \end{macro}
+%
 %
 % \begin{macro}[int]{\@@_push_block_fonts:}
 % Resolve the block fonts of the current family at the current size
@@ -3286,7 +3368,6 @@ a’a\quad 字！字
     LuaCJK.attr_disabled    =  \int_use:N   \c_@@_disabled_attr_int ;
     LuaCJK.name_ccglue      = "\cs_to_str:N \l_@@_ccglue_skip" ;
     LuaCJK.name_ecglue      = "\cs_to_str:N \l_@@_ecglue_skip" ;
-    LuaCJK.name_math_fontid = "\cs_to_str:N \g_@@_math_fontid_int"
   }
 \bool_gset_true:N \g_@@_lua_loaded_bool
 \@@_settings_push:
@@ -3363,6 +3444,7 @@ local new_node      = node.new
 local free_node     = node.free
 local has_attribute = node.has_attribute
 local set_attribute = node.set_attribute
+local unset_attribute = node.unset_attribute
 
 %    \end{macrocode}
 % \end{variable}
@@ -4767,20 +4849,6 @@ local MATH_TEXT_CHAR = node.id("math_text_char")
 %    \end{macrocode}
 % \end{variable}
 %
-% \begin{macro}[int]{math_font_id}
-% Read the font identifier chosen by \TeX.
-%    \begin{macrocode}
-local function math_font_id ()
-  local fid = M.name_math_fontid and tex.count[M.name_math_fontid]
-  if fid and fid > 0 then
-    return fid
-  end
-  return nil
-end
-
-%    \end{macrocode}
-% \end{macro}
-%
 % \begin{macro}[int]{any_cjk_math_enabled}
 % Whether any noad of the list asks for CJK in math mode. The switch
 % is part of the settings of the text, so the answer is per list.
@@ -4823,67 +4891,55 @@ local SUB_MLIST = node.id("sub_mlist")
 local rewrite_math_list
 
 %    \end{macrocode}
-% \begin{macro}[int]{cjk_noad}
-% Build a noad whose nucleus is a box with the character
-% in the CJK font.
+% \begin{macro}[int]{rewrite_noad}
+% Point the nucleus of one noad at the math family of its CJK family, and
+% recurse into the sub lists of its numerator, denominator, superscript, and
+% subscript.
+% The family number comes from the attribute \TeX\ set for the current group,
+% which is why \cs{setCJKmathfont} keeps its meaning inside a group: the
+% family of the node changes, not a global font.
 %    \begin{macrocode}
-local function cjk_noad (char, fid)
-  local g   = new_node("glyph")
-  g.font    = fid
-  g.char    = char
-  local b   = new_node("hlist")
-  b.head    = g
-  b.width   = g.width
-  b.height  = g.height
-  b.depth   = g.depth
-  local sb  = new_node("sub_box")
-  sb.head   = b
-  local n   = new_node("noad")
-  n.nucleus = sb
-  return n
+local function point_at_family (char, family)
+  char.fam = family
+  if M.attr_font then
+    unset_attribute(char, M.attr_font)
+  end
 end
 
-%    \end{macrocode}
-% \end{macro}
-% \begin{macro}[int]{rewrite_noad}
-% Replace the nucleus of one noad and recurse into the sub lists
-% of its numerator, denominator, superscript, and subscript.
-%    \begin{macrocode}
-local function rewrite_noad (noad, fid)
-  if disabled(noad) or not settings_of(noad).cjk_math then
+local function rewrite_field (s, noad, on, family)
+  if not s then
     return
   end
-  local nuc = noad.nucleus
-  if nuc then
-    if nuc.id == MATH_CHAR or nuc.id == MATH_TEXT_CHAR then
-      if is_cjk(nuc.char, settings_of(noad)) then
-        if M.attr_math_font then
-          local a = has_attribute(nuc, M.attr_math_font)
-          if a and a > 0 then
-            fid = a
-          end
-        end
-        noad.nucleus = cjk_noad(nuc.char, fid).nucleus
-      end
-    elseif nuc.id == SUB_MLIST then
-      rewrite_math_list(nuc.head, fid)
+  if s.id == MATH_CHAR or s.id == MATH_TEXT_CHAR then
+    if is_cjk(s.char, settings_of(noad)) then
+      point_at_family(s, family)
     end
+  elseif s.id == SUB_MLIST then
+    rewrite_math_list(s.head, on, family)
   end
+end
+
+local function rewrite_noad (noad, enabled, family)
+  if disabled(noad) then
+    return
+  end
+  local on = enabled or settings_of(noad).cjk_math
+  if not on or not family then
+    return
+  end
+  rewrite_field(noad.nucleus, noad, on, family)
   for _, field in ipairs({ "num", "denom", "sup", "sub" }) do
-    local s = noad[field]
-    if s and s.id == SUB_MLIST then
-      rewrite_math_list(s.head, fid)
-    end
+    rewrite_field(noad[field], noad, on, family)
   end
 end
 
 %    \end{macrocode}
 % \end{macro}
 %    \begin{macrocode}
-rewrite_math_list = function (head, fid)
+rewrite_math_list = function (head, enabled, family)
   local cur = head
   while cur do
-    rewrite_noad(cur, fid)
+    rewrite_noad(cur, enabled, family)
     cur = cur.next
   end
   return head
@@ -4950,16 +5006,33 @@ end
 %    \end{macrocode}
 % \end{macro}
 %    \begin{macrocode}
+local function math_family_of (head)
+  local cur = head
+  while cur do
+    if M.attr_math_font then
+      local family = has_attribute(cur, M.attr_math_font)
+      if family and family > 0 then
+        return family
+      end
+      local nuc = cur.nucleus
+      if nuc then
+        family = has_attribute(nuc, M.attr_math_font)
+        if family and family > 0 then
+          return family
+        end
+      end
+    end
+    cur = cur.next
+  end
+  return nil
+end
+
 local function rewrite_math (head)
   if not any_cjk_math_enabled(head) then
     warn_disabled_cjk_math(head)
     return head
   end
-  local fid = math_font_id()
-  if not fid then
-    return head
-  end
-  return rewrite_math_list(head, fid)
+  return rewrite_math_list(head, true, math_family_of(head))
 end
 
 %    \end{macrocode}
