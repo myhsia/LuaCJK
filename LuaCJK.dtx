@@ -582,6 +582,15 @@ LaTeX Project Public License, version 1.3c or later.
 %</example>
 % \fi
 %
+% Characters that only control the text and have no advance of their own
+% (U+200B, U+200C, U+200D, U+2060, U+180E, U+FEFF, and the variation
+% selectors) are removed at the input. They therefore neither take glue nor
+% separate two CJK characters: a zero-width space does not add the two
+% \keys{CJKecglue} that would otherwise surround it, and the break
+% opportunity it was meant to create already exists at the surrounding glue.
+% A character requested with \tn{char} is not removed, because \tn{char}
+% asks for the glyph itself.
+%
 % \subsection{Punctuation}
 %
 % \begin{keyval}
@@ -779,6 +788,11 @@ a’a\quad 字！字
 % \fi
 %
 % \subsection{Line breaking}
+%
+% A run of dashes or ellipses (U+2013, U+2014, U+2015, U+FF0D, U+2026,
+% and U+22EF) is one unit: the marks are joined without glue, so
+% justification cannot pull a two-em dash apart, and no break is offered
+% between them. The key \keys{LongPunct} replaces the set.
 %
 % \begin{keyval}
 %   \item[\keys{CheckSingle}]\val{\TFF}
@@ -1178,6 +1192,8 @@ $ x + 中文 $ and 中文
 %   \texttt{kaiming}, and \texttt{CCT} give a mark half,
 %   half (with the sentence-ending marks full),
 %   or 0.7 of the current size, and the hanging shift is half an em.
+%   The ink is placed by the class of the mark: an opening mark moves by the
+%   whole amount, a middle mark by half, and a closing mark not at all.
 %   \pkg{xeCJK} instead measures the real side bearings of each glyph.
 %   \item \cs{LuaCJKDeclarePunctStyle} takes \keys{compress-adjacent},
 %   \keys{adjacent-ratio}, and \keys{keep-open-close} instead
@@ -3029,6 +3045,46 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{\@@_ignore_format_chars:}
+% \changes{v0.0.1}{2026/11/11}{Ignore the zero-width format characters
+%   (U+200B, U+200C, U+200D, U+2060, U+180E) and the variation selectors at
+%   the input, so that they neither take glue nor separate two CJK characters.}
+% These characters have no advance of their own, but the font loader replaces
+% one that the font does not have by a space glyph and a negative kern.
+% The spacing pass then sees a Latin atom and surrounds it with
+% \keys{CJKecglue} on both sides, so a zero-width space would widen the line
+% by two \keys{CJKecglue} and remove the break opportunity it was meant to
+% create.
+% Giving the characters category 9 removes them before the font loader runs.
+% A character produced by \tn{char} bypasses the category codes and is left
+% alone: \tn{char} asks for the glyph itself, not for the character's
+% typographic role.
+%    \begin{macrocode}
+\clist_const:Nn \c_@@_ignored_chars_clist
+  { "180E , "200B , "200C , "200D , "2060 , "FEFF }
+\cs_new_protected:Npn \@@_ignore_format_chars:
+  {
+    \clist_map_inline:Nn \c_@@_ignored_chars_clist
+      { \char_set_catcode_ignore:n {##1} }
+    \int_step_inline:nnn { "FE00 } { "FE0F }
+      { \char_set_catcode_ignore:n {##1} }
+    \int_step_inline:nnn { "E0100 } { "E01EF }
+      { \char_set_catcode_ignore:n {##1} }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{\@@_load_cj:}
+% Read the \texttt{CJ} set from \file{LineBreak.txt} once.
+% The key \keys{CJLineBreak} calls this when it selects \texttt{strict};
+% a second call is cheap because the Lua side remembers that it has read
+% the file.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_load_cj:
+  { \lua_now:e { LuaCJK.load_cj() } }
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{\@@_load_local_config:}
 % \changes{v0.0.1}{2026/11/11}{Add the \keys{LocalConfig} option, which reads
 %   \file{luacjk.cfg} or \file{luacjk-<name>.cfg} at the end of the package.}
@@ -3206,6 +3262,7 @@ $ x + 中文 $ and 中文
 \bool_gset_true:N \g_@@_lua_loaded_bool
 \@@_settings_push:
 \@@_set_normal_spaced_chars:
+\@@_ignore_format_chars:
 \hook_gput_code:nnn { begindocument } { LuaCJK }
   {
     \bool_if:NT \g_@@_load_fandol_bool
@@ -4153,6 +4210,9 @@ end
 % \begin{macro}[int]{insert_boundary_glue}
 % Insert the CJK--CJK or CJK--Latin glue,
 % or the compression kern for two adjacent punctuation marks.
+% A run of dashes or ellipses is one unit: the marks are joined without glue,
+% so that justification cannot pull a two-em dash apart, and the absence of a
+% break opportunity replaces the explicit prohibition.
 %    \begin{macrocode}
 M.normal_spaced = {}
 
@@ -4168,8 +4228,15 @@ local function normal_spaced (n)
   return n and n.id == GLYPH and M.normal_spaced[n.char] == true
 end
 
+local function long_punct (n)
+  return n and n.id == GLYPH and M.charsets.long[n.char] == true
+end
+
 local function insert_boundary_glue (head, prev, prev_end, cur, cur_start,
                                     settings)
+  if long_punct(prev) and long_punct(cur) then
+    return head
+  end
   local spec = nil
   if prev_end == "CJK" and cur_start == "CJK" then
     spec = settings.ccglue
@@ -4488,30 +4555,58 @@ end
 % advance. The glyph advance cannot be changed, so a compensating kern
 % goes right after the glyph. A penalty in front of that kern keeps \TeX\
 % from treating it as an extra break opportunity.
+% The kern alone is only right for a mark whose ink sits at the left of its
+% advance, which is what a closing mark does. An opening mark keeps its ink
+% at the right, so the ink is moved left by the same amount; a middle mark is
+% centered, so it moves by half. A dash or an ellipsis is not shortened by the
+% style: its advance is the length of the stroke, and halving it would let the
+% two halves of a two-em dash overlap.
 %    \begin{macrocode}
+local function ink_shift (class, delta)
+  if class == "open" then
+    return delta
+  elseif class == "middle" then
+    return math.floor(delta / 2 + 0.5)
+  end
+  return 0
+end
+
+local function fixed_width (cur, settings, style)
+  local target = user_width(cur.char)
+  if not target and settings.punct_width > 0 then
+    target = settings.punct_width
+  end
+  if target then
+    return target
+  end
+  local ratio = style.fixed_ratio
+  if not ratio or M.charsets.long[cur.char] then
+    return nil
+  end
+  local full = style.fixed_full and M.charsets.kaiming
+  if full and full[cur.char] then
+    return nil
+  end
+  local f    = font.getfont(cur.font)
+  local size = f and f.size or 0
+  if size > 0 then
+    return math.floor(ratio * size + 0.5)
+  end
+  return nil
+end
+
 local function apply_fixed_widths (head)
   local cur = head
   while cur do
     local settings = settings_of(cur)
     local style    = style_of(settings)
-    local ratio    = style.fixed_ratio
-    local full     = style.fixed_full and M.charsets.kaiming
     if cur.id == GLYPH and punct_class(cur.char, settings)
        and not disabled(cur) then
-      local target = user_width(cur.char)
-      if not target and settings.punct_width > 0 then
-        target = settings.punct_width
-      end
-      if not target and ratio then
-        local f    = font.getfont(cur.font)
-        local size = f and f.size or 0
-        if size > 0 and not (full and full[cur.char]) then
-          target = math.floor(ratio * size + 0.5)
-        end
-      end
+      local target = fixed_width(cur, settings, style)
       if target then
         local delta = target - cur.width
         if delta ~= 0 then
+          local shift = ink_shift(punct_class(cur.char, settings), delta)
           local p = new_node("penalty")
           inherit_attributes(p, cur)
           p.penalty = 10000
@@ -4519,6 +4614,9 @@ local function apply_fixed_widths (head)
           p.next    = k
           k.next    = cur.next
           cur.next  = p
+          if shift ~= 0 then
+            cur.xoffset = cur.xoffset + shift
+          end
         end
       end
     end

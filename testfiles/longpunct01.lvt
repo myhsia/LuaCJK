@@ -1,0 +1,82 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+% A break opportunity in TeX is a glue, kern, or penalty node, so the node
+% signature below is also the test whether a run may be broken.
+% Report the nodes of box 0: a glyph by its code point, any other node by
+% its kind. Widths are left out so the signature does not follow a font.
+\def\shownodes{%
+  \directlua{
+    local digits = "0123456789ABCDEF"
+    local function hex (n)
+      local out, count = {}, 0
+      repeat
+        count = count + 1
+        local d = math.fmod(n, 16) + 1
+        out[count] = digits:sub(d, d)
+        n = math.floor(n / 16)
+      until n == 0
+      local s = ""
+      for i = count, 1, -1 do s = s .. out[i] end
+      while string.len(s) < 4 do s = "0" .. s end
+      return s
+    end
+    local out, count = {}, 0
+    local n = tex.box[0].head
+    while n do
+      count = count + 1
+      if n.id == node.id("glyph") then
+        out[count] = hex(n.char)
+      elseif n.id == node.id("glue") then
+        out[count] = "glue"
+      elseif n.id == node.id("kern") then
+        out[count] = "kern"
+      elseif n.id == node.id("penalty") then
+        out[count] = "penalty"
+      elseif n.id == node.id("hlist") then
+        out[count] = "hlist"
+      else
+        out[count] = "node"
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "NODES " .. table.concat(out, " "))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{a dash pair is joined without glue}{
+  \setbox0=\hbox{中——文}\shownodes
+}
+
+\TEST{an ellipsis pair is joined without glue}{
+  \setbox0=\hbox{中……文}\shownodes
+}
+
+\TEST{a single dash still takes the CJK glue}{
+  \setbox0=\hbox{中—文}\shownodes
+}
+
+\TEST{the pair keeps the widths of the two marks}{
+  \setbox0=\hbox{—}\setbox2=\hbox{——}%
+  \ifdim\wd2=2\wd0 \TYPE{same width}\else\TYPE{different width}\fi
+}
+
+\TEST{LongPunct adds a character to the run}{
+  \setbox0=\hbox{中两文}\shownodes
+  \setbox0=\hbox{中两两文}\shownodes
+  \LuaCJKsetup{LongPunct+={"4E24}}
+  \setbox0=\hbox{中两两文}\shownodes
+  \LuaCJKsetup{LongPunct-={"4E24}}
+  \setbox0=\hbox{中两两文}\shownodes
+}
+
+\END
+
+\end{document}
