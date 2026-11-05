@@ -247,18 +247,22 @@ driver's redefinition of l3doc's `\__codedoc_get_hyper_target:nN`, of every
 pages of a documented name into one entry, because the index key is the name
 alone.
 
-The Chinese prose is set by LuaCJK itself: the driver's Fandol families give it
-its CJK font, full-width punctuation is CJK punctuation and is compressed and
-hung by the punctuation passes, and the space around a Latin word or code span
-stays an interword space because `xCJKecglue` is off by default.  `LatinPunct`
-stays on, so the ASCII quotes and apostrophes inside code spans remain Latin.
+The Chinese prose is set by LuaCJK itself: the driver's Noto Serif CJK SC gives
+it its CJK font (with LXGW WenKai GB Lite as the CJK italic and the kai
+family, Noto Sans CJK SC as the hei family, and Zhuque Fangsong as the
+monospaced and fangsong face), full-width punctuation is CJK punctuation and
+is compressed and hung by the punctuation passes, and the space around a Latin
+word or code span stays an interword space because `xCJKecglue` is off by
+default.  `LatinPunct` stays on, so the ASCII quotes and apostrophes inside
+code spans remain Latin.
 
 The demos are executed in the manual, so a global command used in one changes
 the rest of the document: `\setCJKmainfont` re-registers the family named by
-`\CJKrmdefault`, and `AutoFakeBold` and `AutoFakeSlant` are global by design.
-The driver's `\LuaCJKdocsetup` holds the manual's own font block, and the
-`env/codemo/after` hook runs it after every demo, so the `\begingroup` around a
-`codemo` contains only local settings.
+`\CJKrmdefault`, and `AutoFakeBold` and `AutoFakeSlant` are global by design —
+and they act when a family is registered, so `\LuaCJKdocsetup` clears them
+before it sets the fonts again.  The `env/codemo/after` hook runs that command
+after every demo, so the `\begingroup` around a `codemo` contains only local
+settings.
 
 ## Current work
 

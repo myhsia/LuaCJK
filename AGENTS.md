@@ -24,7 +24,12 @@ punctuation model, the decoration mechanism, or the `ctex` adapter.
 
 TeX Live 2026 with LuaLaTeX; no conda. Every command runs from the
 repository root, where `build.lua` lives. The maintenance scripts are bash;
-Python 3 is available when a task needs it. Entry points:
+Python 3 is available when a task needs it. The manual sets its CJK text in
+Noto Serif/Sans CJK SC (a system font, also installed by CI from
+`.github/font-urls.txt`), with LXGW WenKai GB Lite for the italic and the kai
+family and Zhuque Fangsong for the monospaced text and the fangsong family;
+both come from the `lxgw-fonts` TeX Live package. The tests keep Fandol.
+Entry points:
 
 - `l3build` (unpack, check, save, doc, ctan, tag) for the package itself;
 - `scripts/ctex-subset.sh` for the `ctex` integration;
@@ -45,6 +50,7 @@ Python 3 is available when a task needs it. Entry points:
 | `scripts/check-charclass.lua` | compares the `CJK_RANGES` table of the `dtx` with `Scripts.txt`: it reports every code point whose script is Han, Hiragana, Katakana, Bopomofo, or Hangul that the table does not list, merging the code points into ranges.  The combining Bopomofo tone marks U+02EA and U+02EB are allowed to stay outside the table.  Exit 0 covered, 1 missing (the ranges are printed), 2 cannot run |
 | `scripts/check-bilingual.lua` | compares the two `documentation` parts of the `dtx`: the ordered structure (environment nesting, the documented objects and their arguments, section levels, list items) and the multiset of interface references (`\cs`, `\keys`, `\pkg`, `\file`, `\env`, `\tn`, `\val`, `\texttt`, `\meta`, `\oarg`, `\marg`, `\parg` and the `|…|` spans), and refuses a part in the wrong order.  Prose and section titles are not compared.  Exit 0 agree, 1 differ (the differences are printed), 2 cannot run |
 | `scripts/check-docs.sh` | compares the facts in the two guides with their sources: the layout table against `git ls-files` (both directions), version, test count, DocStrip blocks, installed file types, attribute and decoration counts, `\RequirePackage` against `DEPENDS.txt` (a package loaded from the listings guard must be `soft`), `DEPENDS.txt` against `.github/tl_packages`, the subset count, the changelog facts (the newest `\changes` version and date against `build.lua`, the first line of `CHANGELOG.md` against the released version), and the two languages of the user part through `scripts/check-bilingual.lua`.  A `\RequirePackage` name is resolved to its TeX Live package with `tlmgr search --global --file`, falling back to `expl3 -> l3kernel` and `l3draw -> l3experimental` when `tlmgr` is absent |
+| `.github/font-urls.txt` | the Noto CJK release URLs the `l3build` job downloads for the manual; the hash of the file is the cache key, so changing a URL invalidates the cache |
 | `.github/workflows/test.yaml` | the CI workflow |
 | `.github/tl_packages` | the package list CI installs; a dependency must be added **or removed** here or the Ubuntu job fails first |
 | `CHANGELOG.md` | user-visible changes, newest first, generated from the `\changes` entries by `l3build changelog` |
@@ -347,7 +353,10 @@ Session check: `scripts/check-extract-changes.sh`
 requests. Two jobs, each on `ubuntu-latest`, `macos-latest`, and
 `windows-latest`:
 
-- `l3build`: install TeX Live, then `bash scripts/check-docs.sh` (it calls
+- `l3build`: install TeX Live (with `wintools.windows` on Windows, for
+  `unzip`) and the Noto CJK collections listed in `.github/font-urls.txt`
+  (cached under the file's hash, copied into the system font directory, then
+  `fc-cache -f`), then `bash scripts/check-docs.sh` (it calls
   `texlua` for the bilingual check, so it cannot run before the install),
   then `texlua scripts/check-charclass.lua`, then `l3build changelog` and a
   `git diff --exit-code CHANGELOG.md` that fails when the generated file is
@@ -359,7 +368,9 @@ On failure the `l3build` job uploads `build/**/*.diff`, `build/**/*.fc` and
 `build/**/*.log` as
 `luacjk-diff-<short-sha>-<os>`; download it with `gh run download` through the
 proxy (see the `network-access` skill). Local and CI run the same commands;
-the only parity risk is a missing or surplus entry in `.github/tl_packages`.
+the parity risks are a missing or surplus entry in `.github/tl_packages` and
+the fonts the manual needs (Noto CJK from `.github/font-urls.txt`, the two
+LXGW faces from `lxgw-fonts`).
 
 A change in ctex-kit cannot be seen by a workflow of this repository, so it is
 not a CI job: `scripts/check-extract-changes.sh` is the session check declared

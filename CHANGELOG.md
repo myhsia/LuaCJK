@@ -10,6 +10,7 @@
 - The manual now shows `\CJKunderanyline` with em-based geometry, so the object covers the body of a CJK glyph.
 - The manual now contains a Simplified Chinese translation of its user documentation before the English text. Both parts number their sections from one, and the two language versions are kept structurally identical.
 - The manual re-applies its own font setup after every demo. A font command re-registers the family named by the corresponding default, and the fake bold and slant keys are global, so the group around a demo cannot undo them.
+- The manual sets its CJK text in Noto Serif CJK SC, with LXGW WenKai GB Lite for the italic and the kai family, Noto Sans CJK SC for the sans and hei families, and Zhuque Fangsong for the monospaced text and the fangsong family.
 - Use the `LuaCJK` spelling for the package and derived files; the l3build/CTAN module stays `luacjk`.
 - Only `luatexja` is rejected now; `xeCJK` already refuses to run outside XeTeX, so LuaCJK no longer duplicates that check.
 - The default `CJKglue` and `CJKecglue` are recomputed at every font selection, so they follow `\small`, `\Large`, and `\zihao` instead of staying at the value of the `10pt` size.
