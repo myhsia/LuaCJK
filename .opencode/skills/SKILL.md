@@ -167,7 +167,8 @@ ships `ctex-engine-luacjk.def` — the `ctex` interface (`\ctex_add_to_selectfon
 `\ccwd`, `\CTEX@alchar`, `\ctex_set_jfm:n`, the `kanjiskip`/`xkanjiskip` keys)
 implemented on top of LuaCJK. Because the name differs, `ctex` only picks
 it up when `ctexopts.cfg` redirects it; `\LuaCJKwriteCtexConfig` writes that
-file once per directory. `ctex` keeps its own copies of the two glues
+file once per directory, and `ctexconfig01` fixes both its bytes and the
+requirement that it is read under `\ExplSyntaxOn`. `ctex` keeps its own copies of the two glues
 so it can tell whether the document changed them; the engine file
 keeps the copies in step and sets the `*_touched` flags, otherwise the next
 `\selectfont` would restore the default and undo the user's `kanjiskip`.
@@ -229,7 +230,7 @@ the agreement of the `ctex` maintainers; the redirect is the interim route.
 The commands are in `AGENTS.md`. For this skill the points that matter are:
 
 ```bash
-l3build check                       # 37 tests, must print "All checks passed"
+l3build check                       # 38 tests, must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
 bash scripts/ctex-subset.sh         # 21/21, and no log may mention luatexja
 ```
@@ -239,4 +240,7 @@ guessing from widths alone: walk `tex.box[0].head` and report the glue, kern,
 and penalty nodes, then assert the numbers in the `.tlg`.
 Existing examples are `decoration01` (the leaders pair), `settingsscope01`
 (a group that closes before `\par`), `nobreak01`/`nobreak02` (penalties),
-and `listings01` (glyph order inside a listing).
+`listings01` (glyph order inside a listing), and `ctexconfig01`, which writes
+`ctexopts.cfg` and reads it back: the redirect is only valid when the reader is
+under `\ExplSyntaxOn`, as `\ProvidesExplPackage` leaves it, so the test turns
+the syntax on around the `\input` before it asserts the definition.
