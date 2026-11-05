@@ -5000,6 +5000,17 @@ end
 % a line-final closing punctuation hang into the margin without changing
 % the line width. Line-initial opening punctuation is shifted the other way.
 %
+% The shift is an offset on the glyph rather than character protrusion,
+% because protrusion does not move the ink at the end of a line:
+% \tn{protrudechars} together with \tn{rpcode} makes \tn{rightmarginkern}
+% report the amount, but the glyph in the output keeps its position.
+% Measured at 10pt with a right code of 1000: the marginal kern is 10pt and
+% the quad of the period is unchanged, in a short line, an overfull line, and
+% a line whose width is the natural width. The left code does move the line:
+% the same measurement with \tn{lpcode} shifts the first glyph by one em,
+% which is what the visible effect of \pkg{microtype}'s protrusion on a Latin
+% line consists of.
+%
 % \begin{macro}[int]{find_first_last_glyph}
 % \changes{v0.0.1}{2026/11/05}{Find the first and the last glyph of a line
 %   inside its boxes, so that a line ending with \tn{mbox}\marg{。} hangs the

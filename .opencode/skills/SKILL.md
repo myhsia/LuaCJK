@@ -53,6 +53,15 @@ and with `PunctBoundWidth` it shifts a line-final mark so that only the given
 advance stays inside the line.
 Only `xoffset` changes, never a width, so justification is untouched.
 
+The shift is not character protrusion, because the engine does not move the
+ink at the end of a line: `\protrudechars` with `\rpcode` makes
+`\rightmarginkern` report the amount (10pt for a right code of 1000 at 10pt)
+while the glyph in the output keeps its position, in a short line, an overfull
+line, and an exactly fitting one. `\lpcode` does move the line — the same
+measurement shifts the first glyph by one em — and that is what the visible
+part of `microtype`'s protrusion on a Latin line is. Hence `xoffset` here, and
+`hang01` pins the numbers.
+
 `pre_mlist_to_hlist_filter` runs `rewrite_math`, which turns a CJK character in
 a math noad into a box in the CJK math font.
 
