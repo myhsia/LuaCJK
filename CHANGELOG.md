@@ -27,6 +27,7 @@
 - Ignore the zero-width format characters (U+200B, U+200C, U+200D, U+2060, U+180E) and the variation selectors at the input, so that they neither take glue nor separate two CJK characters.
 - Provide the `LocalConfig` option, which reads `luacjk.cfg` or `luacjk-<name>.cfg` at the end of the package.
 - Provide the `LoadFandol` option, which supplies Fandol fonts when the document declares none.
+- Provide `CJLineBreak`, which forbids a line break before the characters whose Unicode `Line_Break` property is `CJ`.
 - Provide `KaiMingPunct`, `MiddlePunct`, `LongPunct`, and `NoBreakLongPunct`, each with `+` and `-` forms, to edit the punctuation character sets.
 - A character the font lacks leaves no placeholder: the `.notdef` or private-use glyph a font substitutes for it is removed.
 - Provide `LatinPunct`, which keeps the shared quotation marks, the middle dot, and the ellipses in the Latin font instead of the CJK font.
