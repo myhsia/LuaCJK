@@ -199,10 +199,11 @@ LaTeX Project Public License, version 1.3c or later.
 % \changes{v0.0.1}{2026/11/05}{The manual now shows \cs{CJKunderanyline} with
 %   em-based geometry, so the object covers the body of a CJK glyph.}
 %
-% \title{\bfseries The \pkg{LuaCJK} package\thanks{^^A
+% \title{\bfseries
+%   The \pkg{LuaCJK} package\thanks{^^A
 %   \url{https://ctan.org/pkg/luacjk},\
 %   \url{https://github.com/myhsia/LuaCJK}^^A
-% }^^A
+%   }^^A
 % }
 % \author{Mingyu Xia\thanks{\mail{xiamingyu@westlake.edu.cn}}}
 % \date{Released \DocFileDate\quad \texttt{\DocFileVersion}}
@@ -2278,15 +2279,14 @@ $ x + 中文 $ and 中文
       {
         \dim_set_eq:NN \l_@@_verb_cjk_dim \l_@@_verb_space_dim
         \group_begin:
-          \prop_get:NVNTF \g_@@_family_prop \l_@@_family_tl
-            \l_@@_tmpa_tl
+          \prop_get:NVNT \g_@@_family_prop \l_@@_family_tl \l_@@_tmpa_tl
             {
               \exp_args:NV \fontfamily \l_@@_tmpa_tl
               \selectfont
               \hbox_set:Nn \l_@@_verb_box { 一 }
               \dim_gset:Nn \l_@@_verb_cjk_dim
                 { \box_wd:N \l_@@_verb_box }
-            } { }
+            }
         \group_end:
         \dim_set:Nn \l_@@_verb_gap_dim
           { \l_@@_verb_space_dim - \l_@@_verb_cjk_dim }
@@ -2503,10 +2503,9 @@ $ x + 中文 $ and 中文
       { \tl_put_right:Nn \l_@@_feature_tl { , ~ #1 } }
     \tl_if_empty:NF \g_@@_autofake_bold_tl
       {
-        \bool_lazy_or:nnTF
+        \bool_lazy_or:nnF
           { \l_@@_autofake_bold_given_bool }
-          { \l_@@_bold_font_given_bool }
-          { }
+          { \l_@@_bold_font_given_bool     }
           {
             \tl_put_right:Nx \l_@@_feature_tl
               { , ~ AutoFakeBold = \exp_not:V \g_@@_autofake_bold_tl }
@@ -2514,10 +2513,9 @@ $ x + 中文 $ and 中文
       }
     \tl_if_empty:NF \g_@@_autofake_slant_tl
       {
-        \bool_lazy_or:nnTF
+        \bool_lazy_or:nnF
           { \l_@@_autofake_slant_given_bool }
-          { \l_@@_italic_font_given_bool }
-          { }
+          { \l_@@_italic_font_given_bool    }
           {
             \tl_put_right:Nx \l_@@_feature_tl
               { , ~ AutoFakeSlant = \exp_not:V \g_@@_autofake_slant_tl }
@@ -5451,9 +5449,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         | \dim_use:N \l_@@_fntef_rule_depth_dim
       }
     \luaul_set_color:n { \l_@@_fntef_format_tl }
-    \prop_get:NVNTF \g_@@_fntef_format_prop
+    \prop_get:NVNF \g_@@_fntef_format_prop
       \l_@@_fntef_cache_key_tl \l_@@_fntef_cache_name_tl
-      { }
       {
         \int_gincr:N \g_@@_fntef_format_int
         \tl_set:Ne \l_@@_fntef_cache_name_tl
@@ -5512,9 +5509,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       }
     \tl_if_empty:NF \l_@@_fntef_format_tl
       { \luaul_set_color:n { \l_@@_fntef_format_tl } }
-    \prop_get:NVNTF \g_@@_fntef_format_prop
+    \prop_get:NVNF \g_@@_fntef_format_prop
       \l_@@_fntef_cache_key_tl \l_@@_fntef_cache_name_tl
-      { }
       {
         \int_gincr:N \g_@@_fntef_format_int
         \tl_set:Ne \l_@@_fntef_cache_name_tl
@@ -5922,9 +5918,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_use_leader_type:nn #1#2
   {
-    \prop_get:NnNTF \g_@@_fntef_format_prop {#1}
+    \prop_get:NnNF \g_@@_fntef_format_prop {#1}
       \l_@@_fntef_cache_name_tl
-      { }
       {
         \int_gincr:N \g_@@_fntef_format_int
         \tl_set:Ne \l_@@_fntef_cache_name_tl
@@ -6306,7 +6301,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   {
     \skip_if_eq:nnTF
       { \l__ctex_ccglue_skip } { \l_@@_ccglue_skip }
-      { \prg_return_false: }   { \prg_return_true: }
+      { \prg_return_false:   } { \prg_return_true: }
   }
 \ctex_at_end:n
   {
@@ -6342,7 +6337,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       }
   }
 \ctex_add_to_selectfont:n { \ctex_update_xkanjiskip: }
-\ctex_add_to_selectfont:n { \ctex_update_kanjisize: }
+\ctex_add_to_selectfont:n { \ctex_update_kanjisize:  }
 %</ctex>
 %    \end{macrocode}
 %
