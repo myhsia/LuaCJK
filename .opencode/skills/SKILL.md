@@ -230,7 +230,7 @@ the agreement of the `ctex` maintainers; the redirect is the interim route.
 The commands are in `AGENTS.md`. For this skill the points that matter are:
 
 ```bash
-l3build check                       # 38 tests, must print "All checks passed"
+l3build check                       # 41 tests, must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
 bash scripts/ctex-subset.sh         # 21/21, and no log may mention luatexja
 ```

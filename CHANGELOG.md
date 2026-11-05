@@ -33,6 +33,7 @@
 - Provide the CJK font family interface (`\setCJKmainfont`, `\setCJKsansfont`, `\setCJKmonofont`, `\setCJKfamilyfont`, `\CJKfamily`, `\newCJKfontfamily`, `\CJKfontspec`).
 - Add `\setCJKfallbackfamilyfont` and `AutoFallBack` for characters that the selected CJK font does not have.
 - Add `\normalspacedchars` so that slashes, backslashes, and hyphens take no glue on either side.
+- Ignore the zero-width format characters (U+200B, U+200C, U+200D, U+2060, U+180E) and the variation selectors at the input, so that they neither take glue nor separate two CJK characters.
 - Add the `LocalConfig` option, which reads `luacjk.cfg` or `luacjk-<name>.cfg` at the end of the package.
 - Add the `LoadFandol` option, which supplies Fandol fonts when the document declares none.
 - Add `\LuaCJKwriteCtexConfig`, which writes a `ctexopts.cfg` redirect into the document directory. `ctex` inputs that file after it has fixed the engine file name and before it loads the engine file, so the redirect takes effect in the same run; `ctexbackend.cfg` is read too early and `ctex.cfg` too late.
@@ -45,8 +46,11 @@
 - Inserted glue, kerns, and penalties now inherit the attributes of the neighbouring node, so attribute-based decorations such as `\CJKunderdot` stay in one piece across CJK/CJK and CJK/Latin boundaries.
 - Add basic CJK/CJK and CJK/Latin spacing with `CJKglue`, `CJKecglue`, `CJKspace`, and `xCJKecglue`.
 - Add box, math, and transparent-node boundary handling.
+- Insert no glue between two long punctuation marks, so that a run of dashes or ellipses stays one unit.
 - Add `PunctKinsoku` line-breaking prohibitions: closing punctuation cannot start a line, opening punctuation cannot end a line, and long punctuation runs are kept together.
 - `\LuaCJKnobreak` and `\LuaCJKVerbAddon` keep their prohibition when `PunctKinsoku` is off; the switch only controls the punctuation rules.
+- A fixed punctuation advance now moves the ink of an opening or middle mark as well, so that `banjiao` and `kaiming` no longer let an opening mark collide with the following character.
+- A dash or an ellipsis keeps its advance under a style with a fixed width, so that a run of long punctuation is not collapsed.
 - Add `CJKmath` and `\setCJKmathfont` for typing CJK characters directly in math mode, including nested math lists such as fractions. A one-time warning is issued when CJK characters appear in math mode while `CJKmath` is off.
 - Add `PunctBoundWidth`, which leaves only the given advance inside the line and hangs the rest of the mark into the margin; it replaces the fixed half-em shift of `hangmobanjiao`.
 - Add `CheckSingle` and `WidowPenalty`, which stop a single CJK character from ending up alone on the last line of a paragraph.
