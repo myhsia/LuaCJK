@@ -1202,74 +1202,51 @@ a’a\quad 字！字
 %
 % \pkg{LuaCJK} follows the \pkg{xeCJK} interface where the two engines allow
 % it, so a document that already uses \pkg{xeCJK} mostly needs no change.
-% This section lists only the places where the two differ: a \LuaTeX\ node
-% list is not an \XeTeX\ character class table, so some options mean
-% something slightly different here, and some have no counterpart at all.
+% Only the differences are listed.
 %
 % \subsection{Different behavior}
 %
 % \begin{itemize}
-%   \item \keys{Verb} accepts the four \pkg{xeCJK} values, but
-%   \texttt{env+} behaves like \texttt{false}: both leave the adjustments
-%   on, so the distinction has no observable effect here.
-%   \item The punctuation geometry is approximate. \texttt{banjiao},
-%   \texttt{kaiming}, and \texttt{CCT} give a mark half,
-%   half (with the sentence-ending marks full),
-%   or 0.7 of the current size, and the hanging shift is half an em.
-%   The ink is placed by the class of the mark: an opening mark moves by the
-%   whole amount, a middle mark by half, and a closing mark not at all.
-%   \pkg{xeCJK} instead measures the real side bearings of each glyph.
-%   \item \cs{LuaCJKDeclarePunctStyle} takes \keys{compress-adjacent},
-%   \keys{adjacent-ratio}, and \keys{keep-open-close} instead
-%   of the thirty geometry keys of \pkg{xeCJK}.
-%   \item \texttt{CJKfilltwosides*} does not compare with the natural width
-%   of its content.
-%   \item The \pkg{LuaCJKfntef} option \keys{format} takes the color of
-%   the rule as a name (|format=red|),
-%   not as code (|format=\color{red}|).
+%   \item \keys{Verb}: \texttt{env+} behaves like \texttt{false}, because both
+%   leave the adjustments on.
+%   \item Punctuation geometry. A style gives a mark half the size, half with
+%   the sentence-ending marks kept full, or 0.7 of it, and the ink moves with
+%   the advance by class: an opening mark by the whole amount, a middle mark by
+%   half, a closing mark not at all.
+%   \pkg{xeCJK} measures the real side bearings of each glyph instead.
+%   \item \cs{LuaCJKDeclarePunctStyle} takes the three keys
+%   \keys{compress-adjacent}, \keys{adjacent-ratio}, and
+%   \keys{keep-open-close}; the thirty geometry keys of \pkg{xeCJK} describe
+%   its side-bearing model and have no counterpart here.
+%   \item \texttt{CJKfilltwosides*} does not compare with the natural width.
 %   \item The CJK font is applied to the glyph node after the text has been
-%   read and shaped with the current font.
-%   The OpenType features of the CJK font (ligatures, \texttt{locl},
-%   \texttt{palt}, and the variation sequences) therefore do not take effect;
-%   the spacing, the punctuation advance, and the line-breaking prohibitions
-%   come from LuaCJK itself.
+%   shaped with the current font, so the OpenType features of the CJK font
+%   (ligatures, \texttt{locl}, \texttt{palt}, variation sequences) do not take
+%   effect: the spacing, the punctuation advance, and the prohibitions come
+%   from LuaCJK itself.
+%   \item In \pkg{LuaCJKfntef}, \keys{format} takes a color name rather than
+%   code, and the decoration is drawn by \pkg{lua-ul}, so the \texttt{ulem}
+%   option list does not exist and \tn{underLine} is configured directly.
 % \end{itemize}
 %
 % \subsection{Not available}
 %
 % \begin{itemize}
 %   \item \texttt{NewLineCS}, \texttt{EnvCS}, \texttt{InlineEnv}, and
-%   \texttt{PlainEquation}. They exist so that \pkg{xeCJK} can recognize
-%   \TeX\ constructs while it scans tokens;
-%   LuaCJK looks at the finished node list and needs no hint.
-%   \item \texttt{PoZheHaoLigature}. A CJK font can carry a ligature that
-%   turns two dashes into one two-em dash, and the font loader does apply it
-%   when the CJK font is the current font.
-%   LuaCJK instead applies the CJK font to the glyph node after the text has
-%   been shaped with the Latin font, so the substitution has already been
-%   decided and cannot be asked for here.
-%   \item \texttt{RubberPunctSkip}. The advance of a punctuation mark is
-%   fixed with a kern. A kern is not a break opportunity and takes no part in
-%   justification, which is what keeps the fixed-width styles stable; making
-%   the advance a flexible glue would give that up.
-%   \item \texttt{CheckFullRight}, because it needs the control sequence that
-%   follows the mark, which the node list no longer shows.
-%   Use \cs{LuaCJKnobreak} for the few places that need it.
-%   \item The detailed punctuation keys of \pkg{xeCJK}
-%   (\texttt{fixed-punct-*}, \texttt{mixed-*}, \texttt{middle-*},
-%   \texttt{bound-*}, \texttt{kerning-*}, \texttt{optimize-*},
-%   \texttt{margin-minimum}), which describe \pkg{xeCJK}'s model
-%   of adjusting the side bearings.
-%   \item In \pkg{LuaCJKfntef}: the \texttt{ulem} option, which passes
-%   options to the commands of \pkg{ulem}.
-%   \pkg{LuaCJKfntef} builds on \pkg{lua-ul} instead,
-%   and its \tn{underLine} may be configured directly.
-%   \item A \pkg{ctex} backend that is picked up without a redirect.
-%   \pkg{ctex} asks for a file of its own naming,
-%   so LuaCJK ships |ctex-engine-luacjk.def| and a \file{ctexopts.cfg}
-%   written by \cs{LuaCJKwriteCtexConfig} points \pkg{ctex} at it.
-%   Choosing a backend inside \pkg{ctex} itself still needs the agreement
-%   of the \pkg{ctex} maintainers.
+%   \texttt{PlainEquation}: they exist so that \pkg{xeCJK} can recognize
+%   \TeX\ constructs while it scans tokens, and a finished node list needs no
+%   hint.
+%   \item \texttt{PoZheHaoLigature}, for the reason given above: the font's
+%   two-em dash ligature is decided before LuaCJK applies the CJK font.
+%   \item \texttt{RubberPunctSkip}: the advance of a mark is a kern, which is
+%   neither a break opportunity nor part of justification, and that is what
+%   keeps a fixed-width style stable.
+%   \item \texttt{CheckFullRight}: it needs the control sequence after the
+%   mark, which a node list does not show; use \cs{LuaCJKnobreak}.
+%   \item A \pkg{ctex} backend without a redirect: \pkg{ctex} asks for a file
+%   of its own naming, so LuaCJK ships |ctex-engine-luacjk.def| and
+%   \cs{LuaCJKwriteCtexConfig} points \pkg{ctex} at it; choosing the backend
+%   inside \pkg{ctex} still needs the maintainers' agreement.
 % \end{itemize}
 %
 % \end{documentation}
