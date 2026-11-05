@@ -1,0 +1,6 @@
+# CJK fonts the manual needs beyond the `lxgw-fonts` TeX Live package, one
+# URL per line.  The `l3build` job downloads each file, unzips the *.ttc into
+# the system font directory, and caches the result under a key built from the
+# hash of this file, so changing a URL invalidates the cache.
+https://github.com/notofonts/noto-cjk/releases/download/Sans2.004/03_NotoSansCJK-OTC.zip
+https://github.com/notofonts/noto-cjk/releases/download/Serif2.002/04_NotoSerifCJKOTC.zip

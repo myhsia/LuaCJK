@@ -10,7 +10,19 @@ jobs:
   l3build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            font-dir: /usr/share/fonts/truetype
+            font-shell: bash
+            tl-packages: ""
+          - os: macos-latest
+            font-dir: /Library/Fonts
+            font-shell: bash
+            tl-packages: ""
+          - os: windows-latest
+            font-dir: /c/Windows/Fonts
+            font-shell: "C:\\msys64\\usr\\bin\\bash.exe -e {0}"
+            tl-packages: wintools.windows
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -19,6 +31,39 @@ jobs:
         uses: zauguin/install-texlive@v4
         with:
           package_file: .github/tl_packages
+          packages: ${{ matrix.tl-packages }}
+      - name: Cache CJK fonts
+        id: font-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.font-cache
+          key: luacjk-fonts-${{ runner.os }}-${{ hashFiles('.github/font-urls.txt') }}-v1
+      - name: Install Noto fonts
+        shell: ${{ matrix.font-shell }}
+        run: |
+          # The *.ttc collections the manual's Noto faces live in are not in
+          # TeX Live, so they are downloaded, unpacked, kept in a cache keyed
+          # by .github/font-urls.txt, and copied into the system font
+          # directory; `lxgw-fonts` itself comes from .github/tl_packages.
+          FONT_CACHE="${{ github.workspace }}/.font-cache"
+          mkdir -p "$FONT_CACHE"
+          if [ ! -f "$FONT_CACHE/.done" ]; then
+            cd "$FONT_CACHE"
+            # One URL per line, # comments and blank lines skipped.  A Windows
+            # checkout turns LF into CRLF, so the CR is stripped or curl takes
+            # "URL\r" for the file name.
+            while IFS= read -r url || [ -n "$url" ]; do
+              url="$(printf '%s' "$url" | tr -d '\r')"
+              case "$url" in ''|'#'*) continue ;; esac
+              curl -LO "$url"
+            done < "${{ github.workspace }}/.github/font-urls.txt"
+            for f in *OTC.zip; do unzip -ojd . "$f" "*.ttc"; done
+            rm -f *.zip
+            touch .done
+            cd - >/dev/null
+          fi
+          cp "$FONT_CACHE"/*.ttc "${{ matrix.font-dir }}/"
+          fc-cache -f
       - name: Check the guide facts
         shell: bash
         run: bash scripts/check-docs.sh
