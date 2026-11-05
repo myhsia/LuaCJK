@@ -161,25 +161,30 @@ LaTeX Project Public License, version 1.3c or later.
 % that runs again after every demo.
 \NewDocumentCommand \LuaCJKdocsetup { }
   {
-    \setCJKmainfont[
-      BoldFont   = FandolSong-Bold.otf,
-      ItalicFont = FandolKai-Regular.otf
-    ]{FandolSong-Regular.otf}
-    \setCJKsansfont[BoldFont = FandolHei-Bold.otf]{FandolHei-Regular.otf}
-    \setCJKmonofont{FandolFang-Regular.otf}
-    \setCJKfamilyfont{zhsong}[BoldFont = FandolSong-Bold.otf]
-      {FandolSong-Regular.otf}
-    \setCJKfamilyfont{zhhei}[BoldFont = FandolHei-Bold.otf]
-      {FandolHei-Regular.otf}
-    \setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
-    \setCJKfamilyfont{zhfs}{FandolFang-Regular.otf}
+    % The fake bold and slant keys are global and take effect when a family
+    % is registered, so they are cleared before the fonts are set again.
     \LuaCJKsetup{AutoFakeBold = false, AutoFakeSlant = false}
+    \setCJKmainfont{Noto Serif CJK SC}[
+      Language   = Chinese Simplified,
+      ItalicFont = LXGWWenKaiGBLite-Regular.ttf
+    ]
+    \setCJKsansfont{Noto Sans CJK SC}[Language = Chinese Simplified]
+    \setCJKmonofont{LXGWZhuqueFangsong-Regular.ttf}
+      [Language = Chinese Simplified]
+    \setCJKfamilyfont{zhsong}{Noto Serif CJK SC}
+      [Language = Chinese Simplified]
+    \setCJKfamilyfont{zhhei}{Noto Sans CJK SC}
+      [Language = Chinese Simplified]
+    \setCJKfamilyfont{zhkai}{LXGWWenKaiGBLite-Regular.ttf}
+      [Language = Chinese Simplified]
+    \setCJKfamilyfont{zhfs}{LXGWZhuqueFangsong-Regular.ttf}
+      [Language = Chinese Simplified]
   }
 \LuaCJKdocsetup
 \AddToHook{env/codemo/after}{\LuaCJKdocsetup}
 \usepackage{LuaCJKfntef}
 \LuaCJKsetup{CJKmath=true, LatinPunct=true}
-\setCJKmathfont{FandolSong-Regular.otf}
+\setCJKmathfont{Noto Serif CJK SC}[Language = Chinese Simplified]
 % The user documentation is written twice, Chinese first and English second.
 % The language tag becomes a component of the PDF anchors and of the labels
 % that l3doc attaches to a documented object: the section counter restarts for
