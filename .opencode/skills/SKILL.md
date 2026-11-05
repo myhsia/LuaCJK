@@ -245,7 +245,7 @@ on `lua-ul`). Picking a backend inside `ctex` still needs the agreement of the
 The commands are in `AGENTS.md`. For this skill the points that matter are:
 
 ```bash
-l3build check                       # 43 tests, must print "All checks passed"
+l3build check                       # 44 tests, must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
 bash scripts/ctex-subset.sh         # 21/21, and no log may mention luatexja
 ```
