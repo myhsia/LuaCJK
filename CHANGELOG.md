@@ -24,6 +24,7 @@
 - Provide `\setCJKfallbackfamilyfont` and `AutoFallBack` for characters that the selected CJK font does not have.
 - Provide `\songti`, `\heiti`, `\fangsong`, `\kaishu`, `\lishu`, and `\youyuan` as shorthands for the families `zhsong`, `zhhei`, `zhfs`, `zhkai`, `zhli`, and `zhyou`.
 - Provide `\normalspacedchars` so that slashes, backslashes, and hyphens take no glue on either side.
+- Ignore the zero-width format characters (U+200B, U+200C, U+200D, U+2060, U+180E) and the variation selectors at the input, so that they neither take glue nor separate two CJK characters.
 - Provide the `LocalConfig` option, which reads `luacjk.cfg` or `luacjk-<name>.cfg` at the end of the package.
 - Provide the `LoadFandol` option, which supplies Fandol fonts when the document declares none.
 - Provide `KaiMingPunct`, `MiddlePunct`, `LongPunct`, and `NoBreakLongPunct`, each with `+` and `-` forms, to edit the punctuation character sets.
