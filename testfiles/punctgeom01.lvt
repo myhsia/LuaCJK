@@ -1,0 +1,80 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+% Report every glyph of box 0 with its horizontal offset and the kern that
+% follows it. The offset is what places the ink inside the shortened advance.
+\def\dumpgeom{%
+  \directlua{
+    local n = tex.box[0].head
+    while n do
+      if n.id == node.id("glyph") then
+        local k = 0
+        local m = n.next
+        while m and m.id == node.id("penalty") do m = m.next end
+        if m and m.id == node.id("kern") then k = m.kern end
+        texio.write_nl("term and log", "GEOM " .. tostring(n.char) ..
+          " x=" .. tostring(n.xoffset) .. " k=" .. tostring(k))
+      end
+      n = n.next
+    end
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{quanjiao keeps the advance and the ink}{
+  \setbox0=\hbox{（}\dumpgeom
+  \setbox0=\hbox{）}\dumpgeom
+}
+
+\TEST{an opening mark moves its ink by the amount it loses}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle = banjiao}
+    \setbox0=\hbox{（}\dumpgeom
+  \endgroup
+}
+
+\TEST{a closing mark keeps its ink at the left}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle = banjiao}
+    \setbox0=\hbox{）}\dumpgeom
+    \setbox0=\hbox{，}\dumpgeom
+  \endgroup
+}
+
+\TEST{a middle mark moves its ink by half}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle = banjiao}
+    \setbox0=\hbox{·}\dumpgeom
+  \endgroup
+}
+
+\TEST{kaiming keeps the full stop at full width}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle = kaiming}
+    \setbox0=\hbox{。}\dumpgeom
+    \setbox0=\hbox{（}\dumpgeom
+  \endgroup
+}
+
+\TEST{a dash keeps its advance under a fixed width style}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle = banjiao}
+    \setbox0=\hbox{——}\dumpgeom
+    \setbox0=\hbox{……}\dumpgeom
+  \endgroup
+}
+
+\TEST{an explicit width still shortens a dash}{
+  \LuaCJKsetwidth{—}{0.5em}
+  \setbox0=\hbox{—}\dumpgeom
+}
+
+\END
+
+\end{document}

@@ -19,6 +19,26 @@
   }%
 }
 
+% Count the glue nodes between the two em dashes. A run that is joined
+% without glue offers no break between its marks, whatever the penalties do.
+\def\countglue{%
+  \directlua{
+    local dashes, c = 0, 0
+    local n = tex.box[0].head
+    while n do
+      if n.id == node.id("glyph") then
+        if n.char == 0x2014 then
+          dashes = dashes + 1
+        end
+      elseif dashes == 1 and n.id == node.id("glue") then
+        c = c + 1
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "GLUE " .. tostring(c))
+  }%
+}
+
 \begin{document}
 
 \START
@@ -34,17 +54,29 @@
   \TYPE{width: \the\wd0}
 }
 
-\TEST{two long marks are not broken between}{
+\TEST{a long run is joined without glue}{
   \setbox0=\hbox{字——字}
   \countpenalties
+  \countglue
 }
 
-\TEST{NoBreakLongPunct can empty that set}{
+\TEST{NoBreakLongPunct forbids the breaks of a mark that is not long}{
   \begingroup
-    \LuaCJKsetup{NoBreakLongPunct = {}}
+    \LuaCJKsetup{LongPunct = {}, NoBreakLongPunct = {"2014}}
     \setbox0=\hbox{字——字}
     \countpenalties
+    \countglue
   \endgroup
+}
+
+\TEST{without NoBreakLongPunct those breaks are free}{
+  \begingroup
+    \LuaCJKsetup{LongPunct = {}, NoBreakLongPunct = {}}
+    \setbox0=\hbox{字——字}
+    \countpenalties
+    \countglue
+  \endgroup
+  \LuaCJKsetup{LongPunct = {"2013, "2014, "2015, "FF0D, "2026, "22EF}}
 }
 
 \TEST{kaiming keeps the full stop at full width}{
