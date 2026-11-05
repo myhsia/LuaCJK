@@ -1207,6 +1207,12 @@ $ x + 中文 $ and 中文
 %   \item The \pkg{LuaCJKfntef} option \keys{format} takes the color of
 %   the rule as a name (|format=red|),
 %   not as code (|format=\color{red}|).
+%   \item The CJK font is applied to the glyph node after the text has been
+%   read and shaped with the current font.
+%   The OpenType features of the CJK font (ligatures, \texttt{locl},
+%   \texttt{palt}, and the variation sequences) therefore do not take effect;
+%   the spacing, the punctuation advance, and the line-breaking prohibitions
+%   come from LuaCJK itself.
 % \end{itemize}
 %
 % \subsection{Not available}
@@ -1216,10 +1222,16 @@ $ x + 中文 $ and 中文
 %   \texttt{PlainEquation}. They exist so that \pkg{xeCJK} can recognize
 %   \TeX\ constructs while it scans tokens;
 %   LuaCJK looks at the finished node list and needs no hint.
-%   \item \texttt{PoZheHaoLigature}, because \LuaTeX\ shapes one glyph at a
-%   time, so two dashes cannot be merged into the ligature of the font.
-%   \item \texttt{RubberPunctSkip}, because the advance of a punctuation mark
-%   is a fixed kern rather than stretchable glue.
+%   \item \texttt{PoZheHaoLigature}. A CJK font can carry a ligature that
+%   turns two dashes into one two-em dash, and the font loader does apply it
+%   when the CJK font is the current font.
+%   LuaCJK instead applies the CJK font to the glyph node after the text has
+%   been shaped with the Latin font, so the substitution has already been
+%   decided and cannot be asked for here.
+%   \item \texttt{RubberPunctSkip}. The advance of a punctuation mark is
+%   fixed with a kern. A kern is not a break opportunity and takes no part in
+%   justification, which is what keeps the fixed-width styles stable; making
+%   the advance a flexible glue would give that up.
 %   \item \texttt{CheckFullRight}, because it needs the control sequence that
 %   follows the mark, which the node list no longer shows.
 %   Use \cs{LuaCJKnobreak} for the few places that need it.
@@ -2002,10 +2014,10 @@ $ x + 中文 $ and 中文
     PunctKinsoku        .choice:,
     PunctKinsoku / true .code:n      =
       { \tl_set:Nn \l_@@_punct_kinsoku_tl { 1 } },
-    PunctKinsoku / false .code:n     =
+    PunctKinsoku / false.code:n      =
       { \tl_set:Nn \l_@@_punct_kinsoku_tl { 0 } },
-    PunctKinsoku         .default:n  = { true  },
-    CJLineBreak          .choice:,
+    PunctKinsoku        .default:n   = { true  },
+    CJLineBreak         .choice:,
     CJLineBreak / normal .code:n     =
       { \tl_set:Nn \l_@@_cj_strict_tl { 0 } },
     CJLineBreak / strict .code:n     =
