@@ -344,7 +344,9 @@ Session check: `scripts/check-extract-changes.sh`
 requests. Two jobs, each on `ubuntu-latest`, `macos-latest`, and
 `windows-latest`:
 
-- `l3build`: `bash scripts/check-docs.sh`, then `l3build changelog` and a
+- `l3build`: install TeX Live, then `bash scripts/check-docs.sh` (it calls
+  `texlua` for the bilingual check, so it cannot run before the install),
+  then `texlua scripts/check-charclass.lua`, then `l3build changelog` and a
   `git diff --exit-code CHANGELOG.md` that fails when the generated file is
   stale, then `l3build check`, then `l3build doc` (only if the check passed);
 - `ctex-subset`: `l3build unpack`, then `bash scripts/ctex-subset.sh
