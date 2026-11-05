@@ -48,7 +48,7 @@ Python 3 is available when a task needs it. Entry points:
 | `.github/tl_packages` | the package list CI installs; a dependency must be added **or removed** here or the Ubuntu job fails first |
 | `CHANGELOG.md` | user-visible changes, newest first, generated from the `\changes` entries by `l3build changelog` |
 | `LICENSE` | the LPPL text the meta-comment refers to |
-| `.gitattributes` | `* text=auto`, so the guides and the `dtx` keep one line ending whichever checkout writes them |
+| `.gitattributes` | `* text=auto`; a Windows checkout is CRLF, so a script that reads a source file normalizes `\r\n` before matching a `\n` |
 | `DEPENDS.txt` | the TeX Live packages the package needs at run time, one per line as `hard <bundle>` and `soft <bundle>`; `soft` marks a dependency that only an optional output needs |
 
 Generated, never edited by hand: `*.sty`, `*.lua`, `*.def` in the root,
@@ -304,7 +304,8 @@ requests. Two jobs, each on `ubuntu-latest`, `macos-latest`, and
 - `ctex-subset`: `l3build unpack`, then `bash scripts/ctex-subset.sh
   --skip-unpack`.
 
-On failure the `l3build` job uploads `build/**/*.diff` and `build/**/*.log` as
+On failure the `l3build` job uploads `build/**/*.diff`, `build/**/*.fc` and
+`build/**/*.log` as
 `luacjk-diff-<short-sha>-<os>`; download it with `gh run download` through the
 proxy (see the `network-access` skill). Local and CI run the same commands;
 the only parity risk is a missing or surplus entry in `.github/tl_packages`.
