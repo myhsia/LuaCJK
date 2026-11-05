@@ -58,6 +58,7 @@
 - A CJK noad now points at the math family of its CJK family instead of carrying a box, so a character in a script or a fraction is set at the size of that math style.
 - Find the first and the last glyph of a line inside its boxes, so that a line ending with `\mbox``{。}` hangs the mark as well.
 - Add `PunctBoundWidth`, which leaves only the given advance inside the line and hangs the rest of the mark into the margin; it replaces the fixed half-em shift of `hangmobanjiao`.
+- `PunctBoundWidth` now applies to a mark at the start of a line as well: the given advance stays inside and the rest of the ink hangs into the indentation.
 - Apply the hanging shift only to the lines of the paragraph, not to a box in the middle of a line: a punctuation mark inside `\mbox` used to be shifted even when the line went on.
 - Add `CheckSingle` and `WidowPenalty`, which stop a single CJK character from ending up alone on the last line of a paragraph.
 - `\CJKunderline` accepts `subtract` (inset at both ends) and `skip` (leave out the punctuation). The decoration boxes of `lua-ul` are adjusted in place: the leaders width is reduced and a matching kern and negative glue keep the text where it was.

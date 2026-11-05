@@ -681,11 +681,11 @@ $ x + 中文 $ and 中文
 %   every punctuation mark the same advance, whatever the style says.
 %   A width set with \cs{LuaCJKsetwidth} still wins for that mark.
 %   \item[\keys{PunctBoundWidth}]\val{length, false}: How much of a mark's
-%   advance stays inside the line when the mark ends the line;
-%   the rest of the ink hangs into the margin, and the line keeps its width.
-%   This replaces the fixed half-em shift of \texttt{hangmobanjiao}
-%   at the end of a line, while a mark at the start of a line is still
-%   shifted by the style. \texttt{false} turns the option off.
+%   advance stays inside the line when the mark ends or starts the line;
+%   the rest of the ink hangs into the margin, or into the indentation at the
+%   start of a paragraph, and the line keeps its width.
+%   This replaces the fixed half-em shift of \texttt{hangmobanjiao} at either
+%   end of a line. \texttt{false} turns the option off.
 %   \item[\keys{LatinPunct}]\val{\TFF}: Treat the quotation marks
 %   (U+2018, U+2019, U+201C, U+201D), the middle dot (U+00B7),
 %   and the ellipses (U+2026, U+2027, U+22EF) as Latin punctuation:
@@ -740,7 +740,8 @@ a’a\quad 字！字
 \begingroup
 \begin{codemo}
 字字。\\
-\LuaCJKsetup{PunctBoundWidth=.5em}字字。
+\LuaCJKsetup{PunctBoundWidth=.5em}字字。\\
+（字字
 \end{codemo}
 \endgroup
 % \iffalse
@@ -5128,6 +5129,9 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{hang_line}
+% \changes{v0.0.1}{2026/11/05}{\keys{PunctBoundWidth} now applies to a mark
+%   at the start of a line as well: the given advance stays inside and the
+%   rest of the ink hangs into the indentation.}
 % Shift the punctuation glyphs at the two ends of one line.
 % A closing or middle mark at the end, and an opening mark at the start,
 % take their own settings; with a bound width the end shift is the part
@@ -5149,7 +5153,9 @@ local function hang_line (line)
   local last_style     = style_of(last_settings)
   local first_style    = style_of(first_settings)
   local bound          = bound_width(last_settings)
-  if not (last_style.hanging or first_style.hanging or bound) then
+  local start_bound    = bound_width(first_settings)
+  if not (last_style.hanging or first_style.hanging or bound or start_bound)
+  then
     return
   end
   if last and punct_class(last.char, last_settings) then
@@ -5164,13 +5170,16 @@ local function hang_line (line)
       end
     end
   end
-  if first_style.hanging and first
-     and punct_class(first.char, first_settings) then
+  if first and punct_class(first.char, first_settings) then
     local cls = punct_class(first.char, first_settings)
     if cls == "open" then
-      local f    = font.getfont(first.font)
-      local size = f and f.size or 0
-      shift_glyph(first, -math.floor(0.5 * size + 0.5))
+      if start_bound then
+        shift_glyph(first, start_bound - first.width)
+      elseif first_style.hanging then
+        local f    = font.getfont(first.font)
+        local size = f and f.size or 0
+        shift_glyph(first, -math.floor(0.5 * size + 0.5))
+      end
     end
   end
 end
