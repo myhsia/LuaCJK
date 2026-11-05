@@ -40,6 +40,7 @@
 - Use the public LaTeX3 Lua interfaces (`\lua_now:e`, `\lua_escape:e`, `\lua_load_module:n`) instead of `\directlua` and `kpse.findfile`.
 - Split the Lua code into `LuaCJK.lua` (entry point) and `LuaCJK-core.lua`.
 - Add `CJLineBreak`, which reads the `Line_Break` property `CJ` from `LineBreak.txt` and forbids a line break before those characters.
+- Add the CJK code points of Unicode 15 and 16 that the range table had missed: the two Hangul Jamo extended blocks, the Old Chinese marks, Kana Extended-B, Kana Extended-A and Kana Supplement, and the enclosed hiragana.
 - Add `KaiMingPunct`, `MiddlePunct`, `LongPunct`, and `NoBreakLongPunct`, each with `+` and `-` forms, to edit the punctuation character sets.
 - Drop the placeholder glyph that a font without the character leaves behind (one `.notdef` glyph in some fonts, a private-use glyph in others).
 - Replace CJK glyph nodes in `pre_linebreak_filter` and `hpack_filter` using a LuaTeX attribute that records the current CJK font.

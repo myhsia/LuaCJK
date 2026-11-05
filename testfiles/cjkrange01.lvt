@@ -1,0 +1,71 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+% Report whether each code point of the comma-separated list is CJK.
+% The helper avoids the % and # characters, which TeX reads specially inside
+% \directlua; the code points are written with a 0x prefix for the same
+% reason, so that the quotes around the argument stay Lua string quotes.
+\def\cjkof#1{%
+  \directlua{
+    local digits = "0123456789ABCDEF"
+    local function hex (n)
+      local out, count = {}, 0
+      repeat
+        count = count + 1
+        local d = math.fmod(n, 16) + 1
+        out[count] = digits:sub(d, d)
+        n = math.floor(n / 16)
+      until n == 0
+      local s = ""
+      for i = count, 1, -1 do s = s .. out[i] end
+      while string.len(s) < 4 do s = "0" .. s end
+      return s
+    end
+    local out = ""
+    for cp in string.gmatch("#1", "[^, ]+") do
+      local c = tonumber(cp)
+      out = out .. " " .. hex(c) .. "=" .. tostring(LuaCJK.is_cjk(c, nil))
+    end
+    texio.write_nl("term and log", "CJ" .. out)
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{the CJK blocks are CJK}{
+  \cjkof{0x1100, 0x2014, 0x2E80, 0x4E2D, 0xA960, 0xA97C, 0xAC00}
+  \cjkof{0xD7B0, 0xD7CB, 0xF900, 0xFE30, 0xFF0C}
+  \cjkof{0x16FE2, 0x16FF0, 0x1AFF0, 0x1B000, 0x1B132}
+  \cjkof{0x1B150, 0x1B155, 0x1B164, 0x1F200, 0x20000, 0x30000}
+}
+
+\TEST{Latin, an unassigned gap, and a combining mark are not}{
+  \cjkof{0x0041, 0x1B170, 0x2060, 0x1F600, 0x02EA, 0x02EB}
+}
+
+\TEST{LatinPunct turns the shared punctuation into Latin}{
+  \directlua{
+    local out = ""
+    for _, c in ipairs({0x2026, 0x2014}) do
+      out = out .. " " .. tostring(c) .. "="
+        .. tostring(LuaCJK.is_cjk(c, { latin_punct = true }))
+    end
+    texio.write_nl("term and log", "LP" .. out)
+  }%
+}
+
+\TEST{a declared class wins over the table}{
+  \LuaCJKDeclareCharClass{Default}{"A960}
+  \cjkof{0xA960, 0xA97C}
+  \LuaCJKResetCharClass
+  \cjkof{0xA960, 0xA97C}
+}
+
+\END
+
+\end{document}
