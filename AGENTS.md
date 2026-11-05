@@ -12,7 +12,7 @@ against the engine file.
 Repo etiquette, the git/PR workflow, LaTeX writing and source style,
 tooling and upkeep are **machine-global**: see the `repo-rules` skill at
 `~/.config/opencode/skills/repo-rules/SKILL.md`. Do not copy them here. The
-only local exception is that the manual's prose is English,
+only local exception is that the manual is bilingual,
 so the "no code-like strings in the rendered text" rule is applied
 to identifiers and file names only.
 
@@ -43,7 +43,8 @@ Python 3 is available when a task needs it. Entry points:
 | `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, and names the forge repository of the release link with `--repo` |
 | `scripts/check-extract-changes.sh` | regenerates the six changelogs of `../ctex-kit` with the Lua extractor and compares them byte for byte: exit 0 all identical, 1 a difference, 2 cannot run; `--quiet` prints only the differences |
 | `scripts/check-charclass.lua` | compares the `CJK_RANGES` table of the `dtx` with `Scripts.txt`: it reports every code point whose script is Han, Hiragana, Katakana, Bopomofo, or Hangul that the table does not list, merging the code points into ranges.  The combining Bopomofo tone marks U+02EA and U+02EB are allowed to stay outside the table.  Exit 0 covered, 1 missing (the ranges are printed), 2 cannot run |
-| `scripts/check-docs.sh` | compares the facts in the two guides with their sources: the layout table against `git ls-files` (both directions), version, test count, DocStrip blocks, installed file types, attribute and decoration counts, `\RequirePackage` against `DEPENDS.txt` (a package loaded from the listings guard must be `soft`), `DEPENDS.txt` against `.github/tl_packages`, the subset count, and the changelog facts (the newest `\changes` version and date against `build.lua`, the first line of `CHANGELOG.md` against the released version).  A `\RequirePackage` name is resolved to its TeX Live package with `tlmgr search --global --file`, falling back to `expl3 -> l3kernel` and `l3draw -> l3experimental` when `tlmgr` is absent |
+| `scripts/check-bilingual.lua` | compares the two `documentation` parts of the `dtx`: the ordered structure (environment nesting, the documented objects and their arguments, section levels, list items) and the multiset of interface references (`\cs`, `\keys`, `\pkg`, `\file`, `\env`, `\tn`, `\val`, `\texttt`, `\meta`, `\oarg`, `\marg`, `\parg` and the `|…|` spans), and refuses a part in the wrong order.  Prose and section titles are not compared.  Exit 0 agree, 1 differ (the differences are printed), 2 cannot run |
+| `scripts/check-docs.sh` | compares the facts in the two guides with their sources: the layout table against `git ls-files` (both directions), version, test count, DocStrip blocks, installed file types, attribute and decoration counts, `\RequirePackage` against `DEPENDS.txt` (a package loaded from the listings guard must be `soft`), `DEPENDS.txt` against `.github/tl_packages`, the subset count, the changelog facts (the newest `\changes` version and date against `build.lua`, the first line of `CHANGELOG.md` against the released version), and the two languages of the user part through `scripts/check-bilingual.lua`.  A `\RequirePackage` name is resolved to its TeX Live package with `tlmgr search --global --file`, falling back to `expl3 -> l3kernel` and `l3draw -> l3experimental` when `tlmgr` is absent |
 | `.github/workflows/test.yaml` | the CI workflow |
 | `.github/tl_packages` | the package list CI installs; a dependency must be added **or removed** here or the Ubuntu job fails first |
 | `CHANGELOG.md` | user-visible changes, newest first, generated from the `\changes` entries by `l3build changelog` |
@@ -65,6 +66,38 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **One source.** Edit `LuaCJK.dtx` only; `l3build unpack` regenerates
   everything else. A change to a derived file that is not in the `dtx` is lost
   at the next unpack.
+- **The user part exists in two languages.**  The `documentation`
+  environment is written twice, Simplified Chinese first and English second;
+  only the prose and the section titles are translated, so every edit to one
+  part is an edit to the other in the same task, and
+  `scripts/check-bilingual.lua` (run by `scripts/check-docs.sh`) fails when
+  they drift.  The Chinese part uses full-width punctuation in running
+  prose, with no space before or after a mark and one space around a Latin
+  word or code span; a `keyval` item keeps the English shape,
+  `\item[\keys{…}]\val{…}:` on one line, and its separator is the ASCII `:`,
+  because it belongs to the markup and not to the sentence.  The markup
+  commands, their arguments
+  (including the `\meta`/`\oarg`/`\marg` parameter names), the environment
+  nesting, and the demo code are identical in the two parts.  The Chinese
+  part ends with `\setcounter{section}{0}`, and `docext` also restarts the
+  counter before every `documentation` environment, so both parts number from
+  one; the `\LuaCJKdoclang{zh|en}` call before each
+  part sets a tag that becomes a component of `\theHpart` and, through a
+  patch of l3doc's `\__codedoc_get_hyper_target:nN` in the driver, of the
+  `doc/function/…` labels, because the repeated numbers would otherwise be
+  duplicate labels and PDF destinations.  The Implementation part stays
+  English.
+- **The bilingual front matter is Chinese-first.**  `\contentsname` prints
+  `目录\quad Contents` and `\abstractname` prints `摘要 | Abstract`, written
+  `摘要 \texttt\textbar\ Abstract`.  The Chinese and English abstract texts
+  sit in one `abstract` environment: the Chinese paragraph, then
+  `\setlength \parindent {1.5em}\par`, then the English paragraph.  The title
+  puts the Chinese line above the English with a bare `\\`, and the `\thanks`
+  body is indented one level so the `\url` lines belong to it.  The
+  table-of-contents heading also enters the PDF bookmark, which cannot carry
+  a skip, so its two forms are given through `\texorpdfstring`: a bare
+  `\quad` there brings back the hyperref warning `Token not allowed in a PDF
+  string`.
 - **A new installed file type needs three edits.**  A file that the package
   installs must appear in `installfiles` (CI installs from it, and `l3build
   check` copies each entry into the test directory), in `tdslocations` (the
@@ -200,13 +233,14 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   package is tested and released belongs in this guide, and the principle
   behind an interface belongs in the implementation section, not next to the
   user instruction.
-- **The user part has a fixed shape.**  Five sections (Introduction,
-  Loading, Fonts, Text layout, Comparison with xeCJK) followed by the
-  appendix Implementation; `Fonts` carries five subsections and `Text layout`
-  six, and no section is left with a single subdivision.  A new feature joins
-  the theme it belongs to instead of opening a section of its own; the
-  `ctex` material stays in Loading, and the decoration commands end the Text
-  layout section.
+- **The user part has a fixed shape, in both languages.**  Five sections
+  (Introduction, Loading, Fonts, Text layout, Comparison with xeCJK) followed
+  by the appendix Implementation; `Fonts` carries five subsections and
+  `Text layout` six, and no section is left with a single subdivision.  A new
+  feature joins the theme it belongs to instead of opening a section of its
+  own; the `ctex` material stays in Loading, and the decoration commands end
+  the Text layout section.  The Chinese part repeats the shape exactly, with
+  the translated titles (简介, 加载, 字体, 文本排版, 与 `xeCJK` 的比较).
 - **`\LuaCJKsetup` gets one sentence.**  Its `function` entry states the
   syntax and that the keys are documented in the following sections; the two
   groups (per-node settings and global or load-time keys) are explained
@@ -235,6 +269,7 @@ bash scripts/ctex-subset.sh            # ~3 min, needs ../ctex-kit or network
 bash scripts/ctex-subset.sh --skip-unpack
 bash scripts/check-docs.sh             # ~1 s, the guide facts against the code
 texlua scripts/check-charclass.lua     # ~1 s, the CJK range table against Scripts.txt
+texlua scripts/check-bilingual.lua     # ~1 s, the two documentation languages
 ```
 
 `l3build doc`, `l3build tag` and `l3build changelog` all write into the
@@ -253,7 +288,9 @@ of ctex-kit.
   sources`; it is the first thing CI runs and the thing to run before a
   commit that touches a number in either guide, or adds, renames, or removes
   a tracked file (the layout table is compared with `git ls-files` in both
-  directions).  The `hard` and `soft` words of `DEPENDS.txt` are what the
+  directions).  It also runs `scripts/check-bilingual.lua`, so a change to one
+  language of the user part without the other fails here.  The `hard` and
+  `soft` words of `DEPENDS.txt` are what the
   script reads to decide whether a dependency belongs to the package proper
   or only to an optional output, so the word is part of the check, not a
   comment.
@@ -263,7 +300,10 @@ of ctex-kit.
 - Prove a documentation-only change inert rather than arguing it: unpack from
   a worktree of the previous commit, then `cmp build/unpacked/*` against the
   current build, and compare `mutool draw -F txt` output of the two PDFs. Both
-  must be identical, which is the evidence that only prose moved.
+  must be identical, which is the evidence that only prose moved.  A change
+  that adds or edits one language of the user part moves the PDF by design;
+  the evidence is then the identical derived files plus the unchanged text of
+  the other language.
 - `bash scripts/check-extract-changes.sh` must print six `IDENTICAL` lines.  It
   needs a `../ctex-kit` checkout and judges the Lua extractor against ctex-kit's
   committed changelogs, so a difference means that one of the two moved: run it
@@ -273,7 +313,10 @@ of ctex-kit.
   `\changes` version and date against `build.lua`, and the first line of
   `CHANGELOG.md` against the released version.
 - `l3build doc` must finish with no `^!` error, no `Reference ... undefined`,
-  and no `Missing character`.  The manual ends with a Change History part;
+  no `Missing character`, and no `multiply defined` label or
+  `duplicate destination` warning: the two language parts restart the section
+  numbering, so the `\LuaCJKdoclang` tags are what keeps their labels and PDF
+  destinations apart.  The manual ends with a Change History part;
   it is absent without `LuaCJK.gls`, which only the `glo`→`gls` dependency in
   `tex()` builds, and adding it to the table of contents shifts every page
   reference in the manual by one.
