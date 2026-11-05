@@ -311,6 +311,11 @@ function M.extract(path, target)
   if not file then return nil end
   local content = file:read("*a")
   file:close()
+  -- A CRLF checkout must produce the same bytes. The body extraction below
+  -- collapses every run of whitespace, so this is a guard rather than the
+  -- mechanism, but a pattern that matches a line break must not depend on the
+  -- checkout.
+  content = content:gsub("\r\n", "\n")
 
   local lines = {}
   for line in (content .. "\n"):gmatch("(.-)\n") do lines[#lines + 1] = line end
