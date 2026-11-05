@@ -1,0 +1,86 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+% Report every glyph of box 0 as CODE@DEPTH:OFFSET, descending into boxes.
+% The depth shows whether a mark sits on the line or inside an \mbox.
+\def\showoffsets{%
+  \directlua{
+    local digits = "0123456789ABCDEF"
+    local function hex (n)
+      local out, count = {}, 0
+      repeat
+        count = count + 1
+        local d = math.fmod(n, 16) + 1
+        out[count] = digits:sub(d, d)
+        n = math.floor(n / 16)
+      until n == 0
+      local s = ""
+      for i = count, 1, -1 do s = s .. out[i] end
+      while string.len(s) < 4 do s = "0" .. s end
+      return s
+    end
+    local out, count = {}, 0
+    local function walk (l, depth)
+      local n = l
+      while n do
+        if n.id == node.id("glyph") then
+          count = count + 1
+          out[count] = hex(n.char) .. "@" .. tostring(depth)
+            .. ":" .. tostring(n.xoffset)
+        elseif n.id == node.id("hlist") then
+          walk(n.head, depth + 1)
+        end
+        n = n.next
+      end
+    end
+    walk(tex.box[0].head, 0)
+    texio.write_nl("term and log", "OFFSETS " .. table.concat(out, " "))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{no style, no shift}{
+  \setbox0=\vbox{\hsize=20em\noindent 中。\par}
+  \showoffsets
+}
+
+\LuaCJKsetup{PunctStyle = hangmobanjiao}
+
+\TEST{a line-final closing mark hangs}{
+  \setbox0=\vbox{\hsize=20em\noindent 中。\par}
+  \showoffsets
+}
+
+\TEST{a mark in the middle of a line does not hang}{
+  \setbox0=\vbox{\hsize=20em\noindent 中\mbox{。}文\par}
+  \showoffsets
+}
+
+\TEST{a line-final mark inside a box hangs}{
+  \setbox0=\vbox{\hsize=20em\noindent 中文\mbox{。}\par}
+  \showoffsets
+}
+
+\TEST{a line-initial opening mark hangs the other way}{
+  \setbox0=\vbox{\hsize=20em\noindent （中文文\par}
+  \showoffsets
+}
+
+\LuaCJKsetup{PunctStyle = quanjiao}
+
+\TEST{a bound width fixes how much of the mark stays inside}{
+  \LuaCJKsetup{PunctBoundWidth = 0.3em}
+  \setbox0=\vbox{\hsize=20em\noindent 中。\par}
+  \showoffsets
+  \LuaCJKsetup{PunctBoundWidth = false}
+}
+
+\END
+
+\end{document}

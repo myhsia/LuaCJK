@@ -5,3 +5,4 @@ hard lua-ul
 hard luacolor
 hard l3experimental
 soft listings
+soft unicode-data
