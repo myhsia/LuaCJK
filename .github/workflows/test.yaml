@@ -50,6 +50,7 @@ jobs:
           name: luacjk-diff-${{ env.SHA_SHORT }}-${{ runner.os }}
           path: |
             build/**/*.diff
+            build/**/*.fc
             build/**/*.log
 
   ctex-subset:
