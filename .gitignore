@@ -6,6 +6,7 @@ build/
 *.ind
 *.glo
 *.gls
+*.glg
 *.out
 *.codemo.vrb
 *.fls

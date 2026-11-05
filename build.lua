@@ -7,7 +7,7 @@
 --]==========================================================================]--
 module              = "luacjk"
 version             = "v0.0.1"
-date                = "2026-11-02"
+date                = "2026-11-05"
 maintainer          = "Mingyu Xia"
 uploader            = "Mingyu Xia"
 maintainid          = "myhsia"
@@ -35,7 +35,7 @@ typesetruns         = 1
 typesetwarnings     = false
 cleanfiles          = {
   "*.log", "*.pdf", "*.zip", "*.codemo.vrb", "*.out",
-  "*.aux", "*.toc", "*.idx", "*.ind", "*.glo", "*.gls",
+  "*.aux", "*.toc", "*.idx", "*.ind", "*.glo", "*.gls", "*.glg",
   "*.hd", "*.fls", "*.fdb_latexmk", "*.synctex.gz"
 }
 excludefiles        = {"*~"}
@@ -78,17 +78,70 @@ end
 function tex(file,dir,cmd)
   dir = dir or "."
   cmd = cmd or typesetexe
+  local glossary_dep =
+    "add_cus_dep(q/glo/,q/gls/,0,q/luacjk_glossary/);" ..
+    " sub luacjk_glossary" ..
+    " { system(qq{makeindex -s " .. glossarystyle ..
+    " -o $_[0].gls $_[0].glo}) }"
   if os.getenv("WINDIR") ~= nil or os.getenv("COMSPEC") ~= nil then
     upretex_aux = "-usepretex=\"" .. typesetcmds .. "\""
     makeidx_aux = "-e \"$makeindex=q/makeindex -s " .. indexstyle .. " %O %S/\""
+    glossary_aux= "-e \"" .. glossary_dep .. "\""
     sandbox_aux = "set \"TEXINPUTS=../unpacked;%TEXINPUTS%;\" && " ..
                   "set \"LUAINPUTS=../unpacked;%LUAINPUTS%;\" &&"
   else
     upretex_aux = "-usepretex=\'" .. typesetcmds .. "\'"
     makeidx_aux = "-e \'$makeindex=q/makeindex -s " .. indexstyle .. " %O %S/\'"
+    glossary_aux= "-e \'" .. glossary_dep .. "\'"
     sandbox_aux = "TEXINPUTS=\"../unpacked:$(kpsewhich -var-value=TEXINPUTS):\" " ..
                   "LUAINPUTS=\"../unpacked:$(kpsewhich -var-value=LUAINPUTS):\""
   end
   return run(dir, sandbox_aux .. " " .. cmd         .. " " ..
-                  upretex_aux .. " " .. makeidx_aux .. " " .. file)
+                  upretex_aux .. " " .. makeidx_aux .. " " ..
+                  glossary_aux .. " " .. file)
 end
+
+--[==========================================================================[--
+    Changelog: regenerated from the dtx \changes entries
+--]==========================================================================]--
+-- scripts/extract-changes.lua is a Lua port of ctex-kit's extractor, so the
+-- target needs neither the network nor an interpreter other than texlua.
+-- scripts/check-extract-changes.sh compares it with the six changelogs that
+-- ctex-kit publishes.  A run fails when the output leaks one of the
+-- extractor's control-character placeholders, or when it does not start with
+-- the heading of the release.
+changelog_repo = "myhsia/LuaCJK"
+
+local extract_changes = dofile("scripts/extract-changes.lua")
+
+local function readfile(path)
+  local handle = assert(io.open(path, "rb"))
+  local content = handle:read("*a")
+  handle:close()
+  return content
+end
+
+local function changelog(names)
+  local errorlevel = extract_changes.main{
+    typesetfiles[1], "all", "--repo", changelog_repo, "-o", "CHANGELOG.md" }
+  if errorlevel ~= 0 then return errorlevel end
+  local content = readfile("CHANGELOG.md")
+  for byte = 0, 5 do
+    if content:find(string.char(byte), 1, true) then
+      print("CHANGELOG.md still contains an extractor placeholder")
+      return 1
+    end
+  end
+  if not content:match("^## %[LuaCJK%-v%d+%.%d+%.%d+%]%(") then
+    print("CHANGELOG.md does not start with the release heading")
+    return 1
+  end
+  print("Wrote CHANGELOG.md")
+  return 0
+end
+
+target_list.changelog =
+  {
+    desc = "Regenerates CHANGELOG.md from the \\changes entries",
+    func = changelog
+  }

@@ -273,6 +273,36 @@ done <<EOF
 $tracked
 EOF
 
+# --- 10. the changelog facts ----------------------------------------------
+# The version and the date of an entry stay on its first line, only the text
+# wraps, so one line is enough to read them.  The newest version is the
+# released one, its date is the release date, and the generated changelog
+# starts with that release.
+bl_date=$(sed -n 's/^date *= *"\(.*\)"/\1/p' build.lua)
+entries=$(grep -nE '^% \\changes\{' "$dtx" | tr -d '\r')
+malformed=$(printf '%s\n' "$entries" |
+              grep -vE '^[0-9]+:% \\changes\{v[0-9]+\.[0-9]+\.[0-9]+\}\{[0-9]{4}/[0-9]{2}/[0-9]{2}\}\{' ||
+              true)
+[ -z "$malformed" ] ||
+  report "a \\changes entry does not keep its version and date on one line" \
+         "$malformed"
+newest=$(printf '%s\n' "$entries" |
+           sed -n 's/^[0-9]*:% \\changes{\(v[0-9.]*\)}.*/\1/p' |
+           sort -t. -k1.2n,1n -k2n,2n -k3n,3n | tail -1)
+[ "$newest" = "$bl_version" ] ||
+  report "the newest \\changes version is not the released version" \
+         "$dtx: ${newest:-<none>}" "build.lua: ${bl_version:-<none>}"
+newest_dates=$(printf '%s\n' "$entries" |
+                 grep -F "\\changes{$newest}" |
+                 sed -n 's/.*}{\([0-9][0-9]*\/[0-9][0-9]*\/[0-9][0-9]*\)}.*/\1/p' |
+                 sort -u | tr '\n' ' ' | sed 's/ $//')
+[ "$newest_dates" = "${bl_date//-//}" ] ||
+  report "the newest \\changes date is not the release date" \
+         "$dtx: ${newest_dates:-<none>}" "build.lua: ${bl_date//-//}"
+head -1 CHANGELOG.md | grep -qF "LuaCJK-$bl_version" ||
+  report "CHANGELOG.md does not start with the released version" \
+         "CHANGELOG.md: $(head -1 CHANGELOG.md)" "build.lua: $bl_version"
+
 if [ "$fail" -eq 0 ]; then
   echo "OK: the guides agree with the sources"
   exit 0
