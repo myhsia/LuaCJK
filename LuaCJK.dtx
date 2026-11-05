@@ -260,7 +260,7 @@ LaTeX Project Public License, version 1.3c or later.
 %   \item \keys{PunctStyle, PunctKinsoku, AllowBreakBetweenPuncts, PunctWidth},
 %   and \keys{PunctBoundWidth};
 %   \item \keys{LatinPunct} and \keys{CJKmath};
-%   \item \keys{CheckSingle} and \keys{WidowPenalty};
+%   \item \keys{CheckSingle, WidowPenalty}, and \keys{CJLineBreak};
 %   \item \keys{AutoFallBack} and \keys{Verb};
 %   \item the two commands \cs{LuaCJKCancelSubCJKBlock} and
 %   \cs{LuaCJKRestoreSubCJKBlock}.
@@ -802,6 +802,14 @@ a’a\quad 字！字
 %   \item[\keys{WidowPenalty}]\val{penalty}: The penalty used by
 %   \texttt{CheckSingle}. The initial value is \texttt{10000};
 %   a lower value allows the break when it is worth the cost.
+%   \item[\keys{CJLineBreak}]\val{normal, strict}: In the \texttt{strict}
+%   mode a character whose Unicode \texttt{Line\_Break} property is
+%   \texttt{CJ} (the small kana and the like) may not start a line.
+%   The mode only adds prohibitions; it does not remove any.
+%   The initial value is \texttt{normal}, which treats those characters
+%   like other CJK characters.
+%   The set is read from \file{LineBreak.txt} of the \pkg{unicode-data}
+%   bundle, so the package needs that bundle for the strict mode.
 % \end{keyval}
 %
 % \iffalse
@@ -1927,6 +1935,7 @@ $ x + 中文 $ and 中文
 % \begin{variable}[int]
 %   {
 %     \l_@@_punct_kinsoku_tl,   \l_@@_cjk_math_tl,
+%     \l_@@_cj_strict_tl,
 %     \l_@@_verb_mode_tl,       \l_@@_local_config_tl,
 %     \l_@@_check_single_tl,    \l_@@_widow_penalty_int,
 %     \l_@@_punct_width_dim,    \l_@@_punct_bound_width_dim,
@@ -1944,6 +1953,8 @@ $ x + 中文 $ and 中文
 %    \begin{macrocode}
 \tl_new:N  \l_@@_punct_kinsoku_tl
 \tl_set:Nn \l_@@_punct_kinsoku_tl { 1 }
+\tl_new:N  \l_@@_cj_strict_tl
+\tl_set:Nn \l_@@_cj_strict_tl { 0 }
 \tl_new:N  \l_@@_cjk_math_tl
 \tl_set:Nn \l_@@_cjk_math_tl { 0 }
 \tl_new:N  \l_@@_latin_punct_tl
@@ -1997,9 +2008,18 @@ $ x + 中文 $ and 中文
     PunctKinsoku        .choice:,
     PunctKinsoku / true .code:n      =
       { \tl_set:Nn \l_@@_punct_kinsoku_tl { 1 } },
-    PunctKinsoku / false.code:n      =
+    PunctKinsoku / false .code:n     =
       { \tl_set:Nn \l_@@_punct_kinsoku_tl { 0 } },
-    PunctKinsoku        .default:n   = { true  },
+    PunctKinsoku         .default:n  = { true  },
+    CJLineBreak          .choice:,
+    CJLineBreak / normal .code:n     =
+      { \tl_set:Nn \l_@@_cj_strict_tl { 0 } },
+    CJLineBreak / strict .code:n     =
+      {
+        \tl_set:Nn \l_@@_cj_strict_tl { 1 }
+        \@@_load_cj:
+      },
+    CJLineBreak         .default:n   = { strict },
     CJKmath             .choice:,
     CJKmath / true      .code:n      = { \tl_set:Nn \l_@@_cjk_math_tl { 1 } },
     CJKmath / false     .code:n      = { \tl_set:Nn \l_@@_cjk_math_tl { 0 } },
@@ -2174,6 +2194,7 @@ $ x + 中文 $ and 中文
               (
                 "\lua_escape:e { \l_@@_punct_style_tl }" ,
                 \@@_bool_js:N \l_@@_punct_kinsoku_tl ,
+                \@@_bool_js:N \l_@@_cj_strict_tl ,
                 \@@_bool_js:N \l_@@_latin_punct_tl ,
                 \@@_bool_js:N \l_@@_cjk_math_tl ,
                 \dim_to_decimal_in_sp:n { \l_@@_punct_width_dim } ,
@@ -3376,6 +3397,7 @@ local DEFAULT_SETTINGS = {
   ecglue        = { width = 0, stretch = 0, shrink = 0 },
   punct_style   = "quanjiao",
   kinsoku       = true,
+  cj_strict     = false,
   latin_punct   = false,
   cjk_math      = false,
   punct_width   = 0,
@@ -3406,9 +3428,9 @@ local function glue_spec (name)
   return { width = 0, stretch = 0, shrink = 0 }
 end
 
-function M.new_settings (style, kinsoku, latin_punct, cjk_math, punct_width,
-                         bound_width, check_single, widow_penalty, allow_break,
-                         auto_fallback, off_list)
+function M.new_settings (style, kinsoku, cj_strict, latin_punct, cjk_math,
+                         punct_width, bound_width, check_single, widow_penalty,
+                         allow_break, auto_fallback, off_list)
   local off = {}
   for name in string.gmatch(off_list or "", "[^,]+") do
     local trimmed = string.match(name, "^%s*(.-)%s*$")
@@ -3421,6 +3443,7 @@ function M.new_settings (style, kinsoku, latin_punct, cjk_math, punct_width,
     ecglue        = glue_spec(M.name_ecglue),
     punct_style   = style,
     kinsoku       = kinsoku,
+    cj_strict     = cj_strict,
     latin_punct   = latin_punct,
     cjk_math      = cjk_math,
     punct_width   = punct_width,
@@ -3434,7 +3457,8 @@ function M.new_settings (style, kinsoku, latin_punct, cjk_math, punct_width,
   local signature = table.concat({
     entry.ccglue.width, entry.ccglue.stretch, entry.ccglue.shrink,
     entry.ecglue.width, entry.ecglue.stretch, entry.ecglue.shrink,
-    style, tostring(kinsoku), tostring(latin_punct), tostring(cjk_math),
+    style, tostring(kinsoku), tostring(cj_strict), tostring(latin_punct),
+    tostring(cjk_math),
     punct_width, bound_width, tostring(check_single), widow_penalty,
     tostring(allow_break), tostring(auto_fallback), off_list,
   }, "|")
@@ -3470,6 +3494,62 @@ M.settings_of = settings_of
 
 %    \end{macrocode}
 % \end{macro}
+%
+% \begin{variable}[int]{LuaCJK.cj, LuaCJK.cj_count, LuaCJK.cj_loaded}
+% \changes{v0.0.1}{2026/11/11}{Provide \keys{CJLineBreak}, which reads the
+%   \texttt{Line\_Break} property \texttt{CJ} from \file{LineBreak.txt} and
+%   forbids a line break before those characters.}
+% The characters whose \texttt{Line\_Break} property is \texttt{CJ}
+% (the Japanese small kana and the like), how many there are, and whether
+% the file has been read.
+% The set is read from \file{LineBreak.txt} of the \pkg{unicode-data} bundle
+% only when \keys{CJLineBreak} asks for \texttt{strict}, so a document that
+% keeps the default never pays for the file.
+%    \begin{macrocode}
+M.cj        = {}
+M.cj_count  = 0
+M.cj_loaded = false
+
+local function read_cj (data)
+  local set, count = {}, 0
+  for first, last, class in data:gmatch("(%x+)%.%.(%x+)%s*;%s*(%a+)") do
+    if class == "CJ" then
+      for code = tonumber(first, 16), tonumber(last, 16) do
+        set[code] = true
+      end
+      count = count + 1
+    end
+  end
+  for code, class in data:gmatch("(%x+)%s*;%s*(%a+)") do
+    if class == "CJ" then
+      set[tonumber(code, 16)] = true
+      count = count + 1
+    end
+  end
+  return set, count
+end
+
+function M.load_cj ()
+  if M.cj_loaded then
+    return M.cj_count
+  end
+  M.cj_loaded = true
+  local path = kpse and kpse.find_file and kpse.find_file("LineBreak.txt")
+  local file = path and io.open(path)
+  if not file then
+    texio.write_nl("term and log",
+      "Package LuaCJK Warning: LineBreak.txt not found; "
+      .. "CJLineBreak=strict has no effect.")
+    return 0
+  end
+  local data = file:read("*a")
+  file:close()
+  M.cj, M.cj_count = read_cj(data)
+  return M.cj_count
+end
+
+%    \end{macrocode}
+% \end{variable}
 %
 % The quotation marks, the middle dot, and the ellipses are shared with Latin
 % scripts. With \keys{LatinPunct} on, they use the Latin font and are not
@@ -4518,7 +4598,10 @@ local function apply_kinsoku (head)
     elseif is_break_point(cur) and last_visible then
       local nxt      = next_visible(cur.next)
       local settings = settings_of(last_visible)
+      local cj       = settings.cj_strict and class_char(nxt)
+                       and M.cj[class_char(nxt)]
       if nxt and (no_break_mark(last_visible) or no_break_mark(nxt)
+                  or cj
                   or (settings.kinsoku
                       and not disabled(last_visible) and not disabled(nxt)
                       and forbids_break(
@@ -4845,18 +4928,25 @@ end
 % the line width. Line-initial opening punctuation is shifted the other way.
 %
 % \begin{macro}[int]{find_first_last_glyph}
-% The first and the last glyph node of a list.
+% The first and the last glyph node of a list, descending into horizontal
+% boxes. Only the two outer glyphs are wanted, so the search returns as soon
+% as a glyph is found on the left and keeps the last one it meets.
 %    \begin{macrocode}
 local function find_first_last_glyph (list)
   local first, last
-  local n = list
-  while n do
-    if n.id == GLYPH then
-      if not first then first = n end
-      last = n
+  local function walk (l)
+    local n = l
+    while n do
+      if n.id == GLYPH then
+        if not first then first = n end
+        last = n
+      elseif n.id == HLIST then
+        walk(n.head)
+      end
+      n = n.next
     end
-    n = n.next
   end
+  walk(list)
   return first, last
 end
 
@@ -4947,15 +5037,17 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{process_lines}
-% Walk a list of lines, descending into nested boxes,
-% and apply \cs{hang_line} to each.
+% Walk the lines of the paragraph and apply \cs{hang_line} to each.
+% The list that reaches the callback is the vertical list of line boxes, so
+% a horizontal box found here is a line. Descending into a line's own boxes
+% would shift a mark that is not at the edge of the line at all; the edge
+% glyphs are looked up inside the line instead.
 %    \begin{macrocode}
 local function process_lines (list)
   local n = list
   while n do
     if n.id == HLIST then
       hang_line(n)
-      process_lines(n.head)
     end
     n = n.next
   end

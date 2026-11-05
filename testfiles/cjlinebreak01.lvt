@@ -1,0 +1,76 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKglue = 0pt, CJKecglue = 0pt}
+
+\def\countpenalties{%
+  \directlua{
+    local n = tex.box[0].head
+    local c = 0
+    while n do
+      if n.id == node.id("penalty") and n.penalty >= 10000 then
+        c = c + 1
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "PENALTIES " .. tostring(c))
+  }%
+}
+
+% Whether the CJ set holds the given code points. A literal count would
+% follow every Unicode release; membership of two characters is the point.
+\def\cjuniverse{%
+  \directlua{
+    local out = {}
+    local cps = { 0x3041, 0x3083, 0x4E2D }
+    for i, c in ipairs(cps) do
+      out[i] = tostring(c) .. "=" .. tostring(LuaCJK.cj[c] == true)
+    end
+    texio.write_nl("term and log", "CJ " .. table.concat(out, " "))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{normal mode treats a small kana like a CJK character}{
+  \setbox0=\hbox{中ゃ中}
+  \countpenalties
+}
+
+\LuaCJKsetup{CJLineBreak = strict}
+
+\TEST{strict mode forbids a line break before it}{
+  \setbox0=\hbox{中ゃ中}
+  \countpenalties
+}
+
+\TEST{the set is the Line Break CJ property}{
+  \cjuniverse
+}
+
+\TEST{a CJK character that is not CJ still breaks}{
+  \setbox0=\hbox{中中}
+  \countpenalties
+}
+
+\TEST{strict mode works without the punctuation prohibitions}{
+  \LuaCJKsetup{PunctKinsoku = false}
+  \setbox0=\hbox{中ゃ中}
+  \countpenalties
+  \LuaCJKsetup{PunctKinsoku = true}
+}
+
+\LuaCJKsetup{CJLineBreak = normal}
+
+\TEST{normal mode restores the break}{
+  \setbox0=\hbox{中ゃ中}
+  \countpenalties
+}
+
+\END
+
+\end{document}
