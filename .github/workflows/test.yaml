@@ -21,6 +21,17 @@ jobs:
         uses: zauguin/install-texlive@v4
         with:
           package_file: .github/tl_packages
+      - name: CHANGELOG.md must be up to date
+        shell: bash
+        run: |
+          l3build changelog
+          git add -N -- CHANGELOG.md
+          if git diff --exit-code -- CHANGELOG.md; then
+            echo "CHANGELOG.md agrees with the \\changes entries"
+          else
+            echo "::error::CHANGELOG.md is stale: run l3build changelog and commit the result."
+            exit 1
+          fi
       - name: Run l3build check
         id: test-luacjk
         run: l3build check

@@ -34,23 +34,25 @@ Python 3 is available when a task needs it. Entry points:
 
 | path | what it is |
 | --- | --- |
-| `LuaCJK.dtx` | the single source: user documentation, implementation, and the code of every derived file |
+| `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
-| `build.lua` | `l3build` configuration: module `luacjk`, version `v0.0.1`, `tdslocations`, the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly and sets `LUAINPUTS` so that the documentation can load the generated Lua modules |
+| `build.lua` | `l3build` configuration: module `luacjk`, version `v0.0.1`, `tdslocations`, the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
 | `testfiles/NN.lvt` + `.tlg` | 38 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`) and `ctexopts.cfg` (the redirect that makes `ctex01` and the `ctex` subset load the engine file), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends the redirect to the `ctexopts.cfg` of the `ctex` test tree |
-| `scripts/check-docs.sh` | compares the facts in the two guides with their sources: the layout table against `git ls-files` (both directions), version, test count, DocStrip blocks, installed file types, attribute and decoration counts, `\RequirePackage` against `DEPENDS.txt` (a package loaded from the listings guard must be `soft`), `DEPENDS.txt` against `.github/tl_packages`, and the subset count.  A `\RequirePackage` name is resolved to its TeX Live package with `tlmgr search --global --file`, falling back to `expl3 -> l3kernel` and `l3draw -> l3experimental` when `tlmgr` is absent |
+| `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, and names the forge repository of the release link with `--repo` |
+| `scripts/check-extract-changes.sh` | regenerates the six changelogs of `../ctex-kit` with the Lua extractor and compares them byte for byte: exit 0 all identical, 1 a difference, 2 cannot run; `--quiet` prints only the differences |
+| `scripts/check-docs.sh` | compares the facts in the two guides with their sources: the layout table against `git ls-files` (both directions), version, test count, DocStrip blocks, installed file types, attribute and decoration counts, `\RequirePackage` against `DEPENDS.txt` (a package loaded from the listings guard must be `soft`), `DEPENDS.txt` against `.github/tl_packages`, the subset count, and the changelog facts (the newest `\changes` version and date against `build.lua`, the first line of `CHANGELOG.md` against the released version).  A `\RequirePackage` name is resolved to its TeX Live package with `tlmgr search --global --file`, falling back to `expl3 -> l3kernel` and `l3draw -> l3experimental` when `tlmgr` is absent |
 | `.github/workflows/test.yaml` | the CI workflow |
 | `.github/tl_packages` | the package list CI installs; a dependency must be added **or removed** here or the Ubuntu job fails first |
-| `CHANGELOG.md` | user-visible changes, newest first |
+| `CHANGELOG.md` | user-visible changes, newest first, generated from the `\changes` entries by `l3build changelog` |
 | `LICENSE` | the LPPL text the meta-comment refers to |
 | `.gitattributes` | `* text=auto`, so the guides and the `dtx` keep one line ending whichever checkout writes them |
 | `DEPENDS.txt` | the TeX Live packages the package needs at run time, one per line as `hard <bundle>` and `soft <bundle>`; `soft` marks a dependency that only an optional output needs |
 
 Generated, never edited by hand: `*.sty`, `*.lua`, `*.def` in the root,
-`README.md` (from the `<readme>` block), `LuaCJK.pdf`, `*.zip`, `*.glo`,
-`.codemo.vrb`, `build/`.
+`README.md` (from the `<readme>` block), `CHANGELOG.md` (from the `\changes`
+entries), `LuaCJK.pdf`, `*.zip`, `*.glo`, `.codemo.vrb`, `build/`.
 
 DocStrip blocks inside `LuaCJK.dtx`, in file order: `internal`, `readme`,
 `driver`, `example` (one guard per demo, so demos can be extracted and run
@@ -94,6 +96,23 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   `l3build save <name>`, then read the `.tlg` diff and confirm the numbers are
   the values you designed, not merely "whatever came out". `save` takes bare
   test names without the extension.
+- **Every behavior change also needs a `\changes` entry.**  Put it next to the
+  object it changes, inside that object's `macro`, `environment`, or
+  `variable`, so `\PrintChanges` files it under the object and prints the page
+  it points at; work on the manual, the tests, or the repository gets no entry,
+  and the block after `% \fi` holds a package-level feature that has no single
+  documented object.  A feature states what it does in the present tense in the
+  release that ships it; only a later release says that it now behaves
+  differently.  The version and the date
+  stay on the first line and only the text wraps.  Commands are `\cs{…}`, keys
+  `\keys{…}`, packages `\pkg{…}`, files `\file{…}`, environments `\env{…}`,
+  other literals `\texttt{…}`, and the two argument forms `\oarg{…}` and
+  `\marg{…}`; a bracketed option list is written `\cs{cmd}|[key = …]|` so
+  that it stays one code span.  Those are the rules of
+  `scripts/extract-changes.lua`, this repository's own port of ctex-kit's
+  extractor, and it understands `\keys`, `\oarg` and `\marg`, which the
+  original does not.  The line is documentation: written inside `macrocode`,
+  DocStrip copies it into the derived file.
 - **New options must reach the settings snapshot.**  A key that describes how
   text is set needs an entry in `DEFAULT_SETTINGS`, a parameter of
   `LuaCJK.new_settings`, a field in the signature string, an argument in
@@ -196,16 +215,21 @@ l3build save <name>     # rewrite one baseline after an intended change
 l3build doc             # ~2 min, builds the manual and copies README back
 l3build ctan            # builds luacjk-ctan.zip
 l3build tag             # syncs \GetIdInfo with build.lua's version and date
+l3build changelog       # ~2 s, CHANGELOG.md from the dtx \changes entries
 bash scripts/ctex-subset.sh            # ~3 min, needs ../ctex-kit or network
 bash scripts/ctex-subset.sh --skip-unpack
 bash scripts/check-docs.sh             # ~1 s, the guide facts against the code
 ```
 
-`l3build doc` and `l3build tag` both write into the working tree: review and
-commit the README and the `\GetIdInfo` date with the change that caused them.
+`l3build doc`, `l3build tag` and `l3build changelog` all write into the
+working tree: review and commit the README, the `\GetIdInfo` date and
+`CHANGELOG.md` with the change that caused them.
 `scripts/ctex-subset.sh` clones `ctex-kit` at tag `ctex-v2.6.5` into
 `build/ctex-kit` when `../ctex-kit` is absent, so the first run in a fresh
-checkout needs the network.
+checkout needs the network. `l3build changelog` needs no network and no
+interpreter other than `texlua`: the extractor is `scripts/extract-changes.lua`,
+and `bash scripts/check-extract-changes.sh` compares it with the six changelogs
+of ctex-kit.
 
 ## Validation
 
@@ -224,8 +248,19 @@ checkout needs the network.
   a worktree of the previous commit, then `cmp build/unpacked/*` against the
   current build, and compare `mutool draw -F txt` output of the two PDFs. Both
   must be identical, which is the evidence that only prose moved.
+- `bash scripts/check-extract-changes.sh` must print six `IDENTICAL` lines.  It
+  needs a `../ctex-kit` checkout and judges the Lua extractor against ctex-kit's
+  committed changelogs, so a difference means that one of the two moved: run it
+  after touching the extractor and when ctex-kit's script has changed.
+- `l3build changelog` must leave `git diff --exit-code CHANGELOG.md` clean,
+  and `bash scripts/check-docs.sh` checks the changelog facts: the newest
+  `\changes` version and date against `build.lua`, and the first line of
+  `CHANGELOG.md` against the released version.
 - `l3build doc` must finish with no `^!` error, no `Reference ... undefined`,
-  and no `Missing character`.
+  and no `Missing character`.  The manual ends with a Change History part;
+  it is absent without `LuaCJK.gls`, which only the `glo`→`gls` dependency in
+  `tex()` builds, and adding it to the table of contents shifts every page
+  reference in the manual by one.
 - `bash scripts/ctex-subset.sh` must print `ctex subset: 21/21 passed`, every
   log must be free of `luatexja`, and the script additionally greps for the
   glue strings that prove the `ctex` option plumbing reached LuaCJK.
@@ -239,14 +274,17 @@ checkout needs the network.
   `build/doc/LuaCJK.pdf` for the affected demo; the extracted examples are the
   fastest place to see the effect.
 
+Session check: `scripts/check-extract-changes.sh`
+
 ## CI
 
 `.github/workflows/test.yaml` runs on every push to any branch and on pull
 requests. Two jobs, each on `ubuntu-latest`, `macos-latest`, and
 `windows-latest`:
 
-- `l3build`: `bash scripts/check-docs.sh`, then `l3build check`, then
-  `l3build doc` (only if the check passed);
+- `l3build`: `bash scripts/check-docs.sh`, then `l3build changelog` and a
+  `git diff --exit-code CHANGELOG.md` that fails when the generated file is
+  stale, then `l3build check`, then `l3build doc` (only if the check passed);
 - `ctex-subset`: `l3build unpack`, then `bash scripts/ctex-subset.sh
   --skip-unpack`.
 
@@ -254,6 +292,12 @@ On failure the `l3build` job uploads `build/**/*.diff` and `build/**/*.log` as
 `luacjk-diff-<short-sha>-<os>`; download it with `gh run download` through the
 proxy (see the `network-access` skill). Local and CI run the same commands;
 the only parity risk is a missing or surplus entry in `.github/tl_packages`.
+
+A change in ctex-kit cannot be seen by a workflow of this repository, so it is
+not a CI job: `scripts/check-extract-changes.sh` is the session check declared
+below, and the `upkeep` plugin of the global configuration runs it once a day
+and after a directory change, so a change in the reference implementation
+reaches the next session instead of waiting for a pull request.
 
 ## Git style
 
