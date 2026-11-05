@@ -37,7 +37,12 @@ The character-level passes run in `pre_linebreak_filter` and in
 2. `spacing` — remove the source space between CJK characters, and insert
    `CJKglue`/`CJKecglue` at every boundary between two classes of character.
    A run of dashes or ellipses is joined without glue, so justification cannot
-   pull a two-em dash apart.
+   pull a two-em dash apart.  A punctuation mark takes no `CJKecglue` advance
+   on either side: its own advance carries the spacing, and the extra third of
+   an em is what made every `function` box of the Chinese manual overflow
+   before the rule existed.  A zero-width glue stays at that boundary, so it
+   is still a break opportunity and the kinsoku penalty can forbid it
+   (`boundary01`).
 3. `apply_fixed_widths` — give punctuation the advance the style asks for, by
    inserting a penalty and a kern after the mark. The ink is moved by class:
    an opening mark by the whole amount, a middle mark by half, a closing mark
@@ -144,6 +149,14 @@ and a run of `nobreak` long marks is one unit. `AllowBreakBetweenPuncts` and
 `Line_Break = CJ` set: those characters may not start a line. The set is read
 from `LineBreak.txt` on the first use of the key, so the default pays nothing
 for it; the key is independent of `PunctKinsoku`.
+
+A mark is spaced by its own advance alone: at a boundary between a mark and
+Latin text the spacing pass inserts a glue of zero width, so the mark's ink
+starts where its advance starts; the node stays a break opportunity, which the
+kinsoku penalty can then forbid, because the style's compression and hanging
+are the only means by which the model moves a mark's ink.  A character that
+`LatinPunct` treats as Latin (the quotation marks, the middle dot, the
+ellipses) is not a CJK mark and keeps the glue.
 
 ### Rule decorations adjust `lua-ul`
 

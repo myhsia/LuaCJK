@@ -102,6 +102,34 @@
   \TYPE{direct: \the\wd2}
 }
 
+\TEST{punctuation takes no CJK--Latin glue}{
+  \setbox0=\hbox{A中}
+  \setbox2=\hbox{A。}
+  \setbox4=\hbox{。A}
+  \setbox6=\hbox{A「}
+  \TYPE{Latin-CJK: \the\wd0}
+  \TYPE{Latin-close: \the\wd2}
+  \TYPE{close-Latin: \the\wd4}
+  \TYPE{Latin-open: \the\wd6}
+}
+
+\TEST{LatinPunct characters keep the glue}{
+  \begingroup
+    \LuaCJKsetup{LatinPunct}
+    \global\setbox0=\hbox{中“}
+  \endgroup
+  \TYPE{CJK-quote: \the\wd0}
+}
+
+\TEST{punctuation inside a box takes no glue}{
+  \setbox0=\hbox{A。}
+  \setbox2=\hbox{A\mbox{。}}
+  \setbox4=\hbox{\mbox{。}A}
+  \TYPE{direct: \the\wd0}
+  \TYPE{boxed-last: \the\wd2}
+  \TYPE{boxed-first: \the\wd4}
+}
+
 \END
 
 \end{document}
