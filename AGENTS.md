@@ -253,9 +253,15 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **Documentation literals.**  Write code points (`U+2018`) rather than the
   characters themselves when the prose would otherwise need a font the manual
   does not set.
-- **Demo grouping.**  A demo that declares fonts or char classes must be
-  grouped; the `\begingroup`/`\endgroup` pair goes *outside* `codemo` so the
-  reader does not see it.
+- **Demo grouping is not containment.**  A demo that declares fonts or char
+  classes is grouped, and the `\begingroup`/`\endgroup` pair goes *outside*
+  `codemo` so the reader does not see it; but the group holds only local
+  settings.  `\setCJKmainfont` re-registers the family named by
+  `\CJKrmdefault` for the rest of the document, and `AutoFakeBold` and
+  `AutoFakeSlant` are global by design, so the driver defines the manual's own
+  setup as `\LuaCJKdocsetup` and runs it again through the
+  `env/codemo/after` hook.  A new global command used in a demo joins that
+  command, or the headings after the demo lose their real bold face.
 
 ## Workflows
 
