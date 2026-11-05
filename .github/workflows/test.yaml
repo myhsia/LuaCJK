@@ -15,12 +15,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Check the guide facts
-        run: bash scripts/check-docs.sh
       - name: Install TeX Live
         uses: zauguin/install-texlive@v4
         with:
           package_file: .github/tl_packages
+      - name: Check the guide facts
+        shell: bash
+        run: bash scripts/check-docs.sh
       - name: Check the CJK range table
         run: texlua scripts/check-charclass.lua
       - name: CHANGELOG.md must be up to date
