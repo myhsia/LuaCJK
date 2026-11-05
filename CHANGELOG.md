@@ -51,6 +51,7 @@
 - Add basic CJK/CJK and CJK/Latin spacing with `CJKglue`, `CJKecglue`, `CJKspace`, and `xCJKecglue`.
 - Add box, math, and transparent-node boundary handling.
 - Insert no glue between two long punctuation marks, so that a run of dashes or ellipses stays one unit.
+- Give the boundary beside a punctuation mark no advance, so that a mark after Latin text keeps its own advance.
 - Add `PunctKinsoku` line-breaking prohibitions: closing punctuation cannot start a line, opening punctuation cannot end a line, and long punctuation runs are kept together.
 - `\LuaCJKnobreak` and `\LuaCJKVerbAddon` keep their prohibition when `PunctKinsoku` is off; the switch only controls the punctuation rules.
 - A fixed punctuation advance now moves the ink of an opening or middle mark as well, so that `banjiao` and `kaiming` no longer let an opening mark collide with the following character.
