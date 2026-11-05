@@ -1,0 +1,103 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+% Report the nodes of box 0: a glyph by its code point, any other node by
+% its kind. Widths are left out so the signature does not follow a font.
+\def\shownodes{%
+  \directlua{
+    local digits = "0123456789ABCDEF"
+    local function hex (n)
+      local out, count = {}, 0
+      repeat
+        count = count + 1
+        local d = math.fmod(n, 16) + 1
+        out[count] = digits:sub(d, d)
+        n = math.floor(n / 16)
+      until n == 0
+      local s = ""
+      for i = count, 1, -1 do s = s .. out[i] end
+      while string.len(s) < 4 do s = "0" .. s end
+      return s
+    end
+    local out, count = {}, 0
+    local n = tex.box[0].head
+    while n do
+      count = count + 1
+      if n.id == node.id("glyph") then
+        out[count] = hex(n.char)
+      elseif n.id == node.id("glue") then
+        out[count] = "glue"
+      elseif n.id == node.id("kern") then
+        out[count] = "kern"
+      elseif n.id == node.id("penalty") then
+        out[count] = "penalty"
+      elseif n.id == node.id("hlist") then
+        out[count] = "hlist"
+      else
+        out[count] = "node"
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "NODES " .. table.concat(out, " "))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{a CJK pair is the reference}{
+  \setbox0=\hbox{中文}\shownodes
+}
+\TEST{U+200B is the same as no space}{
+  \setbox0=\hbox{中文}\setbox2=\hbox{中​文}%
+  \ifdim\wd0=\wd2 \TYPE{same width}\else\TYPE{different width}\fi
+  \setbox0=\hbox{中​文}\shownodes
+}
+\TEST{U+200C is the same as no space}{
+  \setbox0=\hbox{中文}\setbox2=\hbox{中‌文}%
+  \ifdim\wd0=\wd2 \TYPE{same width}\else\TYPE{different width}\fi
+  \setbox0=\hbox{中‌文}\shownodes
+}
+\TEST{U+200D is the same as no space}{
+  \setbox0=\hbox{中文}\setbox2=\hbox{中‍文}%
+  \ifdim\wd0=\wd2 \TYPE{same width}\else\TYPE{different width}\fi
+  \setbox0=\hbox{中‍文}\shownodes
+}
+\TEST{U+2060 is the same as no space}{
+  \setbox0=\hbox{中文}\setbox2=\hbox{中⁠文}%
+  \ifdim\wd0=\wd2 \TYPE{same width}\else\TYPE{different width}\fi
+  \setbox0=\hbox{中⁠文}\shownodes
+}
+\TEST{U+FEFF is ignored, as the format already did}{
+  \setbox0=\hbox{中文}\setbox2=\hbox{中﻿文}%
+  \ifdim\wd0=\wd2 \TYPE{same width}\else\TYPE{different width}\fi
+  \setbox0=\hbox{中﻿文}\shownodes
+}
+\TEST{U+FE00 is the same as no space}{
+  \setbox0=\hbox{中文}\setbox2=\hbox{中︀文}%
+  \ifdim\wd0=\wd2 \TYPE{same width}\else\TYPE{different width}\fi
+  \setbox0=\hbox{中︀文}\shownodes
+}
+\TEST{U+E0100 is the same as no space}{
+  \setbox0=\hbox{中文}\setbox2=\hbox{中󠄀文}%
+  \ifdim\wd0=\wd2 \TYPE{same width}\else\TYPE{different width}\fi
+  \setbox0=\hbox{中󠄀文}\shownodes
+}
+
+\TEST{\char is not intercepted}{
+  \setbox0=\hbox{中\char"200B 文}\shownodes
+}
+
+\TEST{the characters are ignored by category code}{
+  \TYPE{200B=\the\catcode"200B; 200C=\the\catcode"200C; 200D=\the\catcode"200D;
+        2060=\the\catcode"2060; FE00=\the\catcode"FE00;
+        E0100=\the\catcode"E0100}
+}
+
+\END
+
+\end{document}
