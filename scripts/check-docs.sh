@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# Check the facts in AGENTS.md and the skill against the code.
+# Check the facts in AGENTS.md and the skill against the code, and the two
+# language versions of the user documentation against each other.
 #
-#   scripts/check-docs.sh      exit 0 = the guides agree with the sources
+#   scripts/check-docs.sh      exit 0 = the guides agree with the sources and
+#                              the documentation parts are in step
 #
 # Every fact is read from its source of truth (build.lua, the dtx, the test
 # directory, the subset script), so this file needs no updating when a number
@@ -302,6 +304,16 @@ newest_dates=$(printf '%s\n' "$entries" |
 head -1 CHANGELOG.md | grep -qF "LuaCJK-$bl_version" ||
   report "CHANGELOG.md does not start with the released version" \
          "CHANGELOG.md: $(head -1 CHANGELOG.md)" "build.lua: $bl_version"
+
+# --- 11. the two documentation languages ----------------------------------
+# The user part of the manual is written twice, Chinese first and English
+# second.  scripts/check-bilingual.lua compares the structure and the
+# interface names of the two parts and refuses a part in the wrong order.
+if ! bilingual=$(texlua scripts/check-bilingual.lua "$dtx" 2>&1); then
+  fail=$((fail + 1))
+  printf 'FAIL  the two documentation parts are not in step\n'
+  printf '%s\n' "$bilingual" | sed 's/^/        /'
+fi
 
 if [ "$fail" -eq 0 ]; then
   echo "OK: the guides agree with the sources"
