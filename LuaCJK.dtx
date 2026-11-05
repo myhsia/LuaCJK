@@ -154,17 +154,29 @@ LaTeX Project Public License, version 1.3c or later.
 \usepackage{unicode-math}
 \setmathfont{texgyrepagella-math.otf}
 \usepackage{LuaCJK}
-\setCJKmainfont[
-  BoldFont   = FandolSong-Bold.otf,
-  ItalicFont = FandolKai-Regular.otf
-]{FandolSong-Regular.otf}
-\setCJKsansfont[BoldFont = FandolHei-Bold.otf]{FandolHei-Regular.otf}
-\setCJKmonofont{FandolFang-Regular.otf}
-\setCJKfamilyfont{zhsong}[BoldFont = FandolSong-Bold.otf]
-  {FandolSong-Regular.otf}
-\setCJKfamilyfont{zhhei}[BoldFont = FandolHei-Bold.otf]{FandolHei-Regular.otf}
-\setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
-\setCJKfamilyfont{zhfs}{FandolFang-Regular.otf}
+% The demos call commands that are global by design: \setCJKmainfont
+% re-registers the family named by \CJKrmdefault for the rest of the document,
+% and the fake bold and slant keys are global.  A group around a codemo cannot
+% undo that, so the manual's own setup is a command that the preamble calls and
+% that runs again after every demo.
+\NewDocumentCommand \LuaCJKdocsetup { }
+  {
+    \setCJKmainfont[
+      BoldFont   = FandolSong-Bold.otf,
+      ItalicFont = FandolKai-Regular.otf
+    ]{FandolSong-Regular.otf}
+    \setCJKsansfont[BoldFont = FandolHei-Bold.otf]{FandolHei-Regular.otf}
+    \setCJKmonofont{FandolFang-Regular.otf}
+    \setCJKfamilyfont{zhsong}[BoldFont = FandolSong-Bold.otf]
+      {FandolSong-Regular.otf}
+    \setCJKfamilyfont{zhhei}[BoldFont = FandolHei-Bold.otf]
+      {FandolHei-Regular.otf}
+    \setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
+    \setCJKfamilyfont{zhfs}{FandolFang-Regular.otf}
+    \LuaCJKsetup{AutoFakeBold = false, AutoFakeSlant = false}
+  }
+\LuaCJKdocsetup
+\AddToHook{env/codemo/after}{\LuaCJKdocsetup}
 \usepackage{LuaCJKfntef}
 \LuaCJKsetup{CJKmath=true, LatinPunct=true}
 \setCJKmathfont{FandolSong-Regular.otf}
@@ -226,6 +238,10 @@ LaTeX Project Public License, version 1.3c or later.
 %   translation of its user documentation before the English text.  Both parts
 %   number their sections from one, and the two language versions are kept
 %   structurally identical.}
+% \changes{v0.0.1}{2026/11/05}{The manual re-applies its own font setup after
+%   every demo.  A font command re-registers the family named by the
+%   corresponding default, and the fake bold and slant keys are global, so the
+%   group around a demo cannot undo them.}
 %
 % \title{\bfseries
 %   \pkg{LuaCJK} 宏包\\
