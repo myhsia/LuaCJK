@@ -93,7 +93,7 @@ LaTeX Project Public License, version 1.3c or later.
 %<*package|fntef|listings|ctex>
 \NeedsTeXFormat{LaTeX2e}[2026/06/01]
 \RequirePackage { expl3 }
-\GetIdInfo $Id: LuaCJK.dtx v0.0.1 2026-11-02 myhsia<myhsia@outlook.com>$
+\GetIdInfo $Id: LuaCJK.dtx v0.0.1 2026-11-11 myhsia<myhsia@outlook.com>$
 %<package>  {A LuaTeX CJK typesetting package}
 %<package>\ProvidesExplPackage {\ExplFileName}
 %<fntef>  {Font effects for LuaCJK (CTEX)}
@@ -171,10 +171,28 @@ LaTeX Project Public License, version 1.3c or later.
 \begin{document}
   \DocInput{\jobname.dtx}
   \clearpage
+  \PrintChanges
   \PrintIndex
 \end{document}
 %</driver>
 % \fi
+%
+%
+% \changes{v0.0.1}{2026/11/11}{Provide the CJK font family interface
+%   (\cs{setCJKmainfont}, \cs{setCJKsansfont}, \cs{setCJKmonofont},
+%   \cs{setCJKfamilyfont}, \cs{CJKfamily}, \cs{newCJKfontfamily},
+%   \cs{CJKfontspec}); an undeclared family warns once instead of at every
+%   use.}
+%
+% \changes{v0.0.1}{2026/11/11}{Add \pkg{LuaCJK-listings}, which keeps CJK
+%   characters in place inside a \pkg{listings} block, counts each of them as
+%   two columns, and turns the spacing adjustments off; LuaCJK loads it
+%   automatically with \pkg{listings}.}
+%
+% \changes{v0.0.1}{2026/11/11}{Ship \file{ctex-engine-luacjk.def} as the
+%   \LuaTeX\ backend for \pkg{ctex}, selected with the option |engine =
+%   luacjk|. The name differs from the file that \pkg{ctex} installs, so both
+%   packages can be installed side by side.}
 %
 % \title{\bfseries The \pkg{LuaCJK} package\thanks{^^A
 %   \url{https://ctan.org/pkg/luacjk},\
@@ -1234,6 +1252,9 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 %
 % \begin{macro}{\LuaCJKversion}
+% \changes{v0.0.1}{2026/11/11}{Refuse to load with \pkg{luatexja}, which
+%   adjusts the same nodes; \cs{LuaCJKversion} prints the version of the
+%   package.}
 % The version of the package.
 % \begin{variable}[int]{\c_@@_version_tl}
 % The version string, taken from the package metadata.
@@ -1372,6 +1393,12 @@ $ x + 中文 $ and 中文
 % \end{variable}
 %
 % \begin{macro}[int]{\@@_set_punct_style:n}
+% \changes{v0.0.1}{2026/11/11}{Provide the \keys{PunctStyle} key with the
+%   \texttt{quanjiao}, \texttt{plain}, \texttt{banjiao}, \texttt{kaiming},
+%   \texttt{CCT}, and \texttt{hangmobanjiao} styles. Under a style with a
+%   fixed width the advance of an opening or middle mark moves its ink as
+%   well, and a dash or an ellipsis keeps its advance, so a run of long
+%   punctuation is not collapsed.}
 % Store the selected style,
 % or warn and fall back to \texttt{plain} when the name is unknown.
 % \begin{variable}[int]{\l_@@_punct_style_tl}
@@ -1400,6 +1427,8 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKEditPunctStyle}
+% \changes{v0.0.1}{2026/11/11}{Provide \cs{LuaCJKEditPunctStyle} to edit the
+%   punctuation sets of the current style, and \keys{AllowBreakBetweenPuncts}.}
 % Change the parameters of an existing style. A key that is not given
 % keeps its current value, which is why the three ``given'' switches
 % are tracked here instead of starting from the defaults.
@@ -1462,6 +1491,9 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKsetwidth}
+% \changes{v0.0.1}{2026/11/11}{Provide \cs{LuaCJKsetwidth} and
+%   \cs{LuaCJKsetkern} for per-mark widths and per-pair gaps that override the
+%   selected punctuation style.}
 % Give specific punctuation marks a fixed advance, overriding the
 % selected style. The star form of \pkg{xeCJK}, which sets the width used
 % at the start or end of a line, has no counterpart yet and only warns.
@@ -1518,6 +1550,9 @@ $ x + 中文 $ and 中文
 % named by an option of the font commands.
 %
 % \begin{macro}{\LuaCJKDeclareSubCJKBlock}
+% \changes{v0.0.1}{2026/11/11}{Provide \cs{LuaCJKDeclareSubCJKBlock} with
+%   \cs{LuaCJKCancelSubCJKBlock} and \cs{LuaCJKRestoreSubCJKBlock}, so a range
+%   of characters can use its own font inside a family.}
 % \begin{variable}[int]
 %   {\g_@@_block_prop, \g_@@_block_names_clist}
 % The ranges of each block, and the declaration order that decides
@@ -1635,6 +1670,13 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKDeclareCharClass}
+% \changes{v0.0.1}{2026/11/11}{Provide \cs{LuaCJKDeclareCharClass},
+%   \cs{LuaCJKDeclarePunctClass}, and \cs{LuaCJKResetCharClass} to override
+%   the class of a code-point range. The classes carry the names of
+%   \pkg{xeCJK} (\texttt{FullLeft}, \texttt{FullRight}, \texttt{HalfLeft},
+%   \texttt{HalfRight}, \texttt{NormalSpace}, \texttt{CJStarter}, \texttt{CM},
+%   \texttt{Boundary}), the reset also restores the normal-spaced set, and the
+%   built-in table covers the CJK blocks of Unicode 15 and 16.}
 % Override the class of a code-point range.
 % The range list uses the \pkg{xeCJK} spelling: hexadecimal numbers
 % with a leading |"|, and |"START -> "END| for a range.
@@ -1773,6 +1815,9 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKDeclarePunctStyle}
+% \changes{v0.0.1}{2026/11/11}{Provide \cs{LuaCJKDeclarePunctStyle} for a
+%   punctuation style of your own, with the keys \keys{compress-adjacent},
+%   \keys{adjacent-ratio}, and \keys{keep-open-close}.}
 % Define a style from a small set of keys and hand the result to Lua.
 % \begin{variable}[int]
 %   {
@@ -1814,6 +1859,10 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_set_autofake:nn}
+% \changes{v0.0.1}{2026/11/11}{Provide \keys{AutoFakeBold},
+%   \keys{AutoFakeSlant}, \keys{EmboldenFactor}, and \keys{SlantFactor}; a
+%   family that sets \keys{BoldFont} or \keys{ItalicFont} keeps its real
+%   faces.}
 % Turn fake bold or slant on or off. A number both enables the feature
 % and sets the factor, as in \pkg{xeCJK}.
 %    \begin{macrocode}
@@ -1856,6 +1905,9 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKsetup}
+% \changes{v0.0.1}{2026/11/11}{Provide \cs{LuaCJKsetup}, and accept the same
+%   keys as package options, for example \cs{usepackage}|[PunctStyle =
+%   banjiao]{LuaCJK}|; an unknown key warns instead of raising an error.}
 % The same key path serves \cs{LuaCJKsetup} and the package options.
 % \begin{variable}[int]
 %   {
@@ -2081,6 +2133,14 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_settings_push:}
+% \changes{v0.0.1}{2026/11/11}{Every setting travels with the characters: a
+%   snapshot of the options is recorded on the glyphs, so a group that ends
+%   before the paragraph does still decides how its own text is set. This
+%   covers \keys{CJKglue}, \keys{CJKecglue}, \keys{PunctStyle},
+%   \keys{PunctKinsoku}, \keys{LatinPunct}, \keys{CJKmath}, \keys{PunctWidth},
+%   \keys{PunctBoundWidth}, \keys{CheckSingle}, \keys{WidowPenalty},
+%   \keys{AllowBreakBetweenPuncts}, \keys{AutoFallBack}, and the cancelled
+%   sub-blocks.}
 % Hand the current options to Lua,
 % which stores them once and selects the stored copy with an attribute.
 % Called after \cs{LuaCJKsetup} and after every font selection,
@@ -2119,6 +2179,9 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKdisable, \LuaCJKenable}
+% \changes{v0.0.1}{2026/11/11}{Provide \cs{LuaCJKdisable} and
+%   \cs{LuaCJKenable} to suspend the typographic adjustments while keeping CJK
+%   font selection.}
 % Set the node attribute that makes the Lua callbacks skip
 % the adjustments. The attribute follows the \TeX\ grouping.
 %    \begin{macrocode}
@@ -2130,6 +2193,8 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKShipoutHook}
+% \changes{v0.0.1}{2026/11/11}{Provide \cs{LuaCJKShipoutHook}, which runs code
+%   through the standard \texttt{shipout/before} hook.}
 % Run code just before every page is shipped out. This is the place
 % for work that must see the finished page; \pkg{xeCJK} calls a macro
 % at the same moment, so the name is kept, but the code goes into
@@ -2141,6 +2206,10 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKnobreak}
+% \changes{v0.0.1}{2026/11/11}{Provide \cs{LuaCJKnobreak} and the
+%   \keys{PunctWidth} option; the prohibition survives \keys{PunctKinsoku}
+%   being off, as does that of \cs{LuaCJKVerbAddon}, because the switch only
+%   controls the punctuation rules.}
 % Keep the argument on one line. The nodes of the argument are marked,
 % and the line-breaking pass puts a penalty in front of every break
 % opportunity that involves a marked node.
@@ -2156,6 +2225,10 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKVerbAddon, \LuaCJKOffVerbAddon}
+% \changes{v0.0.1}{2026/11/11}{Provide \cs{LuaCJKVerbAddon} and
+%   \cs{LuaCJKOffVerbAddon}, which make one CJK character as wide as two
+%   spaces of the current monospaced font and forbid breaks between CJK
+%   characters, so columns in code listings stay aligned.}
 % Align CJK text in a monospaced context: one CJK character plus the glue
 % that follows it should take the width of two spaces.
 % The gap therefore is twice the space of the current font minus
@@ -2268,6 +2341,9 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_verbatim@font_hook:}
+% \changes{v0.0.1}{2026/11/11}{Add the \keys{Verb} option (\texttt{true},
+%   \texttt{env}, \texttt{env+}, \texttt{false}) to control what happens
+%   inside \cs{verb} and the verbatim-like environments.}
 % Verbatim-like material must usually be left alone.
 % \tn{verb} opens its own group and selects \tn{verbatim@font} inside
 % it, so extending that command covers \tn{verb} on its own.
@@ -2295,6 +2371,9 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_verbatim_env_begin:, \@@_verbatim_env_end:}
+% \changes{v0.0.1}{2026/11/11}{Suspend the adjustments automatically in
+%   \cs{verb}, \env{verbatim}, \pkg{fancyvrb}, and \pkg{listings};
+%   \cs{LuaCJKdisable} records its state per node.}
 % Environments that do not go through \tn{verbatim@font} need their own
 % hooks. Only the \texttt{true} setting suspends the adjustments here:
 % \texttt{env} and \texttt{env+} keep them, which is what keeps code
@@ -2550,6 +2629,8 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_update_font:}
+% \changes{v0.0.1}{2026/11/11}{Provide \keys{PunctFamily}, which sets a
+%   separate CJK family for the punctuation marks.}
 % On every \tn{selectfont}, resolve the current family and the math
 % family to font identifiers and store them in the attributes.
 % \begin{variable}[int]{\l_@@_selectfont_bool, \g_@@_fontid_int}
@@ -2706,6 +2787,8 @@ $ x + 中文 $ and 中文
 % \end{variable}
 %
 % \begin{macro}{\defaultCJKfontfeatures}
+% \changes{v0.0.1}{2026/11/11}{Provide \cs{defaultCJKfontfeatures} and
+%   \cs{addCJKfontfeatures}.}
 % Set the features prepended to every CJK family, replacing the initial
 % \texttt{Script = CJK}. Families registered earlier keep the value they
 % were given; call \cs{setCJKmainfont} again to apply a new default.
@@ -2812,6 +2895,9 @@ $ x + 中文 $ and 中文
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{\@@_add_fallback:nn}
+% \changes{v0.0.1}{2026/11/11}{Provide \cs{setCJKfallbackfamilyfont} and
+%   \keys{AutoFallBack} for characters that the selected CJK font does not
+%   have.}
 % Register one fallback font for a CJK family,
 % keeping the order in which the fonts were declared.
 %    \begin{macrocode}
@@ -2892,6 +2978,10 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}{\songti, \heiti, \fangsong, \kaishu, \lishu, \youyuan}
+% \changes{v0.0.1}{2026/11/11}{Provide \cs{songti}, \cs{heiti}, \cs{fangsong},
+%   \cs{kaishu}, \cs{lishu}, and \cs{youyuan} as shorthands for the families
+%   \texttt{zhsong}, \texttt{zhhei}, \texttt{zhfs}, \texttt{zhkai},
+%   \texttt{zhli}, and \texttt{zhyou}.}
 % Shortcuts for the usual families,
 % plus the family hooks of the standard font commands.
 %    \begin{macrocode}
@@ -2913,6 +3003,8 @@ $ x + 中文 $ and 中文
 % \subsection{Names and configuration}
 %
 % \begin{macro}{\normalspacedchars}
+% \changes{v0.0.1}{2026/11/11}{Provide \cs{normalspacedchars} so that slashes,
+%   backslashes, and hyphens take no glue on either side.}
 % The characters in the list get no glue on either side, which is what
 % one wants for slashes, backslashes, and hyphens inside Latin text.
 % The list is kept on the Lua side as a set of code points,
@@ -2944,6 +3036,8 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_load_local_config:}
+% \changes{v0.0.1}{2026/11/11}{Add the \keys{LocalConfig} option, which reads
+%   \file{luacjk.cfg} or \file{luacjk-<name>.cfg} at the end of the package.}
 % Load the file chosen by the \keys{LocalConfig} option.
 % The key is read while the package is being loaded, but the file is only input
 % at the end, so that it can use everything LuaCJK defines.
@@ -2967,6 +3061,8 @@ $ x + 中文 $ and 中文
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_load_fandol:}
+% \changes{v0.0.1}{2026/11/11}{Add the \keys{LoadFandol} option, which
+%   supplies Fandol fonts when the document declares none.}
 % When the \keys{LoadFandol} option is on and the document
 % did not declare any CJK font, fall back to the four Fandol faces.
 % This runs at \tn{begin}\{document\} so that a family declared anywhere
@@ -3544,6 +3640,10 @@ M.punct_styles = {
 % \end{variable}
 %
 % \begin{macro}[int]{LuaCJK.define_punct_style}
+% \changes{v0.0.1}{2026/11/11}{Provide \keys{KaiMingPunct},
+%   \keys{MiddlePunct}, \keys{LongPunct}, and \keys{NoBreakLongPunct}, each
+%   with \texttt{+} and \texttt{-} forms, to edit the punctuation character
+%   sets.}
 % Register a style declared by \cs{LuaCJKDeclarePunctStyle}.
 %    \begin{macrocode}
 function M.define_punct_style (name, compress, ratio, keep)
@@ -3774,6 +3874,9 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{copy_glyph}
+% \changes{v0.0.1}{2026/11/11}{Drop the placeholder glyph that a font without
+%   the character leaves behind (one \texttt{.notdef} glyph in some fonts, a
+%   private-use glyph in others).}
 % Copy a glyph node, changing only its font.
 %    \begin{macrocode}
 local function copy_glyph (n, fid)
@@ -3797,6 +3900,9 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{rewrite_fonts}
+% \changes{v0.0.1}{2026/11/11}{Provide \keys{LatinPunct}, which keeps the
+%   shared quotation marks, the middle dot, and the ellipses in the Latin font
+%   instead of the CJK font.}
 % Replace each CJK glyph by a copy in the font its attribute names,
 % after giving way to a sub-block font or to a fallback font.
 % A glyph that the old font did not have may sit next to the placeholder
@@ -3949,6 +4055,10 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{inherit_attributes}
+% \changes{v0.0.1}{2026/11/11}{Inserted glue, kerns, and penalties inherit the
+%   attributes of the neighbouring node, so an attribute-based decoration such
+%   as \cs{CJKunderdot} stays in one piece across CJK/CJK and CJK/Latin
+%   boundaries.}
 % Give a new node the attribute list of the node it is spliced next to.
 % LuaCJK creates glue, kerns, and penalties after \TeX\ has attached
 % the surrounding attributes to the text, so a package that
@@ -4031,6 +4141,12 @@ end
 % \subsection{The passes}
 %
 % \begin{macro}[int]{spacing}
+% \changes{v0.0.1}{2026/11/11}{Provide CJK/CJK and CJK/Latin spacing with
+%   \keys{CJKglue}, \keys{CJKecglue}, \keys{CJKspace}, and \keys{xCJKecglue}.
+%   The default glues are recomputed at every font selection, so they follow
+%   \cs{small}, \cs{Large}, and \cs{zihao}, and a value keeps its stretch and
+%   shrink orders. No glue is inserted between two long punctuation marks, so
+%   a run of dashes or ellipses stays one unit.}
 % Walk a list and insert the glue between CJK and Latin material.
 % The walk tracks the last visible node and the class at its end,
 % so that a formula acts as one Latin atom at its left edge;
@@ -4241,6 +4357,9 @@ end
 % 10000 in front of every break opportunity that must not be used.
 %
 % \begin{macro}[int]{apply_kinsoku}
+% \changes{v0.0.1}{2026/11/11}{Provide \keys{PunctKinsoku} line-breaking
+%   prohibitions: closing punctuation cannot start a line, opening punctuation
+%   cannot end a line, and long punctuation runs are kept together.}
 % Add the prohibitions where the settings of the text ask for them.
 % A node marked by \cs{LuaCJKnobreak} or by the verbatim addon
 % is prohibited regardless, because the mark itself is the prohibition.
@@ -4472,6 +4591,11 @@ local SUB_MLIST = node.id("sub_mlist")
 % \end{variable}
 %
 % \begin{macro}[int]{rewrite_math}
+% \changes{v0.0.1}{2026/11/11}{Provide \keys{CJKmath} and \cs{setCJKmathfont}
+%   for CJK characters in math mode, including nested math lists such as
+%   fractions. The family is registered as a math family, so a character in a
+%   script or a fraction keeps the size of that math style; with
+%   \keys{CJKmath} off, a CJK character in math mode warns once.}
 % Rewrite the CJK noads of a math list,
 % or warn once when the feature is off.
 % \begin{macro}[int]{rewrite_math_list}
@@ -4660,6 +4784,10 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{bound_width}
+% \changes{v0.0.1}{2026/11/11}{Provide \keys{PunctBoundWidth}, which leaves
+%   only the given advance inside the line and hangs the rest of the mark into
+%   the margin: at the end of a line, at its start, and when the mark ends a
+%   box such as \tn{mbox}. Only the lines of the paragraph itself are shifted.}
 % The advance that a mark keeps inside the line when it ends one,
 % or nothing when the option is off.
 % Without it the shift is half an em, as the hanging style asks.
@@ -4761,6 +4889,9 @@ end
 % instead of a single one.
 %
 % \begin{macro}[int]{apply_check_single}
+% \changes{v0.0.1}{2026/11/11}{Provide \keys{CheckSingle} and
+%   \keys{WidowPenalty}, which stop a single CJK character from ending up
+%   alone on the last line of a paragraph.}
 % Insert the widow penalties. Only a paragraph whose last visible node
 % is a CJK glyph is examined, and only when its settings ask for it.
 %    \begin{macrocode}
@@ -5145,6 +5276,19 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \end{macrocode}
 %
 % \begin{macro}{\CJKunderline}
+% \changes{v0.0.1}{2026/11/11}{Add \pkg{LuaCJKfntef}, a \pkg{lua-ul} based
+%   companion package providing \cs{CJKunderline}, \cs{CJKunderdot}, and
+%   \cs{CJKsout}. \cs{CJKunderline} takes \keys{thickness}, \keys{depth},
+%   \keys{textformat}, \keys{format} for the color of the rule, and any other
+%   key of \pkg{lua-ul}; the geometry defaults to \texttt{depth=0.2em} and
+%   \texttt{thickness=0.4pt}, and \keys{top} and \keys{bottom} override the
+%   computed values. Every decoration accepts \keys{selectable},
+%   \texttt{false} by default: a decoration symbol is then wrapped in an
+%   \texttt{ActualText} sequence that readers drop from the text they copy or
+%   select. Every decoration also accepts \keys{subtract} (inset at both ends)
+%   and \keys{skip} (leave out the punctuation); the decoration boxes of
+%   \pkg{lua-ul} are adjusted in place, with a matching kern and negative glue
+%   keeping the text where it was.}
 % Underline the argument. The optional argument takes
 % \keys{thickness, depth, textformat}, and any other key is passed on to
 % \pkg{lua-ul}, which understands
@@ -5463,6 +5607,13 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_fntef_decoration_setup:n}
+% \changes{v0.0.1}{2026/11/11}{Every decoration takes the same key set:
+%   \keys{color}, \keys{gap}, \keys{height}, \keys{symbol}, \keys{sep},
+%   \keys{textformat}, and \keys{hidden}, which keeps the dimensions of the
+%   text and draws no glyph. A bare color name is accepted, so |[red]| and
+%   |[subtract]| both work, and a key that a command does not use is ignored.
+%   \cs{CJKsout} strikes at \texttt{height=0.3em}, through the middle of a CJK
+%   glyph, and \texttt{height=0.5ex} restores the Latin position.}
 % The settings that the decoration pass reads.
 % They are pushed on every call, so a command without options starts
 % from the defaults instead of inheriting the previous call.
@@ -5529,6 +5680,12 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKunderdblline}
+% \changes{v0.0.1}{2026/11/11}{Add \cs{CJKunderdblline}, \cs{CJKunderwave},
+%   and \cs{CJKxout}; the wave and the slash are drawn with \pkg{l3draw} and
+%   repeated with leaders, so they stay in phase along a line. Their patterns
+%   are built at use time and scale with the font size, the box that holds
+%   them has zero height and depth, so a decoration never opens up its line,
+%   and a rule-based decoration fills its span exactly.}
 % Two parallel rules. The optional argument takes \keys{subtract} and
 % \keys{skip}; \texttt{*} and \texttt{-} are accepted for compatibility.
 %    \begin{macrocode}
@@ -5707,6 +5864,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKunderanyline}
+% \changes{v0.0.1}{2026/11/11}{Add \cs{CJKunderanyline} and
+%   \cs{CJKunderanysymbol} for arbitrary rules and repeated symbols; the
+%   underline type is cached by the arguments, and \cs{CJKunderanysymbol} puts
+%   one symbol per em, centered in the cell, its depth measured from the
+%   baseline to the top of the symbol.}
 % Underline with an arbitrary object: the object is put in a box,
 % lowered by \meta{depth}, and repeated by \tn{leaders}.
 % The underline type is cached by the object and the depth,
@@ -5839,6 +6001,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{environment}{CJKfilltwosides}
+% \changes{v0.0.1}{2026/11/11}{Add the \env{CJKfilltwosides} environment,
+%   which justifies every line to a given width (the CJK glue is given
+%   infinite stretch inside the box) and places the box on the baseline as
+%   requested. It is tagged: a text block in vertical mode, part of the
+%   surrounding paragraph in horizontal mode.}
 %   Set the body in a vertical box whose lines are justified to the given
 %   width, with the lines separated by \tn{}.
 %   The optional argument places the box on the baseline: \texttt{t} for
