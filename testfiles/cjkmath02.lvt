@@ -1,0 +1,100 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\usepackage{unicode-math}
+\setmathfont{TeX Gyre Pagella Math}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKmath = true}
+
+% Report the size of every CJK glyph of box 0, descending into boxes.
+% The size is the font's design size in scaled points, so 655360 is the 10pt
+% of the text and 458752 the 7pt of the script style.
+\def\showmathsizes{%
+  \directlua{
+    local digits = "0123456789ABCDEF"
+    local function hex (n)
+      local out, count = {}, 0
+      repeat
+        count = count + 1
+        local d = math.fmod(n, 16) + 1
+        out[count] = digits:sub(d, d)
+        n = math.floor(n / 16)
+      until n == 0
+      local s = ""
+      for i = count, 1, -1 do s = s .. out[i] end
+      while string.len(s) < 4 do s = "0" .. s end
+      return s
+    end
+    local out, count = {}, 0
+    local function walk (l)
+      local n = l
+      while n do
+        if n.id == node.id("glyph") then
+          if n.char >= 0x2E80 then
+            local f = font.getfont(n.font)
+            count = count + 1
+            out[count] = hex(n.char) .. "=" .. tostring(f and f.size or 0)
+          end
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          walk(n.head)
+        end
+        n = n.next
+      end
+    end
+    walk(tex.box[0].head)
+    texio.write_nl("term and log", "SIZES " .. table.concat(out, " "))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{in text style the character keeps the text size}{
+  \setbox0=\hbox{$中$}
+  \showmathsizes
+}
+
+\TEST{a superscript keeps the text size of the base}{
+  \setbox0=\hbox{$中^2$}
+  \showmathsizes
+}
+
+\TEST{a fraction sets the characters in script size}{
+  \setbox0=\hbox{$\frac{中}{文}$}
+  \showmathsizes
+}
+
+\TEST{a script CJK character takes the script size}{
+  \setbox0=\hbox{$x^{中}$}
+  \showmathsizes
+}
+
+\TEST{display style keeps the text size}{
+  \setbox0=\hbox{$\displaystyle 中$}
+  \showmathsizes
+}
+
+\TEST{enabling CJKmath in a group works without a font change}{
+  \begingroup
+    \LuaCJKsetup{CJKmath = true}
+    \setbox0=\hbox{$中$}
+    \showmathsizes
+  \endgroup
+}
+
+\TEST{the size follows the text size}{
+  \begingroup
+    \LuaCJKsetup{CJKmath = true}
+    \fontsize{20}{24}\selectfont
+    \setbox0=\hbox{$中$}
+    \showmathsizes
+  \endgroup
+}
+
+\END
+
+\end{document}

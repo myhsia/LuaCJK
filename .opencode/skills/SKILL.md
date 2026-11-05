@@ -62,8 +62,15 @@ measurement shifts the first glyph by one em — and that is what the visible
 part of `microtype`'s protrusion on a Latin line is. Hence `xoffset` here, and
 `hang01` pins the numbers.
 
-`pre_mlist_to_hlist_filter` runs `rewrite_math`, which turns a CJK character in
-a math noad into a box in the CJK math font.
+`pre_mlist_to_hlist_filter` runs `rewrite_math`, which points the math
+character noads of a CJK character at a math family of its own; the family's
+three style fonts are filled from the CJK family at the text, script, and
+scriptscript size (0.7 and 0.5 of the text size), so a CJK character in a
+superscript or a fraction takes the size of that math style. The family
+number is allocated per CJK family name from 240--255 and travels in the
+`math_font` attribute, which keeps `\setCJKmathfont` local to a group.
+The math parameters stay those of the document's math font, because the CJK
+font has no `MathConstants` table.
 
 ### Attributes
 
@@ -254,7 +261,7 @@ on `lua-ul`). Picking a backend inside `ctex` still needs the agreement of the
 The commands are in `AGENTS.md`. For this skill the points that matter are:
 
 ```bash
-l3build check                       # 44 tests, must print "All checks passed"
+l3build check                       # 45 tests, must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
 bash scripts/ctex-subset.sh         # 21/21, and no log may mention luatexja
 ```
