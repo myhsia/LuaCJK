@@ -192,6 +192,13 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   package is tested and released belongs in this guide, and the principle
   behind an interface belongs in the implementation section, not next to the
   user instruction.
+- **The user part has a fixed shape.**  Five sections (Introduction,
+  Loading, Fonts, Text layout, Comparison with xeCJK) followed by the
+  appendix Implementation; `Fonts` carries five subsections and `Text layout`
+  six, and no section is left with a single subdivision.  A new feature joins
+  the theme it belongs to instead of opening a section of its own; the
+  `ctex` material stays in Loading, and the decoration commands end the Text
+  layout section.
 - **`\LuaCJKsetup` gets one sentence.**  Its `function` entry states the
   syntax and that the keys are documented in the following sections; the two
   groups (per-node settings and global or load-time keys) are explained
