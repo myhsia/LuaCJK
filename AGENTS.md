@@ -154,7 +154,11 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   the dtx, above its `macrocode` chunk, so it reaches the manual; only a
   comment that explains one expression (a magic number, an invariant) stays as
   a Lua comment. The license header of the three modules comes from
-  `\declarepreamble` in `LuaCJK.ins`, not from the dtx body.
+  `\declarepreamble` in `LuaCJK.ins`, not from the dtx body. The license block
+  and the file list therefore appear twice in the `.ins`, once under `%%` for
+  the TeX files and once under `--` for the modules: `\declarepreamble` bakes
+  `\MetaPrefix` into the text when it is declared, so the two cannot share one
+  declaration, and a file added to the list is added in both copies.
 - **`l3doc` bookkeeping.**  Follow the global `repo-rules` section "l3doc source
   style": `macrocode` is `%` plus exactly four spaces, every other documentation
   line is `%` plus one space, internal objects are `[int]`, and entries are
