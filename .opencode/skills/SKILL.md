@@ -253,6 +253,13 @@ hung by the punctuation passes, and the space around a Latin word or code span
 stays an interword space because `xCJKecglue` is off by default.  `LatinPunct`
 stays on, so the ASCII quotes and apostrophes inside code spans remain Latin.
 
+The demos are executed in the manual, so a global command used in one changes
+the rest of the document: `\setCJKmainfont` re-registers the family named by
+`\CJKrmdefault`, and `AutoFakeBold` and `AutoFakeSlant` are global by design.
+The driver's `\LuaCJKdocsetup` holds the manual's own font block, and the
+`env/codemo/after` hook runs it after every demo, so the `\begingroup` around a
+`codemo` contains only local settings.
+
 ## Current work
 
 Implemented: font family layer with fake bold and slant, fallback fonts

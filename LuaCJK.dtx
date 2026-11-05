@@ -154,17 +154,29 @@ LaTeX Project Public License, version 1.3c or later.
 \usepackage{unicode-math}
 \setmathfont{texgyrepagella-math.otf}
 \usepackage{LuaCJK}
-\setCJKmainfont[
-  BoldFont   = FandolSong-Bold.otf,
-  ItalicFont = FandolKai-Regular.otf
-]{FandolSong-Regular.otf}
-\setCJKsansfont[BoldFont = FandolHei-Bold.otf]{FandolHei-Regular.otf}
-\setCJKmonofont{FandolFang-Regular.otf}
-\setCJKfamilyfont{zhsong}[BoldFont = FandolSong-Bold.otf]
-  {FandolSong-Regular.otf}
-\setCJKfamilyfont{zhhei}[BoldFont = FandolHei-Bold.otf]{FandolHei-Regular.otf}
-\setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
-\setCJKfamilyfont{zhfs}{FandolFang-Regular.otf}
+% The demos call commands that are global by design: \setCJKmainfont
+% re-registers the family named by \CJKrmdefault for the rest of the document,
+% and the fake bold and slant keys are global.  A group around a codemo cannot
+% undo that, so the manual's own setup is a command that the preamble calls and
+% that runs again after every demo.
+\NewDocumentCommand \LuaCJKdocsetup { }
+  {
+    \setCJKmainfont[
+      BoldFont   = FandolSong-Bold.otf,
+      ItalicFont = FandolKai-Regular.otf
+    ]{FandolSong-Regular.otf}
+    \setCJKsansfont[BoldFont = FandolHei-Bold.otf]{FandolHei-Regular.otf}
+    \setCJKmonofont{FandolFang-Regular.otf}
+    \setCJKfamilyfont{zhsong}[BoldFont = FandolSong-Bold.otf]
+      {FandolSong-Regular.otf}
+    \setCJKfamilyfont{zhhei}[BoldFont = FandolHei-Bold.otf]
+      {FandolHei-Regular.otf}
+    \setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
+    \setCJKfamilyfont{zhfs}{FandolFang-Regular.otf}
+    \LuaCJKsetup{AutoFakeBold = false, AutoFakeSlant = false}
+  }
+\LuaCJKdocsetup
+\AddToHook{env/codemo/after}{\LuaCJKdocsetup}
 \usepackage{LuaCJKfntef}
 \LuaCJKsetup{CJKmath=true, LatinPunct=true}
 \setCJKmathfont{FandolSong-Regular.otf}
