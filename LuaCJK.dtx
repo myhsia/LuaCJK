@@ -3100,15 +3100,15 @@ $ x + 中文 $ and 中文
 \lua_load_module:n { LuaCJK }
 \lua_now:e
   {
-    LuaCJK.attr_font        = \int_use:N   \c_@@_font_attr_int ;
-    LuaCJK.attr_cjk_space   = \int_use:N   \c_@@_cjk_space_attr_int ;
-    LuaCJK.attr_xecglue     = \int_use:N   \c_@@_xecglue_attr_int ;
-    LuaCJK.attr_inserted    = \int_use:N   \c_@@_inserted_attr_int ;
-    LuaCJK.attr_math_font   = \int_use:N   \c_@@_math_font_attr_int ;
-    LuaCJK.attr_punct_font  = \int_use:N   \c_@@_punct_font_attr_int ;
-    LuaCJK.attr_nobreak     = \int_use:N   \c_@@_nobreak_attr_int ;
-    LuaCJK.attr_settings    = \int_use:N   \c_@@_settings_attr_int ;
-    LuaCJK.attr_disabled    = \int_use:N   \c_@@_disabled_attr_int ;
+    LuaCJK.attr_font        =  \int_use:N   \c_@@_font_attr_int ;
+    LuaCJK.attr_cjk_space   =  \int_use:N   \c_@@_cjk_space_attr_int ;
+    LuaCJK.attr_xecglue     =  \int_use:N   \c_@@_xecglue_attr_int ;
+    LuaCJK.attr_inserted    =  \int_use:N   \c_@@_inserted_attr_int ;
+    LuaCJK.attr_math_font   =  \int_use:N   \c_@@_math_font_attr_int ;
+    LuaCJK.attr_punct_font  =  \int_use:N   \c_@@_punct_font_attr_int ;
+    LuaCJK.attr_nobreak     =  \int_use:N   \c_@@_nobreak_attr_int ;
+    LuaCJK.attr_settings    =  \int_use:N   \c_@@_settings_attr_int ;
+    LuaCJK.attr_disabled    =  \int_use:N   \c_@@_disabled_attr_int ;
     LuaCJK.name_ccglue      = "\cs_to_str:N \l_@@_ccglue_skip" ;
     LuaCJK.name_ecglue      = "\cs_to_str:N \l_@@_ecglue_skip" ;
     LuaCJK.name_math_fontid = "\cs_to_str:N \g_@@_math_fontid_int"
@@ -3199,14 +3199,14 @@ local set_attribute = node.set_attribute
 % The attribute numbers.
 % The \TeX\ side fills them in after loading the module.
 %    \begin{macrocode}
-M.attr_font       = M.attr_font or nil
-M.attr_cjk_space  = M.attr_cjk_space or nil
-M.attr_xecglue    = M.attr_xecglue or nil
-M.attr_inserted   = M.attr_inserted or nil
-M.attr_math_font  = M.attr_math_font or nil
+M.attr_font       = M.attr_font       or nil
+M.attr_cjk_space  = M.attr_cjk_space  or nil
+M.attr_xecglue    = M.attr_xecglue    or nil
+M.attr_inserted   = M.attr_inserted   or nil
+M.attr_math_font  = M.attr_math_font  or nil
 M.attr_punct_font = M.attr_punct_font or nil
-M.attr_nobreak    = M.attr_nobreak or nil
-M.attr_settings   = M.attr_settings or nil
+M.attr_nobreak    = M.attr_nobreak    or nil
+M.attr_settings   = M.attr_settings   or nil
 
 %    \end{macrocode}
 % \end{variable}
@@ -4919,9 +4919,9 @@ local GLUE    = node.id("glue")
 local LEADERS = 100
 local KERN    = node.id("kern")
 
-M.attr     = M.attr or nil
+M.attr     = M.attr     or nil
 M.settings = M.settings or {}
-M.next_id  = M.next_id or 1
+M.next_id  = M.next_id  or 1
 
 %    \end{macrocode}
 % \end{variable}
