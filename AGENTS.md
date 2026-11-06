@@ -1,6 +1,6 @@
 # LuaCJK
 
-A Chinese typesetting package for LuaLaTeX, built on LuaTeX node callbacks.
+A Chinese typesetting package for the LuaTeX engine, built on node callbacks.
 Everything ships from the single source `LuaCJK.dtx`: three LaTeX packages (`LuaCJK`, `LuaCJKfntef`, `LuaCJK-listings`),
 the `ctex` engine file `ctex-engine-luacjk.def`, three Lua modules, the manual
 `LuaCJK.pdf`, and `README.md`. `../ctex-kit` is read only, by

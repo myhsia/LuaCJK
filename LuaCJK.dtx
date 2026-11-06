@@ -64,7 +64,7 @@ inside a `listings` block.
 \setCJKmainfont{FandolSong-Regular.otf}
 ```
 
-LuaCJK requires LuaLaTeX. It must not be loaded together with `luatexja`.
+LuaCJK requires the LuaTeX engine. It must not be loaded together with `luatexja`.
 
 ## Using it with ctex
 
@@ -219,11 +219,11 @@ LaTeX Project Public License, version 1.3c or later.
 % \maketitle
 %
 % \begin{abstract}
-%   \pkg{LuaCJK} 为 \LuaLaTeX\ 提供中文排版。
+%   \pkg{LuaCJK} 为 \LuaTeX\ 提供中文排版。
 %   它把当前的 CJK 字体记录在一个 \LuaTeX\ 属性里，
 %   并在断行与盒子打包之前替换 CJK 字形节点。
 %   \setlength \parindent {1.5em}\par
-%   \pkg{LuaCJK} provides Chinese typesetting for \LuaLaTeX.
+%   \pkg{LuaCJK} provides Chinese typesetting for \LuaTeX.
 %   It records the current CJK font in a \LuaTeX\ attribute
 %   and replaces CJK glyph nodes before line breaking and box packing.
 % \end{abstract}
@@ -250,7 +250,7 @@ LaTeX Project Public License, version 1.3c or later.
 %   \cs{usepackage}\oarg{options}"{LuaCJK}"
 % \end{quote}
 %
-% LuaCJK 需要 \LuaLaTeX。它与 \pkg{luatexja} 冲突：
+% LuaCJK 需要 \LuaTeX\ 引擎。它与 \pkg{luatexja} 冲突：
 % 无论先后加载哪一个，都会报错。
 %
 % \begin{function}{\LuaCJKversion}
@@ -1376,7 +1376,7 @@ a’a\quad 字！字
 %   \cs{usepackage}\oarg{options}"{LuaCJK}"
 % \end{quote}
 %
-% LuaCJK requires \LuaLaTeX. It conflicts with \pkg{luatexja}:
+% LuaCJK requires the \LuaTeX\ engine. It conflicts with \pkg{luatexja}:
 % loading either package before or after the other raises an error.
 %
 % \begin{function}{\LuaCJKversion}
