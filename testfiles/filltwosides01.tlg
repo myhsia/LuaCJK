@@ -27,8 +27,10 @@ TEST 5: a zero width keeps the surrounding line width
 width: 345.0pt
 ============================================================
 ============================================================
-TEST 6: each line is justified to the width
+TEST 6: each line is filled to the width
 ============================================================
 width: 50.0pt
 depth: 10.765pt
+line 1: glyph glue[4] glyph glue[2] glue[0]
+line 2: glyph glue[4] glyph glue[2] glue[0]
 ============================================================
