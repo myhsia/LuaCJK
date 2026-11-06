@@ -1,0 +1,28 @@
+\input{regression-test}
+
+\documentclass[fontset = fandol, engine = luacjk]{ctexart}
+
+\ExplSyntaxOn
+
+% The ctex engine file of LuaCJK refuses CJKfntef, as ctex's own LuaTeX
+% backend does. Report that message and stop: the rejected package must not
+% load after the engine file. The critical message is raised inside a
+% conditional, so \END would also record "Bad conditionals"; write the end
+% marker it would write and end the run with the primitive instead.
+\cs_new_eq:NN \__luacjk_test_msg_critical:nn \msg_critical:nn
+\cs_set_protected:Npn \msg_critical:nn #1#2
+  {
+    \str_if_eq:nnTF { #1 / #2 } { LuaCJK / cjkfntef }
+      {
+        \START
+        \TYPE { CJKfntef~refused~by~the~ctex~engine~file }
+        \TYPE {^^JEND-TEST-LOG^^J}
+        \use:c { @@end }
+      }
+      { \__luacjk_test_msg_critical:nn {#1} {#2} }
+  }
+
+\ExplSyntaxOff
+
+\RequirePackage{CJKfntef}
+\end{document}

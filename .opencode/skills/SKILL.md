@@ -208,15 +208,20 @@ ships `ctex-engine-luacjk.def` and the document selects it with
 the two glues so it can tell whether the document changed them; the engine file
 keeps the copies in step and sets the `*_touched` flags, otherwise the next
 `\selectfont` would restore the default and undo the user's `kanjiskip`.
+The file also refuses `CJKfntef`, which `ctex`'s own LuaTeX backend bans
+because it loads the legacy `CJK` package over the family interface: the check
+runs when the engine file is read (`ver@CJKfntef.sty`) and again on the
+`package/CJKfntef/before` hook, and the message names `LuaCJKfntef`.
 
 The proof that the backend was actually taken over is the absence of
 `luatexja` in every log, not a marker line: the option can be lost while
-LuaCJK is still loaded from somewhere else. Two tests rely on this.
-`ctex01.lvt` passes the option to `ctexart`, so `l3build check` exercises the
-public route; the subset script cannot pass it that way, because the `ctex`
-test tree brings its own `ctexopts.cfg` that selects a fontset, so the script
-appends `\keys_set:nn { ctex / option } { engine = luacjk }` to that file and
-both settings apply.
+LuaCJK is still loaded from somewhere else. `ctex01.lvt` passes the option to
+`ctexart`, so `l3build check` exercises the public route; the subset script
+cannot pass it that way, because the `ctex` test tree brings its own
+`ctexopts.cfg` that selects a fontset, so the script appends
+`\keys_set:nn { ctex / option } { engine = luacjk }` to that file and both
+settings apply. `ctex02.lvt` covers the `CJKfntef` refusal by overriding
+`\msg_critical:nn` and ending the run.
 
 ### The manual's two languages
 
@@ -314,7 +319,7 @@ on `lua-ul`). Picking a backend inside `ctex` is now a public option
 The commands are in `AGENTS.md`. For this skill the points that matter are:
 
 ```bash
-l3build check                       # 44 tests, must print "All checks passed"
+l3build check                       # 45 tests, must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
 bash scripts/ctex-subset.sh         # 21/21, and no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
@@ -325,5 +330,6 @@ guessing from widths alone: walk `tex.box[0].head` and report the glue, kern,
 and penalty nodes, then assert the numbers in the `.tlg`.
 Existing examples are `decoration01` (the leaders pair), `settingsscope01`
 (a group that closes before `\par`), `nobreak01`/`nobreak02` (penalties),
-`listings01` (glyph order inside a listing), and `ctex01`, the class test that
-shows the engine file is reached through `engine = luacjk`.
+`listings01` (glyph order inside a listing), `ctex01`, the class test that
+shows the engine file is reached through `engine = luacjk`, and `ctex02`,
+which traps the `CJKfntef` refusal by overriding `\msg_critical:nn`.

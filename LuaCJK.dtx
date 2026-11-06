@@ -75,7 +75,7 @@ Pass `engine = luacjk` to the `ctex` class or package:
 ```
 
 `ctex` then inputs `ctex-engine-luacjk.def` instead of its own LuaTeX
-backend, and that file loads LuaCJK.
+backend, and that file loads LuaCJK, so the package is not loaded separately.
 
 ## License
 
@@ -122,7 +122,7 @@ LaTeX Project Public License, version 1.3c or later.
   pdfauthor    = Mingyu Xia
 }
 \newcommand \mail[1] {\href{mailto:#1}{\ttfamily #1}}
-\usepackage{fontspec}
+\usepackage{LuaCJK}
 \setmainfont{texgyrepagella}[
   Extension      = .otf,
   UprightFont    = *-regular,
@@ -144,7 +144,6 @@ LaTeX Project Public License, version 1.3c or later.
   HyphenChar     = None]
 \usepackage{unicode-math}
 \setmathfont{texgyrepagella-math.otf}
-\usepackage{LuaCJK}
 \NewDocumentCommand \LuaCJKdocsetup { }
   {
     \LuaCJKsetup{AutoFakeBold = false, AutoFakeSlant = false}
@@ -320,7 +319,7 @@ LaTeX Project Public License, version 1.3c or later.
 %   |\documentclass[engine = luacjk]{ctexart}|
 % \end{quote}
 % \pkg{ctex} 于是载入 LuaCJK 的 |ctex-engine-luacjk.def| 而不是它自己的
-% \LuaTeX\ 后端，这个文件同时载入宏包。
+% \LuaTeX\ 后端，这个文件同时载入宏包，LuaCJK 不必再单独载入。
 %
 % \section{字体}
 %
@@ -1449,7 +1448,8 @@ a’a\quad 字！字
 %   |\documentclass[engine = luacjk]{ctexart}|
 % \end{quote}
 % \pkg{ctex} then inputs |ctex-engine-luacjk.def| instead of its own
-% \LuaTeX\ backend, and that file loads the package.
+% \LuaTeX\ backend, and that file loads the package, so LuaCJK is not loaded
+% separately.
 %
 % \section{Fonts}
 %
@@ -7715,6 +7715,23 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \msg_critical:nn { LuaCJK } { ctex-engine }
     \tex_endinput:D
   }
+%    \end{macrocode}
+%
+% \pkg{CJKfntef} loads the legacy \pkg{CJK} package, which redefines the font
+% family interface LuaCJK owns, so this file refuses it in both orders:
+% the run stops when \pkg{CJKfntef} is already loaded, and the
+% \texttt{package/CJKfntef/before} hook stops it when it is requested later.
+% The message points at \pkg{LuaCJKfntef}, which does the same work through
+% \pkg{lua-ul}. \pkg{ctex}'s own \LuaTeX\ backend refuses the package for the
+% same reason, and that code does not run when the engine file is ours.
+%    \begin{macrocode}
+\msg_new:nnnn { LuaCJK } { cjkfntef }
+  { Package~`CJKfntef'~is~not~compatible~with~the~LuaCJK~backend~of~ctex. }
+  { Use~the~`LuaCJKfntef'~package~instead. }
+\cs_if_exist:cT { ver@CJKfntef.sty }
+  { \msg_critical:nn { LuaCJK } { cjkfntef } }
+\hook_gput_code:nnn { package / CJKfntef / before } { LuaCJK }
+  { \msg_critical:nn { LuaCJK } { cjkfntef } }
 %    \end{macrocode}
 %
 % The file loads the package it serves.
