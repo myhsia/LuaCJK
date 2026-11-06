@@ -352,10 +352,10 @@ LaTeX Project Public License, version 1.3c or later.
 %<*example>
 % \fi
 \begin{codemo}
-\CJKfamily{zhsong}中文宋体\quad
-\CJKfamily{zhhei}中文黑体\\
-\CJKfamily{zhkai}中文楷体\quad
-\CJKfamily{zhfs}中文仿宋
+\setCJKmainfont[Scale = 1.2]
+  {FandolSong-Regular.otf}中文\\
+\setCJKsansfont{FandolKai-Regular.otf}
+  [Scale = 1.2]\sffamily 中文
 \end{codemo}
 % \iffalse
 %</example>
@@ -374,6 +374,19 @@ LaTeX Project Public License, version 1.3c or later.
 %   \end{syntax}
 %   切换到具名的 CJK 字族。
 % \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+\CJKfamily{zhsong}中文宋体\quad
+\CJKfamily{zhhei}中文黑体\\
+\CJKfamily{zhkai}中文楷体\quad
+\CJKfamily{zhfs}中文仿宋
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
 %
 % \begin{function}{\newCJKfontfamily}
 %   \begin{syntax}
@@ -394,6 +407,19 @@ LaTeX Project Public License, version 1.3c or later.
 %   名为 \texttt{zhsong}、\texttt{zhhei}、\texttt{zhfs}、\texttt{zhkai}、
 %   \texttt{zhli} 与 \texttt{zhyou} 的字族的快捷方式。
 % \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\newCJKfontfamily[kai]\mykai{FandolKai-Regular.otf}
+  \mykai 中文\quad \songti 中文
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
 %
 % \begin{variable}
 %   {\CJKrmdefault, \CJKsfdefault, \CJKttdefault,
@@ -418,17 +444,6 @@ LaTeX Project Public License, version 1.3c or later.
 %   重叠的区块按声明顺序解决。
 % \end{function}
 %
-% \begin{function}{\LuaCJKCancelSubCJKBlock, \LuaCJKRestoreSubCJKBlock}
-%   \begin{syntax}
-%     \tn{LuaCJKCancelSubCJKBlock}  \marg{block list} \\
-%     \tn{LuaCJKRestoreSubCJKBlock} \marg{block list}
-%   \end{syntax}
-%   在当前分组的剩余部分关闭或重新打开列出的区块。
-%   因为字体的选择是按字体标识符记录的，
-%   所以提供同一字体的两个字族共享同一个设置：
-%   最后选择该字体的字族说了算。
-% \end{function}
-%
 % \iffalse
 %<*example>
 % \fi
@@ -442,6 +457,17 @@ LaTeX Project Public License, version 1.3c or later.
 % \iffalse
 %</example>
 % \fi
+%
+% \begin{function}{\LuaCJKCancelSubCJKBlock, \LuaCJKRestoreSubCJKBlock}
+%   \begin{syntax}
+%     \tn{LuaCJKCancelSubCJKBlock}  \marg{block list} \\
+%     \tn{LuaCJKRestoreSubCJKBlock} \marg{block list}
+%   \end{syntax}
+%   在当前分组的剩余部分关闭或重新打开列出的区块。
+%   因为字体的选择是按字体标识符记录的，
+%   所以提供同一字体的两个字族共享同一个设置：
+%   最后选择该字体的字族说了算。
+% \end{function}
 %
 % \subsection{后备字体}
 %
@@ -472,7 +498,7 @@ LaTeX Project Public License, version 1.3c or later.
 \setCJKmainfont{FandolSong-Regular.otf}
 \setCJKfallbackfamilyfont{\CJKrmdefault}
   {FandolKai-Regular.otf}
-\LuaCJKsetup{AutoFallBack = true}中文
+\LuaCJKsetup{AutoFallBack = true}中あ
 \end{codemo}
 \endgroup
 % \iffalse
@@ -542,6 +568,22 @@ LaTeX Project Public License, version 1.3c or later.
 %   开头的一个 \texttt{*} 也可以接受；两种形式作用于同一个字体。
 % \end{function}
 %
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\defaultCJKfontfeatures{Scale = 1.5}
+\setCJKfamilyfont{big}{FandolSong-Regular.otf}
+\CJKfamily{big}中文\quad%
+\CJKfamily{zhsong}中文\quad%
+\addCJKfontfeatures{Scale = 1.2}中文
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
 % \subsection{数学模式中的汉字}
 %
 % \begin{keyval}
@@ -593,7 +635,8 @@ $ x + 中文 $ and 中文
 % \begin{keyval}
 %   \item[\keys{CJKglue}]\val{glue}: 插入相邻 CJK 字符之间的胶。
 %   初始值是 \texttt{0pt plus 0.08\cs{baselineskip}}，在每次选择字体时重新计算，
-%   所以它跟随字号；文档给出的值按原样使用，不随字号变化。
+%   所以它跟随字号；文档给出的值按原样使用，不随字号变化，
+%   连同它的伸缩阶（例如 |plus 1filll|）一起保留。
 %   \item[\keys{CJKecglue}]\val{glue}: 插入 CJK 与拉丁字符之间的胶。
 %   标点两侧的胶没有宽度：标点的进距本身就带有间距。
 %   初始值是 \texttt{0.3333em plus 0.1667em minus 0.1111em}，
@@ -639,7 +682,7 @@ $ x + 中文 $ and 中文
 % \fi
 \begingroup
 \begin{codemo}
-中x中\\
+中x中\par
 \normalspacedchars{x}中x中
 \end{codemo}
 \normalspacedchars{/,\,,-}
@@ -676,6 +719,18 @@ $ x + 中文 $ and 中文
 \begin{CJKfilltwosides}{6em}
   瞻彼阕者，\\虚室生白
 \end{CJKfilltwosides}
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+\begin{CJKfilltwosides*}{0pt}
+  瞻彼阕者，\\虚室生白
+\end{CJKfilltwosides*}
 \end{codemo}
 % \iffalse
 %</example>
@@ -734,6 +789,7 @@ $ x + 中文 $ and 中文
 % \fi
 \begingroup
 \begin{codemo}
+\LuaCJKsetup{LatinPunct = false}%
 a’a\quad 字！字\\
 \LuaCJKsetup{LatinPunct, PunctWidth = .8em}
 a’a\quad 字！字
@@ -779,7 +835,8 @@ a’a\quad 字！字
 %     \tn{LuaCJKDeclareCharClass} \marg{class} \marg{range list}
 %   \end{syntax}
 %   改写一段码位的类别。
-%   范围用十六进制书写并带一个前导 |"|，|"START -> "END| 表示一段范围；
+%   范围用十六进制书写，前导的 |"| 可以省略，
+%   |"START -> "END| 表示一段范围；
 %   列表用逗号分隔。
 %   类别有：\texttt{CJK} 与 \texttt{Default} 让这段范围表现得像 CJK 或拉丁文字；
 %   \texttt{FullLeft} 与 \texttt{HalfLeft} 把它当作开头的标点，
@@ -804,6 +861,23 @@ a’a\quad 字！字
 %   丢弃迄今声明的每一个类别与标点改写，
 %   并把正常间距集合恢复为 \cs{normalspacedchars} 的字符。
 % \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+中ABC中\par
+\LuaCJKDeclareCharClass{CJK}{0041 -> 005A}
+中ABC中\par
+\LuaCJKDeclarePunctClass{none}{FF0C}%
+字，，字\par
+\LuaCJKResetCharClass 中ABC中
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
 %
 % \begin{function}{\LuaCJKEditPunctStyle}
 %   \begin{syntax}
@@ -861,6 +935,12 @@ a’a\quad 字！字
 %<*example>
 % \fi
 \begin{codemo}
+\LuaCJKDeclarePunctStyle{mine}
+  {adjacent-ratio = .25}
+字，，字\par
+\LuaCJKsetup{PunctStyle = mine}字，，字\par
+\LuaCJKEditPunctStyle{mine}
+  {adjacent-ratio = .75}
 字，，字
 \end{codemo}
 % \iffalse
@@ -895,6 +975,7 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
+\parbox{4em}{字字字字字字\par}\par
 \LuaCJKsetup{CheckSingle = true}
 \parbox{4em}{字字字字字字\par}
 \end{codemo}
@@ -910,6 +991,19 @@ a’a\quad 字！字
 %   把 \meta{text} 保持在一行之内。参数的节点被打上标记，
 %   断行的处理不在它们的任何边界处断开。标记随当前分组结束。
 % \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\parbox{5em}{字字字字字字}\quad
+\parbox{5em}{字字字字\LuaCJKnobreak{字字}}
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
 %
 % \subsection{暂停与钩子}
 %
@@ -930,6 +1024,7 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
+中 文\\
 \LuaCJKdisable 中 文
 \end{codemo}
 \endgroup
@@ -1038,7 +1133,21 @@ a’a\quad 字！字
 \begin{codemo}
 \CJKunderline[thickness = 1pt]{中}\\
 \CJKunderline[format = red]{中}\\
-\CJKunderline[textformat = \bfseries]{中}
+\CJKunderline[textformat = \bfseries]{中}\\
+\CJKunderline[hidden]{中}
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+今天是 \CJKunderline{\hspace*{3em}} 年\\
+第 \CJKunderline{\hspace*{2em}} 题
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1160,6 +1269,19 @@ a’a\quad 字！字
 %   每字宽一个，居中，符号顶部在基线之下 \texttt{0.3em} 处。
 % \end{function}
 %
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\CJKunderline{虚室生白，\CJKunderdot{吉祥}止止，
+  虚室生白}
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
 % \begin{function}{\CJKsout}
 %   \begin{syntax}
 %     \tn{CJKsout} \oarg{options} \marg{text}
@@ -1174,6 +1296,19 @@ a’a\quad 字！字
 %   它比拉丁 x 高度的中部要高；
 %   对于完全是拉丁文的文字，可以用 |height = 0.5ex|。
 % \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\CJKsout[thickness = 2pt, format = red]{中文}\\
+\CJKsout[height = .5ex]{中文}
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
 %
 % \iffalse
 %<*example>
@@ -1357,10 +1492,10 @@ a’a\quad 字！字
 %<*example>
 % \fi
 \begin{codemo}
-\CJKfamily{zhsong}中文宋体\quad
-\CJKfamily{zhhei}中文黑体\\
-\CJKfamily{zhkai}中文楷体\quad
-\CJKfamily{zhfs}中文仿宋
+\setCJKmainfont[Scale = 1.2]
+  {FandolSong-Regular.otf}中文\\
+\setCJKsansfont{FandolKai-Regular.otf}
+  [Scale = 1.2]\sffamily 中文
 \end{codemo}
 % \iffalse
 %</example>
@@ -1379,6 +1514,19 @@ a’a\quad 字！字
 %   \end{syntax}
 %   Switch to a named CJK family.
 % \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+\CJKfamily{zhsong}中文宋体\quad
+\CJKfamily{zhhei}中文黑体\\
+\CJKfamily{zhkai}中文楷体\quad
+\CJKfamily{zhfs}中文仿宋
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
 %
 % \begin{function}{\newCJKfontfamily}
 %   \begin{syntax}
@@ -1399,6 +1547,19 @@ a’a\quad 字！字
 %   Shortcuts for the families named \texttt{zhsong}, \texttt{zhhei},
 %   \texttt{zhfs}, \texttt{zhkai}, \texttt{zhli}, and \texttt{zhyou}.
 % \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\newCJKfontfamily[kai]\mykai{FandolKai-Regular.otf}
+  \mykai 中文\quad \songti 中文
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
 %
 % \begin{variable}
 %   {\CJKrmdefault, \CJKsfdefault, \CJKttdefault,
@@ -1423,17 +1584,6 @@ a’a\quad 字！字
 %   in the main font. Overlapping blocks are resolved in declaration order.
 % \end{function}
 %
-% \begin{function}{\LuaCJKCancelSubCJKBlock, \LuaCJKRestoreSubCJKBlock}
-%   \begin{syntax}
-%     \tn{LuaCJKCancelSubCJKBlock}  \marg{block list} \\
-%     \tn{LuaCJKRestoreSubCJKBlock} \marg{block list}
-%   \end{syntax}
-%   Turn the listed blocks off or on again for the rest of the group.
-%   Because the choice of font is recorded per font identifier,
-%   two families that supply the same font share one setting:
-%   the family that selected the font last decides.
-% \end{function}
-%
 % \iffalse
 %<*example>
 % \fi
@@ -1447,6 +1597,17 @@ a’a\quad 字！字
 % \iffalse
 %</example>
 % \fi
+%
+% \begin{function}{\LuaCJKCancelSubCJKBlock, \LuaCJKRestoreSubCJKBlock}
+%   \begin{syntax}
+%     \tn{LuaCJKCancelSubCJKBlock}  \marg{block list} \\
+%     \tn{LuaCJKRestoreSubCJKBlock} \marg{block list}
+%   \end{syntax}
+%   Turn the listed blocks off or on again for the rest of the group.
+%   Because the choice of font is recorded per font identifier,
+%   two families that supply the same font share one setting:
+%   the family that selected the font last decides.
+% \end{function}
 %
 % \subsection{Fallback fonts}
 %
@@ -1478,7 +1639,7 @@ a’a\quad 字！字
 \setCJKmainfont{FandolSong-Regular.otf}
 \setCJKfallbackfamilyfont{\CJKrmdefault}
   {FandolKai-Regular.otf}
-\LuaCJKsetup{AutoFallBack = true}中文
+\LuaCJKsetup{AutoFallBack = true}中あ
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1548,6 +1709,22 @@ a’a\quad 字！字
 %   A leading \texttt{*} is accepted; both forms act on the same font.
 % \end{function}
 %
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\defaultCJKfontfeatures{Scale = 1.5}
+\setCJKfamilyfont{big}{FandolSong-Regular.otf}
+\CJKfamily{big}中文\quad%
+\CJKfamily{zhsong}中文\quad%
+\addCJKfontfeatures{Scale = 1.2}中文
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
 % \subsection{CJK in mathematics}
 %
 % \begin{keyval}
@@ -1604,7 +1781,8 @@ $ x + 中文 $ and 中文
 %   characters.
 %   The initial value is \texttt{0pt plus 0.08\cs{baselineskip}}, recomputed
 %   at every font selection, so it follows the size; a value given
-%   by the document is used as written and does not change with the size.
+%   by the document is used as written and does not change with the size,
+%   and its stretch order (for example |plus 1filll|) is kept as well.
 %   \item[\keys{CJKecglue}]\val{glue}: Glue inserted between CJK and Latin
 %   characters.
 %   Beside a punctuation mark the glue has no advance: the mark's own advance
@@ -1653,7 +1831,7 @@ $ x + 中文 $ and 中文
 % \fi
 \begingroup
 \begin{codemo}
-中x中\\
+中x中\par
 \normalspacedchars{x}中x中
 \end{codemo}
 \normalspacedchars{/,\,,-}
@@ -1692,6 +1870,18 @@ $ x + 中文 $ and 中文
 \begin{CJKfilltwosides}{6em}
   瞻彼阕者，\\虚室生白
 \end{CJKfilltwosides}
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+\begin{CJKfilltwosides*}{0pt}
+  瞻彼阕者，\\虚室生白
+\end{CJKfilltwosides*}
 \end{codemo}
 % \iffalse
 %</example>
@@ -1753,6 +1943,7 @@ $ x + 中文 $ and 中文
 % \fi
 \begingroup
 \begin{codemo}
+\LuaCJKsetup{LatinPunct = false}%
 a’a\quad 字！字\\
 \LuaCJKsetup{LatinPunct, PunctWidth = .8em}
 a’a\quad 字！字
@@ -1802,8 +1993,8 @@ a’a\quad 字！字
 %     \tn{LuaCJKDeclareCharClass} \marg{class} \marg{range list}
 %   \end{syntax}
 %   Override the class of a code-point range.
-%   Ranges are written in hexadecimal with a leading |"|,
-%   and |"START -> "END| gives a range; the list is comma separated.
+%   Ranges are written in hexadecimal and the leading |"| may be
+%   omitted; |"START -> "END| gives a range, and the list is comma separated.
 %
 %   The classes are: \texttt{CJK} and \texttt{Default} make the range
 %   behave like CJK or Latin text;
@@ -1831,6 +2022,23 @@ a’a\quad 字！字
 %   and put the normal-spaced set back to the characters
 %   of \cs{normalspacedchars}.
 % \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+中ABC中\par
+\LuaCJKDeclareCharClass{CJK}{0041 -> 005A}
+中ABC中\par
+\LuaCJKDeclarePunctClass{none}{FF0C}%
+字，，字\par
+\LuaCJKResetCharClass 中ABC中
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
 %
 % \begin{function}{\LuaCJKEditPunctStyle}
 %   \begin{syntax}
@@ -1888,6 +2096,12 @@ a’a\quad 字！字
 %<*example>
 % \fi
 \begin{codemo}
+\LuaCJKDeclarePunctStyle{mine}
+  {adjacent-ratio = .25}
+字，，字\par
+\LuaCJKsetup{PunctStyle = mine}字，，字\par
+\LuaCJKEditPunctStyle{mine}
+  {adjacent-ratio = .75}
 字，，字
 \end{codemo}
 % \iffalse
@@ -1924,6 +2138,7 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
+\parbox{4em}{字字字字字字\par}\par
 \LuaCJKsetup{CheckSingle = true}
 \parbox{4em}{字字字字字字\par}
 \end{codemo}
@@ -1940,6 +2155,19 @@ a’a\quad 字！字
 %   and the line-breaking pass forbids a break at any of their boundaries.
 %   The marking ends with the current group.
 % \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\parbox{5em}{字字字字字字}\quad
+\parbox{5em}{字字字字\LuaCJKnobreak{字字}}
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
 %
 % \subsection{Suspending and hooks}
 %
@@ -1960,6 +2188,7 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
+中 文\\
 \LuaCJKdisable 中 文
 \end{codemo}
 \endgroup
@@ -2076,7 +2305,21 @@ a’a\quad 字！字
 \begin{codemo}
 \CJKunderline[thickness = 1pt]{中}\\
 \CJKunderline[format = red]{中}\\
-\CJKunderline[textformat = \bfseries]{中}
+\CJKunderline[textformat = \bfseries]{中}\\
+\CJKunderline[hidden]{中}
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+今天是 \CJKunderline{\hspace*{3em}} 年\\
+第 \CJKunderline{\hspace*{2em}} 题
 \end{codemo}
 \endgroup
 % \iffalse
@@ -2197,6 +2440,19 @@ a’a\quad 字！字
 %   centered, its top \texttt{0.3em} under the baseline.
 % \end{function}
 %
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\CJKunderline{虚室生白，\CJKunderdot{吉祥}止止，
+  虚室生白}
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
 % \begin{function}{\CJKsout}
 %   \begin{syntax}
 %     \tn{CJKsout} \oarg{options} \marg{text}
@@ -2211,6 +2467,19 @@ a’a\quad 字！字
 %   which sits higher than the middle of the Latin x-height;
 %   use |height = 0.5ex| for text that is entirely Latin.
 % \end{function}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\CJKsout[thickness = 2pt, format = red]{中文}\\
+\CJKsout[height = .5ex]{中文}
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
 %
 % \iffalse
 %<*example>
@@ -4512,11 +4781,17 @@ M.settings_by_signature = {}
 % Read the current glue registers, build a snapshot, and select it.
 % The glue has to be read here rather than passed in, because that is the only
 % place where the registers still hold the values of the moment.
+% The stretch and shrink orders travel with the value, so a register such as
+% |0pt plus 1filll| can still fill a line after the node has been built.
 %    \begin{macrocode}
 local function glue_spec (name)
   local skip = name and tex.skip[name]
   if skip then
-    return { width = skip.width, stretch = skip.stretch, shrink = skip.shrink }
+    return { width         = skip.width,
+             stretch       = skip.stretch,
+             shrink        = skip.shrink,
+             stretch_order = skip.stretch_order,
+             shrink_order  = skip.shrink_order }
   end
   return { width = 0, stretch = 0, shrink = 0 }
 end
@@ -4549,7 +4824,9 @@ function M.new_settings (style, kinsoku, cj_strict, latin_punct, cjk_math,
   }
   local signature = table.concat({
     entry.ccglue.width, entry.ccglue.stretch, entry.ccglue.shrink,
+    entry.ccglue.stretch_order, entry.ccglue.shrink_order,
     entry.ecglue.width, entry.ecglue.stretch, entry.ecglue.shrink,
+    entry.ecglue.stretch_order, entry.ecglue.shrink_order,
     style, tostring(kinsoku), tostring(cj_strict), tostring(latin_punct),
     tostring(cjk_math),
     punct_width, bound_width, tostring(check_single), widow_penalty,
@@ -5391,6 +5668,7 @@ end
 % \begin{macro}[int]{make_glue}
 % Create a glue node from a skip register, inherit the attributes
 % of \meta{source}, and mark the node as inserted.
+% The node keeps the stretch and shrink orders of the register.
 %    \begin{macrocode}
 local function make_glue (spec, source)
   if not spec then
@@ -5402,8 +5680,8 @@ local function make_glue (spec, source)
   g.width         = s.width
   g.stretch       = s.stretch
   g.shrink        = s.shrink
-  g.stretch_order = 0
-  g.shrink_order  = 0
+  g.stretch_order = s.stretch_order or 0
+  g.shrink_order  = s.shrink_order  or 0
   if M.attr_inserted then
     set_attribute(g, M.attr_inserted, 1)
   end
@@ -5414,7 +5692,8 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{set_glue}
-% Give an existing glue node the dimensions of a skip register.
+% Give an existing glue node the dimensions of a skip register,
+% including its stretch and shrink orders.
 %    \begin{macrocode}
 local function set_glue (g, spec)
   if not spec then
@@ -5424,6 +5703,8 @@ local function set_glue (g, spec)
   g.width   = s.width
   g.stretch = s.stretch
   g.shrink  = s.shrink
+  g.stretch_order = s.stretch_order or 0
+  g.shrink_order  = s.shrink_order  or 0
   if M.attr_inserted then
     set_attribute(g, M.attr_inserted, 1)
   end
@@ -7397,6 +7678,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   of the surrounding paragraph in horizontal mode.}
 %   Set the body in a vertical box whose lines are justified to the given
 %   width, with the lines separated by \tn{}.
+%   The inter-character glue is given an infinite stretch inside the box,
+%   so a line of CJK characters reaches the width even when there is no
+%   Latin word space to stretch.
 %   The optional argument places the box on the baseline: \texttt{t} for
 %   top, \texttt{c} for centered (the default), and \texttt{b} for bottom.
 %   A width of zero or less keeps the surrounding line width.
@@ -7420,10 +7704,10 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \group_begin:
     \tl_set:Nn \l_@@_fntef_fill_position_tl {#1}
     \dim_set:Nn \l_@@_fntef_fill_width_dim {#2}
+    \LuaCJKsetup { CJKglue = 0pt plus 1filll }
     \vbox_set:Nw \l_@@_fntef_fill_box
       \dim_compare:nNnT { \l_@@_fntef_fill_width_dim } > { 0pt }
         { \dim_set:Nn \tex_hsize:D { \l_@@_fntef_fill_width_dim } }
-      \cs_set_eq:NN \\ \tex_par:D
       \tex_noindent:D \tex_ignorespaces:D
   }
 \cs_new_protected:Npn \@@_fntef_fill_end:
