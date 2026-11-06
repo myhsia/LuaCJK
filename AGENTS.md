@@ -238,7 +238,16 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   visible effect gets a `codemo`. In a demo, parallel commands align their
   arguments, a command is not split from the text it affects, and font options
   come before the font name. Align a `syntax` continuation with `\` plus spaces,
-  not `\phantom`.
+  not `\phantom`.  Three constraints come from `docext` and `l3doc` rather than
+  from the package: the box is sized by the number of *source* lines, so the
+  output must not have more lines than the body (let a decorated line wrap
+  instead of adding a `\parbox`); a setting that is read at line breaking
+  (`\LuaCJKDeclareCharClass`, `\LuaCJKDeclarePunctClass`,
+  `\LuaCJKEditPunctStyle`, `\normalspacedchars`) applies to the whole
+  paragraph, so a comparison needs `\par` and not `\\`; and `"` is active in
+  `l3doc` and starts `\verb`, so a range list is shown without its optional
+  leading quote. Keep a code line within about 40 monospace characters, or the
+  left panel is overfull.
 - **The manual describes the package, not the repository.**  No `.lvt` files,
   CI, build commands, or script names in the documentation part: how the
   package is tested and released belongs in this guide, and the principle
