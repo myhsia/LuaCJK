@@ -205,9 +205,11 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   (dots, underscores) must carry `[int]`, or the PDF reports an undefined
   reference. Environments documented with `\begin{environment}{...}` in the
   user part must use `environment`, not `macro`, in the implementation part.
-- **Fixed names are braces, not metavariables.**  `\tn{begin}\{document\}`,
-  not `\tn{begin}\marg{document}` (which prints `{⟨document⟩}`); `\marg*`
-  and `\oarg*` do not exist in this `l3doc`. `\file` takes plain text only,
+- **Fixed names are braces, not metavariables.**  In a `syntax` block
+  `\tn{begin}\{document\}`, not `\tn{begin}\marg{document}` (which prints
+  `{⟨document⟩}`); `\marg*` and `\oarg*` do not exist in this `l3doc`.  In
+  running prose the same thing is one code span, `|\begin{document}|`, because
+  the escaped braces would come out in the text font. `\file` takes plain text only,
   so keep `\meta` outside it. Every line of a `quote` but the last ends
   with `\\`.
 - **Check the markup before committing.**  Two greps catch nearly everything:
