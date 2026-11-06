@@ -27,21 +27,14 @@ LuaCJK requires LuaLaTeX. It must not be loaded together with `luatexja`.
 
 ## Using it with ctex
 
-`ctex` inputs an engine file whose name it fixes itself, so LuaCJK ships its
-own `ctex-engine-luacjk.def` (a different name, to stay clear of the file that
-`ctex` installs) and a short redirect that tells `ctex` about it. Create the
-redirect once, in any document:
+Pass `engine = luacjk` to the `ctex` class or package:
 
 ```tex
-\documentclass{article}
-\usepackage{LuaCJK}
-\LuaCJKwriteCtexConfig
+\documentclass[engine = luacjk]{ctexart}
 ```
 
-That writes `ctexopts.cfg` into the current directory. `ctex` inputs that file
-before it loads its engine file, so every `ctex` document compiled from that
-directory then uses LuaCJK instead of LuaTeX-ja. The redirect only acts
-on LuaTeX, so XeLaTeX documents in the same directory keep their own backend.
+`ctex` then inputs `ctex-engine-luacjk.def` instead of its own LuaTeX
+backend, and that file loads LuaCJK.
 
 ## License
 
