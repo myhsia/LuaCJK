@@ -22,6 +22,7 @@
 - `\LuaCJKDeclareCharClass` accepts the class names of `xeCJK` (`FullLeft`, `FullRight`, `HalfLeft`, `HalfRight`, `NormalSpace`, `CJStarter`, `CM`, `Boundary`); `\LuaCJKResetCharClass` also restores the normal-spaced set.
 - Add `AutoFakeBold`, `AutoFakeSlant`, `EmboldenFactor`, and `SlantFactor`; a family that sets `BoldFont` or `ItalicFont` keeps its real faces.
 - Accept the same keys as package options, for example `\usepackage[PunctStyle = banjiao]{LuaCJK}`. Unknown keys warn instead of raising an error.
+- `CJKglue` and `CJKecglue` keep the stretch and shrink orders of the value, so a glue such as `0pt plus 1filll` still fills a line after the node has been built. Before this every inserted glue had order zero.
 - Every setting now travels with the characters: a snapshot of the options is stored once and recorded on the glyphs, so a group that ends before the paragraph does still decides how its own text is set. This covers `CJKglue`, `CJKecglue`, `PunctStyle`, `PunctKinsoku`, `LatinPunct`, `CJKmath`, `PunctWidth`, `PunctBoundWidth`, `CheckSingle`, `WidowPenalty`, and `AllowBreakBetweenPuncts`.
 - `AutoFallBack` and the canceled sub-blocks follow the group now. Both are part of the settings snapshot, so `{\LuaCJKsetup{AutoFallBack=true} ...}` and `{\LuaCJKCancelSubCJKBlock{...} ...}` end with their group.
 - Add `\LuaCJKdisable` and `\LuaCJKenable` to suspend the typographic adjustments while keeping CJK font selection.
@@ -83,5 +84,6 @@
 - Add `\CJKunderanyline` and `\CJKunderanysymbol` for arbitrary rules and repeated symbols; the underline type is cached by the arguments.
 - `\CJKunderanysymbol` now puts one symbol per em, centered in the cell, so a row of symbols lines up with the characters above them. Its depth argument is the distance from the baseline to the top of the symbol, so `0pt` sets the symbol right under the characters; `sep` no longer applies, because the cell is fixed at one em. The symbol of `\CJKunderdot[symbol = ...]` and `\CJKunderwave[symbol = ...]` follows the same placement.
 - Add the `CJKfilltwosides` environment, which justifies its lines to a given width and places the box on the baseline as requested.
+- Fill every line of `CJKfilltwosides` and `CJKfilltwosides*`: `CJKglue` is set to `0pt plus 1filll` inside the box, and `\\` still marks a line break. Before this each line was a paragraph of its own, so no line ever reached the width.
 - Add `LuaCJK-listings`, which keeps CJK characters in place inside a `listings` block, counts each of them as two columns, and turns the spacing adjustments off. LuaCJK loads it automatically with `listings`.
 - Ship `ctex-engine-luacjk.def` as the LuaTeX backend for `ctex`. The name differs from the file that `ctex` installs, so both packages can be installed side by side and CTAN has no duplicate file.
