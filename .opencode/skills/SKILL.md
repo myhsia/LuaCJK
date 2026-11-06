@@ -36,6 +36,12 @@ The character-level passes run in `pre_linebreak_filter` and in
    if one applies, then at a fallback font when the target lacks the glyph.
 2. `spacing` — remove the source space between CJK characters, and insert
    `CJKglue`/`CJKecglue` at every boundary between two classes of character.
+   A box is an atom, and the class at its edge is the class of the node *at*
+   that edge: filling glue (`\numberline`'s `\hfil`), a kern, or a rule means
+   the box has no text there, so no glue is added beside it, while a box of no
+   size is passed over (`boundary01`).  Taking the class from the last
+   character *inside* the box instead is what pushed every Chinese TOC title
+   one `CJKecglue` to the right of its English counterpart.
    A run of dashes or ellipses is joined without glue, so justification cannot
    pull a two-em dash apart.  A punctuation mark takes no `CJKecglue` advance
    on either side: its own advance carries the spacing, and the extra third of

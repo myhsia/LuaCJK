@@ -4577,8 +4577,9 @@ LuaCJK = LuaCJK or {}
 %   {
 %     M,        GLYPH,      GLUE,          HLIST,
 %     VLIST,    KERN,       PENALTY,       MATH,
-%     DISC,     WHATSIT,    LOCAL_PAR,     SPACESKIP,
-%     new_node, free_node,  has_attribute, set_attribute
+%     DISC,     WHATSIT,    MARK,          INS,
+%     ADJUST,   LOCAL_PAR,  SPACESKIP,     new_node,
+%     free_node, has_attribute, set_attribute
 %   }
 % Short names for the module table, the node types,
 % and the node functions.
@@ -4593,6 +4594,9 @@ local PENALTY       = node.id("penalty")
 local MATH          = node.id("math")
 local DISC          = node.id("disc")
 local WHATSIT       = node.id("whatsit")
+local MARK          = node.id("mark")
+local INS           = node.id("ins")
+local ADJUST        = node.id("adjust")
 local LOCAL_PAR     = node.id("local_par")
 local SPACESKIP     = node.subtype("spaceskip") or 13
 local new_node      = node.new
@@ -5392,10 +5396,37 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{class_of_node}
-% Return the class at both edges of a node. Boxes are inspected
-% by looking at their contents, and formulas count as Latin.
+% Return the class at both edges of a node. A box carries the class of the
+% node at its edge, so filling glue or a kern between the last character and
+% the edge leaves the box with no class there; a box of no size is
+% transparent, and formulas count as Latin.
+% \begin{macro}[int]{transparent_node}
+% Whether a node carries neither text nor advance, so that the text reaches
+% the edge past it.
+%    \begin{macrocode}
+local function transparent_node (n)
+  return n.id == WHATSIT or n.id == MARK or n.id == INS
+      or n.id == ADJUST or n.id == PENALTY
+end
+
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}[int]{box_visible}
+% Whether a box carries material of its own. A box of no size is passed over,
+% so the boundary rules read the text on both sides of it as one run.
+%    \begin{macrocode}
+local function box_visible (n)
+  return n.width ~= 0 or n.height ~= 0 or n.depth ~= 0
+end
+
+%    \end{macrocode}
+% \end{macro}
 % \begin{macro}[int]{first_visible_class}
-% The class of the first visible character of a list.
+% The class of the text at the start of a list: a glyph, a formula, or a box
+% inspected at its own edge. Glue, a kern, a rule, and a discretionary are not
+% text, so a list that starts with one has no class at that point, and a box
+% whose first edge has no class ends the search instead of yielding to a
+% character after it.
 %    \begin{macrocode}
 local function first_visible_class (list)
   local n = list
@@ -5403,12 +5434,11 @@ local function first_visible_class (list)
     if n.id == GLYPH then
       return class_of_char(n.char, settings_of(n))
     elseif n.id == HLIST or n.id == VLIST then
-      local c = first_visible_class(n.head)
-      if c then
-        return c
-      end
+      return first_visible_class(n.head)
     elseif n.id == MATH then
       return "LATIN"
+    elseif not transparent_node(n) then
+      return nil
     end
     n = n.next
   end
@@ -5418,7 +5448,9 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{last_visible_class}
-% The class of the last visible character of a list.
+% The class of the text at the end of a list, read the same way: a node that
+% is not text ends the text, so the class is nothing when something follows
+% the last character.
 %    \begin{macrocode}
 local function last_visible_class (list)
   local n    = list
@@ -5427,12 +5459,11 @@ local function last_visible_class (list)
     if n.id == GLYPH then
       last = class_of_char(n.char, settings_of(n))
     elseif n.id == HLIST or n.id == VLIST then
-      local c = last_visible_class(n.head)
-      if c then
-        last = c
-      end
+      last = last_visible_class(n.head)
     elseif n.id == MATH then
       last = "LATIN"
+    elseif not transparent_node(n) then
+      last = nil
     end
     n = n.next
   end
@@ -5501,11 +5532,7 @@ local function class_of_node (n)
     local c = class_of_char(n.char, settings_of(n))
     return c, c
   elseif n.id == HLIST or n.id == VLIST then
-    local first = first_visible_class(n.head)
-    local last  = last_visible_class(n.head)
-    if first and last then
-      return first, last
-    end
+    return first_visible_class(n.head), last_visible_class(n.head)
   elseif n.id == MATH then
     return "LATIN", "LATIN"
   end
@@ -5627,6 +5654,10 @@ end
 % The walk tracks the last visible node and the class at its end,
 % so that a formula acts as one Latin atom at its left edge;
 % inside the formula the boundary rules are not applied.
+% A box is an atom as well, and the class at its edge is the class of the
+% node at that edge: filling glue or a kern means the box has no text there,
+% so no glue is added beside it. A box of no size is passed over, so an
+% empty box inside CJK text does not break the run.
 % \begin{macro}[int]{handle_boundary}
 % Decide what to do at the boundary between two visible nodes.
 % Only source-generated glue is a candidate for replacement;
@@ -5666,6 +5697,9 @@ local PUNCT_BOUNDARY_GLUE = { width = 0, stretch = 0, shrink = 0 }
 
 local function insert_boundary_glue (head, prev, prev_visible, prev_end,
                                     cur, cur_start, settings)
+  if not prev_end or not cur_start then
+    return head
+  end
   if long_punct(prev) and long_punct(cur) then
     return head
   end
@@ -5789,7 +5823,7 @@ end
 %    \begin{macrocode}
 local function handle_boundary (head, prev, before, prev_visible,
                                 prev_end, cur, start_class, settings)
-  if not prev_visible then
+  if not prev_visible or not start_class then
     return head
   end
   if disabled(prev_visible) or disabled(cur) then
@@ -5843,7 +5877,13 @@ local function spacing (head)
     elseif math_level > 0 then
     else
       local start_class, end_class = class_of_node(cur)
-      if start_class then
+      local visible
+      if cur.id == HLIST or cur.id == VLIST then
+        visible = box_visible(cur)
+      else
+        visible = start_class ~= nil
+      end
+      if visible then
         head = handle_boundary(
           head, prev, before, prev_visible, prev_end, cur, start_class,
           settings_of(prev_visible))
@@ -5905,7 +5945,7 @@ local function next_visible (n)
     if n.id == GLYPH then
       return n
     elseif n.id == HLIST or n.id == VLIST then
-      if first_visible_class(n.head) then
+      if box_visible(n) then
         return nil
       end
     elseif n.id == PENALTY or n.id == DISC then
