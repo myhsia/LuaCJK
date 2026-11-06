@@ -4,6 +4,8 @@
 \usepackage{LuaCJK}
 \usepackage{LuaCJKfntef}
 \setCJKmainfont{FandolSong-Regular.otf}
+\showboxbreadth = 100
+\showboxdepth = 100
 
 \begin{document}
 
@@ -55,14 +57,40 @@
   \TYPE{width: \the\wd0}
 }
 
-\TEST{each line is justified to the width}{
+\TEST{each line is filled to the width}{
   \setbox0=\vbox{
     \begin{CJKfilltwosides}{5em}
-      中 文\\字
+      中文\\字字
     \end{CJKfilltwosides}
   }
   \TYPE{width: \the\wd0}
   \TYPE{depth: \the\dp0}
+  \directlua{
+    local env = tex.box[0].head
+    local n   = env and env.head
+    local i   = 0
+    while n do
+      if n.id == node.id("hlist") then
+        i = i + 1
+        local out = {}
+        local j = 0
+        local g = n.head
+        while g do
+          if g.id == node.id("glyph") then
+            j = j + 1
+            out[j] = "glyph"
+          elseif g.id == node.id("glue") then
+            j = j + 1
+            out[j] = "glue[" .. g.stretch_order .. "]"
+          end
+          g = g.next
+        end
+        texio.write_nl("term and log",
+          "line " .. i .. ": " .. table.concat(out, " "))
+      end
+      n = n.next
+    end
+  }
 }
 
 \END
