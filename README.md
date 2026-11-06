@@ -34,7 +34,7 @@ Pass `engine = luacjk` to the `ctex` class or package:
 ```
 
 `ctex` then inputs `ctex-engine-luacjk.def` instead of its own LuaTeX
-backend, and that file loads LuaCJK.
+backend, and that file loads LuaCJK, so the package is not loaded separately.
 
 ## License
 
