@@ -95,6 +95,33 @@
   \TYPE{width: \the\wd0}
 }
 
+\TEST{box last edge without text}{
+  \setbox0=\hbox{A\hbox{1}中}
+  \setbox2=\hbox{A\hbox{1\hfil}中}
+  \setbox4=\hbox{A\hbox{1\kern1em}中}
+  \setbox6=\hbox{A\hbox{1}I}
+  \TYPE{glyph edge: \the\wd0}
+  \TYPE{trailing fill: \the\wd2}
+  \TYPE{trailing kern: \the\wd4}
+  \TYPE{glyph edge Latin: \the\wd6}
+}
+
+\TEST{box first edge without text}{
+  \setbox0=\hbox{中\hbox{1}}
+  \setbox2=\hbox{中\hbox{\hfil1}}
+  \setbox4=\hbox{中I}
+  \TYPE{glyph edge: \the\wd0}
+  \TYPE{leading fill: \the\wd2}
+  \TYPE{Latin: \the\wd4}
+}
+
+\TEST{parbox last edge}{
+  \setbox0=\hbox{A\parbox{1em}{1}中}
+  \setbox2=\hbox{A\parbox{1em}{1}I}
+  \TYPE{CJK: \the\wd0}
+  \TYPE{Latin: \the\wd2}
+}
+
 \TEST{sbox measurement}{
   \sbox0{中\mbox{中}}
   \sbox2{中中}
