@@ -1,0 +1,48 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\usepackage{LuaCJKfntef}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\begin{document}
+
+\START
+
+\TEST{a key that the command does not use is accepted}{
+  \setbox0=\hbox{\CJKunderline[gap = 3pt]{中}}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{a bare color name works on every decoration}{
+  \setbox0=\hbox{\CJKunderline[red]{中}}
+  \TYPE{underline: \the\wd0}
+  \setbox0=\hbox{\CJKunderwave[red]{中}}
+  \TYPE{wave: \the\wd0}
+}
+
+\TEST{a bare switch is still a key}{
+  \setbox0=\hbox{\CJKsout[subtract]{中}}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{textformat applies to every decoration}{
+  \setbox0=\hbox{\CJKunderwave{中}}
+  \setbox2=\hbox{\CJKunderwave[textformat = \Large]{中}}
+  \TYPE{plain: \the\wd0}
+  \TYPE{large: \the\wd2}
+  \setbox0=\hbox{\CJKunderdot{中}}
+  \setbox2=\hbox{\CJKunderdot[textformat = \Large]{中}}
+  \TYPE{plain dot: \the\wd0}
+  \TYPE{large dot: \the\wd2}
+}
+
+\TEST{color is a name for format}{
+  \setbox0=\hbox{\CJKunderline[format = red]{中}}
+  \setbox2=\hbox{\CJKunderline[color = red]{中}}
+  \TYPE{same depth: \the\dp0\space\the\dp2}
+}
+
+\END
+
+\end{document}
