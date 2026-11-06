@@ -45,8 +45,9 @@ cp build/unpacked/ctex-engine-luacjk.def "$run/"
 cp build/unpacked/*.lua "$run/"
 cp "$ctex_kit"/ctex/test/support/* "$run/"
 # The test tree of ctex brings its own ctexopts.cfg (it selects a fontset);
-# append the redirect so that both settings apply.
-cat testsupport/ctexopts.cfg >> "$run/ctexopts.cfg"
+# append the engine choice so that both settings apply.
+printf '%s\n' '\keys_set:nn { ctex / option } { engine = luacjk }' \
+  >> "$run/ctexopts.cfg"
 
 tests="
 basic01 basic02 basic03 basic04 basic05
