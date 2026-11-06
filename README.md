@@ -23,7 +23,7 @@ inside a `listings` block.
 \setCJKmainfont{FandolSong-Regular.otf}
 ```
 
-LuaCJK requires LuaLaTeX. It must not be loaded together with `luatexja`.
+LuaCJK requires the LuaTeX engine. It must not be loaded together with `luatexja`.
 
 ## Using it with ctex
 
