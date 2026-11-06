@@ -3,6 +3,7 @@
 - Provide the CJK font family interface (`\setCJKmainfont`, `\setCJKsansfont`, `\setCJKmonofont`, `\setCJKfamilyfont`, `\CJKfamily`, `\newCJKfontfamily`, `\CJKfontspec`); an undeclared family warns once instead of at every use.
 - Add `LuaCJK-listings`, which keeps CJK characters in place inside a `listings` block, counts each of them as two columns, and turns the spacing adjustments off; LuaCJK loads it automatically with `listings`.
 - Ship `ctex-engine-luacjk.def` as the LuaTeX backend for `ctex`, selected with the option `engine = luacjk`. The name differs from the file that `ctex` installs, so both packages can be installed side by side.
+- Refuse `CJKfntef` in the `ctex` engine file, as `ctex`'s own LuaTeX backend does; the message points at `LuaCJKfntef`.
 - Refuse to load with `luatexja`, which adjusts the same nodes; `\LuaCJKversion` prints the version of the package.
 - Provide the `PunctStyle` key with the `quanjiao`, `plain`, `banjiao`, `kaiming`, `CCT`, and `hangmobanjiao` styles. Under a style with a fixed width the advance of an opening or middle mark moves its ink as well, and a dash or an ellipsis keeps its advance, so a run of long punctuation is not collapsed.
 - Provide `\LuaCJKEditPunctStyle` to edit the punctuation sets of the current style, and `AllowBreakBetweenPuncts`.
