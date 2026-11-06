@@ -253,10 +253,14 @@ The Chinese prose is set by LuaCJK itself: the driver's Noto Serif CJK SC gives
 it its CJK font (with LXGW WenKai GB Lite as the CJK italic and the kai
 family, Noto Sans CJK SC as the hei family, and Zhuque Fangsong as the
 monospaced and fangsong face), full-width punctuation is CJK punctuation and
-is compressed and hung by the punctuation passes, and the space around a Latin
-word or code span stays an interword space because `xCJKecglue` is off by
-default.  `LatinPunct` stays on, so the ASCII quotes and apostrophes inside
-code spans remain Latin.
+is compressed and hung by the punctuation passes.  The manual is a `ctex`
+document, though: its driver loads `ctex` with `engine = luacjk` and
+`linespread = 1`, so the glue defaults come from the engine file — the
+CJK–Latin gap is `ctex`'s `.25em plus 1pt minus 1pt` and `xCJKecglue` is on,
+not LuaCJK's own `.3333em` default.  Line breaking in the prose therefore
+differs from a plain LuaCJK document, which is expected and must not be
+"fixed" by resetting the glue.  `LatinPunct` stays on, so the ASCII quotes and
+apostrophes inside code spans remain Latin.
 
 The demos are executed in the manual, so a global command used in one changes
 the rest of the document: `\setCJKmainfont` re-registers the family named by

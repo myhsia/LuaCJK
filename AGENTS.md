@@ -29,6 +29,10 @@ Noto Serif/Sans CJK SC (a system font, also installed by CI from
 `.github/font-urls.txt`), with LXGW WenKai GB Lite for the italic and the kai
 family and Zhuque Fangsong for the monospaced text and the fangsong family;
 both come from the `lxgw-fonts` TeX Live package. The tests keep Fandol.
+The manual is itself a `ctex` document: its driver loads `ctex` with
+`engine = luacjk` and `linespread = 1`, so LuaCJK arrives through the engine
+file and the prose takes `ctex`'s glue defaults, which is why line breaking in
+the manual differs from a plain LuaCJK document.
 Entry points:
 
 - `l3build` (unpack, check, save, doc, ctan, tag) for the package itself;
