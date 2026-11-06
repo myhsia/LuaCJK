@@ -199,27 +199,24 @@ the cell, its top a given distance under the baseline.
 
 ### The ctex adapter
 
-`ctex` asks for an engine file under a name of its own choosing, so LuaCJK
-ships `ctex-engine-luacjk.def` — the `ctex` interface (`\ctex_add_to_selectfont:n`,
-`\ccwd`, `\CTEX@alchar`, `\ctex_set_jfm:n`, the `kanjiskip`/`xkanjiskip` keys)
-implemented on top of LuaCJK. Because the name differs, `ctex` only picks
-it up when `ctexopts.cfg` redirects it; `\LuaCJKwriteCtexConfig` writes that
-file once per directory, and `ctexconfig01` fixes both its bytes and the
-requirement that it is read under `\ExplSyntaxOn`. `ctex` keeps its own copies of the two glues
-so it can tell whether the document changed them; the engine file
+`ctex` inputs an engine file named `ctex-engine-<name>.def`, where `<name>` is
+the detected engine unless the `engine` option names another, so LuaCJK
+ships `ctex-engine-luacjk.def` and the document selects it with
+`engine = luacjk`. The file implements the `ctex` interface
+(`\ctex_add_to_selectfont:n`, `\ccwd`, `\CTEX@alchar`, `\ctex_set_jfm:n`, the
+`kanjiskip`/`xkanjiskip` keys) on top of LuaCJK. `ctex` keeps its own copies of
+the two glues so it can tell whether the document changed them; the engine file
 keeps the copies in step and sets the `*_touched` flags, otherwise the next
 `\selectfont` would restore the default and undo the user's `kanjiskip`.
 
-Two consequences for testing. The redirect a test uses lives in
-`testsupport/ctexopts.cfg`; the subset script cannot use it as-is, because the
-`ctex` test tree brings its own `ctexopts.cfg` that selects a fontset, so the
-script appends the redirect to that file and both settings apply. And the
-proof that the backend was actually taken over is the absence of `luatexja` in
-every log, not a marker line: the redirect can be missing while LuaCJK is
-still loaded from somewhere else. The redirect file itself must stay plain
-LaTeX2e without comment characters — `ctex` reads it at a point where the
-category codes and the `expl3` state are not the ones the writing document
-had.
+The proof that the backend was actually taken over is the absence of
+`luatexja` in every log, not a marker line: the option can be lost while
+LuaCJK is still loaded from somewhere else. Two tests rely on this.
+`ctex01.lvt` passes the option to `ctexart`, so `l3build check` exercises the
+public route; the subset script cannot pass it that way, because the `ctex`
+test tree brings its own `ctexopts.cfg` that selects a fontset, so the script
+appends `\keys_set:nn { ctex / option } { engine = luacjk }` to that file and
+both settings apply.
 
 ### The manual's two languages
 
@@ -284,8 +281,8 @@ ligatures cannot be asked for), `RubberPunctSkip` (the advance is a fixed kern,
 which is not a break opportunity and takes no part in justification),
 `CheckFullRight` (the node list no longer shows the following control
 sequence — use `\LuaCJKnobreak`), and `ulem`'s option list (`LuaCJKfntef` builds
-on `lua-ul`). Picking a backend inside `ctex` still needs the agreement of the
-`ctex` maintainers; the redirect is the interim route.
+on `lua-ul`). Picking a backend inside `ctex` is now a public option
+(`engine`), so nothing here depends on the `ctex` maintainers' choice.
 
 ## Conventions
 
@@ -317,7 +314,7 @@ on `lua-ul`). Picking a backend inside `ctex` still needs the agreement of the
 The commands are in `AGENTS.md`. For this skill the points that matter are:
 
 ```bash
-l3build check                       # 45 tests, must print "All checks passed"
+l3build check                       # 44 tests, must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
 bash scripts/ctex-subset.sh         # 21/21, and no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
@@ -328,7 +325,5 @@ guessing from widths alone: walk `tex.box[0].head` and report the glue, kern,
 and penalty nodes, then assert the numbers in the `.tlg`.
 Existing examples are `decoration01` (the leaders pair), `settingsscope01`
 (a group that closes before `\par`), `nobreak01`/`nobreak02` (penalties),
-`listings01` (glyph order inside a listing), and `ctexconfig01`, which writes
-`ctexopts.cfg` and reads it back: the redirect is only valid when the reader is
-under `\ExplSyntaxOn`, as `\ProvidesExplPackage` leaves it, so the test turns
-the syntax on around the `\input` before it asserts the definition.
+`listings01` (glyph order inside a listing), and `ctex01`, the class test that
+shows the engine file is reached through `engine = luacjk`.

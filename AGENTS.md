@@ -42,9 +42,9 @@ Entry points:
 | `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
 | `build.lua` | `l3build` configuration: module `luacjk`, version `v0.0.1`, `tdslocations`, the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
-| `testfiles/NN.lvt` + `.tlg` | 45 regression tests and their baselines, one pair per feature |
-| `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`) and `ctexopts.cfg` (the redirect that makes `ctex01` and the `ctex` subset load the engine file), and nothing else |
-| `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends the redirect to the `ctexopts.cfg` of the `ctex` test tree |
+| `testfiles/NN.lvt` + `.tlg` | 44 regression tests and their baselines, one pair per feature |
+| `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
+| `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree |
 | `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, and names the forge repository of the release link with `--repo` |
 | `scripts/check-extract-changes.sh` | regenerates the six changelogs of `../ctex-kit` with the Lua extractor and compares them byte for byte: exit 0 all identical, 1 a difference, 2 cannot run; `--quiet` prints only the differences |
 | `scripts/check-charclass.lua` | compares the `CJK_RANGES` table of the `dtx` with `Scripts.txt`: it reports every code point whose script is Han, Hiragana, Katakana, Bopomofo, or Hangul that the table does not list, merging the code points into ranges.  The combining Bopomofo tone marks U+02EA and U+02EB are allowed to stay outside the table.  Exit 0 covered, 1 missing (the ranges are printed), 2 cannot run |
@@ -119,11 +119,12 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   optional argument.  `l3build tag` rewrites the one `$Id$`, so a second copy
   of the information would silently go stale.
 - **The engine file name is fixed.**  It is `ctex-engine-luacjk.def`, never
-  `ctex-engine-luatex.def`: `ctex` installs a file of that name, CTAN rejects
-  the duplicate, and kpathsea resolves within one tree by the smallest full
-  path, so a same-named copy in `tex/latex/luacjk/` silently loses to the one
-  in `tex/latex/ctex/`. `ctex` is redirected through `ctexopts.cfg` instead;
-  renaming the file back breaks the redirect without any error.
+  `ctex-engine-luatex.def`: `ctex` inputs `ctex-engine-<name>.def` and takes
+  `<name>` from its `engine` option, so `engine = luacjk` is what selects
+  LuaCJK. `ctex` installs a file named `ctex-engine-luatex.def`, CTAN rejects
+  a duplicate, and that file is the one every `ctex` document loads when the
+  option is absent, so a same-named copy in `tex/latex/luacjk/` either
+  collides or silently describes the wrong backend.
 - **Internal names use `@@`.**  The `dtx` sets `%<@@=LuaCJK>` once, before the
   first implementation line, and every private name is written as
   `\l_@@_…`, `\g_@@_…`, `\c_@@_…`, or `\@@_…`; DocStrip expands the leading
@@ -284,7 +285,7 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 
 ```bash
 l3build unpack          # ~5 s, regenerates the derived files
-l3build check           # ~3 min, 45 tests, both test runs
+l3build check           # ~3 min, 44 tests, both test runs
 l3build check <name>    # one test, the first thing to run after a change
 l3build save <name>     # rewrite one baseline after an intended change
 l3build doc             # ~2 min, builds the manual and copies README back
@@ -352,9 +353,9 @@ of ctex-kit.
 - The `ctex` baselines cannot be compared: they were produced with LuaTeX-ja
   and describe a different line-breaking implementation, so the subset script
   only compiles the files and checks for the fallback. `ctex01.lvt` covers
-  the real path inside `l3build check`, because `testsupport/` holds the
-  redirect and the engine file; the subset script needs a `ctex` checkout and
-  therefore stays outside the normal run.
+  the real path inside `l3build check`, because it passes `engine = luacjk` to
+  the class and so loads the engine file through the public option; the subset
+  script needs a `ctex` checkout and therefore stays outside the normal run.
 - A change that touches the node pipeline should also be checked by hand in
   `build/doc/LuaCJK.pdf` for the affected demo; the extracted examples are the
   fastest place to see the effect.
