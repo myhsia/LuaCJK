@@ -912,9 +912,15 @@ a’a\quad 字！字
 %     \tn{LuaCJKDeclarePunctStyle} \marg{name} \marg{key-value list}
 %   \end{syntax}
 %   定义一种标点样式。
-%   可用的键是 \keys{compress-adjacent}、
-%   \keys{adjacent-ratio} 与 \keys{keep-open-close}。
 % \end{function}
+%
+% \begin{keyval}
+%   \item[\keys{compress-adjacent}]\val{\TTF}：是否压缩相邻的标点。
+%   \item[\keys{adjacent-ratio}]\val{number}：压缩的比例，
+%   相对于被压缩标点的宽度。
+%   \item[\keys{keep-open-close}]\val{\TTF}：开标点与闭标点相邻时
+%   是否保持不压缩。
+% \end{keyval}
 %
 % \iffalse
 %<*example>
@@ -1085,31 +1091,40 @@ a’a\quad 字！字
 %   \begin{syntax}
 %     \tn{CJKunderline} \oarg{options} \marg{text}
 %   \end{syntax}
-%   给 \meta{text} 加下划线。选项有
-%   \begin{itemize}
-%     \item \keys{thickness}，横线的粗细；
-%     \item \keys{depth}，从基线到横线顶部的距离；
-%     \item \keys{textformat}，作用于文字的代码，例如
-%     |textformat=\bfseries|；
-%     \item \keys{format}，横线的颜色，用名字给出，
-%     例如 |format=red|。它只影响横线，不影响文字；
-%     \item \keys{subtract}，一个长度（或表示半字宽的 \texttt{true}），
-%     在横线的两端各去掉这么多，
-%     这样相邻的两个命令不会连在一起；
-%     \item \keys{skip}，把标点排除在横线之外；
-%     \item \keys{hidden}，隐藏文字而保留横线，横线取隐藏文字的
-%     宽度、高度与深度。
-%   \end{itemize}
-%   初始几何是 \texttt{depth=0.2em} 与
-%   \texttt{thickness=0.4pt}。\keys{subtract, skip, hidden} 对
-%   \cs{CJKunderdblline}、\cs{CJKunderwave}、\cs{CJKxout}
-%   与 \cs{CJKunderdot} 的作用方式相同。
-%   键 \texttt{top} 与 \texttt{bottom} 被传给 \pkg{lua-ul}，
-%   覆盖计算出来的几何。
-%   \cs{CJKunderwave}、\cs{CJKxout} 与 \cs{CJKunderdot} 画出的图案
-%   从不改变被装饰行的高度或深度，所以它们的行距不会变大。
+%   给 \meta{text} 加下划线。初始几何是 \texttt{depth=0.2em}
+%   与 \texttt{thickness=0.4pt}。
 %   开头的一个 \texttt{*} 或 \texttt{-} 可以接受，并且被忽略。
 % \end{function}
+%
+% 所有装饰命令共用下面这组键：与某个命令无关的键照样接受，只是不起作用。
+% 只给一个颜色名而不写键名，等价于 \texttt{format = }\meta{color}。
+% 键 \texttt{top} 与 \texttt{bottom} 被传给 \pkg{lua-ul}，
+% 因此只对 \cs{CJKunderline} 有效，并覆盖计算出来的几何。
+% 画出的图案从不改变被装饰行的高度或深度，所以行距不会变大。
+%
+% \begin{keyval}
+%   \item[\keys{thickness}]\val{length}：横线的粗细，初始 \texttt{0.4pt}。
+%   \item[\keys{depth}]\val{length}：从基线到横线顶部的距离，
+%   初始 \texttt{0.2em}。
+%   \item[\keys{textformat}]\val{code}：作用于文字的代码，例如
+%   |textformat = \bfseries|。
+%   \item[\keys{format}]\val{color name}：横线的颜色，例如
+%   |format = red|；它只影响横线，不影响文字。
+%   \item[\keys{color}]\val{color name}：\texttt{format} 的另一个名字。
+%   \item[\keys{subtract}]\val{length}：在横线两端各去掉的长度，
+%   初始关闭；\texttt{true} 表示半字宽，
+%   这样相邻的两个命令不会连在一起。
+%   \item[\keys{skip}]\val{\TFF}：把标点排除在横线之外。
+%   \item[\keys{hidden}]\val{\TFF}：隐藏文字而保留横线，
+%   横线取隐藏文字的宽度、高度与深度。
+%   \item[\keys{gap}]\val{length}：双线两条横线之间的距离，
+%   初始 \texttt{1.1pt}。
+%   \item[\keys{height}]\val{length}：删除线中心到基线的距离，
+%   初始 \texttt{0.3em}。
+%   \item[\keys{symbol}]\val{code}：替代波浪或圆点的符号。
+% \end{keyval}
+%
+% \keys{sep} 为了兼容而接受，但没有作用。
 %
 % \iffalse
 %<*example>
@@ -1157,10 +1172,9 @@ a’a\quad 字！字
 %   \begin{syntax}
 %     \tn{CJKunderdblline} \oarg{options} \marg{text}
 %   \end{syntax}
-%   在 \meta{text} 下面画两条平行的横线。
-%   除了 \cs{CJKunderline} 的键之外，可选参数还接受
-%   \keys{gap}，两条横线之间的距离（初始 \texttt{1.1pt}）；
-%   两条横线都使用 \keys{thickness}，上面那条从 \keys{depth} 开始。
+%   在 \meta{text} 下面画两条平行的横线，键见上面的键列表。
+%   两条横线都使用 \keys{thickness}，上面那条从 \keys{depth} 开始，
+%   \keys{gap} 是两条横线之间的距离。
 %   开头的一个 \texttt{*} 或 \texttt{-} 可以接受，并且被忽略。
 % \end{function}
 %
@@ -1173,8 +1187,7 @@ a’a\quad 字！字
 %   所以在一行的各部分之间相位相同。一个周期是半字宽，
 %   整个图案随字号缩放；与其他画出的图案一样，
 %   它不改变行的高度与深度。
-%   可选参数接受 \cs{CJKunderline} 的键，
-%   另外还有 \keys{symbol}，用来把波浪线换成别的符号：
+%   \keys{symbol} 用来把波浪线换成别的符号：
 %   每字宽一个符号，居中，符号顶部在基线之下半字宽处。
 % \end{function}
 %
@@ -1200,7 +1213,6 @@ a’a\quad 字！字
 %   用重复的斜线划掉 \meta{text}，像 \pkg{ulem} 的 \tn{xout} 那样。
 %   斜线从基线之上 \texttt{0.8em} 延伸到基线之下 \texttt{-0.15em}，
 %   所以它穿过一个 CJK 字形的整个字身。
-%   可选参数接受与 \cs{CJKunderline} 相同的键。
 % \end{function}
 %
 % \begin{function}{\CJKunderanyline}
@@ -1248,8 +1260,7 @@ a’a\quad 字！字
 %     \tn{CJKunderdot} \oarg{options} \marg{text}
 %   \end{syntax}
 %   在 \meta{text} 下面加着重号。
-%   可选参数接受 \cs{CJKunderline} 的键。
-%   用 |symbol=|\meta{symbol} 时，一个符号取代着重号，
+%   用 |symbol = |\meta{symbol} 时，一个符号取代着重号，
 %   放置方式与 \cs{CJKunderanysymbol} 的符号相同：
 %   每字宽一个，居中，符号顶部在基线之下 \texttt{0.3em} 处。
 % \end{function}
@@ -1271,14 +1282,9 @@ a’a\quad 字！字
 %   \begin{syntax}
 %     \tn{CJKsout} \oarg{options} \marg{text}
 %   \end{syntax}
-%   给 \meta{text} 加删除线。可选参数接受
-%   \keys{thickness}、\keys{height}（从基线到横线中心的距离，
-%   初始 \texttt{0.3em}）、\keys{format}（一个颜色名），
-%   以及键 \keys{subtract, skip, hidden}。
-%   只给一个颜色名仍然可以接受，意思是 |format = |\meta{color}；
-%   \texttt{color} 是 \keys{format} 的另一个名字。
-%   初始高度穿过一个 CJK 字形的中部，
-%   它比拉丁 x 高度的中部要高；
+%   给 \meta{text} 加删除线，键见上面的键列表。
+%   删除线中心在基线上方，穿过一个 CJK 字形的中部，
+%   比拉丁字母 x 高度的中部要高；
 %   对于完全是拉丁文的文字，可以用 |height = 0.5ex|。
 % \end{function}
 %
@@ -2063,9 +2069,16 @@ a’a\quad 字！字
 %     \tn{LuaCJKDeclarePunctStyle} \marg{name} \marg{key-value list}
 %   \end{syntax}
 %   Define a punctuation style.
-%   The available keys are \keys{compress-adjacent},
-%   \keys{adjacent-ratio}, and \keys{keep-open-close}.
 % \end{function}
+%
+% \begin{keyval}
+%   \item[\keys{compress-adjacent}]\val{\TTF}: whether two adjacent
+%   punctuation marks are compressed.
+%   \item[\keys{adjacent-ratio}]\val{number}: the ratio of the compression,
+%   relative to the width of the mark that is compressed.
+%   \item[\keys{keep-open-close}]\val{\TTF}: whether an opening mark next
+%   to a closing one stays uncompressed.
+% \end{keyval}
 %
 % \iffalse
 %<*example>
@@ -2245,33 +2258,42 @@ a’a\quad 字！字
 %   \begin{syntax}
 %     \tn{CJKunderline} \oarg{options} \marg{text}
 %   \end{syntax}
-%   Underline \meta{text}. The options are
-%   \begin{itemize}
-%     \item \keys{thickness}, the thickness of the rule;
-%     \item \keys{depth}, the distance from the baseline to the top of the
-%     rule;
-%     \item \keys{textformat}, code applied to the text, for example
-%     |textformat=\bfseries|;
-%     \item \keys{format}, the color of the rule, given as a name,
-%     for example |format=red|. It affects the rule only, not the text;
-%     \item \keys{subtract}, a length (or \texttt{true} for half an em)
-%     taken off the rule at both ends,
-%     so two neighbouring commands do not run together;
-%     \item \keys{skip}, which leaves the punctuation out of the rule;
-%     \item \keys{hidden}, which hides the text and keeps the rule, with
-%     the width, height, and depth of the hidden text.
-%   \end{itemize}
-%   The initial geometry is \texttt{depth=0.2em}
-%   and \texttt{thickness=0.4pt}. \keys{subtract, skip, hidden} work the
-%   same way for \cs{CJKunderdblline},
-%   \cs{CJKunderwave}, \cs{CJKxout}, and \cs{CJKunderdot}.
-%   The keys \texttt{top} and \texttt{bottom} are passed
-%   to \pkg{lua-ul} and override the computed geometry.
-%   The drawn patterns of \cs{CJKunderwave}, \cs{CJKxout},
-%   and \cs{CJKunderdot} never change the height
-%   or depth of the line they decorate, so their leading does not grow.
+%   Underline \meta{text}. The initial geometry is \texttt{depth=0.2em}
+%   and \texttt{thickness=0.4pt}.
 %   A leading \texttt{*} or \texttt{-} is accepted and ignored.
 % \end{function}
+%
+% Every decoration takes the keys below; a key that a command does not use
+% is accepted and has no effect. A bare color name with no key means
+% \texttt{format = }\meta{color}. The keys \texttt{top} and \texttt{bottom}
+% are passed to \pkg{lua-ul}, so they apply to \cs{CJKunderline} alone and
+% override the computed geometry. A drawn pattern never changes the height
+% or depth of the line it decorates, so the leading does not grow.
+%
+% \begin{keyval}
+%   \item[\keys{thickness}]\val{length}: the thickness of the rule,
+%   initially \texttt{0.4pt}.
+%   \item[\keys{depth}]\val{length}: the distance from the baseline to the
+%   top of the rule, initially \texttt{0.2em}.
+%   \item[\keys{textformat}]\val{code}: code applied to the text, for
+%   example |textformat = \bfseries|.
+%   \item[\keys{format}]\val{color name}: the color of the rule, for
+%   example |format = red|; it affects the rule only, not the text.
+%   \item[\keys{color}]\val{color name}: another name for \texttt{format}.
+%   \item[\keys{subtract}]\val{length}: taken off the rule at both ends,
+%   off by default; \texttt{true} means half an em, so two neighbouring
+%   commands do not run together.
+%   \item[\keys{skip}]\val{\TFF}: leaves the punctuation out of the rule.
+%   \item[\keys{hidden}]\val{\TFF}: hides the text and keeps the rule,
+%   with the width, height, and depth of the hidden text.
+%   \item[\keys{gap}]\val{length}: the distance between the two rules of
+%   the double line, initially \texttt{1.1pt}.
+%   \item[\keys{height}]\val{length}: the distance from the baseline to the
+%   center of the strike-out rule, initially \texttt{0.3em}.
+%   \item[\keys{symbol}]\val{code}: a symbol replacing the wave or the dots.
+% \end{keyval}
+%
+% \keys{sep} is accepted for compatibility and has no effect.
 %
 % \iffalse
 %<*example>
@@ -2319,10 +2341,9 @@ a’a\quad 字！字
 %   \begin{syntax}
 %     \tn{CJKunderdblline} \oarg{options} \marg{text}
 %   \end{syntax}
-%   Put two parallel rules under \meta{text}.
-%   Besides the keys of \cs{CJKunderline}, the optional argument takes
-%   \keys{gap}, the distance between the two rules (initial \texttt{1.1pt});
-%   both rules use \keys{thickness} and the top rule starts at \keys{depth}.
+%   Put two parallel rules under \meta{text}, with the keys listed above.
+%   Both rules use \keys{thickness}, the top rule starts at \keys{depth},
+%   and \keys{gap} is the distance between them.
 %   A leading \texttt{*} or \texttt{-} is accepted and ignored.
 % \end{function}
 %
@@ -2335,8 +2356,7 @@ a’a\quad 字！字
 %   so it has the same phase across the parts of one line. One period
 %   is half an em and the whole pattern scales with the font size; like the
 %   other drawn patterns it leaves the height and depth of the line alone.
-%   The optional argument takes the keys of \cs{CJKunderline} and,
-%   in addition, \keys{symbol} to replace the wave with another symbol:
+%   \keys{symbol} replaces the wave with another symbol:
 %   one symbol per em, centered, its top half an em below the baseline.
 % \end{function}
 %
@@ -2362,7 +2382,6 @@ a’a\quad 字！字
 %   Strike \meta{text} out with a repeated slash, like \pkg{ulem}'s
 %   \tn{xout}. The slash runs from \texttt{-0.15em} to \texttt{0.8em}
 %   relative to the baseline, so it crosses the whole body of a CJK glyph.
-%   The optional argument takes the same keys as \cs{CJKunderline}.
 % \end{function}
 %
 % \begin{function}{\CJKunderanyline}
@@ -2409,8 +2428,7 @@ a’a\quad 字！字
 %     \tn{CJKunderdot} \oarg{options} \marg{text}
 %   \end{syntax}
 %   Put emphasis dots under \meta{text}.
-%   The optional argument takes the keys of \cs{CJKunderline}.
-%   With |symbol=|\meta{symbol} a symbol takes the place of the dots
+%   With |symbol = |\meta{symbol} a symbol takes the place of the dots
 %   and is placed like the symbol of \cs{CJKunderanysymbol}: one per em,
 %   centered, its top \texttt{0.3em} under the baseline.
 % \end{function}
@@ -2432,12 +2450,7 @@ a’a\quad 字！字
 %   \begin{syntax}
 %     \tn{CJKsout} \oarg{options} \marg{text}
 %   \end{syntax}
-%   Strike \meta{text} through. The optional argument takes
-%   \keys{thickness}, \keys{height} (the distance from the baseline to the
-%   center of the rule, initial \texttt{0.3em}), \keys{format} (a color
-%   name), and the keys \keys{subtract, skip, hidden}.
-%   A bare color name is still accepted and means |format = |\meta{color};
-%   \texttt{color} is another name for \keys{format}.
+%   Strike \meta{text} through, with the keys listed above.
 %   The initial height passes through the middle of a CJK glyph,
 %   which sits higher than the middle of the Latin x-height;
 %   use |height = 0.5ex| for text that is entirely Latin.
@@ -6908,52 +6921,65 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \dim_set:Nn \l_@@_fntef_height_dim    { .3em }
 %    \end{macrocode}
 % \end{variable}
+% \end{macro}
+%
+% Every decoration takes the same options, so one key set serves them all:
+% the keys a command does not use are accepted and ignored, and a bare item
+% that is not a key is a color name, which is \keys{format}.
+%
+% \begin{macro}[int]{\@@_fntef_option_pair:nn, \@@_fntef_option_bare:n,
+%   \@@_fntef_options:n}
+% Parse the option list of a decoration and reset the defaults first.
+% A pair goes to the key set as it is; a bare item is a key when it exists
+% and a color name otherwise, so |[subtract]| keeps its meaning and |[red]|
+% is |[format = red]|.
 %    \begin{macrocode}
-\keys_define:nn { LuaCJKfntef / underline }
+\cs_new_protected:Npn \@@_fntef_option_pair:nn #1#2
+  { \keys_set:nn { LuaCJKfntef / decoration } { #1 = {#2} } }
+\cs_new_protected:Npn \@@_fntef_option_bare:n #1
   {
-    thickness  .dim_set:N        = \l_@@_fntef_thickness_dim,
-    thickness  .value_required:n = true,
-    depth      .dim_set:N        = \l_@@_fntef_depth_dim,
-    depth      .value_required:n = true,
-    textformat .tl_set:N         = \l_@@_fntef_textformat_tl,
-    format     .tl_set:N         = \l_@@_fntef_format_tl,
-    subtract   .code:n           =
-      {
-        \str_if_eq:nnTF {#1} { true }
-          { \dim_set:Nn \l_@@_fntef_subtract_dim { .5em } }
-          {
-            \str_if_eq:nnTF {#1} { false }
-              { \dim_zero:N \l_@@_fntef_subtract_dim }
-              { \dim_set:Nn \l_@@_fntef_subtract_dim {#1} }
-          }
-      },
-    subtract   .default:n        = { true },
-    skip       .code:n           =
-      {
-        \str_if_eq:nnTF {#1} { true }
-          { \tl_set:Nn \l_@@_fntef_skip_tl { 1 } }
-          { \tl_set:Nn \l_@@_fntef_skip_tl { 0 } }
-      },
-    skip       .default:n        = { true },
-    hidden     .bool_set:N       = \l_@@_fntef_hidden_bool,
-    hidden     .default:n        = { true },
-    unknown    .code:n           =
-      {
-        \tl_put_right:Nx \l_@@_fntef_pass_tl
-          {
-            \l_keys_key_str
-            \tl_if_empty:NF \l_keys_value_tl
-              { = \exp_not:V \l_keys_value_tl }
-            ,
-          }
-      },
+    \keys_if_exist:nnTF { LuaCJKfntef / decoration } {#1}
+      { \keys_set:nn { LuaCJKfntef / decoration } {#1} }
+      { \keys_set:nn { LuaCJKfntef / decoration } { format = #1 } }
   }
+\cs_new_protected:Npn \@@_fntef_options:n #1
+  {
+    \@@_fntef_reset_decoration:
+    \tl_if_novalue:nF {#1}
+      {
+        \keyval_parse:NNn
+          \@@_fntef_option_bare:n \@@_fntef_option_pair:nn {#1}
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{\@@_fntef_body:n}
+% The text of a decoration, with the format of the call applied and hidden
+% when \keys{hidden} is on.  Every command goes through this, so
+% \keys{textformat} and \keys{hidden} mean the same thing everywhere.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_fntef_body:n #1
+  { \l_@@_fntef_textformat_tl \@@_fntef_hide:n {#1} }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{\@@_fntef_hide:n}
+% The text of a decoration when \keys{hidden} is on.
+%    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_hide:n #1
   {
     \bool_if:NTF \l_@@_fntef_hidden_bool
       { \phantom {#1} }
       { #1 }
   }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{\@@_fntef_push_settings:}
+% Hand the decoration settings to Lua, or clear the attribute when they are
+% all at their defaults.
+%    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_push_settings:
   {
     \bool_lazy_and:nnTF
@@ -6980,11 +7006,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   }
 \cs_new_protected:Npn \@@_fntef_prepare_underline:n #1
   {
-    \@@_fntef_reset_decoration:
-    \tl_clear:N \l_@@_fntef_pass_tl
-    \tl_clear:N \l_@@_fntef_textformat_tl
-    \tl_if_novalue:nF {#1}
-      { \keys_set:nn { LuaCJKfntef / underline } {#1} }
+    \@@_fntef_options:n {#1}
     \dim_set:Nn \l_@@_fntef_top_dim    { -\l_@@_fntef_depth_dim }
     \dim_set:Nn \l_@@_fntef_bottom_dim
       { -\l_@@_fntef_depth_dim - \l_@@_fntef_thickness_dim }
@@ -7043,13 +7065,12 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   {
     \group_begin:
       \@@_fntef_prepare_underline:n {#3}
-      \l_@@_fntef_textformat_tl
       \tl_if_empty:NTF \l_@@_fntef_format_tl
         {
           \exp_args:NV \@@_fntef_underLine:nn
-            \l_@@_fntef_pass_tl { \@@_fntef_hide:n {#4} }
+            \l_@@_fntef_pass_tl { \@@_fntef_body:n {#4} }
         }
-        { \@@_fntef_formatted_underline: { \@@_fntef_hide:n {#4} } }
+        { \@@_fntef_formatted_underline: { \@@_fntef_body:n {#4} } }
     \group_end:
   }
 %    \end{macrocode}
@@ -7120,15 +7141,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \NewDocumentCommand \CJKsout { s t- o +m }
   {
     \group_begin:
-      \tl_if_novalue:nTF {#3}
-        { \@@_fntef_decoration_setup:n { } }
-        {
-          \tl_if_in:nnTF {#3} { = }
-            { \@@_fntef_decoration_setup:n {#3} }
-            { \@@_fntef_decoration_setup:n { format = #3 } }
-        }
+      \@@_fntef_decoration_setup:n {#3}
       \@@_fntef_use_sout:
-      \@@_fntef_hide:n {#4}
+      \@@_fntef_body:n {#4}
     \group_end:
   }
 %    \end{macrocode}
@@ -7236,7 +7251,17 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     symbol    .tl_set:N         = \l_@@_fntef_symbol_tl,
     sep       .dim_set:N        = \l_@@_fntef_symbol_sep_dim,
     sep       .value_required:n = true,
-    unknown   .code:n           = { },
+    textformat .tl_set:N        = \l_@@_fntef_textformat_tl,
+    unknown   .code:n           =
+      {
+        \tl_put_right:Nx \l_@@_fntef_pass_tl
+          {
+            \l_keys_key_str
+            \tl_if_empty:NF \l_keys_value_tl
+              { = \exp_not:V \l_keys_value_tl }
+            ,
+          }
+      },
   }
 \cs_new_protected:Npn \@@_fntef_reset_decoration:
   {
@@ -7249,13 +7274,13 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \dim_set:Nn \l_@@_fntef_height_dim    { .3em }
     \tl_clear:N \l_@@_fntef_format_tl
     \tl_clear:N \l_@@_fntef_symbol_tl
+    \tl_clear:N \l_@@_fntef_textformat_tl
+    \tl_clear:N \l_@@_fntef_pass_tl
     \dim_set:Nn \l_@@_fntef_symbol_sep_dim { .1em }
   }
 \cs_new_protected:Npn \@@_fntef_decoration_setup:n #1
   {
-    \@@_fntef_reset_decoration:
-    \tl_if_novalue:nF {#1}
-      { \keys_set:nn { LuaCJKfntef / decoration } {#1} }
+    \@@_fntef_options:n {#1}
     \@@_fntef_push_settings:
   }
 %    \end{macrocode}
@@ -7274,7 +7299,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \group_begin:
       \@@_fntef_decoration_setup:n {#3}
       \@@_fntef_use_double:
-      \@@_fntef_hide:n {#4}
+      \@@_fntef_body:n {#4}
     \group_end:
   }
 %    \end{macrocode}
@@ -7389,7 +7414,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       \tl_if_empty:NTF \l_@@_fntef_symbol_tl
         { \@@_fntef_wave }
         { \@@_fntef_use_symbol:n { .42em } }
-      \@@_fntef_hide:n {#4}
+      \@@_fntef_body:n {#4}
     \group_end:
   }
 %    \end{macrocode}
@@ -7437,7 +7462,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \group_begin:
       \@@_fntef_decoration_setup:n {#3}
       \@@_fntef_slash
-      \@@_fntef_hide:n {#4}
+      \@@_fntef_body:n {#4}
     \group_end:
   }
 %    \end{macrocode}
@@ -7493,7 +7518,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         { anyline | #1 | \tl_to_str:n {#2} }
       \exp_args:NV \@@_fntef_use_leader_type:nn
         \l_@@_fntef_cache_key_tl \l_@@_fntef_any_code_tl
-      #3
+      \@@_fntef_body:n {#3}
     \group_end:
   }
 %    \end{macrocode}
@@ -7512,25 +7537,25 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       \@@_fntef_decoration_setup:n {#1}
       \tl_set:Nn \l_@@_fntef_symbol_tl {#3}
       \@@_fntef_use_symbol:n {#2}
-      #4
+      \@@_fntef_body:n {#4}
     \group_end:
   }
 %    \end{macrocode}
 % \end{macro}
 %
 % \begin{macro}{\CJKunderdot}
-% Emphasise with dots below the glyphs. The optional argument takes
-% \keys{subtract} and \keys{skip}, like the other decorations.
+% Emphasise with dots below the glyphs. The optional argument takes the key
+% set of \cs{CJKunderline}, like the other decorations.
 %    \begin{macrocode}
 \NewDocumentCommand \CJKunderdot { s t- o +m }
   {
     \group_begin:
       \@@_fntef_decoration_setup:n {#3}
       \tl_if_empty:NTF \l_@@_fntef_symbol_tl
-        { \@@_fntef_underdot:n { \@@_fntef_hide:n {#4} } }
+        { \@@_fntef_underdot:n { \@@_fntef_body:n {#4} } }
         {
           \@@_fntef_use_symbol:n { .3em }
-          \@@_fntef_hide:n {#4}
+          \@@_fntef_body:n {#4}
         }
     \group_end:
   }
