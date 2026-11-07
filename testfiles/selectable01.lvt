@@ -1,0 +1,70 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\usepackage{LuaCJKfntef}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\begin{document}
+
+\START
+
+% A decoration symbol is wrapped in an ActualText marked-content sequence
+% whose replacement is U+200B, so a PDF reader does not copy or select it.
+% The test counts the pdf_literal whatsits inside the leader box; it does not
+% depend on the symbol being shipped.
+\def\checksilent#1{%
+  \setbox0=\hbox{#1}%
+  \directlua{
+    local GLUE = node.id("glue")
+    local HLIST = node.id("hlist")
+    local VLIST = node.id("vlist")
+    local WHAT = node.id("whatsit")
+    local LITERAL = node.subtype("pdf_literal")
+    local function literals (n)
+      local c = 0
+      while n do
+        if n.id == WHAT and n.subtype == LITERAL then
+          c = c + 1
+        elseif n.id == HLIST or n.id == VLIST then
+          c = c + literals(n.head)
+        elseif n.id == GLUE and n.leader then
+          c = c + literals(n.leader)
+        end
+        n = n.next
+      end
+      return c
+    end
+    local function decoration (n)
+      while n do
+        if n.id == GLUE and n.subtype == 100 and n.leader then
+          return literals(n.leader)
+        end
+        if n.id == HLIST or n.id == VLIST then
+          local r = decoration(n.head)
+          if r ~= nil then return r end
+        end
+        n = n.next
+      end
+    end
+    texio.write_nl("term and log",
+      "LITERALS " .. tostring(decoration(tex.box[0].head)))
+  }%
+}
+
+\TEST{a symbol decoration is silent by default}{
+  \checksilent{\CJKunderanysymbol{0pt}{x}{中}}
+}
+
+\TEST{selectable keeps the decoration as text}{
+  \checksilent{\CJKunderanysymbol[selectable = true]{0pt}{x}{中}}
+}
+
+\TEST{underdot and underwave symbols follow the same key}{
+  \checksilent{\CJKunderdot[symbol = x]{中}}
+  \checksilent{\CJKunderwave[symbol = x]{中}}
+}
+
+\END
+
+\end{document}

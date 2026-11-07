@@ -295,6 +295,31 @@ before it sets the fonts again.  The `env/codemo/after` hook runs that command
 after every demo, so the `\begingroup` around a `codemo` contains only local
 settings.
 
+### Tagged PDF and copy safety
+
+Tagging is a property of the document: the package tests for `\tag_*` and
+`\tagpdfpara*` with `\cs_if_exist:NT` and does nothing when tagging is off.
+It never loads `tagpdf`. The manual is itself tagged: its driver declares
+`\DocumentMetadata{tagging=on,pdfversion=1.7,lang=zh-CN}` and loads
+`latex-lab-testphase-l3doc`; `\LuaCJKdoclang{zh|en}` also sets `text/lang`
+for the structure elements.
+
+The ink of a decoration is not text. A symbol is wrapped in an `ActualText`
+sequence whose replacement is `U+200B`, so a reader drops it from the text it
+extracts and selects; `selectable = true` keeps it as text. The wrapper is a
+`pdf_literal` inside the leader box, not a font change: a cloned font used in
+a `\leaders` box aborts LuaTeX at shipout.
+
+`\CJKfilltwosides` tags by mode. In vertical mode the vbox becomes a
+`text-block` structure; in horizontal mode its MC joins the surrounding
+paragraph. A `text-block` inside a paragraph is invalid (`P --> P`), and the
+automatic paragraph hooks stay off around the vbox.
+
+The reader's selection height comes from the font's `hhea` ascent and descent,
+not from the em box. For Noto Serif CJK SC that is 1.437em, so the selection
+is taller than the 1em square even when the highlight is right. Tagging does
+not change it; the manual documents the limitation.
+
 ## Current work
 
 Implemented: font family layer with fake bold and slant, fallback fonts
@@ -302,8 +327,8 @@ and sub-blocks, `\CJKglue`/`\CJKecglue`/`xCJKecglue`/`CJKspace` with per-node
 settings, six punctuation styles plus the character-set and style editing keys,
 punctuation hanging and bound width, `CheckSingle`, `CJLineBreak`, `CJKmath`,
 `\LuaCJKnobreak`, `\LuaCJKVerbAddon`, `\LuaCJKShipoutHook`, `LocalConfig`,
-`LoadFandol`, eight decorations in `LuaCJKfntef` with twelve options, and
-`LuaCJK-listings`.
+`LoadFandol`, eight decorations in `LuaCJKfntef` with thirteen options, tagged
+PDF output, and `LuaCJK-listings`.
 
 Two inputs are handled before the passes: the zero-width format characters and
 the variation selectors are given category code 9 at load time, so they neither
@@ -348,7 +373,7 @@ on `lua-ul`). Picking a backend inside `ctex` is now a public option
 The commands are in `AGENTS.md`. For this skill the points that matter are:
 
 ```bash
-l3build check                       # 46 tests, must print "All checks passed"
+l3build check                       # 48 tests, must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
 bash scripts/ctex-subset.sh         # 21/21, and no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
@@ -357,7 +382,9 @@ bash scripts/check-docs.sh          # guides, and the two documentation language
 When a change touches a pass, add a test that inspects nodes rather than
 guessing from widths alone: walk `tex.box[0].head` and report the glue, kern,
 and penalty nodes, then assert the numbers in the `.tlg`.
-Existing examples are `decoration01` (the leaders pair), `settingsscope01`
+Existing examples are `decoration01` (the leaders pair), `selectable01` (the
+`ActualText` wrapper and the `selectable` key), `tagging01` (tagged
+decorations and both branches of `CJKfilltwosides`), `settingsscope01`
 (a group that closes before `\par`), `nobreak01`/`nobreak02` (penalties),
 `listings01` (glyph order inside a listing), `ctex01`, the class test that
 shows the engine file is reached through `engine = luacjk`, and `ctex02`,

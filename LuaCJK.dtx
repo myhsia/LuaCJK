@@ -66,6 +66,14 @@ inside a `listings` block.
 
 LuaCJK requires the LuaTeX engine. It must not be loaded together with `luatexja`.
 
+## Tagged PDF
+
+Declare `\DocumentMetadata{tagging=on}` before `\documentclass` to produce a
+tagged PDF.  The ink of a decoration is an artifact, a decoration symbol is
+left out of the text a reader copies, and `LuaCJKfntef`'s `selectable` key
+keeps a symbol as text.  Under `l3doc`, load `latex-lab-testphase-l3doc` as
+well.  The manual is built with tagging enabled.
+
 ## Using it with ctex
 
 Pass `engine = luacjk` to the `ctex` class or package:
@@ -110,7 +118,9 @@ LaTeX Project Public License, version 1.3c or later.
 %</internal>
 %
 %<*driver>
+\DocumentMetadata{tagging=on,pdfversion=1.7,lang=zh-CN}
 \documentclass[11pt, letterpaper]{l3doc}
+\usepackage{latex-lab-testphase-l3doc}
 \setlength{\emergencystretch}{3em}
 \providecommand*\LuaLaTeX{\hologo{LuaLaTeX}}
 \providecommand*\XeLaTeX {\hologo{XeLaTeX}}
@@ -175,7 +185,17 @@ LaTeX Project Public License, version 1.3c or later.
 \tl_new:N \LuaCJKdoclang_tl
 \tl_set:Nn \LuaCJKdoclang_tl { en }
 \NewDocumentCommand \LuaCJKdoclang { m }
-  { \tl_set:Nn \LuaCJKdoclang_tl {#1} }
+  {
+    \tl_set:Nn \LuaCJKdoclang_tl {#1}
+    \cs_if_exist:NT \tagpdfsetup
+      {
+        \str_case:nn {#1}
+          {
+            { zh } { \tagpdfsetup { text / lang = zh-CN } }
+            { en } { \tagpdfsetup { text / lang = en-US } }
+          }
+      }
+  }
 \cs_set:Npn \theHpart { \tl_use:N \LuaCJKdoclang_tl }
 \cs_set_protected:Npn \__codedoc_get_hyper_target:nN #1#2
   {
@@ -320,6 +340,19 @@ LaTeX Project Public License, version 1.3c or later.
 % \end{quote}
 % \pkg{ctex} 于是载入 LuaCJK 的 |ctex-engine-luacjk.def| 而不是它自己的
 % \LuaTeX\ 后端，这个文件同时载入宏包，LuaCJK 不必再单独载入。
+%
+% LuaCJK 与 \LaTeX{} 的标记 PDF（tagged PDF）项目协同工作。
+% 文档开头声明
+% \begin{quote}
+%   |\DocumentMetadata{tagging=on}|
+% \end{quote}
+% 时，装饰的墨迹标记为 \texttt{artifact}，装饰符号不会出现在复制和选择
+% 的文本中；\keys{selectable = true} 保留符号的文字。
+% 在 \cls{l3doc} 文档中还要载入 \pkg{latex-lab-testphase-l3doc}，
+% 本手册就是这样生成的。
+% 选区的高度由 PDF 阅读器按字体的 \texttt{hhea} 上伸部和下伸部决定，
+% 对 \texttt{Noto Serif CJK SC} 是 1.437em，所以选区比 1em 的方块更高；
+% 这不是 LuaCJK 能改变的，也不影响字形本身。
 %
 % \section{字体}
 %
@@ -1122,6 +1155,8 @@ a’a\quad 字！字
 %   \item[\keys{height}]\val{length}：删除线中心到基线的距离，
 %   初始 \texttt{0.3em}。
 %   \item[\keys{symbol}]\val{code}：替代波浪或圆点的符号。
+%   \item[\keys{selectable}]\val{\TFF}：装饰符号是否保留为文字，
+%   初始 \texttt{false}；\texttt{true} 时 PDF 阅读器可以复制与选择它。
 % \end{keyval}
 %
 % \keys{sep} 为了兼容而接受，但没有作用。
@@ -1467,6 +1502,21 @@ a’a\quad 字！字
 % \pkg{ctex} then inputs |ctex-engine-luacjk.def| instead of its own
 % \LuaTeX\ backend, and that file loads the package, so LuaCJK is not loaded
 % separately.
+%
+% LuaCJK cooperates with the \LaTeX{} tagged-PDF project.
+% A document that declares
+% \begin{quote}
+%   |\DocumentMetadata{tagging=on}|
+% \end{quote}
+% marks the ink of a decoration as \texttt{artifact}, and a decoration symbol
+% is left out of the text a reader copies or selects;
+% \keys{selectable = true} keeps the symbol as text.
+% Under the \cls{l3doc} class, load \pkg{latex-lab-testphase-l3doc} as well;
+% this manual is built that way.
+% A PDF reader derives the height of a selection from the font's
+% \texttt{hhea} ascent and descent, which is 1.437em for
+% \texttt{Noto Serif CJK SC}; the selection is therefore taller than the 1em
+% square.  LuaCJK cannot change that, and it does not affect the glyph.
 %
 % \section{Fonts}
 %
@@ -2302,6 +2352,9 @@ a’a\quad 字！字
 %   \item[\keys{height}]\val{length}: the distance from the baseline to the
 %   center of the strike-out rule, initially \texttt{0.3em}.
 %   \item[\keys{symbol}]\val{code}: a symbol replacing the wave or the dots.
+%   \item[\keys{selectable}]\val{\TFF}: whether the decoration symbol stays
+%   as text, initially \texttt{false}; with \texttt{true} a PDF reader can
+%   copy and select it.
 % \end{keyval}
 %
 % \keys{sep} is accepted for compatibility and has no effect.
@@ -7029,7 +7082,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   {
 %     \l_@@_fntef_depth_dim,     \l_@@_fntef_thickness_dim,
 %     \l_@@_fntef_textformat_tl, \l_@@_fntef_pass_tl,
-%     \l_@@_fntef_top_dim,       \l_@@_fntef_bottom_dim
+%     \l_@@_fntef_top_dim,       \l_@@_fntef_bottom_dim,
+%     \l_@@_fntef_silent_bool
 %   }
 % The requested geometry, the format of the text,
 % and the keys that \pkg{lua-ul} receives.
@@ -7041,6 +7095,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \dim_new:N \l_@@_fntef_subtract_dim
 \tl_new:N \l_@@_fntef_skip_tl
 \tl_new:N \l_@@_fntef_skip_js_tl
+\bool_new:N \l_@@_fntef_silent_bool
 \bool_new:N \l_@@_fntef_hidden_bool
 \dim_new:N \l_@@_fntef_rule_height_dim
 \dim_new:N \l_@@_fntef_rule_depth_dim
@@ -7376,6 +7431,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     skip      .default:n        = { true },
     hidden    .bool_set:N       = \l_@@_fntef_hidden_bool,
     hidden    .default:n        = { true },
+    selectable .bool_set_inverse:N = \l_@@_fntef_silent_bool,
+    selectable .default:n       = { true },
     depth     .dim_set:N        = \l_@@_fntef_depth_dim,
     depth     .value_required:n = true,
     thickness .dim_set:N        = \l_@@_fntef_thickness_dim,
@@ -7406,6 +7463,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   {
     \dim_zero:N \l_@@_fntef_subtract_dim
     \tl_set:Nn \l_@@_fntef_skip_tl { 0 }
+    \bool_set_true:N \l_@@_fntef_silent_bool
     \bool_set_false:N \l_@@_fntef_hidden_bool
     \dim_set:Nn \l_@@_fntef_depth_dim     { .2em }
     \dim_set:Nn \l_@@_fntef_thickness_dim { .4pt }
@@ -7500,6 +7558,19 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         \tex_hss:D
       }
   }
+\cs_new_protected:Npn \@@_fntef_silent_begin:
+  {
+    \bool_if:NT \l_@@_fntef_silent_bool
+      {
+        \tex_pdfextension:D literal direct
+          { /Span <</ActualText <FEFF200B>>> BDC }
+      }
+  }
+\cs_new_protected:Npn \@@_fntef_silent_end:
+  {
+    \bool_if:NT \l_@@_fntef_silent_bool
+      { \tex_pdfextension:D literal direct { EMC } }
+  }
 \cs_new_protected:Npn \@@_fntef_use_symbol:n #1
   {
     \dim_set:Nn \l_@@_fntef_any_depth_dim {#1}
@@ -7541,9 +7612,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
               { \exp_not:N \c_zero_dim }
             \exp_not:N \skip_horizontal:n
               { \exp_not:N \l_@@_fntef_symbol_kern_dim }
+            \exp_not:N \@@_fntef_silent_begin:
             \exp_not:N \box_move_up:nn
               { \exp_not:N \l_@@_fntef_symbol_raise_dim }
               { \exp_not:N \box_use_drop:N \l_@@_fntef_pattern_box }
+            \exp_not:N \@@_fntef_silent_end:
             \exp_not:N \skip_horizontal:n
               { \exp_not:N \l_@@_fntef_symbol_kern_dim }
           }
@@ -7553,6 +7626,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         symbol |
         \dim_use:N \l_@@_fntef_em_descent_dim |
         \dim_use:N \l_@@_fntef_any_depth_dim |
+        \bool_if:NTF \l_@@_fntef_silent_bool { silent } { text } |
         \tl_to_str:V \l_@@_fntef_symbol_tl
       }
     \exp_args:NV \@@_fntef_use_leader_type:nn
@@ -7791,7 +7865,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \begin{variable}[int]
 %   {
 %     \l_@@_fntef_fill_box,      \l_@@_fntef_fill_width_dim,
-%     \l_@@_fntef_fill_half_dim, \l_@@_fntef_fill_position_tl
+%     \l_@@_fntef_fill_half_dim, \l_@@_fntef_fill_position_tl,
+%     \l_@@_fntef_fill_tag_tl,   \l_@@_fntef_fill_struct_bool
 %   }
 % The box being filled, its requested width, the half height used
 % for centring, and the requested baseline position.
@@ -7800,23 +7875,44 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \dim_new:N \l_@@_fntef_fill_width_dim
 \dim_new:N \l_@@_fntef_fill_half_dim
 \tl_new:N \l_@@_fntef_fill_position_tl
+\tl_new:N \l_@@_fntef_fill_tag_tl
+\bool_new:N \l_@@_fntef_fill_struct_bool
 %    \end{macrocode}
 % \end{variable}
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_fill_begin:nn #1#2
   {
     \group_begin:
+    \bool_set_false:N \l_@@_fntef_fill_struct_bool
+    \cs_if_exist:NT \tag_struct_begin:n
+      {
+        \mode_if_vertical:TF
+          {
+            \tag_struct_begin:n { tag = text-block }
+            \tl_set:Nn \l_@@_fntef_fill_tag_tl { text-block }
+            \bool_set_true:N \l_@@_fntef_fill_struct_bool
+          }
+          { \tl_clear:N \l_@@_fntef_fill_tag_tl }
+        \cs_if_exist:NT \tagpdfparaOff { \tagpdfparaOff }
+      }
     \tl_set:Nn \l_@@_fntef_fill_position_tl {#1}
     \dim_set:Nn \l_@@_fntef_fill_width_dim {#2}
     \LuaCJKsetup { CJKglue = 0pt plus 1filll }
     \vbox_set:Nw \l_@@_fntef_fill_box
       \dim_compare:nNnT { \l_@@_fntef_fill_width_dim } > { 0pt }
         { \dim_set:Nn \tex_hsize:D { \l_@@_fntef_fill_width_dim } }
+      \cs_if_exist:NT \tag_mc_begin:n
+        {
+          \tl_if_empty:NTF \l_@@_fntef_fill_tag_tl
+            { \tag_mc_begin:n { } }
+            { \tag_mc_begin:n { tag = \l_@@_fntef_fill_tag_tl } }
+        }
       \tex_noindent:D \tex_ignorespaces:D
   }
 \cs_new_protected:Npn \@@_fntef_fill_end:
   {
     \tex_par:D
+    \cs_if_exist:NT \tag_mc_end: { \tag_mc_end: }
     \vbox_set_end:
     \str_case:Vn \l_@@_fntef_fill_position_tl
       {
@@ -7841,6 +7937,12 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         }
       }
     \box_use_drop:N \l_@@_fntef_fill_box
+    \cs_if_exist:NT \tag_struct_end:
+      {
+        \cs_if_exist:NT \tagpdfparaOn { \tagpdfparaOn }
+        \bool_if:NT \l_@@_fntef_fill_struct_bool
+          { \tag_struct_end: }
+      }
     \group_end:
   }
 \NewDocumentEnvironment { CJKfilltwosides } { O{c} m }
