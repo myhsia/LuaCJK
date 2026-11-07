@@ -124,8 +124,17 @@
 
 \TEST{settings do not leak to another decoration}{
   \setbox0=\hbox{\CJKunderline[subtract]{中}}
-  \setbox0=\hbox{\CJKunderanyline{0.3em}{\rule{1pt}{0.4pt}}{中文}}
-  \nodes
+  \setbox2=\hbox{\CJKunderanyline{0.3em}{\rule{1pt}{0.4pt}}{中文}}
+  \TYPE{span: \the\wd2}
+  \directlua{
+    local n = tex.box[2].head
+    while n do
+      if n.id == node.id("rule") then
+        texio.write_nl("term and log", "RULE " .. tostring(n.width))
+      end
+      n = n.next
+    end
+  }
 }
 
 \END
