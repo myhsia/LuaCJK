@@ -181,6 +181,14 @@ A colored rule cannot use `\color`, which emits whatsits in front of
 (`\luaul_set_color:n` plus `\luaul_apply_color:`),
 which is why `format` takes a color name rather than code.
 
+A CJK em box is one em square, so a highlight that covers a character is
+`1em` wide and `1em` high, with the box bottom at the em descent below the
+baseline. `\LuaCJKemdescent` is that descent: `LuaCJKfntef.em_descent` reads
+`descent` and `units_per_em` from the font file, caches them per file name
+(one parse serves every size), scales by the font size, and falls back to
+`.12em`. The same value places a symbol, so a gap of `0pt` leaves the same
+space below the character as the side bearings leave beside it.
+
 Leaders repeat the box and only whole copies fit, so the last fraction of a
 span stays empty. With a one-point object that shortened a highlight at the
 right end by up to a point whenever the em was not a whole number of points,
@@ -210,11 +218,9 @@ bottom of that box, which lifts a path that goes below the baseline, so the
 xout slash is lowered again by the part below the baseline plus half the
 stroke. The `symbol` variants of `\CJKunderdot` and `\CJKunderwave`, and
 `\CJKunderanysymbol`, follow one placement rule: one symbol per em, centered in
-the cell, its top a given distance under the *bottom of the body* of the text.
-That bottom is `LuaCJKfntef.body_depth`, the depth of U+4E2D in the current
-font in scaled points, with `.08em` as the fallback for a Latin font; the
-measured value is part of the cached type key, so a font change does not reuse
-a stale placement.
+the cell, its top a given distance under the *bottom of the em box*. The
+measured descent is part of the cached type key, so a font change does not
+reuse a stale placement.
 
 ### The ctex adapter
 
