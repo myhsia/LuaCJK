@@ -86,7 +86,10 @@ jobs:
         id: test-luacjk
         run: l3build check
       - name: Run l3build doc
-        if: ${{ !cancelled() && steps.test-luacjk.outcome == 'success' }}
+        # Off until ctex-kit takes the change the manual needs.  Restore the
+        # condition below when it is in TeX Live:
+        #   if: ${{ !cancelled() && steps.test-luacjk.outcome == 'success' }}
+        if: false
         run: l3build doc
       - name: Get short commit SHA
         if: ${{ !cancelled() && steps.test-luacjk.outcome == 'failure' }}
