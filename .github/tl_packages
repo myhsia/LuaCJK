@@ -31,6 +31,10 @@ xcolor
 zref-clever
 xurl
 #
+# Tagging
+latex-lab
+tagpdf
+#
 # Fonts and LuaTeX
 listings
 lua-ul
