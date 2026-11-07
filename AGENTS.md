@@ -411,7 +411,10 @@ requests. Two jobs, each on `ubuntu-latest`, `macos-latest`, and
   `texlua` for the bilingual check, so it cannot run before the install),
   then `texlua scripts/check-charclass.lua`, then `l3build changelog` and a
   `git diff --exit-code CHANGELOG.md` that fails when the generated file is
-  stale, then `l3build check`, then `l3build doc` (only if the check passed);
+  stale, then `l3build check`, then `l3build doc` (only if the check passed).
+  The doc step carries `if: false` for now: the manual needs a `ctex-kit`
+  change that is not in TeX Live yet. Restore its `if:` condition when that
+  change is released;
 - `ctex-subset`: `l3build unpack`, then `bash scripts/ctex-subset.sh
   --skip-unpack`.
 
