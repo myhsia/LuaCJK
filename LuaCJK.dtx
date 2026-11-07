@@ -1233,6 +1233,8 @@ a’a\quad 字！字
 %   横线从基线之下 \meta{depth} 处向上占据。
 %   要覆盖一个 CJK 字形的字身，就用字身的下伸部分与它的高度，
 %   正如下例所做的那样。
+%   对象填满的是字身宽度，也就是 PDF 阅读器划出的选区；
+%   字体墨迹比字身窄时，两侧会各露出一条边距。
 %   类型会被缓存，所以相同的参数复用一个下划线类型。
 % \end{function}
 %
@@ -1243,8 +1245,10 @@ a’a\quad 字！字
 %   用法相同，只是每字宽放一个 \meta{symbol}：
 %   符号在一个和一个 CJK 字符一样宽的格子里居中，
 %   所以一排符号与它们上方的字符对齐。
-%   \meta{depth} 是从基线到符号顶部的距离；
-%   |0pt| 把符号的顶部正好放在字符下面。
+%   \meta{depth} 是符号顶部到\emph{字身底部}的距离，
+%   字身底部按当前字体里一个汉字的深度量出来，
+%   所以 |0pt| 在哪种字体下都把符号的顶部贴在字符下面；
+%   拉丁文本没有这个度量，退回 |.08em|。
 %   为了兼容，接受选项 \keys{sep}，但它没有作用，
 %   因为格子固定为一个字宽。
 % \end{function}
@@ -1254,9 +1258,9 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\CJKunderanyline{.16em}
-  {\color{yellow}\rule{1pt}{.94em}}{中}\\
-\CJKunderanysymbol{.02em}{\tiny$\triangle$}{中}
+\CJKunderanyline{.08em}
+  {\color{yellow}\rule{1pt}{.92em}}{中}\\
+\CJKunderanysymbol{0pt}{\tiny$\triangle$}{中}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1270,7 +1274,7 @@ a’a\quad 字！字
 %   在 \meta{text} 下面加着重号。
 %   用 |symbol = |\meta{symbol} 时，一个符号取代着重号，
 %   放置方式与 \cs{CJKunderanysymbol} 的符号相同：
-%   每字宽一个，居中，符号顶部在基线之下 \texttt{0.3em} 处。
+%   每字宽一个，居中，符号顶部在字身底部之下 \texttt{0.3em} 处。
 % \end{function}
 %
 % \iffalse
@@ -2402,7 +2406,10 @@ a’a\quad 字！字
 %   the rule occupies \meta{depth} below the baseline upwards.
 %   To cover the body of a CJK glyph, use the descender
 %   of the body and its height, as the example below does.
-%   The type is cached, so the same arguments reuse one underline type.
+%   The object fills the advance of the text, which is the area a PDF
+%   reader selects, so a font whose ink is narrower shows its side bearing
+%   on both sides. The type is cached, so the same arguments reuse one
+%   underline type.
 % \end{function}
 %
 % \begin{function}{\CJKunderanysymbol}
@@ -2411,10 +2418,13 @@ a’a\quad 字！字
 %   \end{syntax}
 %   The same, with one \meta{symbol} per em: the symbol is centered in a cell
 %   as wide as a CJK character, so a row of symbols lines up with the
-%   characters above them. \meta{depth} is the distance from the baseline
-%   to the top of the symbol; |0pt| puts the top of the symbol right under
-%   the characters. The option \keys{sep} is accepted for compatibility
-%   but has no effect, because the cell is fixed at one em.
+%   characters above them. \meta{depth} is the distance from the top of the
+%   symbol to the \emph{bottom of the body} of the text, which is measured
+%   from the depth of one CJK glyph in the current font, so |0pt| puts the
+%   top of the symbol right under the characters in any font; a Latin font
+%   has no such metric and falls back to |.08em|. The option \keys{sep} is
+%   accepted for compatibility but has no effect, because the cell is fixed
+%   at one em.
 % \end{function}
 %
 % \iffalse
@@ -2422,9 +2432,9 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\CJKunderanyline{.16em}
-  {\color{yellow}\rule{1pt}{.94em}}{中}\\
-\CJKunderanysymbol{.02em}{\tiny$\triangle$}{中}
+\CJKunderanyline{.08em}
+  {\color{yellow}\rule{1pt}{.92em}}{中}\\
+\CJKunderanysymbol{0pt}{\tiny$\triangle$}{中}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -2438,7 +2448,7 @@ a’a\quad 字！字
 %   Put emphasis dots under \meta{text}.
 %   With |symbol = |\meta{symbol} a symbol takes the place of the dots
 %   and is placed like the symbol of \cs{CJKunderanysymbol}: one per em,
-%   centered, its top \texttt{0.3em} under the baseline.
+%   centered, its top \texttt{0.3em} under the bottom of the body.
 % \end{function}
 %
 % \iffalse
@@ -6664,6 +6674,8 @@ local GLYPH   = node.id("glyph")
 local GLUE    = node.id("glue")
 local LEADERS = 100
 local KERN    = node.id("kern")
+local HLIST   = node.id("hlist")
+local RULE    = node.id("rule")
 
 M.attr     = M.attr     or nil
 M.settings = M.settings or {}
@@ -6671,6 +6683,23 @@ M.next_id  = M.next_id  or 1
 
 %    \end{macrocode}
 % \end{variable}
+%
+% \begin{macro}[int]{LuaCJKfntef.body_depth}
+% The depth of a CJK glyph in the current font, in scaled points.
+% U+4E2D is the reference. A font that lacks the glyph, or a Latin font,
+% falls back to \texttt{.08em}.
+%    \begin{macrocode}
+function M.body_depth ()
+  local f = font.getfont(font.current())
+  local c = f and f.characters and f.characters[0x4E2D]
+  if c and c.depth and c.depth > 0 then
+    return string.format("%d", math.floor(c.depth + 0.5))
+  end
+  return string.format("%d", math.floor(0.08 * tex.sp("1em") + 0.5))
+end
+
+%    \end{macrocode}
+% \end{macro}
 %
 % A decoration records its settings by selecting an entry:
 % the number of the entry goes into the attribute on the decorated text, and
@@ -6762,6 +6791,63 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{single_rule}
+% The rule that a decoration box reduces to, and how far the box moves it
+% down. A box holding nothing but kerns, glues and one rule qualifies.
+% \tn{leaders} repeats the box, and only whole copies fit, so the last
+% fraction of the span stays empty: with a one-point object that is a
+% visible gap at the right end of a highlight. A box that reduces to one
+% rule is therefore drawn as a single rule of the full width instead.
+%    \begin{macrocode}
+local function single_rule (list, down)
+  local found
+  local n = list
+  while n do
+    if n.id == RULE then
+      if found then
+        return nil
+      end
+      found = n
+    elseif n.id == HLIST then
+      if found then
+        return nil
+      end
+      local r, d = single_rule(n.head, down + (n.shift or 0))
+      if not r then
+        return nil
+      end
+      found, down = r, d
+    elseif n.id == KERN then
+      -- horizontal material, no vertical effect
+    elseif n.id == GLUE and not n.leader then
+      -- a plain glue between the pieces
+    else
+      return nil
+    end
+    n = n.next
+  end
+  if found then
+    return found, down
+  end
+  return nil
+end
+
+local function box_rule (box)
+  if not box or box.id ~= HLIST then
+    return nil
+  end
+  local rule, down = single_rule(box.head, box.shift or 0)
+  -- Only a solid block qualifies: the rule must fill the box, or the
+  -- pattern would lose whatever sits beside it.
+  if rule and rule.width == box.width then
+    return rule, down
+  end
+  return nil
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{replace_pair}
 % Replace the leaders glue of one decoration.
 % The pieces are kerns and shorter leaders whose total width stays
@@ -6771,7 +6857,10 @@ end
 local function replace_pair (head, prev, leaders, settings)
   local w     = leaders.width
   local neg   = leaders.next
-  local parts = segments(w, neg.next, settings.subtract, settings.skip)
+  local subtract = settings and settings.subtract or 0
+  local skip     = settings and settings.skip or false
+  local parts = segments(w, neg.next, subtract, skip)
+  local rule, down = box_rule(leaders.leader)
   local first, last
   local cursor = 0
   local function append (node_)
@@ -6788,12 +6877,21 @@ local function replace_pair (head, prev, leaders, settings)
       k.kern  = part[1] - cursor
       append(k)
     end
-    local copy   = node.copy(leaders)
-    copy.width   = part[2] - part[1]
-    copy.stretch = 0
-    copy.shrink  = 0
-    copy.next    = nil
-    append(copy)
+    if rule then
+      local r  = node.copy(rule)
+      r.width  = part[2] - part[1]
+      r.height = rule.height - down
+      r.depth  = rule.depth + down
+      r.next   = nil
+      append(r)
+    else
+      local copy   = node.copy(leaders)
+      copy.width   = part[2] - part[1]
+      copy.stretch = 0
+      copy.shrink  = 0
+      copy.next    = nil
+      append(copy)
+    end
     cursor = part[2]
   end
   if cursor < w then
@@ -6831,7 +6929,7 @@ local function adjust (head)
        and n.next.id == GLUE and n.next.width == -n.width then
       local neg      = n.next
       local settings = settings_at(neg.next)
-      if settings then
+      if settings or box_rule(n.leader) then
         head = replace_pair(head, prev, n, settings)
         n    = neg
         nxt  = neg.next
@@ -7348,6 +7446,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \box_new:N \l_@@_fntef_pattern_box
 \dim_new:N \l_@@_fntef_symbol_kern_dim
 \dim_new:N \l_@@_fntef_symbol_raise_dim
+\dim_new:N \l_@@_fntef_body_depth_dim
 %    \end{macrocode}
 %   \end{variable}
 %    \begin{macrocode}
@@ -7383,6 +7482,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \cs_new_protected:Npn \@@_fntef_use_symbol:n #1
   {
     \dim_set:Nn \l_@@_fntef_any_depth_dim {#1}
+    \dim_set:Nn \l_@@_fntef_body_depth_dim
+      { \lua_now:e { tex.print(LuaCJKfntef.body_depth()) } sp }
     \tl_set:Ne \l_@@_fntef_any_code_tl
       {
         \exp_not:N \tex_leaders:D \exp_not:N \hbox:n
@@ -7401,6 +7502,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
               {
                 \exp_not:N \dim_eval:n
                   {
+                    - \dim_use:N \l_@@_fntef_body_depth_dim
                     - \exp_not:N \l_@@_fntef_any_depth_dim
                     - \exp_not:N \box_ht:N \l_@@_fntef_pattern_box
                   }
@@ -7421,6 +7523,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \tl_set:Ne \l_@@_fntef_cache_key_tl
       {
         symbol |
+        \dim_use:N \l_@@_fntef_body_depth_dim |
         \dim_use:N \l_@@_fntef_any_depth_dim |
         \tl_to_str:V \l_@@_fntef_symbol_tl
       }
