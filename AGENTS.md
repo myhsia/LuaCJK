@@ -260,7 +260,10 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   paragraph, so a comparison needs `\par` and not `\\`; and `"` is active in
   `l3doc` and starts `\verb`, so a range list is shown without its optional
   leading quote. Keep a code line within about 40 monospace characters, or the
-  left panel is overfull.
+  left panel is overfull. A demo that measures a glyph (a highlight, a symbol)
+  uses the metrics of the font the manual sets, not those of Fandol: the CJK
+  body of Noto Serif CJK SC runs from `-0.078em` to `+0.838em`, and the rule
+  or symbol geometry follows from that.
 - **The manual describes the package, not the repository.**  No `.lvt` files,
   CI, build commands, or script names in the documentation part: how the
   package is tested and released belongs in this guide, and the principle

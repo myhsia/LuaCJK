@@ -123,23 +123,30 @@
   \TYPE{plain: \the\wd4}
 }
 
-\TEST{anyline and anysymbol use continuous leaders}{
+\TEST{anyline fills the span with one rule}{
   \setbox0=\hbox{\CJKunderanyline{0.5ex}{\rule{1.5pt}{2.5ex}}{中文 test 中文}}
   \setbox2=\hbox{\CJKunderanysymbol{0.2em}{\tiny$\triangle$}{中文 test 中文}}
+  \TYPE{span: \the\wd0}
   \directlua{
-    local function leaders (box)
-      local n = tex.box[box].head
-      local c = 0
-      while n do
-        if n.id == node.id("glue") and n.subtype == 100 then
-          c = c + 1
-        end
-        n = n.next
+    local n = tex.box[0].head
+    local rules = 0
+    while n do
+      if n.id == node.id("rule") then
+        rules = rules + 1
+        texio.write_nl("term and log", "RULE " .. tostring(n.width))
       end
-      return c
+      n = n.next
     end
-    texio.write_nl("term and log", "RUNS anyline " .. tostring(leaders(0)))
-    texio.write_nl("term and log", "RUNS anysymbol " .. tostring(leaders(2)))
+    local g = tex.box[2].head
+    local leaders = 0
+    while g do
+      if g.id == node.id("glue") and g.subtype == 100 then
+        leaders = leaders + 1
+      end
+      g = g.next
+    end
+    texio.write_nl("term and log", "RULES anyline " .. tostring(rules))
+    texio.write_nl("term and log", "RUNS anysymbol " .. tostring(leaders))
   }
 }
 

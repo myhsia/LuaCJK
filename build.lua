@@ -104,12 +104,6 @@ end
 --[==========================================================================[--
     Changelog: regenerated from the dtx \changes entries
 --]==========================================================================]--
--- scripts/extract-changes.lua is a Lua port of ctex-kit's extractor, so the
--- target needs neither the network nor an interpreter other than texlua.
--- scripts/check-extract-changes.sh compares it with the six changelogs that
--- ctex-kit publishes.  A run fails when the output leaks one of the
--- extractor's control-character placeholders, or when it does not start with
--- the heading of the release.
 changelog_repo = "myhsia/LuaCJK"
 
 local extract_changes = dofile("scripts/extract-changes.lua")
