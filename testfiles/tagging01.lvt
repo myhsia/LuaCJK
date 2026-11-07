@@ -1,0 +1,47 @@
+\input{regression-test}
+
+\DocumentMetadata{tagging=on,pdfversion=1.7,lang=zh-CN}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\usepackage{LuaCJKfntef}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\begin{document}
+
+\START
+
+\TEST{the decorations compile with tagging enabled}{
+  \CJKunderline{中文}
+  \CJKsout{中文}
+  \CJKunderdblline{中文}
+  \CJKunderwave{中文}
+  \CJKxout{中文}
+  \CJKunderdot{中文}
+  \CJKunderanysymbol{0pt}{\tiny$\triangle$}{中文}
+  \CJKunderanyline{\LuaCJKemdescent}{\color{yellow}\rule{1pt}{1em}}{中文}
+  \TYPE{decorations: ok}
+}
+
+\TEST{CJKfilltwosides is a tagged text block in vertical mode}{
+  \begin{CJKfilltwosides}{8em}
+    中 English 文
+  \end{CJKfilltwosides}
+  \TYPE{filltwosides vertical: ok}
+}
+
+\TEST{CJKfilltwosides joins the surrounding paragraph in horizontal mode}{
+  Before
+  \begin{CJKfilltwosides}{5em}
+    中文
+  \end{CJKfilltwosides}
+  after.
+  \TYPE{filltwosides horizontal: ok}
+}
+
+% The tagging backend needs at least one shipped page to write the structure.
+\null\newpage
+
+\END
+
+\end{document}

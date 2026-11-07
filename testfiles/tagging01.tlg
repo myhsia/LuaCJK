@@ -1,0 +1,21 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: the decorations compile with tagging enabled
+============================================================
+Lua-only attribute luaul1 = ...
+Lua-only attribute luaul2 = ...
+decorations: ok
+============================================================
+============================================================
+TEST 2: CJKfilltwosides is a tagged text block in vertical mode
+============================================================
+filltwosides vertical: ok
+============================================================
+============================================================
+TEST 3: CJKfilltwosides joins the surrounding paragraph in horizontal mode
+============================================================
+filltwosides horizontal: ok
+============================================================
+[1
+]
