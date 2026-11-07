@@ -1223,6 +1223,13 @@ a’a\quad 字！字
 %   所以它穿过一个 CJK 字形的整个字身。
 % \end{function}
 %
+% \begin{function}{\LuaCJKemdescent}
+%   当前字体 em 盒的深度，可以当作长度使用。
+%   CJK 的 em 盒是一个 em 的正方形，所以把高度为 \texttt{1em} 的对象
+%   放在这个深度上，就正好覆盖一个汉字所占的区域；
+%   字体没有 OpenType 度量时退回 \texttt{.12em}。
+% \end{function}
+%
 % \begin{function}{\CJKunderanyline}
 %   \begin{syntax}
 %     \tn{CJKunderanyline} \marg{depth} \marg{object} \marg{text}
@@ -1231,10 +1238,11 @@ a’a\quad 字！字
 %   \meta{object} 的底部放在基线之下 \meta{depth} 处，
 %   所以对于一个（本身没有深度的）\cs{rule} 来说，
 %   横线从基线之下 \meta{depth} 处向上占据。
-%   要覆盖一个 CJK 字形的字身，就用字身的下伸部分与它的高度，
-%   正如下例所做的那样。
-%   对象填满的是字身宽度，也就是 PDF 阅读器划出的选区；
-%   字体墨迹比字身窄时，两侧会各露出一条边距。
+%   要覆盖一个 CJK 字形，就用字体的 em 盒：\meta{depth} 取
+%   \cs{LuaCJKemdescent}，对象高度取 \texttt{1em}，正如下例所做的那样。
+%   对象填满的是 em 盒，也就是 PDF 阅读器划出的选区：
+%   横向是字身宽度，纵向是 em 盒的高度，
+%   字体墨迹比 em 盒窄时，四周会各露出一条边距。
 %   类型会被缓存，所以相同的参数复用一个下划线类型。
 % \end{function}
 %
@@ -1245,10 +1253,9 @@ a’a\quad 字！字
 %   用法相同，只是每字宽放一个 \meta{symbol}：
 %   符号在一个和一个 CJK 字符一样宽的格子里居中，
 %   所以一排符号与它们上方的字符对齐。
-%   \meta{depth} 是符号顶部到\emph{字身底部}的距离，
-%   字身底部按当前字体里一个汉字的深度量出来，
-%   所以 |0pt| 在哪种字体下都把符号的顶部贴在字符下面；
-%   拉丁文本没有这个度量，退回 |.08em|。
+%   \meta{depth} 是符号顶部到\emph{em 盒底部}的距离，
+%   所以 |0pt| 留下的间隙正与字符两侧的边距相同；
+%   字体没有 OpenType 度量时按 |.12em| 计算。
 %   为了兼容，接受选项 \keys{sep}，但它没有作用，
 %   因为格子固定为一个字宽。
 % \end{function}
@@ -1258,8 +1265,8 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\CJKunderanyline{.08em}
-  {\color{yellow}\rule{1pt}{.92em}}{中}\\
+\CJKunderanyline{\LuaCJKemdescent}
+  {\color{yellow}\rule{1pt}{1em}}{中}\\
 \CJKunderanysymbol{0pt}{\tiny$\triangle$}{中}
 \end{codemo}
 \endgroup
@@ -1274,7 +1281,7 @@ a’a\quad 字！字
 %   在 \meta{text} 下面加着重号。
 %   用 |symbol = |\meta{symbol} 时，一个符号取代着重号，
 %   放置方式与 \cs{CJKunderanysymbol} 的符号相同：
-%   每字宽一个，居中，符号顶部在字身底部之下 \texttt{0.3em} 处。
+%   每字宽一个，居中，符号顶部在 em 盒底部之下 \texttt{0.3em} 处。
 % \end{function}
 %
 % \iffalse
@@ -2396,6 +2403,13 @@ a’a\quad 字！字
 %   relative to the baseline, so it crosses the whole body of a CJK glyph.
 % \end{function}
 %
+% \begin{function}{\LuaCJKemdescent}
+%   The depth of the em box of the current font, usable as a length.
+%   A CJK em box is one em square, so an object of height \texttt{1em}
+%   placed at this depth covers the area a CJK character occupies; a font
+%   without OpenType metrics falls back to \texttt{.12em}.
+% \end{function}
+%
 % \begin{function}{\CJKunderanyline}
 %   \begin{syntax}
 %     \tn{CJKunderanyline} \marg{depth} \marg{object} \marg{text}
@@ -2404,11 +2418,11 @@ a’a\quad 字！字
 %   The bottom of \meta{object} is placed \meta{depth} below
 %   the baseline, so for a \cs{rule} (which has no depth of its own)
 %   the rule occupies \meta{depth} below the baseline upwards.
-%   To cover the body of a CJK glyph, use the descender
-%   of the body and its height, as the example below does.
-%   The object fills the advance of the text, which is the area a PDF
-%   reader selects, so a font whose ink is narrower shows its side bearing
-%   on both sides. The type is cached, so the same arguments reuse one
+%   To cover a CJK character, use the em box of the font:
+%   \meta{depth} is \cs{LuaCJKemdescent} and the object is \texttt{1em}
+%   high, as the example below does.  The object fills the em box, which is
+%   the area a PDF reader selects: the advance across, the em box down, so a
+%   font whose ink is smaller shows its side bearing all round. The type is cached, so the same arguments reuse one
 %   underline type.
 % \end{function}
 %
@@ -2419,10 +2433,9 @@ a’a\quad 字！字
 %   The same, with one \meta{symbol} per em: the symbol is centered in a cell
 %   as wide as a CJK character, so a row of symbols lines up with the
 %   characters above them. \meta{depth} is the distance from the top of the
-%   symbol to the \emph{bottom of the body} of the text, which is measured
-%   from the depth of one CJK glyph in the current font, so |0pt| puts the
-%   top of the symbol right under the characters in any font; a Latin font
-%   has no such metric and falls back to |.08em|. The option \keys{sep} is
+%   symbol to the \emph{bottom of the em box}, so |0pt| leaves the same gap
+%   below the character as the side bearings leave beside it; a font without
+%   OpenType metrics is computed at |.12em|. The option \keys{sep} is
 %   accepted for compatibility but has no effect, because the cell is fixed
 %   at one em.
 % \end{function}
@@ -2432,8 +2445,8 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\CJKunderanyline{.08em}
-  {\color{yellow}\rule{1pt}{.92em}}{中}\\
+\CJKunderanyline{\LuaCJKemdescent}
+  {\color{yellow}\rule{1pt}{1em}}{中}\\
 \CJKunderanysymbol{0pt}{\tiny$\triangle$}{中}
 \end{codemo}
 \endgroup
@@ -2448,7 +2461,7 @@ a’a\quad 字！字
 %   Put emphasis dots under \meta{text}.
 %   With |symbol = |\meta{symbol} a symbol takes the place of the dots
 %   and is placed like the symbol of \cs{CJKunderanysymbol}: one per em,
-%   centered, its top \texttt{0.3em} under the bottom of the body.
+%   centered, its top \texttt{0.3em} under the bottom of the em box.
 % \end{function}
 %
 % \iffalse
@@ -6684,18 +6697,46 @@ M.next_id  = M.next_id  or 1
 %    \end{macrocode}
 % \end{variable}
 %
-% \begin{macro}[int]{LuaCJKfntef.body_depth}
-% The depth of a CJK glyph in the current font, in scaled points.
-% U+4E2D is the reference. A font that lacks the glyph, or a Latin font,
-% falls back to \texttt{.08em}.
+% \begin{macro}[int]{LuaCJKfntef.em_descent}
+% The descent of the em box of the current font, in scaled points.
+% A CJK em box is one em square, so its descent is both what a highlight has
+% to add below the baseline to cover a character, and what separates the ink
+% from the bottom of that square.
+%
+% The value comes from \texttt{ascent}, \texttt{descent} and
+% \texttt{units_per_em} of the font file, cached per file name: opening a CJK
+% font costs about half a second, and one file serves every size.
 %    \begin{macrocode}
-function M.body_depth ()
-  local f = font.getfont(font.current())
-  local c = f and f.characters and f.characters[0x4E2D]
-  if c and c.depth and c.depth > 0 then
-    return string.format("%d", math.floor(c.depth + 0.5))
+local em_metrics = {}
+
+local function font_em (filename)
+  local m = em_metrics[filename]
+  if m ~= nil then
+    return m or nil
   end
-  return string.format("%d", math.floor(0.08 * tex.sp("1em") + 0.5))
+  local ok, t = pcall(fontloader.open, filename)
+  if ok and t and t.units_per_em and t.units_per_em > 0 and t.descent then
+    m = { descent = t.descent, upem = t.units_per_em }
+    fontloader.close(t)
+  else
+    m = false
+  end
+  em_metrics[filename] = m
+  return m or nil
+end
+
+function M.em_descent (id)
+  local f = tonumber(id)
+  f = f and f > 0 and font.getfont(f) or nil
+  local size = f and f.size or tex.sp("1em")
+  local m = f and f.filename and font_em(f.filename)
+  local sp
+  if m then
+    sp = math.floor(m.descent / m.upem * size + 0.5)
+  else
+    sp = math.floor(0.12 * size + 0.5)
+  end
+  return string.format("%d", sp)
 end
 
 %    \end{macrocode}
@@ -7446,7 +7487,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \box_new:N \l_@@_fntef_pattern_box
 \dim_new:N \l_@@_fntef_symbol_kern_dim
 \dim_new:N \l_@@_fntef_symbol_raise_dim
-\dim_new:N \l_@@_fntef_body_depth_dim
+\dim_new:N \l_@@_fntef_em_descent_dim
 %    \end{macrocode}
 %   \end{variable}
 %    \begin{macrocode}
@@ -7482,8 +7523,15 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \cs_new_protected:Npn \@@_fntef_use_symbol:n #1
   {
     \dim_set:Nn \l_@@_fntef_any_depth_dim {#1}
-    \dim_set:Nn \l_@@_fntef_body_depth_dim
-      { \lua_now:e { tex.print(LuaCJKfntef.body_depth()) } sp }
+    \dim_set:Nn \l_@@_fntef_em_descent_dim
+      {
+        \lua_now:e
+          {
+            tex.print(LuaCJKfntef.em_descent
+              ( \the \tex_attribute:D \c_@@_font_attr_int ))
+          }
+        sp
+      }
     \tl_set:Ne \l_@@_fntef_any_code_tl
       {
         \exp_not:N \tex_leaders:D \exp_not:N \hbox:n
@@ -7502,7 +7550,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
               {
                 \exp_not:N \dim_eval:n
                   {
-                    - \dim_use:N \l_@@_fntef_body_depth_dim
+                    - \dim_use:N \l_@@_fntef_em_descent_dim
                     - \exp_not:N \l_@@_fntef_any_depth_dim
                     - \exp_not:N \box_ht:N \l_@@_fntef_pattern_box
                   }
@@ -7523,7 +7571,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \tl_set:Ne \l_@@_fntef_cache_key_tl
       {
         symbol |
-        \dim_use:N \l_@@_fntef_body_depth_dim |
+        \dim_use:N \l_@@_fntef_em_descent_dim |
         \dim_use:N \l_@@_fntef_any_depth_dim |
         \tl_to_str:V \l_@@_fntef_symbol_tl
       }
@@ -7587,6 +7635,27 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       \@@_fntef_slash
       \@@_fntef_body:n {#4}
     \group_end:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\LuaCJKemdescent}
+% \changes{v0.0.1}{2026/11/11}{Provide \cs{LuaCJKemdescent}, the depth of the
+%   em box of the current font, so that an object of height \texttt{1em}
+%   placed at that depth covers the one-em square of a CJK character in any
+%   font.}
+% The depth of the em box of the current font, as a dimension. A CJK em box
+% is one em square, so an object of height \texttt{1em} placed at this depth
+% covers a character the way a PDF reader selects it.
+%    \begin{macrocode}
+\cs_new:Npn \LuaCJKemdescent
+  {
+    \lua_now:e
+      {
+        tex.print(LuaCJKfntef.em_descent
+          ( \the \tex_attribute:D \c_@@_font_attr_int ))
+      }
+    sp
   }
 %    \end{macrocode}
 % \end{macro}
