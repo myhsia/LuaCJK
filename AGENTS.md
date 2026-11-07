@@ -46,7 +46,7 @@ Entry points:
 | `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
 | `build.lua` | `l3build` configuration: module `luacjk`, version `v0.0.1`, `tdslocations`, the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
-| `testfiles/NN.lvt` + `.tlg` | 46 regression tests and their baselines, one pair per feature |
+| `testfiles/NN.lvt` + `.tlg` | 48 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree |
 | `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, and names the forge repository of the release link with `--repo` |
@@ -56,7 +56,7 @@ Entry points:
 | `scripts/check-docs.sh` | compares the facts in the two guides with their sources: the layout table against `git ls-files` (both directions), version, test count, DocStrip blocks, installed file types, attribute and decoration counts, `\RequirePackage` against `DEPENDS.txt` (a package loaded from the listings guard must be `soft`), `DEPENDS.txt` against `.github/tl_packages`, the subset count, the changelog facts (the newest `\changes` version and date against `build.lua`, the first line of `CHANGELOG.md` against the released version), and the two languages of the user part through `scripts/check-bilingual.lua`.  A `\RequirePackage` name is resolved to its TeX Live package with `tlmgr search --global --file`, falling back to `expl3 -> l3kernel` and `l3draw -> l3experimental` when `tlmgr` is absent |
 | `.github/font-urls.txt` | the Noto CJK release URLs the `l3build` job downloads for the manual; the hash of the file is the cache key, so changing a URL invalidates the cache |
 | `.github/workflows/test.yaml` | the CI workflow |
-| `.github/tl_packages` | the package list CI installs; a dependency must be added **or removed** here or the Ubuntu job fails first |
+| `.github/tl_packages` | the package list CI installs; a dependency must be added **or removed** here or the Ubuntu job fails first; the tagged manual and `tagging01` need `latex-lab` and `tagpdf` |
 | `CHANGELOG.md` | user-visible changes, newest first, generated from the `\changes` entries by `l3build changelog` |
 | `LICENSE` | the LPPL text the meta-comment refers to |
 | `.gitattributes` | `* text=auto`; a Windows checkout is CRLF, so a script that reads a source file normalizes `\r\n` before matching a `\n` |
@@ -201,6 +201,27 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   `\hbox to .5em` plus `\hss` and a path below the baseline is lowered again
   with `\raise`. Without the zeroed box a decoration opens up every decorated
   line.
+- **A decoration symbol is not text the reader should copy.**  The glyphs of
+  `\CJKunderanysymbol` and of the `symbol` key are wrapped in an
+  `ActualText` marked-content sequence whose replacement is `U+200B`; readers
+  drop it from the text they extract and select.  `selectable = true` opts out.
+  The wrapper is a `pdf_literal` inside the leader box, not a change to the
+  body.  Do not try to clone the font instead: a cloned font used in a
+  `\leaders` box aborts LuaTeX at shipout.
+- **Tagging is document-driven.**  The package never loads `tagpdf`; it checks
+  for `\tag_*` and `\tagpdfpara*` with `\cs_if_exist:NT` and does nothing when
+  tagging is off.  The manual driver declares
+  `\DocumentMetadata{tagging=on}` and loads `latex-lab-testphase-l3doc`.
+- **`CJKfilltwosides` tags by mode.**  In vertical mode it opens a
+  `text-block` structure; in horizontal mode it emits an MC attached to the
+  surrounding paragraph.  A `text-block` inside a paragraph is invalid
+  (`P --> P`), so the branch is required.  The automatic paragraph hooks are
+  off around the vbox and on again after it.
+- **The selection rectangle is not ours.**  A PDF reader derives its height
+  from the font's `hhea` ascent and descent.  For Noto Serif CJK SC that is
+  1.437em, so the reader's box is taller than the 1em square even though the
+  highlight is correct.  Tagging does not change this; do not add code that
+  tries to make the selection square.
 - **Three Lua modules, one module table.**  `LuaCJK.lua` only loads the core;
   `LuaCJK-core.lua` owns the load-time state and the passes;
   `LuaCJKfntef.lua` owns the decoration settings, may read what the core
@@ -300,10 +321,10 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 
 ```bash
 l3build unpack          # ~5 s, regenerates the derived files
-l3build check           # ~3 min, 46 tests, both test runs
+l3build check           # ~3 min, 48 tests, both test runs
 l3build check <name>    # one test, the first thing to run after a change
 l3build save <name>     # rewrite one baseline after an intended change
-l3build doc             # ~2 min, builds the manual and copies README back
+l3build doc             # ~2 min, tagged manual, needs latex-lab and tagpdf
 l3build ctan            # builds luacjk-ctan.zip
 l3build tag             # syncs \GetIdInfo with build.lua's version and date
 l3build changelog       # ~2 s, CHANGELOG.md from the dtx \changes entries
