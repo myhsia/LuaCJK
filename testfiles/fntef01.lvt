@@ -206,6 +206,31 @@
   \reporule{2}
 }
 
+\TEST{the em descent is the font's em box and scales}{
+  \TYPE{descent: \the\dimexpr\LuaCJKemdescent\relax}
+  \begingroup
+    \fontsize{20}{24}\selectfont
+    \TYPE{descent: \the\dimexpr\LuaCJKemdescent\relax}
+  \endgroup
+}
+
+\TEST{a highlight on the em box is a square}{
+  \setbox0=\hbox{\CJKunderanyline{\LuaCJKemdescent}{\rule{1pt}{1em}}{中}}
+  \TYPE{span: \the\wd0}
+  \directlua{
+    local n = tex.box[0].head
+    while n do
+      if n.id == node.id("rule") then
+        texio.write_nl("term and log",
+          "RULE w=" .. tostring(n.width) ..
+          " h+d=" .. tostring(n.height + n.depth) ..
+          " dp=" .. tostring(n.depth))
+      end
+      n = n.next
+    end
+  }
+}
+
 \END
 
 \end{document}
