@@ -178,5 +178,6 @@ NODES kern:327680 leaders:218430 kern:327680 glue:-873790 glyph glue:218430 glyp
 ============================================================
 TEST 16: settings do not leak to another decoration
 ============================================================
-NODES leaders:1310720 glue:-1310720 glyph glue:0 glyph
+span: 20.0pt
+RULE 1310720
 ============================================================

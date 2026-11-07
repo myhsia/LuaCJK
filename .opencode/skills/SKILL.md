@@ -181,6 +181,15 @@ A colored rule cannot use `\color`, which emits whatsits in front of
 (`\luaul_set_color:n` plus `\luaul_apply_color:`),
 which is why `format` takes a color name rather than code.
 
+Leaders repeat the box and only whole copies fit, so the last fraction of a
+span stays empty. With a one-point object that shortened a highlight at the
+right end by up to a point whenever the em was not a whole number of points,
+which is the case at `\small` in an 11pt document. A leader box that holds
+nothing but one rule is therefore replaced by a single rule node of the
+segment width, with the height and depth shifted by the box's own
+translation; the replacement keeps the rule's attributes, so the color
+survives. A box that holds a pattern (the symbols) keeps the leaders.
+
 The `depth` key places the rule below the baseline. `boxdepth`, which used to
 cap how much a rule added to the box, is gone: it was a workaround for the
 drawn patterns growing the line, and on a rule it removed the rule itself.
@@ -201,7 +210,11 @@ bottom of that box, which lifts a path that goes below the baseline, so the
 xout slash is lowered again by the part below the baseline plus half the
 stroke. The `symbol` variants of `\CJKunderdot` and `\CJKunderwave`, and
 `\CJKunderanysymbol`, follow one placement rule: one symbol per em, centered in
-the cell, its top a given distance under the baseline.
+the cell, its top a given distance under the *bottom of the body* of the text.
+That bottom is `LuaCJKfntef.body_depth`, the depth of U+4E2D in the current
+font in scaled points, with `.08em` as the fallback for a Latin font; the
+measured value is part of the cached type key, so a font change does not reuse
+a stale placement.
 
 ### The ctex adapter
 
