@@ -35,6 +35,17 @@ jobs:
         with:
           package_file: .github/tl_packages
           packages: ${{ matrix.tl-packages }}
+      - name: Install ctex-kit with the engine option
+        shell: bash
+        run: |
+          # ctex 2.6.6 adds the `engine` option that ctex-engine-luacjk.def and
+          # the manual rely on, and TeX Live still ships 2.6.5.  Install the
+          # branch carrying the change into TEXMFHOME, which kpathsea searches
+          # before texmf-dist.  Delete this step once 2.6.6 is in TeX Live.
+          git clone --depth 1 --branch feat/1122-engine-option \
+            https://github.com/CTeX-org/ctex-kit.git "$RUNNER_TEMP/ctex-kit"
+          cd "$RUNNER_TEMP/ctex-kit/ctex"
+          l3build install
       - name: Cache CJK fonts
         id: font-cache
         uses: actions/cache@v4
@@ -86,10 +97,7 @@ jobs:
         id: test-luacjk
         run: l3build check
       - name: Run l3build doc
-        # Off until ctex-kit takes the change the manual needs.  Restore the
-        # condition below when it is in TeX Live:
-        #   if: ${{ !cancelled() && steps.test-luacjk.outcome == 'success' }}
-        if: false
+        if: ${{ !cancelled() && steps.test-luacjk.outcome == 'success' }}
         run: l3build doc
       - name: Get short commit SHA
         if: ${{ !cancelled() && steps.test-luacjk.outcome == 'failure' }}
@@ -116,6 +124,15 @@ jobs:
         uses: zauguin/install-texlive@v4
         with:
           package_file: .github/tl_packages
+      - name: Install ctex-kit with the engine option
+        shell: bash
+        run: |
+          # See the same step in the l3build job: ctex 2.6.6 has the `engine`
+          # option the engine file needs, and TeX Live still ships 2.6.5.
+          git clone --depth 1 --branch feat/1122-engine-option \
+            https://github.com/CTeX-org/ctex-kit.git "$RUNNER_TEMP/ctex-kit"
+          cd "$RUNNER_TEMP/ctex-kit/ctex"
+          l3build install
       - name: Unpack LuaCJK
         run: l3build unpack
       - name: Run ctex subset tests
