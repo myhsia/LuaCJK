@@ -405,26 +405,36 @@ requests. Two jobs, each on `ubuntu-latest`, `macos-latest`, and
 `windows-latest`:
 
 - `l3build`: install TeX Live (with `wintools.windows` on Windows, for
-  `unzip`) and the Noto CJK collections listed in `.github/font-urls.txt`
+  `unzip`), install the ctex-kit branch with the `engine` option (see below),
+  and the Noto CJK collections listed in `.github/font-urls.txt`
   (cached under the file's hash, copied into the system font directory, then
   `fc-cache -f`), then `bash scripts/check-docs.sh` (it calls
   `texlua` for the bilingual check, so it cannot run before the install),
   then `texlua scripts/check-charclass.lua`, then `l3build changelog` and a
   `git diff --exit-code CHANGELOG.md` that fails when the generated file is
-  stale, then `l3build check`, then `l3build doc` (only if the check passed).
-  The doc step carries `if: false` for now: the manual needs a `ctex-kit`
-  change that is not in TeX Live yet. Restore its `if:` condition when that
-  change is released;
-- `ctex-subset`: `l3build unpack`, then `bash scripts/ctex-subset.sh
-  --skip-unpack`.
+  stale, then `l3build check`, then `l3build doc` (only if the check passed);
+- `ctex-subset`: install TeX Live and the same ctex-kit branch, then
+  `l3build unpack`, then `bash scripts/ctex-subset.sh --skip-unpack`.
+
+Both jobs install ctex-kit's `feat/1122-engine-option` branch into `TEXMFHOME`
+before anything is compiled: the package and the manual select the backend with
+ctex's `engine` option, which ctex 2.6.6 adds and TeX Live 2026 does not ship
+yet. The step clones that branch and runs `l3build install` in its `ctex`
+directory, which unpacks by itself and writes into `TEXMFHOME`; kpathsea
+searches that tree before `texmf-dist`, so no `sudo` and no `texhash` are
+needed and the same commands work on all three systems. The branch is tracked
+at its head. **Delete both steps, and nothing else, once ctex 2.6.6 is in TeX
+Live**; the condition on the doc step stays as it is.
 
 On failure the `l3build` job uploads `build/**/*.diff`, `build/**/*.fc` and
 `build/**/*.log` as
 `luacjk-diff-<short-sha>-<os>`; download it with `gh run download` through the
-proxy (see the `network-access` skill). Local and CI run the same commands;
-the parity risks are a missing or surplus entry in `.github/tl_packages` and
-the fonts the manual needs (Noto CJK from `.github/font-urls.txt`, the two
-LXGW faces from `lxgw-fonts`).
+proxy (see the `network-access` skill). Local and CI run the same commands; a
+local run gets the same ctex from an `l3build install` of that branch into
+`TEXMFHOME` (`~/Library/texmf` on this Mac), and the remaining parity risks are
+a missing or surplus entry in `.github/tl_packages` and the fonts the manual
+needs (Noto CJK from `.github/font-urls.txt`, the two LXGW faces from
+`lxgw-fonts`).
 
 A change in ctex-kit cannot be seen by a workflow of this repository, so it is
 not a CI job: `scripts/check-extract-changes.sh` is the session check declared
