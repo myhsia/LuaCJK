@@ -98,7 +98,33 @@ jobs:
         run: l3build check
       - name: Run l3build doc
         if: ${{ !cancelled() && steps.test-luacjk.outcome == 'success' }}
-        run: l3build doc
+        shell: bash
+        run: |
+          # latexmk counts LuaTeX's "unreferenced destination" warning as a
+          # broken reference, and it gave up on Windows before converging.
+          # latex-lab-testphase-l3doc creates those destinations for the name
+          # tables of function environments, so LuaCJK does not produce them.
+          # Judge the run by the manual's own criteria (see AGENTS.md) instead
+          # of by latexmk's exit code.
+          l3build doc ||
+            echo "::warning::l3build doc exited with $?; checking the log instead"
+          fail=0
+          if [ ! -s build/doc/LuaCJK.pdf ]; then
+            echo "::error::l3build doc wrote no manual"
+            fail=1
+          fi
+          if [ ! -f build/doc/LuaCJK.log ]; then
+            echo "::error::l3build doc wrote no log"
+            exit 1
+          fi
+          for pattern in '^!' '[Rr]eference .* undefined' 'Missing character' \
+                         'multiply defined' 'duplicate destination'; do
+            if grep -nE "$pattern" build/doc/LuaCJK.log; then
+              echo "::error::the manual's log matches: $pattern"
+              fail=1
+            fi
+          done
+          exit $fail
       - name: Get short commit SHA
         if: ${{ !cancelled() && steps.test-luacjk.outcome == 'failure' }}
         run: echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
