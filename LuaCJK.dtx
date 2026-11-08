@@ -64,15 +64,18 @@ inside a `listings` block.
 \setCJKmainfont{FandolSong-Regular.otf}
 ```
 
-LuaCJK requires the LuaTeX engine. It must not be loaded together with `luatexja`.
+LuaCJK requires the LuaTeX engine.
+It must not be loaded together with `luatexja`.
 
 ## Tagged PDF
 
-Declare `\DocumentMetadata{tagging=on}` before `\documentclass` to produce a
-tagged PDF.  The ink of a decoration is an artifact, a decoration symbol is
-left out of the text a reader copies, and `LuaCJKfntef`'s `selectable` key
-keeps a symbol as text.  Under `l3doc`, load `latex-lab-testphase-l3doc` as
-well.  The manual is built with tagging enabled.
+Declare `\DocumentMetadata{tagging = on}` before `\documentclass` to
+produce a tagged PDF.
+The ink of a decoration is an artifact, a decoration symbol is left out of
+the text a reader copies, and `LuaCJKfntef`'s `selectable` key keeps a
+symbol as text.
+Under `l3doc`, load `latex-lab-testphase-l3doc` as well.
+The manual is built with tagging enabled.
 
 ## Using it with ctex
 
@@ -118,10 +121,9 @@ LaTeX Project Public License, version 1.3c or later.
 %</internal>
 %
 %<*driver>
-\DocumentMetadata{tagging=on,pdfversion=1.7,lang=zh-CN}
+\DocumentMetadata{tagging = on, pdfversion = 1.7, lang = zh-CN}
 \documentclass[11pt, letterpaper]{l3doc}
 \usepackage{latex-lab-testphase-l3doc}
-\setlength{\emergencystretch}{3em}
 \providecommand*\LuaLaTeX{\hologo{LuaLaTeX}}
 \providecommand*\XeLaTeX {\hologo{XeLaTeX}}
 \usepackage{xurl}
@@ -1124,8 +1126,8 @@ a’a\quad 字！字
 %   \begin{syntax}
 %     \tn{CJKunderline} \oarg{options} \marg{text}
 %   \end{syntax}
-%   给 \meta{text} 加下划线。初始几何是 \texttt{depth=0.2em}
-%   与 \texttt{thickness=0.4pt}。
+%   给 \meta{text} 加下划线。初始几何是 \texttt{depth = 0.2em}
+%   与 \texttt{thickness = 0.4pt}。
 %   开头的一个 \texttt{*} 或 \texttt{-} 可以接受，并且被忽略。
 % \end{function}
 %
@@ -2319,8 +2321,8 @@ a’a\quad 字！字
 %   \begin{syntax}
 %     \tn{CJKunderline} \oarg{options} \marg{text}
 %   \end{syntax}
-%   Underline \meta{text}. The initial geometry is \texttt{depth=0.2em}
-%   and \texttt{thickness=0.4pt}.
+%   Underline \meta{text}. The initial geometry is \texttt{depth = 0.2em}
+%   and \texttt{thickness = 0.4pt}.
 %   A leading \texttt{*} or \texttt{-} is accepted and ignored.
 % \end{function}
 %
@@ -2467,8 +2469,8 @@ a’a\quad 字！字
 %   \meta{depth} is \cs{LuaCJKemdescent} and the object is \texttt{1em}
 %   high, as the example below does.  The object fills the em box, which is
 %   the area a PDF reader selects: the advance across, the em box down, so a
-%   font whose ink is smaller shows its side bearing all round. The type is cached, so the same arguments reuse one
-%   underline type.
+%   font whose ink is smaller shows its side bearing all round. The type is
+%   cached, so the same arguments reuse one underline type.
 % \end{function}
 %
 % \begin{function}{\CJKunderanysymbol}
@@ -2632,7 +2634,7 @@ a’a\quad 字！字
 \sys_if_engine_luatex:F
   {
     \msg_new:nnn { LuaCJK } { engine }
-      { LuaCJK~requires~LuaTeX. }
+      { LuaCJK ~ requires ~ LuaTeX. }
     \msg_critical:nn { LuaCJK } { engine }
     \tex_endinput:D
   }
@@ -2661,8 +2663,8 @@ a’a\quad 字！字
 %    \begin{macrocode}
 \msg_new:nnn { LuaCJK } { luatexja-conflict }
   {
-    LuaCJK~and~LuaTeX-ja~must~not~be~loaded~together.\\
-    Load~only~one~of~them.
+    LuaCJK ~ and ~ LuaTeX-ja ~ must ~ not ~ be ~ loaded ~ together.\\
+    Load ~ only ~ one ~ of ~ them.
   }
 \cs_if_exist:cT { ver@luatexja.sty }
   { \msg_critical:nn { LuaCJK } { luatexja-conflict } }
@@ -2693,23 +2695,23 @@ a’a\quad 字！字
 % the allocated attribute numbers for the Lua side.
 %    \begin{macrocode}
 \newattribute \g_@@_font_attr
-\int_const:Nn \c_@@_font_attr_int { \int_use:N \allocationnumber }
+\int_const:Nn \c_@@_font_attr_int       { \int_use:N \allocationnumber }
 \newattribute \g_@@_cjk_space_attr
-\int_const:Nn \c_@@_cjk_space_attr_int { \int_use:N \allocationnumber }
+\int_const:Nn \c_@@_cjk_space_attr_int  { \int_use:N \allocationnumber }
 \newattribute \g_@@_xecglue_attr
-\int_const:Nn \c_@@_xecglue_attr_int { \int_use:N \allocationnumber }
+\int_const:Nn \c_@@_xecglue_attr_int    { \int_use:N \allocationnumber }
 \newattribute \g_@@_inserted_attr
-\int_const:Nn \c_@@_inserted_attr_int { \int_use:N \allocationnumber }
+\int_const:Nn \c_@@_inserted_attr_int   { \int_use:N \allocationnumber }
 \newattribute \g_@@_math_font_attr
-\int_const:Nn \c_@@_math_font_attr_int { \int_use:N \allocationnumber }
+\int_const:Nn \c_@@_math_font_attr_int  { \int_use:N \allocationnumber }
 \newattribute \g_@@_disabled_attr
-\int_const:Nn \c_@@_disabled_attr_int { \int_use:N \allocationnumber }
+\int_const:Nn \c_@@_disabled_attr_int   { \int_use:N \allocationnumber }
 \newattribute \g_@@_punct_font_attr
 \int_const:Nn \c_@@_punct_font_attr_int { \int_use:N \allocationnumber }
 \newattribute \g_@@_settings_attr
-\int_const:Nn \c_@@_settings_attr_int { \int_use:N \allocationnumber }
+\int_const:Nn \c_@@_settings_attr_int   { \int_use:N \allocationnumber }
 \newattribute \g_@@_nobreak_attr
-\int_const:Nn \c_@@_nobreak_attr_int { \int_use:N \allocationnumber }
+\int_const:Nn \c_@@_nobreak_attr_int    { \int_use:N \allocationnumber }
 \g_@@_math_font_attr  = 0
 \g_@@_punct_font_attr = 0
 \g_@@_settings_attr   = 0
@@ -2797,8 +2799,8 @@ a’a\quad 字！字
 %    \begin{macrocode}
 \msg_new:nnn { LuaCJK } { punct-style-unknown }
   {
-    PunctStyle~`#1'~is~not~implemented.\\
-    Using~`plain'~instead.
+    PunctStyle ~ `#1' ~ is ~ not ~ implemented.\\
+    Using ~ `plain' ~ instead.
   }
 \cs_new_protected:Npn \@@_set_punct_style:n #1
   {
@@ -2863,14 +2865,11 @@ a’a\quad 字！字
         LuaCJK.edit_punct_style
           ( "\lua_escape:e {#1}" ,
             \bool_if:NTF \l_@@_punct_compress_given_bool
-              { \l_@@_punct_compress_value_tl }
-              { nil } ,
+              { \l_@@_punct_compress_value_tl  } { nil },
             \bool_if:NTF \l_@@_punct_ratio_given_bool
-              { \fp_use:N \l_@@_punct_ratio_fp }
-              { nil } ,
+              { \fp_use:N \l_@@_punct_ratio_fp } { nil },
             \bool_if:NTF \l_@@_punct_keep_given_bool
-              { \l_@@_punct_keep_value_tl }
-              { nil } )
+              { \l_@@_punct_keep_value_tl      } { nil } )
       }
   }
 %    \end{macrocode}
@@ -2889,9 +2888,10 @@ a’a\quad 字！字
 \bool_new:N \l_@@_bound_width_warned_bool
 \msg_new:nnn { LuaCJK } { bound-width-unsupported }
   {
-    The~star~form~of~\token_to_str:N \LuaCJKsetwidth,~which~sets~the~width~
-    at~the~start~or~end~of~a~line,~is~not~implemented.\\
-    The~width~is~applied~to~every~position~instead.
+    The ~ star ~ form ~ of ~ \token_to_str:N \LuaCJKsetwidth, ~ which ~
+    sets ~ the ~ width ~ at ~ the ~ start ~ or ~ end ~ of ~ a ~ line, ~ is ~
+    not ~ implemented.\\
+    The ~ width ~ is ~ applied ~ to ~ every ~ position ~ instead.
   }
 %    \end{macrocode}
 % \end{variable}
@@ -3110,23 +3110,23 @@ a’a\quad 字！字
     \clist_map_inline:nn {#1} { \@@_range_entry:n {##1} }
   }
 \msg_new:nnn { LuaCJK } { unknown-char-class }
-  { Unknown~character~class~`#1'~is~being~ignored. }
+  { Unknown ~ character   ~ class ~ `#1' ~ is ~ being ~ ignored. }
 \msg_new:nnn { LuaCJK } { unknown-punct-class }
-  { Unknown~punctuation~class~`#1'~is~being~ignored. }
+  { Unknown ~ punctuation ~ class ~ `#1' ~ is ~ being ~ ignored. }
 \NewDocumentCommand \LuaCJKDeclareCharClass { m m }
   {
     \str_case:nnF {#1}
       {
-        { CJK         } { \@@_push_class:nn { true } {#2}    }
-        { Default     } { \@@_push_class:nn { false } {#2}   }
-        { FullLeft    } { \@@_push_punct:nn { "open" } {#2}  }
-        { HalfLeft    } { \@@_push_punct:nn { "open" } {#2}  }
+        { CJK         } { \@@_push_class:nn { true    } {#2} }
+        { Default     } { \@@_push_class:nn { false   } {#2} }
+        { FullLeft    } { \@@_push_punct:nn { "open"  } {#2} }
+        { HalfLeft    } { \@@_push_punct:nn { "open"  } {#2} }
         { FullRight   } { \@@_push_punct:nn { "close" } {#2} }
         { HalfRight   } { \@@_push_punct:nn { "close" } {#2} }
-        { NormalSpace } { \@@_push_normal_space:n {#2}       }
-        { CJStarter   } { \@@_push_class:nn { true } {#2}    }
-        { CM          } { \@@_push_class:nn { true } {#2}    }
-        { Boundary    } { \@@_push_class:nn { true } {#2}    }
+        { NormalSpace } { \@@_push_normal_space:n       {#2} }
+        { CJStarter   } { \@@_push_class:nn { true    } {#2} }
+        { CM          } { \@@_push_class:nn { true    } {#2} }
+        { Boundary    } { \@@_push_class:nn { true    } {#2} }
       } { \msg_warning:nnn { LuaCJK } { unknown-char-class } {#1} }
   }
 \cs_new_protected:Npn \@@_push_normal_space:n #1
@@ -3517,7 +3517,7 @@ a’a\quad 字！字
       },
   }
 \msg_new:nnn { LuaCJK } { unknown-option }
-  { Unknown~option~`#1'~is~being~ignored. }
+  { Unknown ~ option ~ `#1' ~ is ~ being ~ ignored. }
 %    \end{macrocode}
 %    \begin{macrocode}
 \NewDocumentCommand \LuaCJKsetup { m }
@@ -3656,8 +3656,9 @@ a’a\quad 字！字
 %    \begin{macrocode}
 \msg_new:nnn { LuaCJK } { verb-addon-narrow }
   {
-    The~monospaced~font~is~too~narrow~for~one~CJK~character.\\
-    `\token_to_str:N \LuaCJKVerbAddon'~adds~no~space.
+    The ~ monospaced ~ font ~ is ~ too ~ narrow ~ for ~ one ~ CJK ~
+    character.\\
+    `\token_to_str:N \LuaCJKVerbAddon' ~ adds ~ no ~ space.
   }
 \cs_new_protected:Npn \@@_verb_addon_compute:
   {
@@ -3781,14 +3782,14 @@ a’a\quad 字！字
   }
 \clist_map_inline:nn
   {
-    verbatim , verbatim* , Verbatim , Verbatim* ,
-    BVerbatim , LVerbatim , lstlisting
+    verbatim,  Verbatim,  BVerbatim,
+    verbatim*, Verbatim*, LVerbatim, lstlisting
   }
   {
     \hook_gput_code:nnn { env / #1 / begin } { LuaCJK }
       { \@@_verbatim_env_begin: }
     \hook_gput_code:nnn { env / #1 / end   } { LuaCJK }
-      { \@@_verbatim_env_end: }
+      { \@@_verbatim_env_end:   }
   }
 %    \end{macrocode}
 % \end{macro}
@@ -3874,10 +3875,10 @@ a’a\quad 字！字
   {
     \str_case:en { \tl_trim_spaces:n {#1} }
       {
-        { AutoFakeBold  } { \bool_set_true:N \l_@@_autofake_bold_given_bool }
+        { AutoFakeBold  } { \bool_set_true:N \l_@@_autofake_bold_given_bool  }
         { AutoFakeSlant } { \bool_set_true:N \l_@@_autofake_slant_given_bool }
-        { BoldFont      } { \bool_set_true:N \l_@@_bold_font_given_bool }
-        { ItalicFont    } { \bool_set_true:N \l_@@_italic_font_given_bool }
+        { BoldFont      } { \bool_set_true:N \l_@@_bold_font_given_bool      }
+        { ItalicFont    } { \bool_set_true:N \l_@@_italic_font_given_bool    }
       }
   }
 \cs_new_protected:Npn \@@_build_features:n #1
@@ -4013,7 +4014,7 @@ a’a\quad 字！字
   }
 \seq_new:N \g_@@_unknown_family_seq
 \msg_new:nnn { LuaCJK } { family-unknown }
-  { Unknown~CJK~family~`#1'~is~being~ignored. }
+  { Unknown ~ CJK ~ family ~ `#1' ~ is ~ being ~ ignored. }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -4127,7 +4128,7 @@ a’a\quad 字！字
 % because a math font belongs to a family, not to a group.
 %    \begin{macrocode}
 \msg_new:nnn { LuaCJK } { math-family-exhausted }
-  { Too~many~CJK~families~for~the~math~families~240--255. }
+  { Too ~ many ~ CJK ~ families ~ for ~ the ~ math ~ families ~ 240--255. }
 \cs_new_protected:Npn \@@_math_family:n #1
   {
     \prop_if_in:NnF \g_@@_math_family_prop {#1}
@@ -4319,7 +4320,7 @@ a’a\quad 字！字
     \tl_if_novalue:nTF {#2}
       {
         \tl_if_novalue:nTF {#4}
-          { \@@_add_fallback:nn { } {#3} }
+          { \@@_add_fallback:nn {  } {#3} }
           { \@@_add_fallback:nn {#4} {#3} }
       }
       { \@@_add_fallback:nn {#2} {#3} }
@@ -4333,7 +4334,7 @@ a’a\quad 字！字
     \tl_if_novalue:nTF {#2}
       {
         \tl_if_novalue:nTF {#4}
-          { \@@_set_family_with_options_aux:nnn {#1} { } {#3} }
+          { \@@_set_family_with_options_aux:nnn {#1} {  } {#3} }
           { \@@_set_family_with_options_aux:nnn {#1} {#4} {#3} }
       }
       { \@@_set_family_with_options_aux:nnn {#1} {#2} {#3} }
@@ -4549,7 +4550,7 @@ a’a\quad 字！字
       { \msg_warning:nnn { LuaCJK } { config-missing } {#1} }
   }
 \msg_new:nnn { LuaCJK } { config-missing }
-  { The~configuration~file~`#1'~was~not~found. }
+  { The ~ configuration ~ file ~ `#1' ~ was ~ not ~ found. }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -4648,34 +4649,34 @@ LuaCJK = LuaCJK or {}
 %
 % \begin{variable}[int]
 %   {
-%     M,        GLYPH,      GLUE,          HLIST,
-%     VLIST,    KERN,       PENALTY,       MATH,
-%     DISC,     WHATSIT,    MARK,          INS,
-%     ADJUST,   LOCAL_PAR,  SPACESKIP,     new_node,
+%     M,         GLYPH,         GLUE,          HLIST,
+%     VLIST,     KERN,          PENALTY,       MATH,
+%     DISC,      WHATSIT,       MARK,          INS,
+%     ADJUST,    LOCAL_PAR,     SPACESKIP,     new_node,
 %     free_node, has_attribute, set_attribute
 %   }
 % Short names for the module table, the node types,
 % and the node functions.
 %    \begin{macrocode}
-local M             = LuaCJK
-local GLYPH         = node.id("glyph")
-local GLUE          = node.id("glue")
-local HLIST         = node.id("hlist")
-local VLIST         = node.id("vlist")
-local KERN          = node.id("kern")
-local PENALTY       = node.id("penalty")
-local MATH          = node.id("math")
-local DISC          = node.id("disc")
-local WHATSIT       = node.id("whatsit")
-local MARK          = node.id("mark")
-local INS           = node.id("ins")
-local ADJUST        = node.id("adjust")
-local LOCAL_PAR     = node.id("local_par")
-local SPACESKIP     = node.subtype("spaceskip") or 13
-local new_node      = node.new
-local free_node     = node.free
-local has_attribute = node.has_attribute
-local set_attribute = node.set_attribute
+local M               = LuaCJK
+local GLYPH           = node.id("glyph")
+local GLUE            = node.id("glue")
+local HLIST           = node.id("hlist")
+local VLIST           = node.id("vlist")
+local KERN            = node.id("kern")
+local PENALTY         = node.id("penalty")
+local MATH            = node.id("math")
+local DISC            = node.id("disc")
+local WHATSIT         = node.id("whatsit")
+local MARK            = node.id("mark")
+local INS             = node.id("ins")
+local ADJUST          = node.id("adjust")
+local LOCAL_PAR       = node.id("local_par")
+local SPACESKIP       = node.subtype("spaceskip") or 13
+local new_node        = node.new
+local free_node       = node.free
+local has_attribute   = node.has_attribute
+local set_attribute   = node.set_attribute
 local unset_attribute = node.unset_attribute
 
 %    \end{macrocode}
@@ -4901,18 +4902,18 @@ M.class_override = {}
 M.punct_override = {}
 
 local CJK_RANGES = {
-  { 0x1100, 0x11FF },   -- Hangul Jamo
-  { 0x2014, 0x2014 },   -- em dash, shared with Latin
-  { 0x2018, 0x2019 },   -- single quotation marks
-  { 0x201C, 0x201D },   -- double quotation marks
-  { 0x2026, 0x2026 },   -- horizontal ellipsis, shared with Latin
-  { 0x2E80, 0x9FFF },   -- radicals, punctuation, kana, ideographs
-  { 0xA960, 0xA97C },   -- Hangul Jamo Extended-A
-  { 0xAC00, 0xD7C6 },   -- Hangul syllables and Jamo Extended-B
-  { 0xD7CB, 0xD7FB },   -- Hangul Jamo Extended-B
-  { 0xF900, 0xFAFF },   -- compatibility ideographs
-  { 0xFE30, 0xFE4F },   -- compatibility forms
-  { 0xFF00, 0xFFEF },   -- fullwidth forms
+  { 0x1100,  0x11FF },  -- Hangul Jamo
+  { 0x2014,  0x2014 },  -- em dash, shared with Latin
+  { 0x2018,  0x2019 },  -- single quotation marks
+  { 0x201C,  0x201D },  -- double quotation marks
+  { 0x2026,  0x2026 },  -- horizontal ellipsis, shared with Latin
+  { 0x2E80,  0x9FFF },  -- radicals, punctuation, kana, ideographs
+  { 0xA960,  0xA97C },  -- Hangul Jamo Extended-A
+  { 0xAC00,  0xD7C6 },  -- Hangul syllables and Jamo Extended-B
+  { 0xD7CB,  0xD7FB },  -- Hangul Jamo Extended-B
+  { 0xF900,  0xFAFF },  -- compatibility ideographs
+  { 0xFE30,  0xFE4F },  -- compatibility forms
+  { 0xFF00,  0xFFEF },  -- fullwidth forms
   { 0x16FE2, 0x16FE3 }, -- Old Chinese hook and iteration marks
   { 0x16FF0, 0x16FF6 }, -- Han, Vietnamese alternate reading marks
   { 0x1AFF0, 0x1AFF3 }, -- Kana Extended-B
@@ -7050,14 +7051,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \sys_if_engine_luatex:F
   {
     \msg_new:nnn { LuaCJKfntef } { engine }
-      { LuaCJKfntef~requires~LuaTeX. }
+      { LuaCJKfntef ~ requires ~ LuaTeX. }
     \msg_critical:nn { LuaCJKfntef } { engine }
     \tex_endinput:D
   }
-\RequirePackage { LuaCJK   }
-\RequirePackage { lua-ul   }
-\RequirePackage { luacolor }
-\RequirePackage { l3draw   }
+\RequirePackage { LuaCJK, lua-ul, luacolor, l3draw }
 \lua_load_module:n { LuaCJKfntef }
 \newattribute \g_@@_fntef_settings_attr
 \int_const:Nn \c_@@_fntef_settings_attr_int { \int_use:N \allocationnumber }
@@ -7164,8 +7162,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \cs_new_protected:Npn \@@_fntef_hide:n #1
   {
     \bool_if:NTF \l_@@_fntef_hidden_bool
-      { \phantom {#1} }
-      { #1 }
+      { \phantom {#1} } { #1 }
   }
 %    \end{macrocode}
 % \end{macro}
@@ -7183,12 +7180,12 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         \lua_now:e
           {
             tex.setattribute
-              ( \int_use:N \c_@@_fntef_settings_attr_int , 0 )
+              ( \int_use:N \c_@@_fntef_settings_attr_int, 0 )
           }
       }
       {
         \str_if_eq:VnTF \l_@@_fntef_skip_tl { 1 }
-          { \tl_set:Nn \l_@@_fntef_skip_js_tl { true } }
+          { \tl_set:Nn \l_@@_fntef_skip_js_tl { true  } }
           { \tl_set:Nn \l_@@_fntef_skip_js_tl { false } }
         \lua_now:e
           {
@@ -7411,7 +7408,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \begin{macrocode}
 \keys_define:nn { LuaCJKfntef / decoration }
   {
-    subtract  .code:n           =
+    subtract  .code:n             =
       {
         \str_if_eq:nnTF {#1} { true }
           { \dim_set:Nn \l_@@_fntef_subtract_dim { .5em } }
@@ -7421,34 +7418,34 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
               { \dim_set:Nn \l_@@_fntef_subtract_dim {#1} }
           }
       },
-    subtract  .default:n        = { true },
-    skip      .code:n           =
+    subtract  .default:n          = { true },
+    skip      .code:n             =
       {
         \str_if_eq:nnTF {#1} { true }
           { \tl_set:Nn \l_@@_fntef_skip_tl { 1 } }
           { \tl_set:Nn \l_@@_fntef_skip_tl { 0 } }
       },
-    skip      .default:n        = { true },
-    hidden    .bool_set:N       = \l_@@_fntef_hidden_bool,
-    hidden    .default:n        = { true },
-    selectable .bool_set_inverse:N = \l_@@_fntef_silent_bool,
-    selectable .default:n       = { true },
-    depth     .dim_set:N        = \l_@@_fntef_depth_dim,
-    depth     .value_required:n = true,
-    thickness .dim_set:N        = \l_@@_fntef_thickness_dim,
-    thickness .value_required:n = true,
-    gap       .dim_set:N        = \l_@@_fntef_gap_dim,
-    gap       .value_required:n = true,
-    height    .dim_set:N        = \l_@@_fntef_height_dim,
-    height    .value_required:n = true,
-    format    .tl_set:N         = \l_@@_fntef_format_tl,
-    color     .tl_set:N         = \l_@@_fntef_format_tl,
-    color     .value_required:n = true,
-    symbol    .tl_set:N         = \l_@@_fntef_symbol_tl,
-    sep       .dim_set:N        = \l_@@_fntef_symbol_sep_dim,
-    sep       .value_required:n = true,
-    textformat .tl_set:N        = \l_@@_fntef_textformat_tl,
-    unknown   .code:n           =
+    skip      .default:n          = { true },
+    hidden    .bool_set:N         = \l_@@_fntef_hidden_bool,
+    hidden    .default:n          = { true },
+    selectable.bool_set_inverse:N = \l_@@_fntef_silent_bool,
+    selectable.default:n          = { true },
+    depth     .dim_set:N          = \l_@@_fntef_depth_dim,
+    depth     .value_required:n   = true,
+    thickness .dim_set:N          = \l_@@_fntef_thickness_dim,
+    thickness .value_required:n   = true,
+    gap       .dim_set:N          = \l_@@_fntef_gap_dim,
+    gap       .value_required:n   = true,
+    height    .dim_set:N          = \l_@@_fntef_height_dim,
+    height    .value_required:n   = true,
+    format    .tl_set:N           = \l_@@_fntef_format_tl,
+    color     .tl_set:N           = \l_@@_fntef_format_tl,
+    color     .value_required:n   = true,
+    symbol    .tl_set:N           = \l_@@_fntef_symbol_tl,
+    sep       .dim_set:N          = \l_@@_fntef_symbol_sep_dim,
+    sep       .value_required:n   = true,
+    textformat.tl_set:N           = \l_@@_fntef_textformat_tl,
+    unknown   .code:n             =
       {
         \tl_put_right:Nx \l_@@_fntef_pass_tl
           {
@@ -7516,11 +7513,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % the period exactly and no overfull box is reported. The stroke
 % is set to |.04em|, which is \texttt{0.4pt} at 10pt, so the pattern keeps
 % its look from the previous release while it scales with the font size.
-%   \begin{variable}[int]{\l_@@_fntef_pattern_box}
-%   A scratch box for the drawn patterns.
-%   Each pattern is built here and then has its height and depth set to zero:
-%   the ink is a PDF literal, so only the reported dimensions change,
-%   and a decoration never opens up the line it sits on.
+% \begin{variable}[int]{\l_@@_fntef_pattern_box}
+% A scratch box for the drawn patterns.
+% Each pattern is built here and then has its height and depth set to zero:
+% the ink is a PDF literal, so only the reported dimensions change,
+% and a decoration never opens up the line it sits on.
 %    \begin{macrocode}
 \box_new:N \l_@@_fntef_pattern_box
 \dim_new:N \l_@@_fntef_symbol_kern_dim
@@ -7579,7 +7576,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         \lua_now:e
           {
             tex.print(LuaCJKfntef.em_descent
-              ( \the \tex_attribute:D \c_@@_font_attr_int ))
+              ( \int_use:N \tex_attribute:D \c_@@_font_attr_int ))
           }
         sp
       }
@@ -7637,8 +7634,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \group_begin:
       \@@_fntef_decoration_setup:n {#3}
       \tl_if_empty:NTF \l_@@_fntef_symbol_tl
-        { \@@_fntef_wave }
-        { \@@_fntef_use_symbol:n { .42em } }
+        { \@@_fntef_wave } { \@@_fntef_use_symbol:n { .42em } }
       \@@_fntef_body:n {#4}
     \group_end:
   }
@@ -7707,7 +7703,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \lua_now:e
       {
         tex.print(LuaCJKfntef.em_descent
-          ( \the \tex_attribute:D \c_@@_font_attr_int ))
+          ( \int_use:N \tex_attribute:D \c_@@_font_attr_int ))
       }
     sp
   }
@@ -7919,8 +7915,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         { t }
         {
           \dim_set:Nn \l_@@_fntef_fill_half_dim
-            { \box_ht:N \l_@@_fntef_fill_box
-              + \box_dp:N \l_@@_fntef_fill_box }
+            { \box_ht_plus_dp:N \l_@@_fntef_fill_box }
           \box_set_ht:Nn \l_@@_fntef_fill_box { 0pt }
           \box_set_dp:Nn \l_@@_fntef_fill_box
             { \l_@@_fntef_fill_half_dim }
@@ -7928,8 +7923,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         { c }
         {
           \dim_set:Nn \l_@@_fntef_fill_half_dim
-            { ( \box_ht:N \l_@@_fntef_fill_box
-                + \box_dp:N \l_@@_fntef_fill_box ) / 2 }
+            { \box_ht_plus_dp:N \l_@@_fntef_fill_box / 2 }
           \box_set_ht:Nn \l_@@_fntef_fill_box
             { \l_@@_fntef_fill_half_dim }
           \box_set_dp:Nn \l_@@_fntef_fill_box
@@ -7947,7 +7941,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   }
 \NewDocumentEnvironment { CJKfilltwosides } { O{c} m }
   { \@@_fntef_fill_begin:nn {#1} {#2} }
-  { \@@_fntef_fill_end: }
+  { \@@_fntef_fill_end:               }
 %    \end{macrocode}
 % \end{environment}
 %
@@ -7957,7 +7951,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \begin{macrocode}
 \NewDocumentEnvironment { CJKfilltwosides* } { O{c} m }
   { \@@_fntef_fill_begin:nn {#1} {#2} }
-  { \@@_fntef_fill_end: }
+  { \@@_fntef_fill_end:               }
 %</fntef>
 %    \end{macrocode}
 % \end{environment}
@@ -7972,8 +7966,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % each listing only sets the category codes again in its own group.
 %    \begin{macrocode}
 %<*listings>
-\RequirePackage { LuaCJK }
-\RequirePackage { listings }
+\RequirePackage { LuaCJK, listings }
 \makeatletter
 \newif\ifLuaCJK@listings@cjkrun
 \newif\ifLuaCJK@listings@defined
@@ -8041,16 +8034,16 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % would collide on CTAN, and the two files would describe different backends
 % under one name.
 %
-% The file defines the handful of \cs{ctex_...} commands that the \pkg{ctex}
-% kernel calls, and maps the parts of the \pkg{luatexja} interface that
-% \pkg{ctex} and some documents still use.
+% The file defines the handful of \cs{ctex_}\meta{name} commands that the
+% \pkg{ctex} kernel calls, and maps the parts of the \pkg{luatexja}
+% interface that \pkg{ctex} and some documents still use.
 %    \begin{macrocode}
 %<*ctex>
 \typeout{LuaCJK~ctex~engine~loaded}
 \sys_if_engine_luatex:F
   {
     \msg_new:nnn { LuaCJK } { ctex-engine }
-      { The~ctex~engine~file~of~LuaCJK~requires~LuaTeX. }
+      { The ~ ctex ~ engine ~ file ~ of ~ LuaCJK ~ requires ~ LuaTeX. }
     \msg_critical:nn { LuaCJK } { ctex-engine }
     \tex_endinput:D
   }
@@ -8065,8 +8058,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % same reason, and that code does not run when the engine file is ours.
 %    \begin{macrocode}
 \msg_new:nnnn { LuaCJK } { cjkfntef }
-  { Package~`CJKfntef'~is~not~compatible~with~the~LuaCJK~backend~of~ctex. }
-  { Use~the~`LuaCJKfntef'~package~instead. }
+  {
+    Package ~ `CJKfntef' ~ is ~ not ~ compatible ~ with ~ the ~ LuaCJK ~
+    backend ~ of ~ ctex.
+  }
+  { Use ~ the ~ `LuaCJKfntef' ~ package ~ instead. }
 \cs_if_exist:cT { ver@CJKfntef.sty }
   { \msg_critical:nn { LuaCJK } { cjkfntef } }
 \hook_gput_code:nnn { package / CJKfntef / before } { LuaCJK }
@@ -8082,8 +8078,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % for an existing definition, so the ones of LuaCJK have to go first.
 %    \begin{macrocode}
 \clist_map_inline:nn
-  { \songti , \heiti , \fangsong , \kaishu , \lishu , \youyuan ,
-    \yahei , \pingfang }
+  { \songti, \heiti, \fangsong, \kaishu, \lishu, \youyuan, \yahei, \pingfang }
   { \cs_undefine:N #1 }
 %</ctex>
 %    \end{macrocode}
@@ -8149,8 +8144,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \cs_set_protected:Npn \__ctex_update_stretch_auxii:
       {
         \ctex_if_ccglue_touched:TF
-          { \ctex_update_ccwd: }
-          { \__ctex_update_stretch_auxiii: }
+          { \ctex_update_ccwd: } { \__ctex_update_stretch_auxiii: }
       }
   }
 %</ctex>
@@ -8195,12 +8189,12 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \tl_new:N \l__ctex_jfm_tl
 \ctex_define:n
   {
-    space .code:n =
+    space .code:n    =
       { \msg_warning:nn { ctex } { invalid-option } }
   }
 \ctex_define:n
   {
-    punct .code:n =
+    punct .code:n    =
       {
         \tl_set:Ne \l__ctex_punct_tl {#1}
         \ctex_set_jfm:o { \l__ctex_punct_tl }
