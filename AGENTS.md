@@ -412,7 +412,15 @@ requests. Two jobs, each on `ubuntu-latest`, `macos-latest`, and
   `texlua` for the bilingual check, so it cannot run before the install),
   then `texlua scripts/check-charclass.lua`, then `l3build changelog` and a
   `git diff --exit-code CHANGELOG.md` that fails when the generated file is
-  stale, then `l3build check`, then `l3build doc` (only if the check passed);
+  stale, then `l3build check`, then `l3build doc` (only if the check passed).
+  The doc step does not trust latexmk's exit code: latexmk counts LuaTeX's
+  `unreferenced destination` warning as a broken reference, and
+  `latex-lab-testphase-l3doc` creates four such destinations for the name
+  tables of function environments, which stalled the Windows runner before it
+  converged. The step warns when `l3build doc` exits nonzero and then applies
+  the manual's own criteria to `build/doc/LuaCJK.log` — a non-empty PDF, and
+  no `^!`, no `[Rr]eference .* undefined`, no `Missing character`, no
+  `multiply defined`, no `duplicate destination`;
 - `ctex-subset`: install TeX Live and the same ctex-kit branch, then
   `l3build unpack`, then `bash scripts/ctex-subset.sh --skip-unpack`.
 
