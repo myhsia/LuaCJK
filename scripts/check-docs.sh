@@ -213,7 +213,7 @@ decorations=$(grep -cE '^\\NewDocumentCommand \\CJK(underline|sout|underdblline|
 options=$(awk '
   /\\keys_define:nn \{ LuaCJKfntef \/ (underline|decoration) \}/ { inside = 1; next }
   inside && /^  \}/ { inside = 0 }
-  inside && /^    [a-z]+ +\./ { print $1 }' "$dtx" |
+  inside && /^    [a-z]+ *\./ { k = $1; sub(/\..*/, "", k); print k }' "$dtx" |
   sort -u | grep -vx unknown | wc -l | tr -d ' ')
 
 word_attrs=$(printf '%s' "$skill_flat" |
