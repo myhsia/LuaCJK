@@ -23,15 +23,18 @@ inside a `listings` block.
 \setCJKmainfont{FandolSong-Regular.otf}
 ```
 
-LuaCJK requires the LuaTeX engine. It must not be loaded together with `luatexja`.
+LuaCJK requires the LuaTeX engine.
+It must not be loaded together with `luatexja`.
 
 ## Tagged PDF
 
-Declare `\DocumentMetadata{tagging=on}` before `\documentclass` to produce a
-tagged PDF.  The ink of a decoration is an artifact, a decoration symbol is
-left out of the text a reader copies, and `LuaCJKfntef`'s `selectable` key
-keeps a symbol as text.  Under `l3doc`, load `latex-lab-testphase-l3doc` as
-well.  The manual is built with tagging enabled.
+Declare `\DocumentMetadata{tagging = on}` before `\documentclass` to
+produce a tagged PDF.
+The ink of a decoration is an artifact, a decoration symbol is left out of
+the text a reader copies, and `LuaCJKfntef`'s `selectable` key keeps a
+symbol as text.
+Under `l3doc`, load `latex-lab-testphase-l3doc` as well.
+The manual is built with tagging enabled.
 
 ## Using it with ctex
 
