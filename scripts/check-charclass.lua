@@ -51,7 +51,8 @@ local function read_table (path)
     die("the CJK_RANGES table is not closed")
   end
   local ranges = {}
-  for first, last in body:sub(1, stop):gmatch("{ 0x(%x+), 0x(%x+) }") do
+  -- The table aligns its columns, so the gap after the comma varies.
+  for first, last in body:sub(1, stop):gmatch("{ 0x(%x+),%s*0x(%x+) }") do
     ranges[#ranges + 1] = { tonumber(first, 16), tonumber(last, 16) }
   end
   if #ranges == 0 then
