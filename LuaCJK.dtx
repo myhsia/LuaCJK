@@ -178,7 +178,7 @@ LaTeX Project Public License, version 1.3c or later.
 \LuaCJKdocsetup
 \AddToHook{env/codemo/after}{\LuaCJKdocsetup}
 \usepackage{LuaCJKfntef}
-\LuaCJKsetup{CJKmath=true, LatinPunct=true}
+\LuaCJKsetup{CJKmath = true, LatinPunct = true}
 \setCJKmathfont{Noto Serif CJK SC}[Language = Chinese Simplified]
 \renewcommand \contentsname
   {\texorpdfstring{目录\quad Contents}{目录 Contents}}
@@ -301,7 +301,7 @@ LaTeX Project Public License, version 1.3c or later.
 % 并且记录在字符本身上，
 % 所以分组中的文字即使在该分组已经结束之后才断行，也仍然保留它的设置：
 % \begin{quote}
-%   |\vbox{\begingroup\LuaCJKsetup{CJKglue=10pt}中中\endgroup\par}|
+%   |\vbox{\begingroup\LuaCJKsetup{CJKglue = 10pt}中中\endgroup\par}|
 % \end{quote}
 % 用的就是 10pt 的胶，尽管分组在 |\par| 之前已经关闭。
 % 这一组包含
@@ -351,10 +351,10 @@ LaTeX Project Public License, version 1.3c or later.
 % \pkg{ctex} 于是载入 LuaCJK 的 |ctex-engine-luacjk.def| 而不是它自己的
 % \LuaTeX\ 后端，这个文件同时载入宏包，LuaCJK 不必再单独载入。
 %
-% LuaCJK 与 \LaTeX{} 的标记 PDF（tagged PDF）项目协同工作。
+% LuaCJK 与 \LaTeX\ 的标记 PDF（tagged PDF）项目协同工作。
 % 文档开头声明
 % \begin{quote}
-%   |\DocumentMetadata{tagging=on}|
+%   |\DocumentMetadata{tagging = on}|
 % \end{quote}
 % 时，装饰的墨迹标记为 \texttt{artifact}，装饰符号不会出现在复制和选择
 % 的文本中；\keys{selectable = true} 保留符号的文字。
@@ -638,8 +638,9 @@ LaTeX Project Public License, version 1.3c or later.
 %
 % 数学模式里出现的每一个 CJK 字族都被注册成一个独立的数学字族，
 % 这样 \TeX\ 就能取它的文本、脚本或脚脚本尺寸。
-% 字族号取自 240--255 这一段，位于 \pkg{LaTeX} 自己使用的十六个字族之上，
-% 一个文档如果在数学里用到十六个以上的 CJK 字族，就会报错停止。
+% 字族号取自 240--255 这一段，是 \LuaTeX\ 允许的 256 个字族里的最后十六个，
+% 正常文档不会用到那里；一个文档如果在数学里用到十六个以上的 CJK 字族，
+% 就会报错停止。
 % 脚本尺寸是当前正文尺寸的百分之七十五，
 % 也就是标准尺寸表里的比例。
 % 数学参数不取自 CJK 字体，因为它没有
@@ -833,7 +834,7 @@ a’a\quad 字！字
 \begingroup
 \begin{codemo}
 字字。\\
-\LuaCJKsetup{PunctBoundWidth=.5em}字字。\\
+\LuaCJKsetup{PunctBoundWidth = .5em}字字。\\
 （字字
 \end{codemo}
 \endgroup
@@ -1460,7 +1461,7 @@ a’a\quad 字！字
 % so text inside a group keeps its settings even when the group has already
 % ended by the time the paragraph is broken:
 % \begin{quote}
-%   |\vbox{\begingroup\LuaCJKsetup{CJKglue=10pt}中中\endgroup\par}|
+%   |\vbox{\begingroup\LuaCJKsetup{CJKglue = 10pt}中中\endgroup\par}|
 % \end{quote}
 % uses the 10pt glue, although the group is closed before |\par|.
 % This group contains
@@ -1513,10 +1514,10 @@ a’a\quad 字！字
 % \LuaTeX\ backend, and that file loads the package, so LuaCJK is not loaded
 % separately.
 %
-% LuaCJK cooperates with the \LaTeX{} tagged-PDF project.
+% LuaCJK cooperates with the \LaTeX\ tagged-PDF project.
 % A document that declares
 % \begin{quote}
-%   |\DocumentMetadata{tagging=on}|
+%   |\DocumentMetadata{tagging = on}|
 % \end{quote}
 % marks the ink of a decoration as \texttt{artifact}, and a decoration symbol
 % is left out of the text a reader copies or selects;
@@ -1804,9 +1805,9 @@ a’a\quad 字！字
 %
 % Each CJK family that appears in math is registered as a math family of its
 % own, so that \TeX\ can pick the text, script, or scriptscript size of it.
-% The family number comes from the range 240--255, above the sixteen families
-% that \pkg{LaTeX} itself uses, and a document with more than sixteen CJK
-% families in math stops with an error.
+% The family number comes from the range 240--255, the last sixteen of the 256
+% that \LaTeXe\ allocates under \LuaTeX, which an ordinary document never
+% reaches; more than sixteen CJK families in math stops with an error.
 % The script sizes are seven and five tenths of the current text size, the
 % ratio of the standard size tables.
 % The math parameters are not taken from the CJK font, which has no
@@ -2011,7 +2012,7 @@ a’a\quad 字！字
 \begingroup
 \begin{codemo}
 字字。\\
-\LuaCJKsetup{PunctBoundWidth=.5em}字字。\\
+\LuaCJKsetup{PunctBoundWidth = .5em}字字。\\
 （字字
 \end{codemo}
 \endgroup
@@ -4070,9 +4071,9 @@ a’a\quad 字！字
 % its number, and the upper bound.
 % A CJK character in a math list needs a math family of its own, because the
 % family is what selects the font \emph{and} its size for the three math
-% styles.  \pkg{LaTeX} uses the families below 16, so the numbers start at
-% 240; a document with more than sixteen CJK families is out of luck and gets
-% an error.
+% styles.  \LaTeXe\ allocates the 256 families that \LuaTeX\ allows from zero
+% upwards, so the numbers start at 240; a document with more than sixteen CJK
+% families is out of luck and gets an error.
 %    \begin{macrocode}
 \int_new:N \g_@@_math_family_int
 \int_gset:Nn \g_@@_math_family_int { 239 }
@@ -4886,7 +4887,7 @@ function M.load_cj ()
   if not file then
     texio.write_nl("term and log",
       "Package LuaCJK Warning: LineBreak.txt not found; "
-      .. "CJLineBreak=strict has no effect.")
+      .. "CJLineBreak = strict has no effect.")
     return 0
   end
   local data = file:read("*a")
@@ -6375,7 +6376,7 @@ local function warn_disabled_cjk_math (head)
       "Package LuaCJK Warning: CJK character in math mode, "
       .. "but CJKmath is not enabled.")
     texio.write_nl("term and log",
-      "(LuaCJK)                Use \\LuaCJKsetup{CJKmath=true} " ..
+      "(LuaCJK)                Use \\LuaCJKsetup{CJKmath = true} " ..
       "to typeset it with the CJK font.")
   end
 end
@@ -7873,7 +7874,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   requested. It is tagged: a text block in vertical mode, part of the
 %   surrounding paragraph in horizontal mode.}
 %   Set the body in a vertical box whose lines are justified to the given
-%   width, with the lines separated by \tn{}.
+%   width, with the lines separated by |\\|.
 %   The inter-character glue is given an infinite stretch inside the box,
 %   so a line of CJK characters reaches the width even when there is no
 %   Latin word space to stretch.
