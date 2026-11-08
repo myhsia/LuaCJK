@@ -30,9 +30,12 @@ Noto Serif/Sans CJK SC (a system font, also installed by CI from
 family and Zhuque Fangsong for the monospaced text and the fangsong family;
 both come from the `lxgw-fonts` TeX Live package. The tests keep Fandol.
 The manual is itself a `ctex` document: its driver loads `ctex` with
-`engine = luacjk` and `linespread = 1`, so LuaCJK arrives through the engine
-file and the prose takes `ctex`'s glue defaults, which is why line breaking in
-the manual differs from a plain LuaCJK document.
+`engine = luacjk`, `fontset = fandol` and `linespread = 1`, so LuaCJK arrives
+through the engine file and the prose takes `ctex`'s glue defaults, which is why
+line breaking in the manual differs from a plain LuaCJK document.  The fontset
+is explicit because `ctex` would otherwise pick the system's Chinese fonts and
+stop on a `windows` runner, which has no SimSun, SimHei, KaiTi or FangSong;
+`\LuaCJKdocsetup` replaces all five families afterwards.
 Entry points:
 
 - `l3build` (unpack, check, save, doc, ctan, tag) for the package itself;
