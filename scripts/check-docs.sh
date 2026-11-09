@@ -208,7 +208,27 @@ done
 # The sentences are searched on one line, because a count may be split across
 # a line break in the source.
 skill_flat=$(tr -d '\r' < "$skill" | tr '\n' ' ')
-attrs=$(grep -c '\\newattribute ' "$dtx")
+# A declaration may be written once for a whole list of names, so count the
+# items of the list that feeds \newattribute rather than the calls.
+attrs=$(awk '
+  { line[NR] = $0 }
+  END {
+    total = 0
+    for (i = 1; i <= NR; i++) {
+      if (line[i] !~ /\\newattribute /) continue
+      mapped = 0
+      for (j = i - 1; j >= 1 && j >= i - 8; j--)
+        if (line[j] ~ /\\clist_map_inline:nn[ ]*$/) { mapped = 1; break }
+      if (!mapped) { total++; continue }
+      list = ""
+      for (k = j + 1; k <= i; k++) list = list " " line[k]
+      sub(/^[^{]*\{/, "", list)
+      sub(/\}.*$/, "", list)
+      n = split(list, part, ",")
+      for (p = 1; p <= n; p++) if (part[p] ~ /[A-Za-z]/) total++
+    }
+    print total
+  }' "$dtx")
 decorations=$(grep -cE '^\\NewDocumentCommand \\CJK(underline|sout|underdblline|underwave|xout|underanyline|underanysymbol|underdot)' "$dtx")
 options=$(awk '
   /\\keys_define:nn \{ LuaCJKfntef \/ (underline|decoration) \}/ { inside = 1; next }

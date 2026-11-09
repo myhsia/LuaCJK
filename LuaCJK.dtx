@@ -2704,29 +2704,20 @@ a’a\quad 字！字
 % and whether the adjustments are suspended. The integer constants hold
 % the allocated attribute numbers for the Lua side.
 %    \begin{macrocode}
-\newattribute \g_@@_font_attr
-\int_const:Nn \c_@@_font_attr_int       { \int_use:N \allocationnumber }
-\newattribute \g_@@_cjk_space_attr
-\int_const:Nn \c_@@_cjk_space_attr_int  { \int_use:N \allocationnumber }
-\newattribute \g_@@_xecglue_attr
-\int_const:Nn \c_@@_xecglue_attr_int    { \int_use:N \allocationnumber }
-\newattribute \g_@@_inserted_attr
-\int_const:Nn \c_@@_inserted_attr_int   { \int_use:N \allocationnumber }
-\newattribute \g_@@_math_font_attr
-\int_const:Nn \c_@@_math_font_attr_int  { \int_use:N \allocationnumber }
-\newattribute \g_@@_disabled_attr
-\int_const:Nn \c_@@_disabled_attr_int   { \int_use:N \allocationnumber }
-\newattribute \g_@@_punct_font_attr
-\int_const:Nn \c_@@_punct_font_attr_int { \int_use:N \allocationnumber }
-\newattribute \g_@@_settings_attr
-\int_const:Nn \c_@@_settings_attr_int   { \int_use:N \allocationnumber }
-\newattribute \g_@@_nobreak_attr
-\int_const:Nn \c_@@_nobreak_attr_int    { \int_use:N \allocationnumber }
+\clist_map_inline:nn
+  {
+    font,     cjk_space,  xecglue,  inserted, math_font,
+    disabled, punct_font, settings, nobreak
+  }
+  {
+    \exp_args:Nc \newattribute { g_@@_#1_attr }
+    \int_const:cn { c_@@_#1_attr_int } { \int_use:N \allocationnumber }
+  }
+\g_@@_cjk_space_attr  = 0
+\g_@@_xecglue_attr    = 0
 \g_@@_math_font_attr  = 0
 \g_@@_punct_font_attr = 0
 \g_@@_settings_attr   = 0
-\g_@@_cjk_space_attr  = 0
-\g_@@_xecglue_attr    = 0
 %    \end{macrocode}
 % \end{variable}
 %
@@ -3901,10 +3892,9 @@ a’a\quad 字！字
   }
 \cs_new_protected:Npn \@@_build_features:n #1
   {
-    \bool_set_false:N \l_@@_autofake_bold_given_bool
-    \bool_set_false:N \l_@@_autofake_slant_given_bool
-    \bool_set_false:N \l_@@_bold_font_given_bool
-    \bool_set_false:N \l_@@_italic_font_given_bool
+    \clist_map_inline:nn
+      { autofake_bold, autofake_slant, bold_font, italic_font }
+      { \exp_args:Nc \bool_set_false:N { l_@@_##1_given_bool } }
     \keyval_parse:NNn
       \@@_note_feature_key:n \@@_note_feature_key:nn {#1}
     \tl_set_eq:NN \l_@@_feature_tl \l_@@_default_feature_tl
@@ -4246,13 +4236,13 @@ a’a\quad 字！字
 % The family hooks below re-select the CJK family whenever
 % \tn{rmfamily} and its siblings run.
 %    \begin{macrocode}
-\tl_new:N \CJKrmdefault
-\tl_new:N \CJKsfdefault
-\tl_new:N \CJKttdefault
+\clist_map_inline:nn { { rm } { zhsong } , { sf } { zhhei } , { tt } { zhfs } }
+  {
+    \exp_args:Nc \tl_new:N { CJK \use_i:nn #1 default }
+    \exp_args:Nc \tl_set:Nx { CJK \use_i:nn #1 default }
+      { \use_ii:nn #1 }
+  }
 \tl_new:N \CJKfamilydefault
-\tl_set:Nn \CJKrmdefault     { zhsong }
-\tl_set:Nn \CJKsfdefault     { zhhei  }
-\tl_set:Nn \CJKttdefault     { zhfs   }
 \tl_set:Nn \CJKfamilydefault { zhsong }
 %    \end{macrocode}
 % \end{variable}
@@ -4462,12 +4452,11 @@ a’a\quad 字！字
 \cs_new_protected:Npn \kaishu   { \CJKfamily { zhkai  } }
 \cs_new_protected:Npn \lishu    { \CJKfamily { zhli   } }
 \cs_new_protected:Npn \youyuan  { \CJKfamily { zhyou  } }
-\hook_gput_code:nnn { cmd / rmfamily / after } { LuaCJK }
-  { \exp_args:NV \@@_switch_family:n \CJKrmdefault }
-\hook_gput_code:nnn { cmd / sffamily / after } { LuaCJK }
-  { \exp_args:NV \@@_switch_family:n \CJKsfdefault }
-\hook_gput_code:nnn { cmd / ttfamily / after } { LuaCJK }
-  { \exp_args:NV \@@_switch_family:n \CJKttdefault }
+\clist_map_inline:nn { rm, sf, tt }
+  {
+    \hook_gput_code:nnn { cmd / #1family / after } { LuaCJK }
+      { \exp_args:Nv \@@_switch_family:n { CJK#1default } }
+  }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -4707,14 +4696,13 @@ local unset_attribute = node.unset_attribute
 % The attribute numbers.
 % The \TeX\ side fills them in after loading the module.
 %    \begin{macrocode}
-M.attr_font       = M.attr_font       or nil
-M.attr_cjk_space  = M.attr_cjk_space  or nil
-M.attr_xecglue    = M.attr_xecglue    or nil
-M.attr_inserted   = M.attr_inserted   or nil
-M.attr_math_font  = M.attr_math_font  or nil
-M.attr_punct_font = M.attr_punct_font or nil
-M.attr_nobreak    = M.attr_nobreak    or nil
-M.attr_settings   = M.attr_settings   or nil
+for _, field in ipairs {
+  "font", "cjk_space", "xecglue", "inserted",
+  "math_font", "punct_font", "nobreak", "settings",
+} do
+  local key = "attr_" .. field
+  M[key] = M[key] or nil
+end
 
 %    \end{macrocode}
 % \end{variable}
@@ -5393,19 +5381,14 @@ end
 % Copy a glyph node, changing only its font.
 %    \begin{macrocode}
 local function copy_glyph (n, fid)
-  local g            = new_node("glyph")
-  g.font             = fid
-  g.char             = n.char
-  g.attr             = n.attr
-  g.lang             = n.lang
-  g.left             = n.left
-  g.right            = n.right
-  g.uchyph           = n.uchyph
-  g.xoffset          = n.xoffset
-  g.yoffset          = n.yoffset
-  g.expansion_factor = n.expansion_factor
-  g.data             = n.data
-  g.subtype          = n.subtype
+  local g = new_node("glyph")
+  g.font = fid
+  for _, field in ipairs {
+    "char", "attr", "lang", "left", "right", "uchyph",
+    "xoffset", "yoffset", "expansion_factor", "data", "subtype",
+  } do
+    g[field] = n[field]
+  end
   return g
 end
 
@@ -7485,10 +7468,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \dim_set:Nn \l_@@_fntef_thickness_dim { .4pt }
     \dim_set:Nn \l_@@_fntef_gap_dim       { 1.1pt }
     \dim_set:Nn \l_@@_fntef_height_dim    { .3em }
-    \tl_clear:N \l_@@_fntef_format_tl
-    \tl_clear:N \l_@@_fntef_symbol_tl
-    \tl_clear:N \l_@@_fntef_textformat_tl
-    \tl_clear:N \l_@@_fntef_pass_tl
+    \clist_map_inline:nn { format, symbol, textformat, pass }
+      { \tl_clear:c { l_@@_fntef_##1_tl } }
     \dim_set:Nn \l_@@_fntef_symbol_sep_dim { .1em }
   }
 \cs_new_protected:Npn \@@_fntef_decoration_setup:n #1
@@ -8115,10 +8096,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \cs_new_protected:Npn \CTEX@alchar #1 {#1}
 \cs_new_eq:NN \CTEX@beginallalchar \prg_do_nothing:
 \cs_new_eq:NN \CTEX@endallalchar \prg_do_nothing:
-\dim_new:N \ccwd
-\dim_new:N \cht
-\dim_new:N \cdp
-\dim_new:N \cwd
+\clist_map_inline:nn { \ccwd, \cht, \cdp, \cwd } { \dim_new:N #1 }
 \cs_new_protected:Npn \ctex_update_ccwd:
   { \dim_set:Nn \ccwd { \f@size \p@ } }
 \cs_new_protected:Npn \ctex_update_em_unit:
@@ -8194,8 +8172,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         \@@_settings_push:
       }
   }
-\ctex_add_to_selectfont:n { \ctex_update_xkanjiskip: }
-\ctex_add_to_selectfont:n { \ctex_update_kanjisize:  }
+\clist_map_inline:nn { \ctex_update_xkanjiskip: , \ctex_update_kanjisize: }
+  { \ctex_add_to_selectfont:n {#1} }
 %</ctex>
 %    \end{macrocode}
 %
