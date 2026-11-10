@@ -181,6 +181,12 @@ A colored rule cannot use `\color`, which emits whatsits in front of
 (`\luaul_set_color:n` plus `\luaul_apply_color:`),
 which is why `format` takes a color name rather than code.
 
+Every decoration parses one key set: a pair goes to the keys, and a bare item
+that names no key is a color and means `format`, so `[red]` and `[subtract]`
+both work. A key that a command does not use is accepted and ignored, and
+`textformat` and `hidden` go through one body helper, so they behave the same
+in all eight commands.
+
 A CJK em box is one em square, so a highlight that covers a character is
 `1em` wide and `1em` high, with the box bottom at the em descent below the
 baseline. `\LuaCJKemdescent` is that descent: `LuaCJKfntef.em_descent` reads
@@ -227,6 +233,19 @@ stroke. The `symbol` variants of `\CJKunderdot` and `\CJKunderwave`, and
 the cell, its top a given distance under the *bottom of the em box*. The
 measured descent is part of the cached type key, so a font change does not
 reuse a stale placement.
+
+### The listings patch
+
+`listings` typesets a character it does not know at the moment it reads it, so
+CJK characters arrive in front of the surrounding Latin text.
+`LuaCJK-listings` sets the CJK ranges to category code 13 while a listing's
+character table is built, which sends them through `listings`' token mechanism
+instead; each character counts as two columns, and `\LuaCJKdisable` is applied
+in `OutputBox` so the spacing adjustments stay out of the listing. The active
+characters are defined once through the `lccode` of two helper characters and
+`\lowercase`, which leaves the body token at category code 12, so it can be
+stored in a token list and typeset later. `\lstinline` reads its argument with
+changed category codes, so the patch is limited to the block environments.
 
 ### The ctex adapter
 
@@ -361,9 +380,9 @@ on `lua-ul`). Picking a backend inside `ctex` is now a public option
   `M.punct_override` always wins over `LatinPunct` and the built-in tables.
 - `\LuaCJKsetwidth`, `\LuaCJKsetkern`, the four punctuation-set keys, and the
   `Declare*` commands are global by design; the manual says so at each of them.
-- The manual is English; the package's user-facing prose keeps the same
-  terminology as the code (`CJKglue`, `PunctStyle`, `subtract`) rather than
-  inventing translations.
+- The user-facing prose keeps the terminology of the code (`CJKglue`,
+  `PunctStyle`, `subtract`) rather than inventing translations, in both
+  languages of the manual (see "The manual's two languages").
 - Lua code declares its functions with `local function` and publishes only through `M`; no other
   name reaches the global environment except the module table that `LuaCJK.lua` creates.
 - Inside a module a local is `snake_case` and a module-level constant is `UPPER_CASE`
