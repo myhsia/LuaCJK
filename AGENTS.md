@@ -79,6 +79,12 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **One source.** Edit `LuaCJK.dtx` only; `l3build unpack` regenerates
   everything else. A change to a derived file that is not in the `dtx` is lost
   at the next unpack.
+- **The name is `LuaCJK`, the module is `luacjk`.**  The package and every
+  derived file are spelled `LuaCJK` (`LuaCJK.sty`, `LuaCJKfntef.sty`,
+  `LuaCJK.lua`), while the `l3build` module, the CTAN name and the TDS
+  directories stay lowercase `luacjk` (`tex/latex/luacjk/`); `xeCJK` with
+  `module = "xecjk"` is the same split. Renaming either half breaks
+  `\usepackage`, `l3build zap` or the install path without any error.
 - **The user part exists in two languages.**  The `documentation`
   environment is written twice, Simplified Chinese first and English second;
   only the prose and the section titles are translated, so every edit to one
@@ -285,9 +291,11 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   `l3doc` and starts `\verb`, so a range list is shown without its optional
   leading quote. Keep a code line within about 40 monospace characters, or the
   left panel is overfull. A demo that covers a glyph takes its geometry from
-  `\LuaCJKemdescent`: the em box of Noto Serif CJK SC runs from `-0.12em` to
-  `+0.88em`, so `depth = \LuaCJKemdescent` with `height = 1em` is the one-em
-  square a reader selects, and the ink sits `0.042em` inside it on each side.
+  `\LuaCJKemdescent` and `1em`, never from the ink: the em box is the one-em
+  square a reader selects, while the ink sits some way inside it, by a
+  different amount vertically and horizontally. Quote the two bearings
+  separately when a number is needed, and do not hard-code them here — they
+  belong to the font, not to the package.
 - **The manual describes the package, not the repository.**  No `.lvt` files,
   CI, build commands, or script names in the documentation part: how the
   package is tested and released belongs in this guide, and the principle
@@ -452,6 +460,23 @@ not a CI job: `scripts/check-extract-changes.sh` is the session check declared
 below, and the `upkeep` plugin of the global configuration runs it once a day
 and after a directory change, so a change in the reference implementation
 reaches the next session instead of waiting for a pull request.
+
+## Superseded decisions
+
+Three ideas were tried and dropped; they are recorded so that a later session
+does not rebuild them. The shadow engine file (a test-only copy of
+`ctex-engine-luatex.def` dropped into the working directory) was how the
+`ctex` path was tested before `ctex` took the `engine` option: there is now
+one engine file with a fixed name and one redirect in `ctexopts.cfg`, and a
+second file of any name either collides with `ctex`'s own or loses to it in
+the TDS. The lowercase `luacjk.sty` alias was offered for the old spelling of
+the package and removed: two names for one file drift apart, and a
+case-sensitive file system lets one of them rot unnoticed. The `LuaTeX-CN`
+conflict check (`ver@luatex-cn.sty`, and a `package/luatex-cn/before` hook) was
+removed as well: LuaCJK rejects `luatexja` because that package owns the same
+engine callback layer, but a third-party package that collides with LuaCJK is
+its own business to detect, and blocking it here would freeze a decision the
+CTeX maintainers have not made.
 
 ## Git style
 

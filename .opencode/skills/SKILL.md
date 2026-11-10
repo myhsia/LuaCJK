@@ -189,6 +189,12 @@ baseline. `\LuaCJKemdescent` is that descent: `LuaCJKfntef.em_descent` reads
 `.12em`. The same value places a symbol, so a gap of `0pt` leaves the same
 space below the character as the side bearings leave beside it.
 
+The font it measures is the one the `font` attribute carries, not
+`\g_@@_fontid_int`: the integer is global state that
+`{\fontsize{…}\selectfont …}` leaves at the size it last saw, while the
+attribute belongs to the group and returns with it. Every quantity that
+describes "the font in force here" is read the same way.
+
 Leaders repeat the box and only whole copies fit, so the last fraction of a
 span stays empty. With a one-point object that shortened a highlight at the
 right end by up to a point whenever the em was not a whole number of points,
