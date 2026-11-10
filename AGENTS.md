@@ -48,7 +48,7 @@ Entry points:
 | --- | --- |
 | `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
-| `build.lua` | `l3build` configuration: module `luacjk`, version `v0.0.1`, `tdslocations`, the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
+| `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.1`, `tdslocations`, the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
 | `testfiles/NN.lvt` + `.tlg` | 48 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree |
@@ -80,12 +80,13 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **One source.** Edit `LuaCJK.dtx` only; `l3build unpack` regenerates
   everything else. A change to a derived file that is not in the `dtx` is lost
   at the next unpack.
-- **The name is `LuaCJK`, the module is `luacjk`.**  The package and every
-  derived file are spelled `LuaCJK` (`LuaCJK.sty`, `LuaCJKfntef.sty`,
-  `LuaCJK.lua`), while the `l3build` module, the CTAN name and the TDS
-  directories stay lowercase `luacjk` (`tex/latex/luacjk/`); `xeCJK` with
-  `module = "xecjk"` is the same split. Renaming either half breaks
-  `\usepackage`, `l3build zap` or the install path without any error.
+- **The name is `LuaCJK` in the source, the module and the install tree.**
+  The package and every derived file are spelled `LuaCJK` (`LuaCJK.sty`,
+  `LuaCJKfntef.sty`, `LuaCJK.lua`), and the `l3build` module carries the same
+  spelling (`module = "LuaCJK"`) together with the CTAN name and the TDS
+  directories that follow it (`tex/latex/LuaCJK/`, `tex/luatex/LuaCJK/`).
+  A case change in any one of them breaks `\usepackage`, `l3build zap` or the
+  install path without any error.
 - **The user part exists in two languages.**  The `documentation`
   environment is written twice, Simplified Chinese first and English second;
   only the prose and the section titles are translated, so every edit to one
@@ -137,7 +138,7 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   `<name>` from its `engine` option, so `engine = luacjk` is what selects
   LuaCJK. `ctex` installs a file named `ctex-engine-luatex.def`, CTAN rejects
   a duplicate, and that file is the one every `ctex` document loads when the
-  option is absent, so a same-named copy in `tex/latex/luacjk/` either
+  option is absent, so a same-named copy in `tex/latex/LuaCJK/` either
   collides or silently describes the wrong backend.
 - **The engine file refuses `CJKfntef`.**  `ctex`'s own
   `ctex-engine-luatex.def` bans it, because it loads the legacy `CJK` package
@@ -344,7 +345,7 @@ l3build check           # ~3 min, 48 tests, both test runs
 l3build check <name>    # one test, the first thing to run after a change
 l3build save <name>     # rewrite one baseline after an intended change
 l3build doc             # ~2 min, tagged manual, needs latex-lab and tagpdf
-l3build ctan            # builds luacjk-ctan.zip
+l3build ctan            # builds LuaCJK-ctan.zip
 l3build tag             # syncs \GetIdInfo with build.lua's version and date
 l3build changelog       # ~2 s, CHANGELOG.md from the dtx \changes entries
 bash scripts/ctex-subset.sh            # ~3 min, needs ../ctex-kit or network
