@@ -80,13 +80,17 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **One source.** Edit `LuaCJK.dtx` only; `l3build unpack` regenerates
   everything else. A change to a derived file that is not in the `dtx` is lost
   at the next unpack.
-- **The name is `LuaCJK` in the source, the module and the install tree.**
-  The package and every derived file are spelled `LuaCJK` (`LuaCJK.sty`,
-  `LuaCJKfntef.sty`, `LuaCJK.lua`), and the `l3build` module carries the same
-  spelling (`module = "LuaCJK"`) together with the CTAN name and the TDS
-  directories that follow it (`tex/latex/LuaCJK/`, `tex/luatex/LuaCJK/`).
-  A case change in any one of them breaks `\usepackage`, `l3build zap` or the
-  install path without any error.
+- **The name is `LuaCJK` in the package and the CTAN module, `luacjk` in the
+  tree.**  The package and every derived file are spelled `LuaCJK`
+  (`LuaCJK.sty`, `LuaCJKfntef.sty`, `LuaCJK.lua`), and so is `module`, which
+  is the CTAN name; the installed tree stays lowercase
+  (`tex/latex/luacjk/`, `tex/luatex/luacjk/`), as CTAN expects.
+  `l3build` derives the default directory from `module`, so a file that is
+  installed but missing from `tdslocations` lands in `tex/latex/LuaCJK/`
+  beside the others instead of being left out, and the extension check in
+  `scripts/check-docs.sh` cannot see it: name every installed file in
+  `tdslocations`.  A case change in the package name breaks `\usepackage`;
+  one in the tree breaks `l3build zap` or the install path, silently.
 - **The user part exists in two languages.**  The `documentation`
   environment is written twice, Simplified Chinese first and English second;
   only the prose and the section titles are translated, so every edit to one

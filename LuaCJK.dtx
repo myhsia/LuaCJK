@@ -5369,8 +5369,10 @@ local function copy_glyph (n, fid)
   local g = new_node("glyph")
   g.font = fid
   for _, field in ipairs {
-    "char", "attr", "lang", "left", "right", "uchyph",
-    "xoffset", "yoffset", "expansion_factor", "data", "subtype",
+    "char",     "attr",    "lang",
+    "left",     "right",   "uchyph",
+    "xoffset",  "yoffset", "expansion_factor",
+    "data",     "subtype",
   } do
     g[field] = n[field]
   end
