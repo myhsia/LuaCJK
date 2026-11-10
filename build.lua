@@ -5,25 +5,25 @@
 --[==========================================================================[--
     Basic Information: Do Check Before Push
 --]==========================================================================]--
-module              = "luacjk"
+module              = "LuaCJK"
 version             = "v0.0.1"
 date                = "2026-11-11"
 maintainer          = "Mingyu Xia"
 uploader            = "Mingyu Xia"
 maintainid          = "myhsia"
 email               = "myhsia@outlook.com"
-repository          = "https://github.com/" .. maintainid .. "/LuaCJK"
+repository          = "https://github.com/" .. maintainid .. "/" .. module
 summary             = "A LuaTeX CJK typesetting package"
 description         = "LuaCJK provides Chinese typesetting for the LuaTeX engine."
 
 --[==========================================================================[--
-    Configuration: Check, Tag, Pack, Upload     Do NOT Modify if Unnecessary
+    Configuration: Check, Tag, Pack, Upload      Do NOT Modify if Unnecessary
 --]==========================================================================]--
 packtdszip          = true
-sourcefiles         = {"LuaCJK.dtx", "LuaCJK.ins"}
-unpackfiles         = {"LuaCJK.ins"}
+sourcefiles         = {module .. ".dtx", module .. ".ins"}
+unpackfiles         = {module .. ".ins"}
 installfiles        = {"*.sty", "*.lua", "*.def"}
-typesetfiles        = {"LuaCJK.dtx"}
+typesetfiles        = {module .. ".dtx"}
 testfiledir         = "./testfiles"
 testsuppdir         = "./testsupport"
 testdir             = "./build/check"
@@ -40,23 +40,26 @@ cleanfiles          = {
 }
 excludefiles        = {"*~"}
 textfiles           = {"README.md", "LICENSE"}
+-- The TDS tree is lowercase although the CTAN name is not, so every
+-- installed file is named here: the default directory comes from `module'.
+local tdsdir = "luacjk"
 tdslocations        = {
-  "tex/latex/luacjk/LuaCJK.sty",
-  "tex/latex/luacjk/LuaCJKfntef.sty",
-  "tex/latex/luacjk/LuaCJK-listings.sty",
-  "tex/latex/luacjk/ctex-engine-luacjk.def",
-  "tex/luatex/luacjk/LuaCJK.lua",
-  "tex/luatex/luacjk/LuaCJK-core.lua",
-  "tex/luatex/luacjk/LuaCJKfntef.lua"
+  "tex/latex/" .. tdsdir .. "/" .. module .. ".sty",
+  "tex/latex/" .. tdsdir .. "/" .. module .. "fntef.sty",
+  "tex/latex/" .. tdsdir .. "/" .. module .. "-listings.sty",
+  "tex/latex/" .. tdsdir .. "/ctex-engine-luacjk.def",
+  "tex/luatex/" .. tdsdir .. "/" .. module .. ".lua",
+  "tex/luatex/" .. tdsdir .. "/" .. module .. "-core.lua",
+  "tex/luatex/" .. tdsdir .. "/" .. module .. "fntef.lua"
 }
 
 --[================== "Hacks" to `l3build` | Do not Modify ==================]--
 function update_tag(file, content, tagname, tagdate)
   tagname = version
   tagdate = date
-  if string.match(file, "LuaCJK.dtx$") then
+  if string.match(file, "%.dtx$") then
     content = string.gsub(content,
-      "(\\GetIdInfo%s+%$Id:%s+LuaCJK%.dtx%s+)[^%$]*(%$)",
+      "(\\GetIdInfo%s+%$Id:%s+[^%s]+%.dtx%s+)[^%$]*(%$)",
       "%1" .. tagname .. " " .. tagdate .. " " ..
         maintainid .. "<" .. email .. ">%2")
   end
@@ -102,9 +105,9 @@ function tex(file,dir,cmd)
 end
 
 --[==========================================================================[--
-    Changelog: regenerated from the dtx \changes entries
+    CHANGELOG: Regenerated from the dtx `\changes` entries
 --]==========================================================================]--
-changelog_repo = "myhsia/LuaCJK"
+changelog_repo = maintainid .. "/" .. module
 
 local extract_changes = dofile("scripts/extract-changes.lua")
 
@@ -126,7 +129,7 @@ local function changelog(names)
       return 1
     end
   end
-  if not content:match("^## %[LuaCJK%-v%d+%.%d+%.%d+%]%(") then
+  if not content:match("^## %[" .. module .. "%-v%d+%.%d+%.%d+%]%(") then
     print("CHANGELOG.md does not start with the release heading")
     return 1
   end
