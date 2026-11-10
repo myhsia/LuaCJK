@@ -67,7 +67,8 @@ Entry points:
 
 Generated, never edited by hand: `*.sty`, `*.lua`, `*.def` in the root,
 `README.md` (from the `<readme>` block), `CHANGELOG.md` (from the `\changes`
-entries), `LuaCJK.pdf`, `*.zip`, `*.glo`, `.codemo.vrb`, `build/`.
+entries), `LuaCJK.pdf`, `*.zip`, `*.glo`, `*.gls`, `*.glg`, `.codemo.vrb`,
+`build/`.
 
 DocStrip blocks inside `LuaCJK.dtx`, in file order: `internal`, `readme`,
 `driver`, `example` (one guard per demo, so demos can be extracted and run
