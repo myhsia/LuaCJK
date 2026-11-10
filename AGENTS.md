@@ -173,7 +173,11 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   documented object.  A feature states what it does in the present tense in the
   release that ships it; only a later release says that it now behaves
   differently.  The version and the date
-  stay on the first line and only the text wraps.  Commands are `\cs{…}`, keys
+  stay on the first line and only the text wraps.  An unreleased change keeps
+  the newest entry's version and date, so `date` in `build.lua` is not
+  advanced on its own: `scripts/check-docs.sh` compares the newest entry with
+  both fields, and a later date is reachable only through a new version.
+  Commands are `\cs{…}`, keys
   `\keys{…}`, packages `\pkg{…}`, files `\file{…}`, environments `\env{…}`,
   other literals `\texttt{…}`, and the two argument forms `\oarg{…}` and
   `\marg{…}`; a bracketed option list is written `\cs{cmd}|[key = …]|` so
@@ -291,7 +295,10 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   paragraph, so a comparison needs `\par` and not `\\`; and `"` is active in
   `l3doc` and starts `\verb`, so a range list is shown without its optional
   leading quote. Keep a code line within about 40 monospace characters, or the
-  left panel is overfull. A demo that covers a glyph takes its geometry from
+  left panel is overfull. The panel height and that width are `docext`'s
+  business, not this package's: `../docext/AGENTS.md` states them canonically,
+  and the two sentences above are only what a demo writer has to obey.
+  A demo that covers a glyph takes its geometry from
   `\LuaCJKemdescent` and `1em`, never from the ink: the em box is the one-em
   square a reader selects, while the ink sits some way inside it, by a
   different amount vertically and horizontally. Quote the two bearings
@@ -395,6 +402,10 @@ of ctex-kit.
   it is absent without `LuaCJK.gls`, which only the `glo`→`gls` dependency in
   `tex()` builds, and adding it to the table of contents shifts every page
   reference in the manual by one.
+- The `docext.sty` that `l3build doc` resolves is v0.2D or later, which
+  `kpsewhich docext.sty` and its `\ProvidesPackage` line show.  An older copy
+  in `TEXMFHOME` narrows the result panel of a demo whose body is a single
+  vertical box, and nothing in the log says so.
 - `bash scripts/ctex-subset.sh` must print `ctex subset: 21/21 passed`, every
   log must be free of `luatexja`, and the script additionally greps for the
   glue strings that prove the `ctex` option plumbing reached LuaCJK.
