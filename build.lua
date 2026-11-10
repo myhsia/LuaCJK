@@ -36,21 +36,22 @@ typesetwarnings     = false
 cleanfiles          = {
   "*.log", "*.pdf", "*.zip", "*.codemo.vrb", "*.out",
   "*.aux", "*.toc", "*.idx", "*.ind", "*.glo", "*.gls", "*.glg",
-  "*.hd", "*.fls", "*.fdb_latexmk", "*.synctex.gz"
+  "*.hd",  "*.fls", "*.fdb_latexmk",  "*.synctex.gz"
 }
 excludefiles        = {"*~"}
 textfiles           = {"README.md", "LICENSE"}
--- The TDS tree is lowercase although the CTAN name is not, so every
--- installed file is named here: the default directory comes from `module'.
-local tdsdir = "luacjk"
+-- The tree is lowercase although the CTAN name is not, and l3build builds
+-- its default directory from `module', so every installed file is named
+-- here.  Not called `tdsdir', which l3build uses for its staging tree.
+local tdsname = string.lower(module)
 tdslocations        = {
-  "tex/latex/" .. tdsdir .. "/" .. module .. ".sty",
-  "tex/latex/" .. tdsdir .. "/" .. module .. "fntef.sty",
-  "tex/latex/" .. tdsdir .. "/" .. module .. "-listings.sty",
-  "tex/latex/" .. tdsdir .. "/ctex-engine-luacjk.def",
-  "tex/luatex/" .. tdsdir .. "/" .. module .. ".lua",
-  "tex/luatex/" .. tdsdir .. "/" .. module .. "-core.lua",
-  "tex/luatex/" .. tdsdir .. "/" .. module .. "fntef.lua"
+  "tex/latex/"  .. tdsname .. "/" .. module .. ".sty",
+  "tex/latex/"  .. tdsname .. "/" .. module .. "fntef.sty",
+  "tex/latex/"  .. tdsname .. "/" .. module .. "-listings.sty",
+  "tex/latex/"  .. tdsname .. "/ctex-engine-luacjk.def",
+  "tex/luatex/" .. tdsname .. "/" .. module .. ".lua",
+  "tex/luatex/" .. tdsname .. "/" .. module .. "-core.lua",
+  "tex/luatex/" .. tdsname .. "/" .. module .. "fntef.lua"
 }
 
 --[================== "Hacks" to `l3build` | Do not Modify ==================]--
