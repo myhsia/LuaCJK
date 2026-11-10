@@ -4698,7 +4698,7 @@ local unset_attribute = node.unset_attribute
 % The \TeX\ side fills them in after loading the module.
 %    \begin{macrocode}
 for _, field in ipairs {
-  "font", "cjk_space", "xecglue", "inserted",
+  "font",      "cjk_space",  "xecglue", "inserted",
   "math_font", "punct_font", "nobreak", "settings",
 } do
   local key = "attr_" .. field
