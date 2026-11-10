@@ -14,7 +14,7 @@ maintainid          = "myhsia"
 email               = "myhsia@outlook.com"
 repository          = "https://github.com/" .. maintainid .. "/LuaCJK"
 summary             = "A LuaTeX CJK typesetting package"
-description         = "LuaCJK provides Chinese typesetting for LuaLaTeX."
+description         = "LuaCJK provides Chinese typesetting for the LuaTeX engine."
 
 --[==========================================================================[--
     Configuration: Check, Tag, Pack, Upload     Do NOT Modify if Unnecessary
