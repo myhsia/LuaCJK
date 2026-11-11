@@ -1,14 +1,9 @@
 #!/usr/bin/env bash
-# Check the facts in AGENTS.md and the skill against the code, and the two
-# language versions of the user documentation against each other.
-#
-#   scripts/check-docs.sh      exit 0 = the guides agree with the sources and
-#                              the documentation parts are in step
-#
-# Every fact is read from its source of truth (build.lua, the dtx, the test
-# directory, the subset script), so this file needs no updating when a number
-# in the guide changes; only a new TeX Live bundle name or a new optional
-# dependency needs an entry in the two tables below.
+#=============================================================================
+#    CHECK DOCS: the guide facts against the sources
+#=============================================================================
+# Usage: bash scripts/check-docs.sh
+# Exit: 0 the guides agree, 1 a fact differs.
 set -u
 cd "$(dirname "$0")/.." || exit 2
 
@@ -24,8 +19,6 @@ guide=AGENTS.md
 skill=.opencode/skills/SKILL.md
 dtx=LuaCJK.dtx
 
-# A count is written as a word in the guide ("Ten attributes"), so the check
-# reads the word and compares numbers.
 num_of() {
   case "$(printf '%s' "$1" | tr 'A-Z' 'a-z')" in
     [0-9]*)  printf '%s\n' "$1" ;;
@@ -67,17 +60,10 @@ state_number() {
     report "$label differs" "$dtx: $actual" "guide: $value ($word)"
 }
 
-# `tr -d '\r'` keeps the comparison honest when a Windows checkout has CRLF.
 depends=$(grep -vE '^\s*(#|$)' DEPENDS.txt | tr -d '\r' | awk '{print $NF}' | sort -u)
 tl=$(grep -vE '^\s*(#|$)' .github/tl_packages | tr -d '\r' | sort -u)
 known=$(printf '%s\n%s\n' "$depends" "$tl" | sort -u)
 
-# A `\RequirePackage` name and the TeX Live package that installs it are the
-# same word for most dependencies, but `expl3` lives in `l3kernel` and
-# `l3draw` in `l3experimental`.  The mapping is read from the local
-# installation instead of being written here; `DEPENDS.txt` and the package
-# list name TeX Live packages, so a name that appears verbatim in either is
-# its own answer and needs no lookup.
 alias_of() {
   case "$1" in
     expl3)  echo l3kernel ;;
@@ -104,8 +90,6 @@ lookup_bundle() {
   if printf '%s\n' "$known" | grep -qx "$pkg"; then
     bundle="$pkg"
   elif [ "$tlmgr_ok" = yes ]; then
-    # Anchor on the file name: `tlmgr` matches the pattern anywhere in the
-    # path, so a bare `expl3.sty` also finds `blx-case-expl3.sty`.
     bundle=$(tlmgr search --global --file "^texmf-dist/.*/$pkg\.sty$" 2>/dev/null |
                sed -n 's/^\([A-Za-z0-9._-]*\):$/\1/p' | head -1)
   fi
@@ -164,8 +148,6 @@ if [ "$installed_ext" != "$located_ext" ]; then
 fi
 
 # --- 5. runtime \RequirePackage against DEPENDS.txt ------------------------
-# A package loaded from the listings guard belongs to an optional output, so
-# DEPENDS.txt must mark it `soft`; everything else is `hard`.
 requires=$(awk '
   /^%<\*listings>/ { soft = 1 }
   /^%<\/listings>/ { soft = 0 }
@@ -205,11 +187,7 @@ for n in $(grep -oE 'ctex subset: [0-9]+/[0-9]+' "$guide" "$skill" |
 done
 
 # --- 8. the numbers the skill states --------------------------------------
-# The sentences are searched on one line, because a count may be split across
-# a line break in the source.
 skill_flat=$(tr -d '\r' < "$skill" | tr '\n' ' ')
-# A declaration may be written once for a whole list of names, so count the
-# items of the list that feeds \newattribute rather than the calls.
 attrs=$(awk '
   { line[NR] = $0 }
   END {
@@ -249,12 +227,6 @@ state_number "decoration count" "$decorations" "$word_decor"
 state_number "decoration option count" "$options" "$word_opt"
 
 # --- 9. the layout table against git ls-files -----------------------------
-# Every row of the table names a path in its first code span: a directory, a
-# pattern such as `testfiles/NN.lvt`, or a file.  The check runs both ways, so
-# a new tracked file cannot stay out of the guide, and a row cannot survive
-# the file it describes.  The exceptions are the guide itself, the version
-# control metadata, and the generated README, which the layout table lists in
-# its prose rather than as a row.
 layout=$(sed -n '/^## Project layout$/,/^## /p' "$guide" |
            sed -n 's/^| `\([^`]*\)`.*/\1/p')
 tracked=$(git ls-files)
@@ -296,10 +268,6 @@ $tracked
 EOF
 
 # --- 10. the changelog facts ----------------------------------------------
-# The version and the date of an entry stay on its first line, only the text
-# wraps, so one line is enough to read them.  The newest version is the
-# released one, its date is the release date, and the generated changelog
-# starts with that release.
 bl_date=$(sed -n 's/^date *= *"\(.*\)"/\1/p' build.lua)
 entries=$(grep -nE '^% \\changes\{' "$dtx" | tr -d '\r')
 malformed=$(printf '%s\n' "$entries" |
@@ -326,9 +294,6 @@ head -1 CHANGELOG.md | grep -qF "LuaCJK-$bl_version" ||
          "CHANGELOG.md: $(head -1 CHANGELOG.md)" "build.lua: $bl_version"
 
 # --- 11. the two documentation languages ----------------------------------
-# The user part of the manual is written twice, Chinese first and English
-# second.  scripts/check-bilingual.lua compares the structure and the
-# interface names of the two parts and refuses a part in the wrong order.
 if ! bilingual=$(texlua scripts/check-bilingual.lua "$dtx" 2>&1); then
   fail=$((fail + 1))
   printf 'FAIL  the two documentation parts are not in step\n'

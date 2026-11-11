@@ -1,21 +1,9 @@
 #!/usr/bin/env bash
-# Does scripts/extract-changes.lua still reproduce ctex-kit's changelogs?
-#
-#   bash scripts/check-extract-changes.sh [--quiet]
-#
-#   exit 0  all six packages identical (clean)
-#   exit 1  a package differs            (the Lua port or ctex-kit is stale)
-#   exit 2  cannot run: no texlua, no ../ctex-kit, or a dirty ctex-kit
-#
-# The six committed changelogs of ctex-kit are the reference output of their
-# scripts/extract-changes.py, and this repository's extractor is a port of it.
-# The comparison is byte for byte; `--quiet` prints only the failures, which
-# is what a session check wants.
-#
-# This script is the repository's session check: AGENTS.md declares it, and
-# the `upkeep` plugin runs it once a day and after a directory change, so a
-# change in ctex-kit reaches the next session instead of waiting for someone
-# to remember.  It stays out of CI: a runner has no ../ctex-kit.
+#=============================================================================
+#    CHECK EXTRACT CHANGES: the Lua extractor against ctex-kit's changelogs
+#=============================================================================
+# Usage: bash scripts/check-extract-changes.sh [--quiet]
+# Exit: 0 identical, 1 differs, 2 cannot run.
 set -u
 cd "$(dirname "$0")/.." || exit 2
 
