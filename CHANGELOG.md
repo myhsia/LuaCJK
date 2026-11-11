@@ -33,6 +33,7 @@
 - Provide `LatinPunct`, which keeps the shared quotation marks, the middle dot, and the ellipses in the Latin font instead of the CJK font.
 - Glue, kerns, and penalties inserted by the package carry the attributes of the neighbouring node, so a decoration such as `\CJKunderdot` covers CJK/CJK and CJK/Latin boundaries without a gap.
 - Provide CJK/CJK and CJK/Latin spacing with `CJKglue`, `CJKecglue`, `CJKspace`, and `xCJKecglue`; a value keeps its stretch and shrink orders. A source space between two CJK characters becomes the inter-character glue, so the boundary keeps its break opportunity and its stretch, and no glue is inserted between two long punctuation marks.
+- A mark keeps its break opportunity beside suspended text: the boundary glue at a mark has no width.
 - Provide `PunctKinsoku` line-breaking prohibitions: closing punctuation cannot start a line and opening punctuation cannot end a line.
 - Provide `CJKmath` and `\setCJKmathfont` for CJK characters in math mode, including nested math lists such as fractions. The family is registered as a math family, so a character in a script or a fraction keeps the size of that math style; with `CJKmath` off, a CJK character in math mode warns once.
 - Provide `PunctBoundWidth`, which leaves only the given advance inside the line and hangs the rest of the mark into the margin: at the end of a line, at its start, and when the mark ends a box such as `\mbox`. Only the lines of the paragraph itself are shifted.
