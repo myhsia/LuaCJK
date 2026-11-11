@@ -75,8 +75,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.release.outputs.tag }}
-        run: gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
-          --pattern luacjk-ctan.zip --dir . --clobber
+        run: |
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern luacjk-ctan.zip --dir . --clobber
 
       - name: Upload to CTAN
         run: printf 'y\n' | l3build upload
