@@ -1,0 +1,104 @@
+name: CTAN upload
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to upload; empty means the latest release"
+        required: false
+        default: ""
+      ref:
+        description: "Commit to read build.lua, CHANGELOG.md and CTAN-NOTE.md from"
+        required: false
+        default: "main"
+
+permissions:
+  contents: read
+
+# Two uploads of the same version are rejected by CTAN, so they must not race.
+concurrency:
+  group: ctan-upload
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    if: ${{ github.event_name == 'workflow_dispatch' || !github.event.release.prerelease }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Resolve the release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+          INPUT_REF: ${{ inputs.ref }}
+        run: |
+          set -eu
+          tag="${EVENT_TAG:-${INPUT_TAG:-}}"
+          if [ -z "$tag" ]; then
+            tag=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName \
+              --jq .tagName)
+          fi
+          # A release is uploaded from its own tag; a dispatch defaults to the
+          # current branch, which is how a release cut before this workflow
+          # existed is uploaded with a form that already has the upload keys.
+          ref="${EVENT_TAG:-${INPUT_REF:-main}}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+      - name: Check out the form
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.release.outputs.ref }}
+
+      - name: The form must describe the release it uploads
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -eu
+          version=$(sed -n 's/^version *= *"\(.*\)"/\1/p' build.lua)
+          expected="${TAG#LuaCJK-}"
+          if [ "$version" != "$expected" ]; then
+            echo "::error::build.lua says version ${version}, ${TAG} expects ${expected}"
+            exit 1
+          fi
+
+      - name: Install l3build
+        uses: zauguin/install-texlive@v4
+        with:
+          packages: l3build
+
+      - name: Fetch the archive of that release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+          --pattern luacjk-ctan.zip --dir . --clobber
+
+      - name: Upload to CTAN
+        run: printf 'y\n' | l3build upload
+
+      - name: Keep the request when the upload fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctan-request
+          path: luacjk-ctan.curlopt
+          if-no-files-found: ignore
+
+      - name: Report and remind
+        if: success()
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          {
+            echo "### CTAN"
+            echo "Uploaded \`$TAG\` as package \`luacjk\`."
+            if [ -s CTAN-NOTE.md ]; then
+              echo "The internal note from \`CTAN-NOTE.md\` went with it:"
+              echo "empty that file and commit."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

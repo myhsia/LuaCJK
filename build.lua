@@ -167,7 +167,6 @@ uploadconfig        = {
   bugtracker   = repository .. "/issues",
   development  = repository,
   topic        = {"chinese", "luatex", "tagged-pdf"},
-  update       = false,
   note         = slurp("CTAN-NOTE.md"),
   announcement = extract_changes.announcement{
     changelog = readfile("CHANGELOG.md"),
