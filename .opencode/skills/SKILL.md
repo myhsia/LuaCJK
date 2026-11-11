@@ -34,8 +34,12 @@ The character-level passes run in `pre_linebreak_filter` and in
 1. `rewrite_fonts` — point each CJK glyph at the font family recorded on it
    (`\g_@@_font_attr`), then at the punctuation family or a sub-block font
    if one applies, then at a fallback font when the target lacks the glyph.
-2. `spacing` — remove the source space between CJK characters, and insert
-   `CJKglue`/`CJKecglue` at every boundary between two classes of character.
+2. `spacing` — retime the source space between CJK characters to
+   `CJKglue`, and insert `CJKglue`/`CJKecglue` at every boundary between two
+   classes of character.  Dropping the space must not drop the boundary with
+   it: line breaking happens before the `hpack_filter` pass that would add the
+   glue, so a freed space leaves two characters that can neither be broken
+   between nor stretched apart (`boundary03`).
    A box is an atom, and the class at its edge is the class of the node *at*
    that edge: filling glue (`\numberline`'s `\hfil`), a kern, or a rule means
    the box has no text there, so no glue is added beside it, while a box of no
@@ -163,6 +167,13 @@ kinsoku penalty can then forbid, because the style's compression and hanging
 are the only means by which the model moves a mark's ink.  A character that
 `LatinPunct` treats as Latin (the quotation marks, the middle dot, the
 ellipses) is not a CJK mark and keeps the glue.
+
+Suspension does not take that break opportunity away.  `Verb` stops the spacing
+on both sides of a suspended run, but a mark next to it keeps its zero-width
+glue: the glue moves no ink, and the mark belongs to the running text rather
+than to the run.  An opening mark is the exception, because a break after it is
+prohibited and the kinsoku pass cannot see the prohibition across a suspended
+node; `verb02` pins both cases, together with the line that ends at the mark.
 
 ### Rule decorations adjust `lua-ul`
 
@@ -398,7 +409,7 @@ on `lua-ul`). Picking a backend inside `ctex` is now a public option
 The commands are in `AGENTS.md`. For this skill the points that matter are:
 
 ```bash
-l3build check                       # 48 tests, must print "All checks passed"
+l3build check                       # 50 tests, must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
 bash scripts/ctex-subset.sh         # 21/21, and no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
