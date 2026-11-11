@@ -1,0 +1,98 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKglue = 10pt, CJKecglue = 5pt, CJKspace = false}
+
+% The nodes of a horizontal box, one token each.
+\directlua{
+  function reportlist (n)
+    local cur = tex.box[n].head
+    local out, k = {}, 0
+    while cur do
+      local d
+      if cur.id == node.id("glyph") then
+        d = "g" .. utf8.char(cur.char)
+      elseif cur.id == node.id("glue") then
+        d = "glue " .. cur.width .. "/" .. cur.stretch .. "/" ..
+            cur.shrink .. "/" .. cur.subtype
+      elseif cur.id == node.id("kern") then
+        d = "kern " .. cur.kern
+      elseif cur.id == node.id("penalty") then
+        d = "pen " .. cur.penalty
+      elseif cur.id == node.id("hlist") or cur.id == node.id("vlist") then
+        d = "box " .. cur.width
+      else
+        d = "id" .. cur.id
+      end
+      k = k + 1
+      out[k] = d
+      cur = cur.next
+    end
+    texio.write_nl("term and log", "LIST: " .. table.concat(out, " "))
+  end
+}
+
+% The last glyph of the first line of a vertical box.
+\directlua{
+  function lastglyphof (n)
+    local line = tex.box[n].head
+    while line and line.id ~= node.id("hlist") do
+      line = line.next
+    end
+    local cur = line and line.head
+    local last
+    while cur do
+      if cur.id == node.id("glyph") then
+        last = cur.char
+      end
+      cur = cur.next
+    end
+    texio.write_nl("term and log", "LAST-GLYPH: " ..
+      (last and utf8.char(last) or "none"))
+  end
+}
+
+\def\report#1{\directlua{reportlist(#1)}}
+\def\lastglyph#1{\directlua{lastglyphof(#1)}}
+
+\setbox0=\hbox{中 中}
+\setbox2=\hbox{中中}
+\setbox4=\hbox{中。
+文}
+
+\setbox6=\vbox{\hsize=90pt \noindent 中中中中。
+文}
+
+\begingroup
+  \LuaCJKsetup{CJKspace = true}
+  \global\setbox8=\hbox{中 中}
+\endgroup
+
+\begin{document}
+
+\START
+
+\TEST{a source space between CJK characters becomes the inter-character glue}{
+  \report{0}
+  \TYPE{with space: \the\wd0}
+  \TYPE{without space: \the\wd2}
+}
+
+\TEST{a source space after a mark is the same boundary}{
+  \report{4}
+}
+
+\TEST{the inter-character glue carries the break opportunity}{
+  \lastglyph{6}
+}
+
+\TEST{CJKspace keeps the space instead of the glue}{
+  \report{8}
+  \TYPE{with space: \the\wd8}
+}
+
+\END
+
+\end{document}
