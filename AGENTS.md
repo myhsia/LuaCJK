@@ -49,7 +49,7 @@ Entry points:
 | --- | --- |
 | `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
-| `build.lua` | `l3build` configuration: module `luacjk`, version `v0.0.1`, `tdslocations`, the `uploadconfig` table the CTAN form is read from, the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
+| `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.1`, `ctanpkg` and `tdslocations`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
 | `testfiles/NN.lvt` + `.tlg` | 50 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree |
@@ -62,6 +62,7 @@ Entry points:
 | `.github/workflows/test.yaml` | the CI workflow |
 | `.github/tl_packages` | the package list CI installs; a dependency must be added **or removed** here or the Ubuntu job fails first; the tagged manual and `tagging01` need `latex-lab` and `tagpdf` |
 | `CHANGELOG.md` | user-visible changes, newest first, generated from the `\changes` entries by `l3build changelog` |
+| `CTAN-NOTE.md` | the internal note of the next CTAN upload, read by `l3build upload` and sent verbatim; empty it once that upload is through |
 | `LICENSE` | the LPPL text the meta-comment refers to |
 | `.gitattributes` | `* text=auto`; a Windows checkout is CRLF, so a script that reads a source file normalizes `\r\n` before matching a `\n` |
 | `DEPENDS.txt` | the TeX Live packages the package needs at run time, one per line as `hard <bundle>` and `soft <bundle>`; `soft` marks a dependency that only an optional output needs |
@@ -81,21 +82,26 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **One source.** Edit `LuaCJK.dtx` only; `l3build unpack` regenerates
   everything else. A change to a derived file that is not in the `dtx` is lost
   at the next unpack.
-- **`LuaCJK` is the package, `luacjk` every directory.**  `build.lua` keeps
-  the two apart.
-  `module` is the CTAN package id, which CTAN accepts in lower case only and
-  which has to be the name of the archive's top directory, so it also names
-  the tds zip and every TDS directory (`tex/latex/luacjk/`,
-  `tex/luatex/luacjk/`, `doc/latex/luacjk/`, `source/latex/luacjk/`).
-  The file-local `pkg` holds the spelling of the package itself, and it names
-  the source and typeset files, the files in `tdslocations`, the repository
-  URL, the changelog heading and the release tag.
-  `l3build` derives the default directory from `module`, so a file that is
-  installed but missing from `tdslocations` lands in `tex/latex/luacjk/`
-  beside the others instead of being left out, and the extension check in
-  `scripts/check-docs.sh` cannot see it: name every installed file in
-  `tdslocations`.  A case change in the package name breaks `\usepackage`;
-  one in the tree breaks `l3build zap` or the install path, silently.
+- **`LuaCJK` is the module and the package; `pkg` is the CTAN id.**
+  `module` is the spelling of everything the package owns: `LuaCJK.dtx`, the
+  file names in `tdslocations`, the repository URL, the changelog heading and
+  the release tag.
+  `build.lua` derives the CTAN side from it with `local pkg =
+  string.lower(module)`, and that one feeds `ctanpkg` (the archive's top
+  directory and the name of the tds zip), the `tex/` trees in `tdslocations`,
+  `uploadconfig.pkg` and `ctanPath`, because CTAN accepts a package id in
+  lower case only and rejects an archive whose top directory is not exactly
+  that id.
+  `l3build` builds `moduledir` from `module` alone — `l3build-variables.lua`
+  assigns it unconditionally, after `build.lua` — so the tds zip's `doc/` and
+  `source/` directories are `doc/latex/LuaCJK/` and `source/latex/LuaCJK/`,
+  while the `tex/` trees follow `tdslocations` and stay lower case.
+  For the same reason a file that is installed but missing from
+  `tdslocations` lands in `tex/latex/LuaCJK/` beside the others instead of
+  being left out, and the extension check in `scripts/check-docs.sh` cannot
+  see it: name every installed file in `tdslocations`.  A case change in the
+  package name breaks `\usepackage`; one in the tree breaks `l3build zap` or
+  the install path, silently.
 - **The user part exists in two languages.**  The `documentation`
   environment is written twice, Simplified Chinese first and English second;
   only the prose and the section titles are translated, so every edit to one
@@ -398,8 +404,8 @@ l3build upload --dry-run           # the form, without publishing it
   `luacjk/` with `LuaCJK.dtx`, `LuaCJK.ins`, `README.md`, `LICENSE` and
   `LuaCJK.pdf`, and `luacjk.tds.zip` beside it.
   The tds zip holds the seven installed files under `tex/latex/luacjk/` and
-  `tex/luatex/luacjk/`, the sources under `source/latex/luacjk/`, and the
-  documentation under `doc/latex/luacjk/`.
+  `tex/luatex/luacjk/`, the sources under `source/latex/LuaCJK/`, and the
+  documentation under `doc/latex/LuaCJK/`.
   That is the layout CTAN's TDS guidelines prescribe: the archive's top
   directory is the package id, and the tds zip lies at the top level, where
   CTAN puts it below `install/`.  It is there because the package spans two
@@ -410,13 +416,23 @@ l3build upload --dry-run           # the form, without publishing it
   configuration and the repository guides are not part of a release either.
 - Every field of the CTAN form comes from `uploadconfig` in `build.lua`, so a
   new release edits that table and nothing else.
-  `pkg` is the CTAN id and must be the archive's top directory, `version`
-  drops the tag's leading `v`, `update` is `false` only for the first release,
-  `note` is the internal message to the CTAN maintainers, and `announcement`
-  is the text sent to the announcement list, whose first line is its subject.
-  `--dry-run` skips the publication step but still posts the archive to
+  `pkg` is `string.lower(module)`, the id the archive's top directory must
+  carry, `version` drops the tag's leading `v`, `update` is `false` only for
+  the first release, and the topics are `chinese`, `luatex` and `tagged-pdf`.
+- Two fields are read rather than written.
+  `announcement` is built at load time from the newest section of
+  `CHANGELOG.md`: a subject line, then that release's bullets; when the text
+  would pass the field's 8 192 characters it keeps whole bullets and closes
+  with a line naming how many are left and where the full list is, so the
+  first release announces 41 of its 46 changes and a later one usually passes
+  through untouched.
+  `note` is the content of `CTAN-NOTE.md`, sent verbatim as the internal
+  message to the CTAN maintainers; an empty file sends none, and the file is
+  emptied again once the upload is through, so no note outlives its release.
+- `--dry-run` skips the publication step but still posts the archive to
   `https://ctan.org/submit/validate`, so it checks the form and publishes
-  nothing.
+  nothing.  A rehearsal with no network at all needs a `curl` stand-in on
+  `PATH`, as the global `repo-rules` skill describes.
 - The GitHub release attaches `luacjk-ctan.zip`, `luacjk.tds.zip` and
   `LuaCJK.pdf`, and takes the release section of `CHANGELOG.md` as its notes.
 
@@ -551,14 +567,19 @@ engine callback layer, but a third-party package that collides with LuaCJK is
 its own business to detect, and blocking it here would freeze a decision the
 CTeX maintainers have not made.
 
-A fourth was tried and reversed: `module = "LuaCJK"`, on the reading that
-`module` is the CTAN name.  CTAN's submit API accepts a package id in lower
-case only, and it has to be the name of the archive's top directory, so that
-spelling produced `LuaCJK/` and `LuaCJK.tds.zip` where `luacjk/` and
-`luacjk.tds.zip` are required, and `doc/latex/LuaCJK/` inside the tds zip,
-which no TeX Live package has.  `module` is the id and the tree, and `pkg` is
-the package spelling; the archive is `luacjk-ctan.zip` while the tag stays
-`LuaCJK-v0.0.1`.
+A fourth took three attempts. `module = "LuaCJK"` alone made `l3build ctan`
+write `LuaCJK/` and `LuaCJK.tds.zip`, which CTAN rejects: the package id is
+lower case only, and it has to be the archive's top directory.  Putting the id
+*in* `module` fixed the archive but dragged the tag, the repository URL and
+the changelog heading to a lower-case name, and it moved the tds zip's `doc/`
+and `source/` directories to `luacjk/`, since `moduledir` is built from
+`module`.  The settled form keeps `module = "LuaCJK"` for everything the
+package owns and derives the id as `pkg = string.lower(module)`, which
+`ctanpkg = pkg` carries to the archive's top directory and to
+`uploadconfig.pkg`.  The price is two mixed-case directories inside the tds
+zip, `doc/latex/LuaCJK/` and `source/latex/LuaCJK/`; lower case there would
+need `moduledir`, which `l3build-variables.lua` assigns unconditionally after
+`build.lua` is read.
 
 ## Git style
 

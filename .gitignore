@@ -12,6 +12,7 @@ build/
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+*.curlopt
 *.pdf
 *.zip
 .DS_Store
