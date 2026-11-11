@@ -146,45 +146,14 @@ target_list.changelog =
 --[==========================================================================[--
     UPLOAD: the CTAN form, one entry per field
 --]==========================================================================]--
-local function newest_changes()
-  local content = readfile("CHANGELOG.md"):gsub("\r\n", "\n")
-  local body = content:gsub("^## %[[^\n]*\n+", "")
-  body = body:match("^(.-)\n## %[") or body
-  return (body:gsub("%s+$", ""))
-end
-
-local function announcement_text()
-  local subject = module .. " " .. version .. ": " .. summary
-  local limit, reserve = 8192, 160
-  local lines, used, dropped = {subject, ""}, #subject + 2, 0
-  for line in newest_changes():gmatch("[^\n]+") do
-    if used + #line + 1 <= limit - reserve then
-      lines[#lines + 1] = line
-      used = used + #line + 1
-    else
-      dropped = dropped + 1
-    end
-  end
-  if dropped > 0 then
-    lines[#lines + 1] = ""
-    lines[#lines + 1] = "(" .. dropped ..
-      " more changes are listed in the changelog: " ..
-      repository .. "/blob/main/CHANGELOG.md)"
-  end
-  return table.concat(lines, "\n")
-end
-
 local function slurp(path)
   if not fileexists(path) then return "" end
-  local handle = assert(io.open(path, "r"))
-  local content = handle:read("*a")
-  handle:close()
-  return (content:gsub("%s+$", ""))
+  return (readfile(path):gsub("%s+$", ""))
 end
 
 uploadconfig        = {
   pkg          = pkg,
-  version      = (version:gsub("^v", "")),
+  version      = version,
   author       = maintainer,
   uploader     = uploader,
   email        = email,
@@ -200,5 +169,10 @@ uploadconfig        = {
   topic        = {"chinese", "luatex", "tagged-pdf"},
   update       = false,
   note         = slurp("CTAN-NOTE.md"),
-  announcement = announcement_text()
+  announcement = extract_changes.announcement{
+    changelog = readfile("CHANGELOG.md"),
+    subject   = module .. " " .. version .. ": " .. summary,
+    url       = repository .. "/blob/main/CHANGELOG.md",
+    limit     = 8192
+  }
 }

@@ -5,6 +5,8 @@
 -- Usage: texlua scripts/extract-changes.lua <dtx...> all|<version>
 --            [--repo <owner>/<name>] [-o <file>]
 -- Exit: 0 written, 1 a bad argument, 2 cannot run.
+-- The module also exports `newest` and `announcement`, which build.lua uses
+-- to turn the newest section of CHANGELOG.md into the CTAN announcement.
 
 local M = {}
 
@@ -498,6 +500,39 @@ function M.main(argv)
     io.write(result)
   end
   return 0
+end
+
+-- The first release section of a changelog that `M.main` wrote: the lines
+-- after its `## [package-version](...)` heading, up to the next heading.
+function M.newest(content)
+  content = content:gsub("\r\n", "\n")
+  local body = content:gsub("^%s*## %[[^\n]*\n+", "")
+  body = body:match("^(.-)\n## %[") or body
+  return (body:gsub("%s+$", ""))
+end
+
+-- The text of a release announcement: `o.subject`, a blank line, every bullet
+-- of `M.newest(o.changelog)` that fits in `o.limit` characters, and, when some
+-- do not fit, one closing line that names how many and where they are.
+function M.announcement(o)
+  local lines, used, dropped = {o.subject, ""}, #o.subject + 2, 0
+  -- Room for the closing line, so that dropping a bullet never pushes the
+  -- announcement past the limit that dropping it was meant to respect.
+  local reserve = 160
+  for line in M.newest(o.changelog):gmatch("[^\n]+") do
+    if used + #line + 1 <= o.limit - reserve then
+      lines[#lines + 1] = line
+      used = used + #line + 1
+    else
+      dropped = dropped + 1
+    end
+  end
+  if dropped > 0 then
+    lines[#lines + 1] = ""
+    lines[#lines + 1] = "(" .. dropped ..
+      " more changes are listed in the changelog: " .. o.url .. ")"
+  end
+  return table.concat(lines, "\n")
 end
 
 -- Run as a script when named on the command line; `dofile` from build.lua
