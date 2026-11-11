@@ -1,24 +1,11 @@
 #!/usr/bin/env texlua
---
--- Compare the two language versions of the user documentation in LuaCJK.dtx.
---
--- The manual writes its user documentation twice, Simplified Chinese first and
--- English second, and only the prose (and the section titles) is translated.
--- Two things must agree, or the versions have drifted:
---
---   * the structure, read in order: the environment nesting, the documented
---     objects and their arguments, the section levels, and the list items;
---   * the references, read as a multiset: every command that names an
---     interface object (\cs, \keys, \pkg, \file, ...), its argument, and every
---     verbatim code span between bars.
---
--- The references are compared without their order, because a translation may
--- put the same reference in a different place inside the sentence.
---
+
+--[==========================================================================[--
+    CHECK BILINGUAL: the two language versions of the user part
+--]==========================================================================]--
+
 -- Usage: texlua scripts/check-bilingual.lua [LuaCJK.dtx]
---
--- Exit status: 0 the two parts agree, 1 they differ (the differences are
---              printed), 2 the check cannot run.
+-- Exit: 0 agree, 1 differ (printed), 2 cannot run.
 
 local dtx_file = arg[1] or "LuaCJK.dtx"
 

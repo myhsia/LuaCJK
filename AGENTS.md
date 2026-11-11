@@ -52,7 +52,7 @@ Entry points:
 | `testfiles/NN.lvt` + `.tlg` | 48 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree |
-| `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, and names the forge repository of the release link with `--repo` |
+| `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, collapses only ASCII whitespace, and names the forge repository of the release link with `--repo` |
 | `scripts/check-extract-changes.sh` | regenerates the six changelogs of `../ctex-kit` with the Lua extractor and compares them byte for byte: exit 0 all identical, 1 a difference, 2 cannot run; `--quiet` prints only the differences |
 | `scripts/check-charclass.lua` | compares the `CJK_RANGES` table of the `dtx` with `Scripts.txt`: it reports every code point whose script is Han, Hiragana, Katakana, Bopomofo, or Hangul that the table does not list, merging the code points into ranges.  The combining Bopomofo tone marks U+02EA and U+02EB are allowed to stay outside the table.  Exit 0 covered, 1 missing (the ranges are printed), 2 cannot run |
 | `scripts/check-bilingual.lua` | compares the two `documentation` parts of the `dtx`: the ordered structure (environment nesting, the documented objects and their arguments, section levels, list items) and the multiset of interface references (`\cs`, `\keys`, `\pkg`, `\file`, `\env`, `\tn`, `\val`, `\texttt`, `\meta`, `\oarg`, `\marg`, `\parg` and the `|…|` spans), and refuses a part in the wrong order.  Prose and section titles are not compared.  Exit 0 agree, 1 differ (the differences are printed), 2 cannot run |
@@ -375,8 +375,13 @@ of ctex-kit.
   sources`; it is the first thing CI runs and the thing to run before a
   commit that touches a number in either guide, or adds, renames, or removes
   a tracked file (the layout table is compared with `git ls-files` in both
-  directions).  It also runs `scripts/check-bilingual.lua`, so a change to one
-  language of the user part without the other fails here.  The `hard` and
+  directions, skipping the guide itself, the version-control metadata and the
+  generated README, which the table lists in prose rather than as a row).  It
+  also runs `scripts/check-bilingual.lua`, so a change to one language of the
+  user part without the other fails here.  A `\RequirePackage` name is
+  resolved with `tlmgr search --global --file`, whose pattern matches anywhere
+  in the path, so the lookup anchors on the file name: a bare `expl3.sty`
+  would also find `blx-case-expl3.sty`.  The `hard` and
   `soft` words of `DEPENDS.txt` are what the
   script reads to decide whether a dependency belongs to the package proper
   or only to an optional output, so the word is part of the check, not a
