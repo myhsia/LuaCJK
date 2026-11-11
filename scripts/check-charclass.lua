@@ -1,18 +1,11 @@
 #!/usr/bin/env texlua
---
--- Compare the CJK range table of LuaCJK.dtx with the Unicode scripts.
---
--- The table in the dtx is the policy: which code points LuaCJK sets with the
--- CJK class.  It is not a Unicode property, because the punctuation that CJK
--- text shares with Latin has script Common.  The check therefore only asks
--- one question: is there a code point whose script is Han, Hiragana,
--- Katakana, Bopomofo, or Hangul that the table does not list?
---
+
+--[==========================================================================[--
+    CHECK CHARCLASS: the CJK ranges against Scripts.txt
+--]==========================================================================]--
+
 -- Usage: texlua scripts/check-charclass.lua [LuaCJK.dtx]
---
--- Exit status: 0 the table covers every CJK-script code point,
---              1 some are missing (they are printed as ranges),
---              2 the check cannot run (no dtx, no Scripts.txt, no table).
+-- Exit: 0 covered, 1 missing (printed as ranges), 2 cannot run.
 
 local dtx_file = arg[1] or "LuaCJK.dtx"
 

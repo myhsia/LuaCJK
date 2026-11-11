@@ -40,9 +40,6 @@ cleanfiles          = {
 }
 excludefiles        = {"*~"}
 textfiles           = {"README.md", "LICENSE"}
--- The tree is lowercase although the CTAN name is not, and l3build builds
--- its default directory from `module', so every installed file is named
--- here.  Not called `tdsdir', which l3build uses for its staging tree.
 local tdsname = string.lower(module)
 tdslocations        = {
   "tex/latex/"  .. tdsname .. "/" .. module .. ".sty",

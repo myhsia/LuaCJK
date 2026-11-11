@@ -2,29 +2,9 @@
     EXTRACT CHANGES                          Copyright (C) by Mingyu Xia
 --]==========================================================================]--
 
--- Extract the \changes{v<version>}{<date>}{...} entries of one or more .dtx
--- files and emit the markdown list that becomes CHANGELOG.md.
---
---     texlua scripts/extract-changes.lua <dtx...> all|<version> \
+-- Usage: texlua scripts/extract-changes.lua <dtx...> all|<version>
 --            [--repo <owner>/<name>] [-o <file>]
---
--- This is a Lua port of ctex-kit's scripts/extract-changes.py, which stays
--- the reference implementation (ctex-kit is LPPL v1.3c, as is this file).
--- The port is verified against the six committed changelogs of ctex-kit:
--- ctex, xeCJK, xpinyin, zhlineskip, zhmetrics and zhnumber reproduce byte
--- for byte, see scripts/check-extract-changes.sh.
---
--- Differences from the Python, all deliberate:
---   * the file names are taken literally, a pattern is not expanded;
---   * only ASCII whitespace is collapsed, which is what the dtx files use;
---   * \keys, \oarg and \marg are understood, so a key is written with the
---     same markup as in the running text: \keys{x} is `x`, \oarg{x} is
---     `[x]`, \marg{x} is `{x}`;
---   * --repo names the forge repository of the release link.
---
--- The output is written by the script itself, UTF-8 and LF, because a shell
--- redirection gives UTF-16LE on Windows PowerShell 5 and that breaks the
--- byte comparison in CI.
+-- Exit: 0 written, 1 a bad argument, 2 cannot run.
 
 local M = {}
 

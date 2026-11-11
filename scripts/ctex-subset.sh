@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Compile a small subset of ctex's own .lvt tests with the engine file that
-# LuaCJK ships.  This is a compilation smoke test: ctex's .tlg baselines are for
-# LuaTeX-ja and are deliberately not used here.
-
+#=============================================================================
+#    CTEX SUBSET: ctex's own .lvt tests with the shipped engine file
+#=============================================================================
+# Usage: bash scripts/ctex-subset.sh [--skip-unpack]
+# Exit: 0 all passed, 1 a test failed.
 set -euo pipefail
 
 root=$(cd "$(dirname "$0")/.." && pwd)
