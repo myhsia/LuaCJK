@@ -1,3 +1,7 @@
+## [LuaCJK-v0.0.2](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.2)
+
+- The double rule takes `format` like the other decorations, and a rule or a symbol that carries no `format` follows the color of the surrounding text.
+
 ## [LuaCJK-v0.0.1](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.1)
 
 - Provide the CJK font family interface (`\setCJKmainfont`, `\setCJKsansfont`, `\setCJKmonofont`, `\setCJKfamilyfont`, `\CJKfamily`, `\newCJKfontfamily`, `\CJKfontspec`); an undeclared family warns once.
