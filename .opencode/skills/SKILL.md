@@ -53,6 +53,11 @@ The character-level passes run in `pre_linebreak_filter` and in
    it: line breaking happens before the `hpack_filter` pass that would add the
    glue, so a freed space leaves two characters that can neither be broken
    between nor stretched apart (`boundary03`).
+   A space that a text font command moved across the italic correction is put
+   back into the source-space class before the walk: `\textbf` and its siblings
+   save the skip in front of them, `\unskip` it, apply the italic correction and
+   reinsert it with `\hskip`, so the glue keeps the dimensions of the space but
+   carries the subtype of a skip the document wrote (`boundary03`).
    A box is an atom, and the class at its edge is the class of the node *at*
    that edge: filling glue (`\numberline`'s `\hfil`), a kern, or a rule means
    the box has no text there, so no glue is added beside it, while a box of no

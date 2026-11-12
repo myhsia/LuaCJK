@@ -5,6 +5,7 @@
 - The fallback list is resolved again at every font selection, so the fallback follows the series, shape, and size of the text.
 - A CJK character in a formula takes the face of the math version: the bold face of the family under `\boldmath` when the family has one, and the upright shape instead of the shape of the text.
 - `\CJKfontspec` and `\newCJKfontfamily` take their options after the font name as well.
+- The space in front of `\textbf` and its siblings is still the inter-character glue: LaTeX moves a space across the italic correction of a text font command, and the move leaves the glue with the subtype of a skip the document wrote.
 - The double rule takes `format` like the other decorations, and a rule or a symbol that carries no `format` follows the color of the surrounding text.
 
 ## [LuaCJK-v0.0.1](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.1)

@@ -2,7 +2,7 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont[BoldFont = FandolSong-Bold.otf]{FandolSong-Regular.otf}
 \LuaCJKsetup{CJKglue = 10pt, CJKecglue = 5pt, CJKspace = false}
 
 % The nodes of a horizontal box, one token each.
@@ -70,6 +70,8 @@
   \global\setbox8=\hbox{中 中}
 \endgroup
 
+\setbox10=\hbox{中 \textbf{中}}
+
 \begin{document}
 
 \START
@@ -91,6 +93,11 @@
 \TEST{CJKspace keeps the space instead of the glue}{
   \report{8}
   \TYPE{with space: \the\wd8}
+}
+
+\TEST{a moved space is still the inter-character glue}{
+  \report{10}
+  \TYPE{with space: \the\wd10}
 }
 
 \END
