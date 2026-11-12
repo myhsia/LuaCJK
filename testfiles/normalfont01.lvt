@@ -1,0 +1,68 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKsansfont{FandolHei-Regular.otf}
+\setCJKmonofont{FandolFang-Regular.otf}
+\setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
+
+\def\psname{%
+  \directlua{
+    local head = tex.box[0].head
+    local out = {}
+    while head do
+      if head.id == node.id("glyph") then
+        local f = font.getfont(head.font)
+        table.insert(out, tostring(f and f.psname))
+      end
+      head = head.next
+    end
+    texio.write_nl("term and log", "PS " .. table.concat(out, " "))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{the main font}{
+  \setbox0=\hbox{中}
+  \psname
+}
+
+\TEST{sffamily}{
+  \setbox0=\hbox{\sffamily 中}
+  \psname
+}
+
+\TEST{normalfont undoes sffamily}{
+  \setbox0=\hbox{\sffamily\normalfont 中}
+  \psname
+}
+
+\TEST{textnormal undoes sffamily}{
+  \setbox0=\hbox{\sffamily\textnormal{中}}
+  \psname
+}
+
+\TEST{normalfont undoes ttfamily}{
+  \setbox0=\hbox{\ttfamily\normalfont 中}
+  \psname
+}
+
+\TEST{normalfont undoes a CJK family}{
+  \setbox0=\hbox{\heiti\normalfont 中}
+  \psname
+}
+
+\TEST{CJKfamilydefault follows CJKrmdefault}{
+  \def\CJKrmdefault{zhkai}
+  \setbox0=\hbox{\normalfont 中}
+  \psname
+  \def\CJKrmdefault{zhsong}
+}
+
+\END
+
+\end{document}

@@ -448,7 +448,8 @@ LaTeX Project Public License, version 1.3c or later.
 % \begin{variable}
 %   {\CJKrmdefault, \CJKsfdefault, \CJKttdefault,
 %   \CJKfamilydefault} 由 \tn{rmfamily}、\tn{sffamily} 与 \tn{ttfamily}
-%   选择的 CJK 字族。
+%   选择的 CJK 字族，以及由 \tn{normalfont} 选择的字族。
+%   \cs{CJKfamilydefault} 默认跟随 \cs{CJKrmdefault}。
 % \end{variable}
 %
 % \subsection{子区块}
@@ -1622,7 +1623,9 @@ a’a\quad 字！字
 % \begin{variable}
 %   {\CJKrmdefault, \CJKsfdefault, \CJKttdefault,
 %   \CJKfamilydefault} The CJK families selected by \tn{rmfamily},
-%   \tn{sffamily}, and \tn{ttfamily}.
+%   \tn{sffamily}, and \tn{ttfamily}, and the family selected by
+%   \tn{normalfont}. \cs{CJKfamilydefault} follows \cs{CJKrmdefault}
+%   by default.
 % \end{variable}
 
 % \subsection{Sub-blocks}
@@ -4028,6 +4031,27 @@ a’a\quad 字！字
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{\@@_reset_family:}
+% \changes{v0.0.2}{2026/11/20}{Restore \cs{CJKfamilydefault} when
+%   \cs{normalfont} or \cs{textnormal} runs, so that the default font command
+%   overrides a family chosen earlier in the group; \cs{CJKfamilydefault}
+%   follows \cs{CJKrmdefault} until the document sets it.}
+% Reset the CJK family to \cs{CJKfamilydefault}.
+% The name is expanded first, because the default is written as
+% \cs{CJKrmdefault} until the document chooses a family of its own.
+% A name that no family carries is passed over in silence:
+% \tn{normalfont} also runs when the document starts, and a document that
+% has declared no font yet has nothing to switch to.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_reset_family:
+  {
+    \tl_set:Ne \l_@@_tmpa_tl { \CJKfamilydefault }
+    \prop_if_in:NVT \g_@@_family_prop \l_@@_tmpa_tl
+      { \exp_args:NV \@@_switch_family:n \l_@@_tmpa_tl }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{\@@_update_font:}
 % \changes{v0.0.1}{2026/11/11}{Provide \keys{PunctFamily}, which sets a
 %   separate CJK family for the punctuation marks.}
@@ -4236,7 +4260,12 @@ a’a\quad 字！字
 %   {\CJKrmdefault, \CJKsfdefault, \CJKttdefault, \CJKfamilydefault}
 % The CJK families used by the standard font commands.
 % The family hooks below re-select the CJK family whenever
-% \tn{rmfamily} and its siblings run.
+% \tn{rmfamily} and its siblings run, and \tn{normalfont} selects
+% \cs{CJKfamilydefault}, which follows \cs{CJKrmdefault} until the
+% document gives it a value of its own.
+% \begin{variable}[int]{\l_@@_family_default_init_tl}
+% The value \cs{CJKfamilydefault} starts with, kept so that the hook at
+% |\begin{document}| can tell an untouched default from a chosen one.
 %    \begin{macrocode}
 \clist_map_inline:nn { { rm } { zhsong } , { sf } { zhhei } , { tt } { zhfs } }
   {
@@ -4246,7 +4275,10 @@ a’a\quad 字！字
   }
 \tl_new:N \CJKfamilydefault
 \tl_set:Nn \CJKfamilydefault { zhsong }
+\tl_new:N \l_@@_family_default_init_tl
+\tl_set_eq:NN \l_@@_family_default_init_tl \CJKfamilydefault
 %    \end{macrocode}
+% \end{variable}
 % \end{variable}
 %
 % \begin{macro}{\defaultCJKfontfeatures}
@@ -4461,6 +4493,8 @@ a’a\quad 字！字
     \hook_gput_code:nnn { cmd / #1family / after } { LuaCJK }
       { \exp_args:Nv \@@_switch_family:n { CJK#1default } }
   }
+\hook_gput_code:nnn { cmd / normalfont / after } { LuaCJK }
+  { \@@_reset_family: }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -4616,6 +4650,8 @@ a’a\quad 字！字
 \@@_ignore_format_chars:
 \hook_gput_code:nnn { begindocument } { LuaCJK }
   {
+    \tl_if_eq:NNT \CJKfamilydefault \l_@@_family_default_init_tl
+      { \tl_gset:Nn \CJKfamilydefault { \CJKrmdefault } }
     \bool_if:NT \g_@@_load_fandol_bool
       {
         \prop_if_empty:NT \g_@@_family_prop
