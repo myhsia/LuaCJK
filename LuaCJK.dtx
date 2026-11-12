@@ -507,6 +507,9 @@ LaTeX Project Public License, version 1.3c or later.
 %   把 \meta{font} 加入 \meta{family} 的后备列表。字族可以用
 %   \cs{CJKrmdefault} 之类的名字给出。多次调用该命令可以建立一条链；
 %   第一个拥有该字符的字体胜出。
+%   这条链按文字的字重、字形与字号解析，
+%   所以粗体里的字符取自后备字体的粗体字面，
+%   放大后的字符取自对应字号的字面。
 % \end{function}
 %
 % \begin{keyval}
@@ -1684,6 +1687,8 @@ a’a\quad 字！字
 %   Add \meta{font} to the fallback list of \meta{family}. The family may
 %   be given as \cs{CJKrmdefault} and friends. Call the command several
 %   times to build a chain; the first font that has the character wins.
+%   The chain is resolved in the weight, shape, and size of the text, so a
+%   character in bold takes the bold face of the fallback font.
 % \end{function}
 %
 % \begin{keyval}
@@ -3319,8 +3324,7 @@ a’a\quad 字！字
 %     \g_@@_embolden_factor_tl, \g_@@_slant_factor_tl,
 %     \g_@@_fallback_prop,      \l_@@_auto_fallback_bool,
 %     \g_@@_load_fandol_bool,
-%     \l_@@_fallback_family_tl, \l_@@_fallback_ids_tl,
-%     \l_@@_main_fontid_int
+%     \l_@@_fallback_family_tl, \l_@@_fallback_ids_tl, \l_@@_fontid_tl
 %   }
 % The switches read by the Lua side, the \keys{Verb} setting,
 % the configuration file name, the fake bold and slant parameters,
@@ -3358,9 +3362,9 @@ a’a\quad 字！字
 \tl_new:N \l_@@_fallback_family_tl
 \tl_new:N \l_@@_fallback_key_tl
 \cs_generate_variant:Nn \prop_get:NnNF { NVNF }
-\cs_generate_variant:Nn \prop_gput:Nnn { NVV  }
+\cs_generate_variant:Nn \prop_gput:Nnn { NVV , NnV }
 \tl_new:N \l_@@_fallback_ids_tl
-\int_new:N \l_@@_main_fontid_int
+\tl_new:N \l_@@_fontid_tl
 %    \end{macrocode}
 % \end{variable}
 %    \begin{macrocode}
@@ -3507,7 +3511,7 @@ a’a\quad 字！字
     AutoFallBack / true .code:n      =
       {
         \bool_set_true:N \l_@@_auto_fallback_bool
-        \@@_recall_all_fallbacks:
+        \@@_refresh_fallbacks:
       },
     AutoFallBack / false.code:n      =
       { \bool_set_false:N \l_@@_auto_fallback_bool },
@@ -3943,68 +3947,80 @@ a’a\quad 字！字
         \l_@@_feature_tl \l_@@_registered_name_tl
       \prop_gput:NnV \g_@@_family_prop {#1} \l_@@_fontspec_tl
     \group_end:
-    \@@_recall_fallback:n {#1}
     \prop_if_in:NVT \g_@@_family_prop \l_@@_family_tl
       { \selectfont }
   }
 %    \end{macrocode}
+% \end{macro}
 %
-% \begin{macro}[int]{\@@_recall_fallback:n}
-% Resolve the fallback families of one CJK family to font identifiers
-% at the current size, and hand the list to Lua together with the
-% identifier of the family itself. Font identifiers depend on the size,
-% so this runs again whenever a family is registered.
-% The variables used here are declared with the other options above.
-% \begin{variable}[int]{\g_@@_lua_loaded_bool}
+% \begin{macro}[int]{\@@_push_fallback:, \@@_refresh_fallbacks:}
+% Resolve the fallback families of the current CJK family to font
+% identifiers at the current size, series, and shape, and hand the list to
+% Lua together with the identifier of the family itself.
+% A font identifier belongs to one instance of a font, so the list has to be
+% resolved again whenever a font is selected: the identifier of the bold or
+% enlarged main font is not the one the upright size was resolved at.
+% \begin{variable}[int]
+%   {\g_@@_fallback_pushed_prop, \g_@@_lua_loaded_bool}
+% The CJK family whose list was last handed to Lua for each font identifier,
+% which makes a selection that resolves to a known identifier cost one
+% property lookup, and whether the Lua module has been loaded.
+% The guard of \cs{@@_update_font:} is raised around the resolution, so the
+% temporary selections it makes do not change the identifier they are
+% resolved for.
 %    \begin{macrocode}
+\prop_new:N \g_@@_fallback_pushed_prop
 \bool_new:N \g_@@_lua_loaded_bool
-\cs_new_protected:Npn \@@_recall_all_fallbacks:
+\cs_new_protected:Npn \@@_push_fallback:
   {
-    \prop_map_inline:Nn \g_@@_family_prop
-      { \@@_recall_fallback:n {##1} }
+    \int_compare:nNnT { \g_@@_fontid_int } > { 0 }
+      {
+        \tl_set:Ne \l_@@_fontid_tl { \int_use:N \g_@@_fontid_int }
+        \prop_get:NVNT \g_@@_fallback_prop \l_@@_family_tl \l_@@_tmpa_tl
+          {
+            \prop_get:NVNF \g_@@_fallback_pushed_prop
+              \l_@@_fontid_tl \l_@@_tmpb_tl
+              { \tl_clear:N \l_@@_tmpb_tl }
+            \tl_if_eq:NNF \l_@@_tmpb_tl \l_@@_family_tl
+              { \exp_args:NV \@@_push_fallback_aux:n \l_@@_tmpa_tl }
+          }
+      }
+  }
+\cs_new_protected:Npn \@@_push_fallback_aux:n #1
+  {
+    \group_begin:
+      \tl_clear:N \l_@@_fallback_ids_tl
+      \clist_map_inline:nn {#1}
+        {
+          \fontfamily {##1} \selectfont
+          \tl_put_right:Nx \l_@@_fallback_ids_tl
+            { \int_eval:n { \tex_fontid:D \tex_font:D } , }
+        }
+      \bool_if:NT \g_@@_lua_loaded_bool
+        {
+          \tl_if_empty:NF \l_@@_fallback_ids_tl
+            {
+              \lua_now:e
+                {
+                  LuaCJK.set_fallback
+                    ( \int_use:N \g_@@_fontid_int ,
+                      { \l_@@_fallback_ids_tl } )
+                }
+              \prop_gput:NVV \g_@@_fallback_pushed_prop
+                \l_@@_fontid_tl \l_@@_family_tl
+            }
+        }
+    \group_end:
+  }
+\cs_new_protected:Npn \@@_refresh_fallbacks:
+  {
+    \prop_gclear:N \g_@@_fallback_pushed_prop
+    \bool_set_true:N \l_@@_selectfont_bool
+    \@@_push_fallback:
+    \bool_set_false:N \l_@@_selectfont_bool
   }
 %    \end{macrocode}
 % \end{variable}
-%    \begin{macrocode}
-\cs_new_protected:Npn \@@_recall_fallback:n #1
-  {
-    \prop_if_in:NnT \g_@@_fallback_prop {#1}
-      {
-        \prop_get:NnNF \g_@@_fallback_prop {#1} \l_@@_tmpa_tl
-          { \tl_clear:N \l_@@_tmpa_tl }
-        \group_begin:
-          \tl_clear:N \l_@@_fallback_ids_tl
-          \prop_get:NnNF \g_@@_family_prop {#1}
-            \l_@@_family_name_tl
-            { \tl_clear:N \l_@@_family_name_tl }
-          \exp_args:NV \fontfamily \l_@@_family_name_tl
-          \selectfont
-          \int_set:Nn \l_@@_main_fontid_int
-            { \tex_fontid:D \tex_font:D }
-          \clist_map_inline:Nn \l_@@_tmpa_tl
-            {
-              \fontfamily {##1} \selectfont
-              \tl_put_right:Nx \l_@@_fallback_ids_tl
-                { \int_eval:n { \tex_fontid:D \tex_font:D } , }
-            }
-          \bool_if:NT \g_@@_lua_loaded_bool
-            {
-              \tl_if_empty:NF \l_@@_fallback_ids_tl
-                {
-                  \lua_now:e
-                    {
-                      LuaCJK.set_fallback
-                        ( \int_use:N \l_@@_main_fontid_int ,
-                          { \l_@@_fallback_ids_tl } )
-                    }
-                }
-            }
-        \group_end:
-      }
-  }
-%    \end{macrocode}
-% \end{macro}
-% \end{macro}
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_switch_family:n}
@@ -4055,8 +4071,9 @@ a’a\quad 字！字
 % \begin{macro}[int]{\@@_update_font:}
 % \changes{v0.0.1}{2026/11/11}{Provide \keys{PunctFamily}, which sets a
 %   separate CJK family for the punctuation marks.}
-% On every \tn{selectfont}, resolve the current family and the math
-% family to font identifiers and store them in the attributes.
+% On every \tn{selectfont}, resolve the current family, its fallback
+% families, and the math family to font identifiers and store them in the
+% attributes.
 % \begin{variable}[int]{\l_@@_selectfont_bool, \g_@@_fontid_int}
 % A guard against re-entering the update while \tn{selectfont} runs,
 % and the font identifier of the current CJK family.
@@ -4127,6 +4144,7 @@ a’a\quad 字！字
               { \g_@@_math_font_attr = \c_zero_int }
           }
           { \g_@@_math_font_attr = \c_zero_int }
+        \@@_push_fallback:
         \@@_push_block_fonts:
         \tl_if_empty:NTF \l_@@_punct_family_tl
           { \g_@@_punct_font_attr = \c_zero_int }
@@ -4393,6 +4411,9 @@ a’a\quad 字！字
 % \changes{v0.0.1}{2026/11/11}{Provide \cs{setCJKfallbackfamilyfont} and
 %   \keys{AutoFallBack} for characters that the selected CJK font does not
 %   have.}
+% \changes{v0.0.2}{2026/11/20}{The fallback list is resolved again at every
+%   font selection, so the fallback follows the series, shape, and size of
+%   the text.}
 % Register one fallback font for a CJK family,
 % keeping the order in which the fonts were declared.
 %    \begin{macrocode}
@@ -4407,7 +4428,7 @@ a’a\quad 字！字
       \prop_gput:NVV \g_@@_fallback_prop
         \l_@@_fallback_key_tl \l_@@_tmpa_tl
     \group_end:
-    \exp_args:NV \@@_recall_fallback:n \l_@@_fallback_key_tl
+    \@@_refresh_fallbacks:
   }
 %    \end{macrocode}
 % \end{macro}
