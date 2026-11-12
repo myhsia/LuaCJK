@@ -1,0 +1,101 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\usepackage{unicode-math}
+\setmathfont{TeX Gyre Pagella Math}
+% The Latin math font has no bold face; declaring the regular one as the bold
+% version keeps the test log about the CJK family, not about Pagella.
+\setmathfont{TeX Gyre Pagella Math}[version = bold]
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}[BoldFont = FandolSong-Bold.otf]
+\setCJKfamilyfont{nobold}{FandolSong-Regular.otf}
+% Declare the family used for math once, so that the fontspec log of its
+% creation stays outside the test output.
+\setCJKfamilyfont{kaimath}{FandolKai-Regular.otf}
+\LuaCJKsetup{CJKmath = true}
+
+% Report the font of every CJK glyph of box 0, one glyph per line, so that a
+% line stays short enough for the log.
+\def\probe{%
+  \directlua{
+    local function walk (l)
+      local n = l
+      while n do
+        if n.id == node.id("glyph") then
+          if n.char >= 0x2E80 then
+            local f = font.getfont(n.font)
+            texio.write_nl("term and log",
+              "GLYPH " .. tostring(n.char) .. " " ..
+              tostring(f and (f.fullname or f.name) or "?"))
+          end
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          walk(n.head)
+        end
+        n = n.next
+      end
+    end
+    walk(tex.box[0].head)
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{a formula uses the regular face of the family}{
+  \setbox0=\hbox{$中文$}
+  \probe
+}
+
+\TEST{the bold math version uses the bold face}{
+  \setbox0=\hbox{\boldmath $中文$}
+  \probe
+}
+
+\TEST{the regular face is back outside the box}{
+  \setbox0=\hbox{$中文$}
+  \probe
+}
+
+\TEST{a group restores the math version}{
+  \begingroup
+    \mathversion{bold}
+    \setbox0=\hbox{$中文$}
+    \probe
+  \endgroup
+  \setbox0=\hbox{$中文$}
+  \probe
+}
+
+\TEST{a bold text selection does not reach the formula}{
+  \setbox0=\hbox{\bfseries 中 $文$}
+  \probe
+}
+
+\TEST{a family without a bold face keeps its regular one}{
+  \setbox0=\hbox{\CJKfamily{nobold}\boldmath $中文$}
+  \probe
+}
+
+\TEST{setCJKmathfont selects the family of the formula}{
+  \begingroup
+    \setCJKmathfont{FandolKai-Regular.otf}
+    \setbox0=\hbox{$中文$}
+    \probe
+  \endgroup
+  \setbox0=\hbox{$中文$}
+  \probe
+}
+
+\TEST{scripts and fractions keep the bold face}{
+  \setbox0=\hbox{\boldmath $中^文$}
+  \probe
+  \setbox0=\hbox{\boldmath $\frac{中}{文}$}
+  \probe
+}
+
+\END
+
+\end{document}

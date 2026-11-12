@@ -1,0 +1,56 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: a formula uses the regular face of the family
+============================================================
+GLYPH 20013 FandolSong
+GLYPH 25991 FandolSong
+============================================================
+============================================================
+TEST 2: the bold math version uses the bold face
+============================================================
+GLYPH 20013 FandolSong Bold
+GLYPH 25991 FandolSong Bold
+============================================================
+============================================================
+TEST 3: the regular face is back outside the box
+============================================================
+GLYPH 20013 FandolSong
+GLYPH 25991 FandolSong
+============================================================
+============================================================
+TEST 4: a group restores the math version
+============================================================
+GLYPH 20013 FandolSong Bold
+GLYPH 25991 FandolSong Bold
+GLYPH 20013 FandolSong
+GLYPH 25991 FandolSong
+============================================================
+============================================================
+TEST 5: a bold text selection does not reach the formula
+============================================================
+GLYPH 20013 FandolSong Bold
+GLYPH 25991 FandolSong
+============================================================
+============================================================
+TEST 6: a family without a bold face keeps its regular one
+============================================================
+GLYPH 20013 FandolSong
+GLYPH 25991 FandolSong
+============================================================
+============================================================
+TEST 7: setCJKmathfont selects the family of the formula
+============================================================
+GLYPH 20013 FandolKai
+GLYPH 25991 FandolKai
+GLYPH 20013 FandolSong
+GLYPH 25991 FandolSong
+============================================================
+============================================================
+TEST 8: scripts and fractions keep the bold face
+============================================================
+GLYPH 20013 FandolSong Bold
+GLYPH 25991 FandolSong Bold
+GLYPH 20013 FandolSong Bold
+GLYPH 25991 FandolSong Bold
+============================================================

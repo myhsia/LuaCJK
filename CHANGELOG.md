@@ -3,6 +3,7 @@
 - `Baseline` shifts the glyphs of the font that declares it, so two CJK fonts whose baselines do not match can be set side by side.
 - Restore `\CJKfamilydefault` when `\normalfont` or `\textnormal` runs, so that the default font command overrides a family chosen earlier in the group; `\CJKfamilydefault` follows `\CJKrmdefault` until the document sets it.
 - The fallback list is resolved again at every font selection, so the fallback follows the series, shape, and size of the text.
+- A CJK character in a formula takes the face of the math version: the bold face of the family under `\boldmath` when the family has one, and the upright shape instead of the shape of the text.
 - `\CJKfontspec` and `\newCJKfontfamily` take their options after the font name as well.
 - The double rule takes `format` like the other decorations, and a rule or a symbol that carries no `format` follows the color of the surrounding text.
 
