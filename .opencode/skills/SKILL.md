@@ -94,7 +94,12 @@ part of `microtype`'s protrusion on a Latin line is. Hence `xoffset` here, and
 character noads of a CJK character at a math family of its own; the family's
 three style fonts are filled from the CJK family at the text, script, and
 scriptscript size (0.7 and 0.5 of the text size), so a CJK character in a
-superscript or a fraction takes the size of that math style. The family
+superscript or a fraction takes the size of that math style. The face is the
+one of the math version — `\bfdefault` in `bold`, `\mddefault` in the others,
+always the upright shape — and `\@@_math_version_refresh:` re-registers the
+family from `\every@math@size`, because `\mathversion` cannot reach a family
+number it does not know; a group that asks for `\boldmath` therefore gets the
+bold face and the group end restores the previous one. The family
 number is allocated per CJK family name from 240--255 and travels in the
 `math_font` attribute, which keeps `\setCJKmathfont` local to a group.
 The math parameters stay those of the document's math font, because the CJK
@@ -438,7 +443,7 @@ on `lua-ul`). Picking a backend inside `ctex` is now a public option
 The commands are in `AGENTS.md`. For this skill the points that matter are:
 
 ```bash
-l3build check                       # 53 tests, must print "All checks passed"
+l3build check                       # 54 tests, must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
 bash scripts/ctex-subset.sh         # 21/21, and no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
