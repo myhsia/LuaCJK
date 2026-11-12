@@ -1,0 +1,50 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: a font without the key keeps the baseline
+============================================================
+PS FandolSong-Regular size 655360 yoffset 0
+============================================================
+============================================================
+TEST 2: Baseline raises the glyphs
+============================================================
+PS FandolKai-Regular size 655360 yoffset 196610
+============================================================
+============================================================
+TEST 3: Baseline takes a negative value
+============================================================
+PS FandolHei-Regular size 655360 yoffset -186467
+============================================================
+============================================================
+TEST 4: an em follows the size
+============================================================
+PS FandolKai-Regular size 786432 yoffset 235932
+============================================================
+============================================================
+TEST 5: the offset is applied once per glyph
+============================================================
+PS FandolKai-Regular size 655360 yoffset 196610
+============================================================
+============================================================
+TEST 6: a fallback font keeps its own Baseline
+============================================================
+PS FandolFang-Regular size 655360 yoffset 65540
+============================================================
+============================================================
+TEST 7: Baseline survives addCJKfontfeatures
+============================================================
+PS FandolSong-Regular size 655360 yoffset 131070
+Package fontspec Info: 
+(fontspec)             FandolSong-Regular scale = 1.2.
+Package fontspec Info: 
+(fontspec)             FandolSong-Regular scale = 1.2.
+Package fontspec Info: 
+(fontspec)             Font family 'FandolSong-Regular.otf(1)' created for font 'FandolSong-Regular.otf' with options [Script=CJK,Scale = 1.2].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->s*[1.2]"[FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;"
+LaTeX Font Info:    Font shape `TU/FandolSong-Regular.otf(1)/m/n' will be
+(Font)              scaled to size 11.99997pt on input line ....
+PS FandolSong-Regular size 786430 yoffset 157283
+============================================================
