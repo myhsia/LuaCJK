@@ -411,17 +411,20 @@ LaTeX Project Public License, version 1.3c or later.
 %
 % \begin{function}{\newCJKfontfamily}
 %   \begin{syntax}
-%     \tn{newCJKfontfamily}\oarg{family}\meta{command}\oarg{options}\marg{font}
+%     \tn{newCJKfontfamily}\oarg{family}\meta{command}
+%     \                    \oarg{options}\marg{font}\oarg{options}
 %   \end{syntax}
 %   定义一个切换到新声明字族的命令。
 %   与 \cs{newfontfamily} 一样，该命令只作用于当前分组。
+%   选项可以写在字体名之前，也可以写在之后。
 % \end{function}
 %
 % \begin{function}{\CJKfontspec}
 %   \begin{syntax}
-%     \tn{CJKfontspec} \oarg{options} \marg{font}
+%     \tn{CJKfontspec} \oarg{options} \marg{font} \oarg{options}
 %   \end{syntax}
 %   为当前分组选择一个 CJK 字体。
+%   选项可以写在字体名之前，也可以写在之后。
 % \end{function}
 %
 % \begin{function}{\songti, \heiti, \fangsong, \kaishu, \lishu, \youyuan}
@@ -1582,17 +1585,20 @@ a’a\quad 字！字
 %
 % \begin{function}{\newCJKfontfamily}
 %   \begin{syntax}
-%     \tn{newCJKfontfamily}\oarg{family}\meta{command}\oarg{options}\marg{font}
+%     \tn{newCJKfontfamily}\oarg{family}\meta{command}
+%     \                    \oarg{options}\marg{font}\oarg{options}
 %   \end{syntax}
 %   Define a command that switches to a newly declared family.
 %   The command is local to the current group, like \cs{newfontfamily}.
+%   The options may be given before or after the font name.
 % \end{function}
 %
 % \begin{function}{\CJKfontspec}
 %   \begin{syntax}
-%     \tn{CJKfontspec} \oarg{options} \marg{font}
+%     \tn{CJKfontspec} \oarg{options} \marg{font} \oarg{options}
 %   \end{syntax}
 %   Select a CJK font for the current group.
+%   The options may be given before or after the font name.
 % \end{function}
 %
 % \begin{function}{\songti, \heiti, \fangsong, \kaishu, \lishu, \youyuan}
@@ -4387,14 +4393,14 @@ a’a\quad 字！字
 % Define a control sequence that switches to a new family,
 % and register the family under the same name.
 %    \begin{macrocode}
-\NewDocumentCommand \newCJKfontfamily { o m o m }
+\NewDocumentCommand \newCJKfontfamily { o m o m o }
   {
     \tl_set:Ne \l_@@_tmpa_tl
       { \IfNoValueTF {#1} { \cs_to_str:N #2 } {#1} }
     \cs_set_protected:Npx #2
       { \exp_not:N \@@_switch_family:n { \exp_not:V \l_@@_tmpa_tl } }
     \exp_args:NV \@@_set_family_with_options:nnnn
-      \l_@@_tmpa_tl {#3} {#4} { \NoValue }
+      \l_@@_tmpa_tl {#3} {#4} {#5}
   }
 %    \end{macrocode}
 % \end{macro}
@@ -4413,6 +4419,8 @@ a’a\quad 字！字
 % \end{macro}
 %
 % \begin{macro}{\CJKfontspec}
+% \changes{v0.0.2}{2026/11/20}{\cs{CJKfontspec} and \cs{newCJKfontfamily}
+%   take their options after the font name as well.}
 % Register a one-off family and switch to it immediately.
 % \begin{variable}[int]{\g_@@_fontspec_int}
 % Gives every call its own family name.
@@ -4421,13 +4429,13 @@ a’a\quad 字！字
 %    \end{macrocode}
 % \end{variable}
 %    \begin{macrocode}
-\NewDocumentCommand \CJKfontspec { o m }
+\NewDocumentCommand \CJKfontspec { o m o }
   {
     \int_gincr:N \g_@@_fontspec_int
     \tl_set:Ne \l_@@_tmpa_tl
       { LuaCJK / fontspec / \int_use:N \g_@@_fontspec_int }
     \exp_args:NV \@@_set_family_with_options:nnnn
-      \l_@@_tmpa_tl {#1} {#2} { \NoValue }
+      \l_@@_tmpa_tl {#1} {#2} {#3}
     \exp_args:NV \@@_switch_family:n \l_@@_tmpa_tl
     \tex_ignorespaces:D
   }

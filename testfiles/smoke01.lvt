@@ -69,6 +69,31 @@
   \endgroup
 }
 
+\TEST{CJKfontspec options before the font name}{
+  \begingroup
+  \setbox0=\hbox{\CJKfontspec[Scale = 2]{FandolKai-Regular.otf}中}
+  \TYPE{width: \the\wd0}
+  \showglyphfont
+  \endgroup
+}
+
+\TEST{CJKfontspec options after the font name}{
+  \begingroup
+  \setbox0=\hbox{\CJKfontspec{FandolKai-Regular.otf}[Scale = 2]中}
+  \TYPE{width: \the\wd0}
+  \showglyphfont
+  \endgroup
+}
+
+\TEST{newCJKfontfamily options after the font name}{
+  \begingroup
+  \newCJKfontfamily\testkai{FandolKai-Regular.otf}[Scale = 2]
+  \setbox0=\hbox{\testkai 中}
+  \TYPE{width: \the\wd0}
+  \showglyphfont
+  \endgroup
+}
+
 \TEST{CJKspace false}{
   \setbox0=\hbox{中 中}
   \setbox2=\hbox{中中}

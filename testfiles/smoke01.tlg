@@ -34,23 +34,57 @@ TEST 6: CJKfontspec
 GLYPH 20013 FandolKai
 ============================================================
 ============================================================
-TEST 7: CJKspace false
+TEST 7: CJKfontspec options before the font name
+============================================================
+Package fontspec Info: 
+(fontspec)             FandolKai-Regular scale = 2.
+Package fontspec Info: 
+(fontspec)             FandolKai-Regular scale = 2.
+Package fontspec Info: 
+(fontspec)             Font family 'FandolKai-Regular.otf(1)' created for font 'FandolKai-Regular.otf' with options [Script=CJK,Scale = 2].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->s*[2]"[FandolKai-Regular.otf]:mode=node;script=hani;language=dflt;"
+LaTeX Font Info:    Font shape `TU/FandolKai-Regular.otf(1)/m/n' will be
+(Font)              scaled to size 20.0pt on input line ....
+width: 20.0pt
+GLYPH 20013 FandolKai
+============================================================
+============================================================
+TEST 8: CJKfontspec options after the font name
+============================================================
+Package fontspec Info: 
+(fontspec)             FandolKai-Regular scale = 2.
+width: 20.0pt
+GLYPH 20013 FandolKai
+============================================================
+============================================================
+TEST 9: newCJKfontfamily options after the font name
+============================================================
+Package fontspec Info: 
+(fontspec)             FandolKai-Regular scale = 2.
+width: 20.0pt
+GLYPH 20013 FandolKai
+============================================================
+============================================================
+TEST 10: CJKspace false
 ============================================================
 with-space: 20.0pt
 without-space: 20.0pt
 ============================================================
 ============================================================
-TEST 8: CJKspace true
+TEST 11: CJKspace true
 ============================================================
 with-space: 23.33pt
 ============================================================
 ============================================================
-TEST 9: CJKglue
+TEST 12: CJKglue
 ============================================================
 width: 30.0pt
 ============================================================
 ============================================================
-TEST 10: CJKecglue
+TEST 13: CJKecglue
 ============================================================
 width: 22.5pt
 ============================================================
