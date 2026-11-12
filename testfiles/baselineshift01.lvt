@@ -1,0 +1,83 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKfamilyfont{high}{FandolKai-Regular.otf}[Baseline = 0.3em]
+\setCJKfamilyfont{low}{FandolHei-Regular.otf}[Baseline = -1mm]
+\setCJKfamilyfont{fb}{TeX Gyre Pagella}
+\setCJKfallbackfamilyfont{fb}{FandolFang-Regular.otf}[Baseline = 0.1em]
+
+\def\psname{%
+  \directlua{
+    local done = false
+    local function walk (n)
+      while n and not done do
+        if n.id == node.id("glyph") then
+          local f = font.getfont(n.font)
+          texio.write_nl("term and log", "PS " .. tostring(f and f.psname)
+            .. " size " .. tostring(f and f.size)
+            .. " yoffset " .. tostring(n.yoffset))
+          done = true
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          walk(n.head)
+        end
+        n = n.next
+      end
+    end
+    walk(tex.box[0])
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{a font without the key keeps the baseline}{
+  \setbox0=\hbox{中}
+  \psname
+}
+
+\TEST{Baseline raises the glyphs}{
+  \setbox0=\hbox{\CJKfamily{high}中}
+  \psname
+}
+
+\TEST{Baseline takes a negative value}{
+  \setbox0=\hbox{\CJKfamily{low}中}
+  \psname
+}
+
+\TEST{an em follows the size}{
+  \setbox0=\hbox{\CJKfamily{high}\large 中}
+  \psname
+}
+
+\TEST{the offset is applied once per glyph}{
+  \setbox0=\vbox{\CJKfamily{high}中}
+  \psname
+}
+
+\TEST{a fallback font keeps its own Baseline}{
+  \begingroup
+    \LuaCJKsetup{AutoFallBack = true}
+    \setbox0=\hbox{\CJKfamily{fb}中}
+    \psname
+  \endgroup
+}
+
+\TEST{Baseline survives addCJKfontfeatures}{
+  \begingroup
+    \setCJKfamilyfont{addf}{FandolSong-Regular.otf}[Baseline = 0.2em]
+    \CJKfamily{addf}
+    \setbox0=\hbox{中}
+    \psname
+    \addCJKfontfeatures{Scale = 1.2}
+    \setbox0=\hbox{中}
+    \psname
+  \endgroup
+}
+
+\END
+
+\end{document}

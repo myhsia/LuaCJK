@@ -41,6 +41,12 @@ The character-level passes run in `pre_linebreak_filter` and in
    `\g_@@_fallback_pushed_prop` records, per identifier, the family whose
    list is installed, so a selection that resolves to a known identifier
    costs one property lookup rather than another `\lua_now:e`.
+   A glyph that changes font takes that font's `Baseline` with it:
+   `copy_glyph` adds `M.yoffset[fid]` (scaled points) to the `yoffset` it
+   copies.  Applying it only where the font changes is also what makes it
+   idempotent, since the passes run twice and a glyph already in its font is
+   not copied again.  The offset is recorded per font identifier, so two
+   families that supply the same font share the last value they declared.
 2. `spacing` — retime the source space between CJK characters to
    `CJKglue`, and insert `CJKglue`/`CJKecglue` at every boundary between two
    classes of character.  Dropping the space must not drop the boundary with
@@ -380,9 +386,10 @@ not change it; the manual documents the limitation.
 
 ## Current work
 
-Implemented: font family layer with fake bold and slant, fallback fonts
-and sub-blocks, `\CJKglue`/`\CJKecglue`/`xCJKecglue`/`CJKspace` with per-node
-settings, six punctuation styles plus the character-set and style editing keys,
+Implemented: font family layer with fake bold and slant, fallback fonts,
+sub-blocks, and a per-font baseline shift,
+`\CJKglue`/`\CJKecglue`/`xCJKecglue`/`CJKspace` with per-node settings,
+six punctuation styles plus the character-set and style editing keys,
 punctuation hanging and bound width, `CheckSingle`, `CJLineBreak`, `CJKmath`,
 `\LuaCJKnobreak`, `\LuaCJKVerbAddon`, `\LuaCJKShipoutHook`, `LocalConfig`,
 `LoadFandol`, eight decorations in `LuaCJKfntef` with thirteen options, tagged
@@ -431,7 +438,7 @@ on `lua-ul`). Picking a backend inside `ctex` is now a public option
 The commands are in `AGENTS.md`. For this skill the points that matter are:
 
 ```bash
-l3build check                       # 52 tests, must print "All checks passed"
+l3build check                       # 53 tests, must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
 bash scripts/ctex-subset.sh         # 21/21, and no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages

@@ -533,6 +533,39 @@ LaTeX Project Public License, version 1.3c or later.
 %</example>
 % \fi
 %
+% \subsection{基线调整}
+%
+% 两种 CJK 字体很少是为彼此设计的：
+% 混排在同一行里，一种字体的字总显得偏高或偏低。
+% 一种字体可以带一个 \keys{Baseline} 值，
+% 把它的字整体向上或向下移动，
+% 使两种字体立在同一条基线上。
+% 这个值属于字体而不属于文字，
+% 所以它是声明这个字体的那条命令的一个选项。
+%
+% \begin{keyval}
+%   \item[\keys{Baseline}]\meta{dimension}
+%   把这个字体的字向上移动 \meta{dimension}，负值则向下移动。
+%   它和其他字体选项一样可以写在后备字体的声明里，
+%   这也是它最常见的用处：让后备字体贴住主字体的基线。
+%   单位可以用任何 \TeX\ 长度单位，|em| 随字号一起变化。
+%   两条声明给出同一个字体时，共享后一条声明的值，
+%   因为字的位置是按字体记录的。
+% \end{keyval}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\setCJKfamilyfont{high}{FandolKai-Regular.otf}[Baseline = 0.3em]
+\songti 基线\quad\CJKfamily{high}基线
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
 % \subsection{加载 Fandol}
 %
 % \begin{keyval}
@@ -1706,6 +1739,38 @@ a’a\quad 字！字
 \setCJKfallbackfamilyfont{\CJKrmdefault}
   {FandolKai-Regular.otf}
 \LuaCJKsetup{AutoFallBack = true}中あ
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \subsection{Baseline shift}
+%
+% Two CJK fonts are rarely designed for each other: mixed in one line, the
+% characters of one font sit too high or too low.
+% A font may carry a \keys{Baseline} value that moves its characters up or
+% down, so that the two fonts stand on one baseline.
+% The value belongs to the font rather than to the text, which is why it is
+% an option of the command that declares the font.
+%
+% \begin{keyval}
+%   \item[\keys{Baseline}]\meta{dimension}
+%   Raise the characters of this font by \meta{dimension}; a negative value
+%   lowers them. It is an option like the others, so a fallback declaration
+%   may carry it as well, and that is its usual use: it makes a fallback font
+%   stand on the baseline of the main font. Any \TeX\ unit works, and |em|
+%   follows the size. Two declarations that supply the same font share the
+%   value of the last one, because a position is recorded per font.
+% \end{keyval}
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\setCJKfamilyfont{high}{FandolKai-Regular.otf}[Baseline = 0.3em]
+\songti 基线\quad\CJKfamily{high}基线
 \end{codemo}
 \endgroup
 % \iffalse
@@ -3008,19 +3073,28 @@ a’a\quad 字！字
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}[int]{\@@_extract_blocks:nn}
-% Pull the block options out of a family's option list
-% and register one \pkg{fontspec} family per block font.
-% The remaining options go into \cs{l_@@_features_tl}.
+% \begin{macro}[int]{\@@_extract_font_keys:nn, \@@_parse_font_options:n}
+% \changes{v0.0.2}{2026/11/20}{\keys{Baseline} shifts the glyphs of the font
+%   that declares it, so two CJK fonts whose baselines do not match can be set
+%   side by side.}
+% Pull the keys that \pkg{LuaCJK} keeps for itself out of a font option list:
+% the block names, which name a font of their own, and \keys{Baseline}.
+% The remaining options go into \cs{l_@@_features_tl}, which is what
+% \pkg{fontspec} is given, and \keys{Baseline} goes into
+% \cs{l_@@_shift_tl}.
+% A list that names neither is handed to \pkg{fontspec} exactly as it was
+% written, because the parse would only respell it.
 % \begin{variable}[int]
 %   {
 %     \g_@@_family_block_prop, \g_@@_pending_block_prop,
 %     \l_@@_features_tl,       \l_@@_block_key_tl,
-%     \l_@@_option_key_tl,     \l_@@_option_seq
+%     \l_@@_option_key_tl,     \l_@@_option_seq,
+%     \l_@@_shift_tl
 %   }
 % The block font of each family and block, the blocks found in the
-% option list being processed, the filtered options, and scratch
-% variables for splitting one option at the equals sign.
+% option list being processed, the filtered options, the vertical offset
+% \keys{Baseline} asks for, and scratch variables for splitting one option
+% at the equals sign.
 %    \begin{macrocode}
 \prop_new:N \g_@@_family_block_prop
 \prop_new:N \g_@@_pending_block_prop
@@ -3029,34 +3103,51 @@ a’a\quad 字！字
 \tl_new:N \l_@@_option_key_tl
 \seq_new:N \l_@@_option_seq
 \bool_new:N \l_@@_is_block_bool
-\cs_new_protected:Npn \@@_block_option:nn #1#2
+\tl_new:N \l_@@_shift_tl
+\cs_new_protected:Npn \@@_put_feature:n #1
+  {
+    \tl_if_empty:NTF \l_@@_features_tl
+      { \tl_set:Nn \l_@@_features_tl {#1} }
+      { \tl_put_right:Nn \l_@@_features_tl { , ~ #1 } }
+  }
+\cs_new_protected:Npn \@@_font_option:nn #1#2
   {
     \tl_set:Nn \l_@@_option_key_tl {#1}
     \tl_trim_spaces:N \l_@@_option_key_tl
-    \bool_set_false:N \l_@@_is_block_bool
-    \clist_map_inline:Nn \g_@@_block_names_clist
+    \str_if_eq:eeTF { \l_@@_option_key_tl } { Baseline }
+      { \tl_set:Ne \l_@@_shift_tl {#2} }
       {
-        \str_if_eq:eeT {##1} { \l_@@_option_key_tl }
-          { \bool_set_true:N \l_@@_is_block_bool }
+        \bool_set_false:N \l_@@_is_block_bool
+        \clist_map_inline:Nn \g_@@_block_names_clist
+          {
+            \str_if_eq:eeT {##1} { \l_@@_option_key_tl }
+              { \bool_set_true:N \l_@@_is_block_bool }
+          }
+        \bool_if:NTF \l_@@_is_block_bool
+          { \prop_gput:NVn \g_@@_pending_block_prop
+              \l_@@_option_key_tl {#2} }
+          { \@@_put_feature:n { #1 = {#2} } }
       }
-    \bool_if:NTF \l_@@_is_block_bool
-      { \prop_gput:NVn \g_@@_pending_block_prop
-          \l_@@_option_key_tl {#2} }
-      { \tl_put_right:Nn \l_@@_features_tl { , ~ #1 = {#2} } }
   }
-\cs_new_protected:Npn \@@_block_option:n #1
-  { \tl_put_right:Nn \l_@@_features_tl { , ~ #1 } }
-\cs_new_protected:Npn \@@_extract_blocks:nn #1#2
+\cs_new_protected:Npn \@@_font_option:n #1
+  { \@@_put_feature:n {#1} }
+\cs_new_protected:Npn \@@_parse_font_options:n #1
   {
-    \clist_if_empty:NTF \g_@@_block_names_clist
-      { \tl_set:Nn \l_@@_features_tl {#2} }
+    \tl_clear:N \l_@@_features_tl
+    \tl_clear:N \l_@@_shift_tl
+    \keyval_parse:NNn \@@_font_option:n \@@_font_option:nn {#1}
+  }
+\cs_new_protected:Npn \@@_extract_font_keys:nn #1#2
+  {
+    \prop_gclear:N \g_@@_pending_block_prop
+    \@@_parse_font_options:n {#2}
+    \prop_gput:NnV \g_@@_shift_decl_prop {#1} \l_@@_shift_tl
+    \prop_if_empty:NTF \g_@@_pending_block_prop
       {
-        \tl_clear:N \l_@@_features_tl
-        \prop_gclear:N \g_@@_pending_block_prop
-        \keyval_parse:NNn
-          \@@_block_option:n \@@_block_option:nn {#2}
-        \@@_register_block_fonts:n {#1}
+        \tl_if_empty:NT \l_@@_shift_tl
+          { \tl_set:Nn \l_@@_features_tl {#2} }
       }
+      { \@@_register_block_fonts:n {#1} }
   }
 \cs_new_protected:Npn \@@_register_block_fonts:n #1
   {
@@ -3324,7 +3415,11 @@ a’a\quad 字！字
 %     \g_@@_embolden_factor_tl, \g_@@_slant_factor_tl,
 %     \g_@@_fallback_prop,      \l_@@_auto_fallback_bool,
 %     \g_@@_load_fandol_bool,
-%     \l_@@_fallback_family_tl, \l_@@_fallback_ids_tl, \l_@@_fontid_tl
+%     \l_@@_fallback_family_tl, \l_@@_fallback_ids_tl, \l_@@_fontid_tl,
+%     \g_@@_shift_decl_prop,    \g_@@_font_shift_prop,
+%     \g_@@_shift_pushed_prop,  \l_@@_shift_dim_tl,
+%     \l_@@_shift_fid_tl,
+%     \l_@@_shift_family_tl
 %   }
 % The switches read by the Lua side, the \keys{Verb} setting,
 % the configuration file name, the fake bold and slant parameters,
@@ -3361,6 +3456,12 @@ a’a\quad 字！字
 \bool_new:N \g_@@_load_fandol_bool
 \tl_new:N \l_@@_fallback_family_tl
 \tl_new:N \l_@@_fallback_key_tl
+\prop_new:N \g_@@_shift_decl_prop
+\prop_new:N \g_@@_font_shift_prop
+\prop_new:N \g_@@_shift_pushed_prop
+\tl_new:N \l_@@_shift_dim_tl
+\tl_new:N \l_@@_shift_fid_tl
+\tl_new:N \l_@@_shift_family_tl
 \cs_generate_variant:Nn \prop_get:NnNF { NVNF }
 \cs_generate_variant:Nn \prop_gput:Nnn { NVV , NnV }
 \tl_new:N \l_@@_fallback_ids_tl
@@ -3870,7 +3971,7 @@ a’a\quad 字！字
 \tl_new:N  \l_@@_default_feature_tl
 \tl_set:Nn \l_@@_default_feature_tl { Script = CJK }
 \tl_new:N  \l_@@_feature_tl
-\cs_generate_variant:Nn \fontspec_gset_family:Nnn { NVV }
+\cs_generate_variant:Nn \fontspec_gset_family:Nnn { NVV , NVn }
 %    \end{macrocode}
 % \end{variable}
 %    \begin{macrocode}
@@ -3942,10 +4043,17 @@ a’a\quad 字！字
       { \tl_clear:N \l_@@_registered_name_tl }
     \prop_get:NnNF \g_@@_font_feature_prop {#1} \l_@@_feature_tl
       { \tl_clear:N \l_@@_feature_tl }
+    \prop_get:NnNF \g_@@_shift_decl_prop {#1} \l_@@_shift_dim_tl
+      { \tl_clear:N \l_@@_shift_dim_tl }
     \group_begin:
       \fontspec_gset_family:NVV \l_@@_fontspec_tl
         \l_@@_feature_tl \l_@@_registered_name_tl
       \prop_gput:NnV \g_@@_family_prop {#1} \l_@@_fontspec_tl
+      \tl_if_empty:NF \l_@@_shift_dim_tl
+        {
+          \prop_gput:NVV \g_@@_font_shift_prop
+            \l_@@_fontspec_tl \l_@@_shift_dim_tl
+        }
     \group_end:
     \prop_if_in:NVT \g_@@_family_prop \l_@@_family_tl
       { \selectfont }
@@ -3993,8 +4101,11 @@ a’a\quad 字！字
       \clist_map_inline:nn {#1}
         {
           \fontfamily {##1} \selectfont
-          \tl_put_right:Nx \l_@@_fallback_ids_tl
-            { \int_eval:n { \tex_fontid:D \tex_font:D } , }
+          \tl_set:Ne \l_@@_tmpb_tl
+            { \int_eval:n { \tex_fontid:D \tex_font:D } }
+          \tl_put_right:NV \l_@@_fallback_ids_tl \l_@@_tmpb_tl
+          \tl_put_right:Nn \l_@@_fallback_ids_tl { , }
+          \@@_push_shift:nn { \l_@@_tmpb_tl } {##1}
         }
       \bool_if:NT \g_@@_lua_loaded_bool
         {
@@ -4021,6 +4132,47 @@ a’a\quad 字！字
   }
 %    \end{macrocode}
 % \end{variable}
+% \end{macro}
+%
+% \begin{macro}[int]{\@@_push_shift:nn}
+% Hand the vertical offset of one font to Lua, once per font identifier.
+% \begin{variable}[int]
+%   {
+%     \g_@@_font_shift_prop, \g_@@_shift_pushed_prop,
+%     \l_@@_shift_dim_tl,    \l_@@_shift_fid_tl, \l_@@_shift_family_tl
+%   }
+% The \keys{Baseline} value of each registered font, keyed by the family
+% \pkg{fontspec} returned for it; the identifiers whose offset Lua already
+% knows; and scratch variables for the identifier and the offset, which is
+% evaluated at the size in force so that a value in |em| follows the text.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_push_shift:nn #1#2
+  {
+    \tl_set:Ne \l_@@_shift_fid_tl {#1}
+    \tl_set:Ne \l_@@_shift_family_tl {#2}
+    \prop_get:NVNT \g_@@_font_shift_prop
+      \l_@@_shift_family_tl \l_@@_shift_dim_tl
+      {
+        \tl_if_empty:NF \l_@@_shift_dim_tl
+          {
+            \prop_if_in:NVF \g_@@_shift_pushed_prop \l_@@_shift_fid_tl
+              {
+                \prop_gput:NVn \g_@@_shift_pushed_prop
+                  \l_@@_shift_fid_tl { }
+                \lua_now:e
+                  {
+                    LuaCJK.set_yoffset
+                      ( \l_@@_shift_fid_tl ,
+                        \dim_to_decimal_in_sp:n
+                          { \dim_eval:n { \l_@@_shift_dim_tl } } )
+                  }
+              }
+          }
+      }
+  }
+%    \end{macrocode}
+% \end{variable}
+% \end{macro}
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_switch_family:n}
@@ -4127,6 +4279,8 @@ a’a\quad 字！字
               \selectfont
               \int_gset:Nn \g_@@_fontid_int
                 { \tex_fontid:D \tex_font:D }
+              \@@_push_shift:nn
+                { \int_use:N \g_@@_fontid_int } { \l_@@_family_name_tl }
             \group_end:
             \g_@@_font_attr = \g_@@_fontid_int
           }
@@ -4336,9 +4490,16 @@ a’a\quad 字！字
           }
         \prop_get:NnNF \g_@@_font_name_prop {#1} \l_@@_registered_name_tl
           { \tl_clear:N \l_@@_registered_name_tl }
+        \prop_get:NnNF \g_@@_shift_decl_prop {#1} \l_@@_shift_dim_tl
+          { \tl_clear:N \l_@@_shift_dim_tl }
         \group_begin:
           \fontspec_gset_family:NVV \l_@@_fontspec_tl
             \l_@@_feature_tl \l_@@_registered_name_tl
+          \tl_if_empty:NF \l_@@_shift_dim_tl
+            {
+              \prop_gput:NVV \g_@@_font_shift_prop
+                \l_@@_fontspec_tl \l_@@_shift_dim_tl
+            }
         \group_end:
         \prop_put:NnV \g_@@_family_prop       {#1}
           \l_@@_fontspec_tl
@@ -4402,7 +4563,7 @@ a’a\quad 字！字
 \cs_generate_variant:Nn \@@_set_family:nnn { nVn }
 \cs_new_protected:Npn \@@_set_family_with_options_aux:nnn #1#2#3
   {
-    \@@_extract_blocks:nn {#1} {#2}
+    \@@_extract_font_keys:nn {#1} {#2}
     \@@_set_family:nVn {#1} \l_@@_features_tl {#3}
   }
 %    \end{macrocode}
@@ -4419,8 +4580,17 @@ a’a\quad 字！字
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_add_fallback:nn #1#2
   {
+    \@@_parse_font_options:n {#1}
+    \tl_if_empty:NT \l_@@_shift_tl
+      { \tl_set:Nn \l_@@_features_tl {#1} }
     \group_begin:
-      \fontspec_gset_family:Nnn \l_@@_fallback_family_tl {#1} {#2}
+      \fontspec_gset_family:NVn
+        \l_@@_fallback_family_tl \l_@@_features_tl {#2}
+      \tl_if_empty:NF \l_@@_shift_tl
+        {
+          \prop_gput:NVV \g_@@_font_shift_prop
+            \l_@@_fallback_family_tl \l_@@_shift_tl
+        }
       \prop_get:NVNF \g_@@_fallback_prop
         \l_@@_fallback_key_tl \l_@@_tmpa_tl
         { \tl_clear:N \l_@@_tmpa_tl }
@@ -5389,6 +5559,21 @@ end
 %    \end{macrocode}
 % \end{variable}
 %
+% \begin{variable}[int]{M.yoffset}
+% The vertical offset of each font, in scaled points, positive upwards.
+% The \keys{Baseline} key of a font declaration fills it,
+% and \texttt{copy_glyph} applies it, so the offset belongs to the font
+% a glyph is taken from and not to the text that asks for it.
+%    \begin{macrocode}
+M.yoffset = {}
+
+function M.set_yoffset (fid, sp)
+  M.yoffset[fid] = sp
+end
+
+%    \end{macrocode}
+% \end{variable}
+%
 % \begin{macro}[int]{has_char}
 % Whether \meta{fid} has a glyph for \meta{char}. The answer is cached
 % per font and code point, because the pass asks it once per glyph.
@@ -5452,6 +5637,10 @@ local function copy_glyph (n, fid)
     "data",     "subtype",
   } do
     g[field] = n[field]
+  end
+  local shift = M.yoffset[fid]
+  if shift then
+    g.yoffset = (g.yoffset or 0) + shift
   end
   return g
 end
