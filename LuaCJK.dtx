@@ -97,7 +97,7 @@ LaTeX Project Public License, version 1.3c or later.
 %<*package|fntef|listings|ctex>
 \NeedsTeXFormat{LaTeX2e}[2026/06/01]
 \RequirePackage { expl3 }
-\GetIdInfo $Id: LuaCJK.dtx v0.0.1 2026-11-11 myhsia<myhsia@outlook.com>$
+\GetIdInfo $Id: LuaCJK.dtx v0.0.2 2026-11-20 myhsia<myhsia@outlook.com>$
 %<package>  {A LuaTeX CJK typesetting package}
 %<package>\ProvidesExplPackage {\ExplFileName}
 %<fntef>  {Font effects for LuaCJK (CTEX)}
@@ -1165,6 +1165,9 @@ a’a\quad 字！字
 %   \item[\keys{selectable}]\val{\TFF}：装饰符号是否保留为文字，
 %   初始 \texttt{false}；\texttt{true} 时 PDF 阅读器可以复制与选择它。
 % \end{keyval}
+%
+% 不给 \keys{format} 时，横线使用它所装饰的文字的颜色，
+% 例如 \cs{textcolor} 设定的颜色。
 %
 % \keys{sep} 为了兼容而接受，但没有作用。
 %
@@ -2366,6 +2369,9 @@ a’a\quad 字！字
 %   as text, initially \texttt{false}; with \texttt{true} a PDF reader can
 %   copy and select it.
 % \end{keyval}
+%
+% Without \keys{format} the rule takes the color of the text it decorates,
+% for example the color set by \cs{textcolor}.
 %
 % \keys{sep} is accepted for compatibility and has no effect.
 %
@@ -7101,9 +7107,10 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %     \l_@@_fntef_depth_dim,     \l_@@_fntef_thickness_dim,
 %     \l_@@_fntef_textformat_tl, \l_@@_fntef_pass_tl,
 %     \l_@@_fntef_top_dim,       \l_@@_fntef_bottom_dim,
-%     \l_@@_fntef_silent_bool
+%     \l_@@_fntef_color_key_tl,  \l_@@_fntef_silent_bool
 %   }
 % The requested geometry, the format of the text,
+% the color that an underline type is cached by,
 % and the keys that \pkg{lua-ul} receives.
 %    \begin{macrocode}
 \dim_new:N \l_@@_fntef_depth_dim
@@ -7121,6 +7128,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \int_new:N \g_@@_fntef_format_int
 \tl_new:N \l_@@_fntef_cache_key_tl
 \tl_new:N \l_@@_fntef_cache_name_tl
+\tl_new:N \l_@@_fntef_color_key_tl
 \tl_new:N \l_@@_fntef_pass_tl
 \dim_new:N \l_@@_fntef_top_dim
 \dim_new:N \l_@@_fntef_bottom_dim
@@ -7503,8 +7511,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   \cs{CJKunderwave}, and \cs{CJKxout}; the wave and the slash stay in phase
 %   along a line, their patterns scale with the font size, a decoration does
 %   not open up its line, and it fills its span exactly.}
-% Two parallel rules. The optional argument takes \keys{subtract} and
-% \keys{skip}; \texttt{*} and \texttt{-} are accepted for compatibility.
+% \changes{v0.0.2}{2026/11/20}{The double rule takes \keys{format} like the
+%   other decorations, and a rule or a symbol that carries no \keys{format}
+%   follows the color of the surrounding text.}
+% Two parallel rules. The optional argument takes the whole key set of the
+% other decorations; \texttt{*} and \texttt{-} are accepted for compatibility.
 %    \begin{macrocode}
 \NewDocumentCommand \CJKunderdblline { s t- o +m }
   {
@@ -7735,31 +7746,16 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   depth measured from the baseline to the top of the symbol.}
 % Underline with an arbitrary object: the object is put in a box,
 % lowered by \meta{depth}, and repeated by \tn{leaders}.
-% The underline type is cached by the object and the depth,
+% The underline type is cached by the object, the depth, and the color,
 % so repeating a command with the same arguments costs nothing.
-% \begin{variable}[int]{\l_@@_fntef_any_code_tl}
-% The leader code being built.
+% \begin{variable}[int]{\l_@@_fntef_any_code_tl, \l_@@_fntef_any_depth_dim}
+% The leader code being built and its depth.
 %    \begin{macrocode}
 \tl_new:N \l_@@_fntef_any_code_tl
 \dim_new:N \l_@@_fntef_any_depth_dim
 %    \end{macrocode}
 % \end{variable}
 %    \begin{macrocode}
-\cs_new_protected:Npn \@@_fntef_use_leader_type:nn #1#2
-  {
-    \prop_get:NnNF \g_@@_fntef_format_prop {#1}
-      \l_@@_fntef_cache_name_tl
-      {
-        \int_gincr:N \g_@@_fntef_format_int
-        \tl_set:Ne \l_@@_fntef_cache_name_tl
-          { LuaCJKfntef / ul / \int_use:N \g_@@_fntef_format_int }
-        \exp_args:Nc \newunderlinetype { \l_@@_fntef_cache_name_tl }
-          [ \int_use:N \g_@@_fntef_format_int ] {#2}
-        \prop_gput:NnV \g_@@_fntef_format_prop {#1}
-          \l_@@_fntef_cache_name_tl
-      }
-    \use:c { \l_@@_fntef_cache_name_tl }
-  }
 \NewDocumentCommand \CJKunderanyline { m m +m }
   {
     \group_begin:
@@ -7780,6 +7776,64 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         \l_@@_fntef_cache_key_tl \l_@@_fntef_any_code_tl
       \@@_fntef_body:n {#3}
     \group_end:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{\@@_fntef_use_leader_type:nn}
+% Build the underline type of a decoration that is made of \tn{leaders},
+% which repeats one rule or one symbol along the decorated text, and use it.
+% A type is built once per leader code and color and then reused, so a
+% document pays for each combination of geometry and color only once.
+%
+% The type keeps the color that was in force when it was built:
+% \pkg{luacolor} colors a rule by attribute, and \pkg{lua-ul} puts the
+% attributes of the built box on every leader it inserts.
+% A type cached by the geometry alone would therefore keep the color of the
+% first call, so the color is part of the key: \keys{format} when it is
+% given, and otherwise the value of \pkg{luacolor}'s attribute, which is the
+% color of the surrounding text. A requested color is also applied inside
+% the box, so that it holds wherever the leader is placed.
+%
+% The name of the type already carries a counter, so the context that
+% \pkg{lua-ul} puts in the name of the type it defines is a constant: one
+% that expands again when the type is used would rebuild the type with
+% whatever color happened to be current then.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_fntef_use_leader_type:nn #1#2
+  {
+    \tl_if_empty:NTF \l_@@_fntef_format_tl
+      {
+        \tl_set:Ne \l_@@_fntef_color_key_tl
+          { ambient | \tex_the:D \use:c { LuaCol@Attribute } }
+      }
+      {
+        \luaul_set_color:n { \l_@@_fntef_format_tl }
+        \tl_set:Nn \l_@@_fntef_color_key_tl
+          { format | \l_@@_fntef_format_tl }
+      }
+    \tl_set:Ne \l_@@_fntef_cache_key_tl
+      { \exp_not:n {#1} | \l_@@_fntef_color_key_tl }
+    \prop_get:NVNF \g_@@_fntef_format_prop
+      \l_@@_fntef_cache_key_tl \l_@@_fntef_cache_name_tl
+      {
+        \int_gincr:N \g_@@_fntef_format_int
+        \tl_set:Ne \l_@@_fntef_cache_name_tl
+          { LuaCJKfntef / ul / \int_use:N \g_@@_fntef_format_int }
+        \tl_if_empty:NTF \l_@@_fntef_format_tl
+          {
+            \exp_args:Nc \newunderlinetype
+              { \l_@@_fntef_cache_name_tl } [ LuaCJKfntef ] {#2}
+          }
+          {
+            \exp_args:Nc \newunderlinetype
+              { \l_@@_fntef_cache_name_tl } [ LuaCJKfntef ]
+              { \luaul_apply_color: #2 }
+          }
+        \prop_gput:NVV \g_@@_fntef_format_prop
+          \l_@@_fntef_cache_key_tl \l_@@_fntef_cache_name_tl
+      }
+    \use:c { \l_@@_fntef_cache_name_tl }
   }
 %    \end{macrocode}
 % \end{macro}

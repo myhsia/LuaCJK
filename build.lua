@@ -7,8 +7,8 @@
 --]==========================================================================]--
 module              = "LuaCJK"
 local pkg           = string.lower(module)
-version             = "v0.0.1"
-date                = "2026-11-11"
+version             = "v0.0.2"
+date                = "2026-11-20"
 maintainer          = "Mingyu Xia"
 uploader            = "Mingyu Xia"
 maintainid          = "myhsia"
