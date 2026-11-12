@@ -34,6 +34,13 @@ The character-level passes run in `pre_linebreak_filter` and in
 1. `rewrite_fonts` — point each CJK glyph at the font family recorded on it
    (`\g_@@_font_attr`), then at the punctuation family or a sub-block font
    if one applies, then at a fallback font when the target lacks the glyph.
+   The fallback list is resolved on the TeX side at each font selection, in
+   the series, shape, and size in force, and is keyed by the identifier of
+   the main font: a bold or a scaled main font has an identifier of its own,
+   so one list per family would cover only the context it was declared in.
+   `\g_@@_fallback_pushed_prop` records, per identifier, the family whose
+   list is installed, so a selection that resolves to a known identifier
+   costs one property lookup rather than another `\lua_now:e`.
 2. `spacing` — retime the source space between CJK characters to
    `CJKglue`, and insert `CJKglue`/`CJKecglue` at every boundary between two
    classes of character.  Dropping the space must not drop the boundary with

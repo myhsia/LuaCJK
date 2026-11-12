@@ -19,6 +19,22 @@
   }%
 }
 
+
+\def\psinfo{%
+  \directlua{
+    local n = tex.box[0].head
+    while n do
+      if n.id == node.id("glyph") then
+        local f = font.getfont(n.font)
+        texio.write_nl("term and log", "PS "
+          .. tostring(f and f.psname) .. " size " .. tostring(f and f.size))
+        break
+      end
+      n = n.next
+    end
+  }%
+}
+
 \begin{document}
 
 \START
@@ -62,6 +78,44 @@
     \setCJKfallbackfamilyfont{opts}[Scale = 2]{FandolSong-Regular.otf}
     \setbox0=\hbox{\CJKfamily{opts}中}
     \TYPE{width: \the\wd0}
+  \endgroup
+}
+
+\TEST{a bold character takes the bold fallback}{
+  \begingroup
+    \LuaCJKsetup{AutoFallBack = true}
+    \setCJKfamilyfont{boldfb}{TeX Gyre Pagella}[
+      BoldFont = TeX Gyre Pagella Bold]
+    \setCJKfallbackfamilyfont{boldfb}{FandolSong-Regular.otf}[
+      BoldFont = FandolSong-Bold.otf]
+    \setbox0=\hbox{\CJKfamily{boldfb}中}
+    \psinfo
+    \setbox0=\hbox{\CJKfamily{boldfb}\bfseries 中}
+    \psinfo
+  \endgroup
+}
+
+\TEST{an italic character takes the italic fallback}{
+  \begingroup
+    \LuaCJKsetup{AutoFallBack = true}
+    \setCJKfamilyfont{itfb}{TeX Gyre Pagella}[
+      ItalicFont = TeX Gyre Pagella Italic]
+    \setCJKfallbackfamilyfont{itfb}{FandolSong-Regular.otf}[
+      ItalicFont = FandolKai-Regular.otf]
+    \setbox0=\hbox{\CJKfamily{itfb}\itshape 中}
+    \psinfo
+  \endgroup
+}
+
+\TEST{a larger character takes the fallback at its size}{
+  \begingroup
+    \LuaCJKsetup{AutoFallBack = true}
+    \setCJKfamilyfont{bigfb}{TeX Gyre Pagella}
+    \setCJKfallbackfamilyfont{bigfb}{FandolSong-Regular.otf}
+    \setbox0=\hbox{\CJKfamily{bigfb}中}
+    \psinfo
+    \setbox0=\hbox{\CJKfamily{bigfb}\large 中}
+    \psinfo
   \endgroup
 }
 
