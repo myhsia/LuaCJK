@@ -654,6 +654,9 @@ LaTeX Project Public License, version 1.3c or later.
 %   所以上标或分数里的字符会取那个数学样式的尺寸。
 %   可以用 |\LuaCJKsetup{CJKmath = true}| 打开它，也可以用宏包选项
 %   |CJKmath = true|。
+%   此时字符取数学版本（见 \tn{mathversion}）的字体：
+%   在 \texttt{bold} 版本里用字族的粗体，字族没有粗体时保持正体；
+%   字形取字族的正体，不随周围的正文。
 %   不打开它时，数学模式里的汉字会到数学字体里去找，通常就此消失，
 %   所以这种情况下 LuaCJK 给出一次性的警告。
 % \end{keyval}
@@ -671,6 +674,10 @@ LaTeX Project Public License, version 1.3c or later.
 %
 % 数学模式里出现的每一个 CJK 字族都被注册成一个独立的数学字族，
 % 这样 \TeX\ 就能取它的文本、脚本或脚脚本尺寸。
+% 字族按数学版本选字体：\texttt{bold} 版本用 \cs{bfdefault}，其余版本用
+% \cs{mddefault}，字形的形状取 \cs{shapedefault}。
+% 所以 \cs{boldmath} 会把公式里的汉字换成粗体，而且只作用于当前分组；
+% 字族没有粗体时保持正体，也不报警告。
 % 字族号取自 240--255 这一段，是 \LuaTeX\ 允许的 256 个字族里的最后十六个，
 % 正常文档不会用到那里；一个文档如果在数学里用到十六个以上的 CJK 字族，
 % 就会报错停止。
@@ -1866,6 +1873,10 @@ a’a\quad 字！字
 %   a superscript or a fraction takes the size of that math style.
 %   Enable it with |\LuaCJKsetup{CJKmath = true}| or with the package option
 %   |CJKmath = true|.
+%   Such a character takes the font of the math version, as \tn{mathversion}
+%   sets it: the bold face of the family in the \texttt{bold} version, its
+%   regular face when it has no bold one, and the upright shape of the family
+%   rather than the shape of the text.
 %   Without it a CJK character in math mode is looked up in the math font
 %   and usually disappears, so LuaCJK issues a one-time warning in that case.
 % \end{keyval}
@@ -1883,6 +1894,11 @@ a’a\quad 字！字
 %
 % Each CJK family that appears in math is registered as a math family of its
 % own, so that \TeX\ can pick the text, script, or scriptscript size of it.
+% The family takes its font from the math version: \cs{bfdefault} in the
+% \texttt{bold} version and \cs{mddefault} in the others, with the shape
+% \cs{shapedefault}.  \cs{boldmath} therefore bolds the CJK characters of a
+% formula, within the group that asks for it, and a family without a bold face
+% keeps its regular one without a warning.
 % The family number comes from the range 240--255, the last sixteen of the 256
 % that \LaTeXe\ allocates under \LuaTeX, which an ordinary document never
 % reaches; more than sixteen CJK families in math stops with an error.
@@ -4220,6 +4236,30 @@ a’a\quad 字！字
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{\@@_math_font_update:}
+% Register the CJK family used by the current settings as a math family, or
+% clear the math font attribute when \keys{CJKmath} is off or the family is
+% not known.
+% \cs{@@_update_font:} runs it at every font selection, and
+% \cs{@@_math_version_refresh:} runs it again when the math version changes,
+% which is why it stands on its own.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_math_font_update:
+  {
+    \tl_if_eq:NnTF \l_@@_cjk_math_tl { 1 }
+      {
+        \tl_if_empty:NTF \l_@@_math_family_tl
+          { \tl_set_eq:NN \l_@@_tmpa_tl \l_@@_family_tl }
+          { \tl_set_eq:NN \l_@@_tmpa_tl \l_@@_math_family_tl }
+        \prop_get:NVNTF \g_@@_family_prop \l_@@_tmpa_tl \l_@@_tmpb_tl
+          { \exp_args:NV \@@_register_math_family:n \l_@@_tmpb_tl }
+          { \g_@@_math_font_attr = \c_zero_int }
+      }
+      { \g_@@_math_font_attr = \c_zero_int }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{\@@_update_font:}
 % \changes{v0.0.1}{2026/11/11}{Provide \keys{PunctFamily}, which sets a
 %   separate CJK family for the punctuation marks.}
@@ -4288,16 +4328,7 @@ a’a\quad 字！字
             \g_@@_font_attr = \c_zero_int
             \tl_clear:N \l_@@_family_name_tl
           }
-        \tl_if_eq:NnTF \l_@@_cjk_math_tl { 1 }
-          {
-            \tl_if_empty:NTF \l_@@_math_family_tl
-              { \tl_set_eq:NN \l_@@_tmpa_tl \l_@@_family_tl }
-              { \tl_set_eq:NN \l_@@_tmpa_tl \l_@@_math_family_tl }
-            \prop_get:NVNTF \g_@@_family_prop \l_@@_tmpa_tl \l_@@_tmpb_tl
-              { \exp_args:NV \@@_register_math_family:n \l_@@_tmpb_tl }
-              { \g_@@_math_font_attr = \c_zero_int }
-          }
-          { \g_@@_math_font_attr = \c_zero_int }
+        \@@_math_font_update:
         \@@_push_fallback:
         \@@_push_block_fonts:
         \tl_if_empty:NTF \l_@@_punct_family_tl
@@ -4332,6 +4363,14 @@ a’a\quad 字！字
 % ratio of the standard \LaTeX\ size tables.  The family is selected inside a
 % group, so the caller's font is not disturbed, and the assignments are global
 % because a math font belongs to a family, not to a group.
+% The series and the shape come from the math version, not from the text
+% around the formula: the family is selected at \cs{mddefault} and
+% \cs{shapedefault}, and, in the \texttt{bold} math version, at
+% \cs{bfdefault} as well when the family declares that shape.  The regular
+% face is what loads the shape list the test reads, and a family without a
+% bold face keeps its regular one in silence.  A formula therefore follows
+% \cs{boldmath}, and a \cs{bfseries} that happens to precede it no longer
+% leaks into it.
 %    \begin{macrocode}
 \msg_new:nnn { LuaCJK } { math-family-exhausted }
   { Too ~ many ~ CJK ~ families ~ for ~ the ~ math ~ families ~ 240--255. }
@@ -4353,8 +4392,17 @@ a’a\quad 字！字
       { \prop_item:Nn \g_@@_math_family_prop {#1} }
     \group_begin:
       \fontfamily {#1}
+      \fontseries { \mddefault }
+      \fontshape { \shapedefault }
       \fontsize { \use:c { f@size } pt } { \baselineskip }
       \selectfont
+      \bool_lazy_and:nnT
+        { \str_if_eq_p:ee { \math@version } { bold } }
+        {
+          \cs_if_exist_p:c
+            { \use:c { f@encoding } / #1 / \bfdefault / \shapedefault }
+        }
+        { \fontseries { \bfdefault } \selectfont }
       \global \textfont \l_@@_tmpa_int = \font
       \fontsize
         { \dim_eval:n { \use:c { f@size } pt * 7 / 10 } }
@@ -4369,6 +4417,42 @@ a’a\quad 字！字
     \group_end:
     \g_@@_math_font_attr = \l_@@_tmpa_int
   }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{\@@_math_version_refresh:}
+% Register the math family again when the math version changes.
+% \LaTeXe\ knows the numbers of its own math families only, so \tn{mathversion}
+% cannot reach the fonts of a CJK math family: the version is applied by hand.
+% \cs{glb@settings} is where a version change and a text-size change are
+% applied, and it runs \tn{every@math@size} afterwards, so that register is
+% where the refresh belongs.  It runs there also when the group that changed
+% the version ends and the version in force before the group is applied again,
+% which is what keeps |{\boldmath $中$}| local.  The guard stops the font
+% selections of the registration from running the whole update again.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_math_version_refresh:
+  {
+    \bool_if:NF \l_@@_selectfont_bool
+      {
+        \bool_set_true:N \l_@@_selectfont_bool
+        \@@_math_font_update:
+        \bool_set_false:N \l_@@_selectfont_bool
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{\@@_toks_put_right:Nn}
+% Append tokens to a token register such as \tn{every@math@size}.
+% The register holds tokens rather than a token list variable, and
+% \cs{tl_put_right:Nn} would put the name of the register into its own value,
+% so the assignment is written out with \tn{the}.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_toks_put_right:Nn #1#2
+  { #1 \expandafter { \tex_the:D #1 #2 } }
+\exp_args:Nc \@@_toks_put_right:Nn { every@math@size }
+  { \@@_math_version_refresh: }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -4629,6 +4713,9 @@ a’a\quad 字！字
 % \end{macro}
 %
 % \begin{macro}{\setCJKmathfont}
+% \changes{v0.0.2}{2026/11/20}{A CJK character in a formula takes the face of
+%   the math version: the bold face of the family under \cs{boldmath} when the
+%   family has one, and the upright shape instead of the shape of the text.}
 % Register a family used for CJK characters in math mode and refresh
 % the attributes at once.
 %    \begin{macrocode}
