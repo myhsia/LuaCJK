@@ -122,7 +122,11 @@ and `\hook_gput_code:nnn { cmd / selectfont / after }` repeats the push once
 `\baselineskip` has settled, so the glue belongs to the new size; the guard
 inside `\@@_update_font:` keeps the temporary font selections from pushing
 twice. `cmd / rmfamily / after`, `cmd / sffamily / after`, and
-`cmd / ttfamily / after` switch the family in the same way.
+`cmd / ttfamily / after` switch the family in the same way, and
+`cmd / normalfont / after` resets it to `\CJKfamilydefault`, which follows
+`\CJKrmdefault` until the document gives it a value.  That reset passes an
+unregistered name over in silence, because `\normalfont` also runs when the
+document starts, before any family need exist.
 
 The snapshot is also where state that used to be a Lua global now lives, so a
 group cannot leak it: `AutoFallBack` and the list of canceled sub-blocks are
@@ -420,7 +424,7 @@ on `lua-ul`). Picking a backend inside `ctex` is now a public option
 The commands are in `AGENTS.md`. For this skill the points that matter are:
 
 ```bash
-l3build check                       # 51 tests, must print "All checks passed"
+l3build check                       # 52 tests, must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
 bash scripts/ctex-subset.sh         # 21/21, and no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
