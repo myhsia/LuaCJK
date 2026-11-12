@@ -192,6 +192,17 @@ A colored rule cannot use `\color`, which emits whatsits in front of
 (`\luaul_set_color:n` plus `\luaul_apply_color:`),
 which is why `format` takes a color name rather than code.
 
+A type is built once and reused, and it keeps the color it was built with:
+`lua-ul` copies the attributes of the built box onto every leader, so the cache
+key of a rule or a symbol decoration carries the color — `format` when it is
+set, otherwise the value of `luacolor`'s attribute, which is the color of the
+surrounding text.  Without that, a second call inherits the color of the first.
+The name of the type already carries a counter, which is why the `lua-ul`
+context can be the constant `LuaCJKfntef`; a context that expands again when the
+type is used would rebuild it with whatever color is current at that moment.
+The single rule and the strike-out carry their own color in the same way, in
+`\@@_fntef_formatted_underline:` and `\@@_fntef_use_sout:`.
+
 Every decoration parses one key set: a pair goes to the keys, and a bare item
 that names no key is a color and means `format`, so `[red]` and `[subtract]`
 both work. A key that a command does not use is accepted and ignored, and
@@ -409,7 +420,7 @@ on `lua-ul`). Picking a backend inside `ctex` is now a public option
 The commands are in `AGENTS.md`. For this skill the points that matter are:
 
 ```bash
-l3build check                       # 50 tests, must print "All checks passed"
+l3build check                       # 51 tests, must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
 bash scripts/ctex-subset.sh         # 21/21, and no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages

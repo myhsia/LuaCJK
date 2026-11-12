@@ -49,8 +49,8 @@ Entry points:
 | --- | --- |
 | `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
-| `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.1`, `ctanpkg` and `tdslocations`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
-| `testfiles/NN.lvt` + `.tlg` | 50 regression tests and their baselines, one pair per feature |
+| `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.2`, `ctanpkg` and `tdslocations`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
+| `testfiles/NN.lvt` + `.tlg` | 51 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree |
 | `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, collapses only ASCII whitespace, and names the forge repository of the release link with `--repo`.  It also exports `newest` and `announcement`, which `build.lua` calls to turn the newest section of that changelog into the CTAN announcement |
@@ -229,6 +229,15 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   leaders glue of width *w* followed by a glue of width *-w*; the adjustment
   replaces the leaders with kerns and shorter leaders so that the total stays
   *w*. Any rule-based decoration must keep that invariant.
+- **A decoration's underline type keeps the color it was built with.**
+  `luacolor` colors a rule by attribute, and `lua-ul` puts the attributes of the
+  built box on every leader it inserts, so a type cached by geometry alone keeps
+  the color of the first call.  The cache key therefore carries the color —
+  `format` when it is set, otherwise the value of `luacolor`'s attribute, which
+  is the color of the surrounding text — and the `lua-ul` context is the
+  constant `LuaCJKfntef`: the type name already carries a counter, while a
+  context that expands again at use time rebuilds the type with whatever color
+  is current then.
 - **A drawn decoration stays out of the line metrics.**  The wave, the emphasis
   dots, and the xout slash are built at use time in
   `\l_@@_fntef_pattern_box`, which is then set to zero height and depth.
@@ -362,7 +371,7 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 
 ```bash
 l3build unpack          # ~5 s, regenerates the derived files
-l3build check           # ~3 min, 50 tests, both test runs
+l3build check           # ~3 min, 51 tests, both test runs
 l3build check <name>    # one test, the first thing to run after a change
 l3build save <name>     # rewrite one baseline after an intended change
 l3build doc             # ~2 min, tagged manual, needs latex-lab and tagpdf

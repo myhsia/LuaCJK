@@ -1,0 +1,98 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\usepackage{xcolor}
+\usepackage{LuaCJKfntef}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\directlua{
+  local attr = oberdiek.luacolor.getattribute()
+  local names = {}
+  local function first_attribute()
+    local n = tex.box[0].head
+    while n do
+      local v = node.has_attribute(n, attr)
+      if v then return v end
+      n = n.next
+    end
+  end
+  function luacjk_name_color(name)
+    names[first_attribute()] = name
+  end
+  function luacjk_rule_colors()
+    local out, i = {}, 0
+    local n = tex.box[0].head
+    while n do
+      if n.id == node.id("glue") and n.subtype == 100 then
+        i = i + 1
+        local v = node.has_attribute(n, attr)
+        out[i] = v and (names[v] or tostring(v)) or "none"
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "rules: " .. table.concat(out, " "))
+  end
+}
+\newcommand\rulecolors{\directlua{luacjk_rule_colors()}}
+
+\begin{document}
+
+\setbox0=\hbox{x}\directlua{luacjk_name_color("black")}
+\setbox0=\hbox{\textcolor{red}{x}}\directlua{luacjk_name_color("red")}
+\setbox0=\hbox{\textcolor{blue}{x}}\directlua{luacjk_name_color("blue")}
+
+\START
+
+\TEST{both rules of one call carry the same color}{
+  \setbox0=\hbox{\CJKunderdblline{中}}
+  \rulecolors
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{each call takes the color of its own text}{
+  \setbox0=\hbox{\textcolor{red}{\CJKunderdblline{中}}}
+  \rulecolors
+  \setbox0=\hbox{\textcolor{blue}{\CJKunderdblline{中}}}
+  \rulecolors
+  \setbox0=\hbox{\textcolor{red}{\CJKunderdblline{中}}}
+  \rulecolors
+}
+
+\TEST{format colors both rules, as it does the single rule}{
+  \setbox0=\hbox{\CJKunderline[format = red]{中}}
+  \rulecolors
+  \setbox0=\hbox{\CJKunderdblline[format = red]{中}}
+  \rulecolors
+}
+
+\TEST{format wins over the color of the surrounding text}{
+  \setbox0=\hbox{\textcolor{blue}{\CJKunderdblline[format = red]{中}}}
+  \rulecolors
+}
+
+\TEST{color is another name for format}{
+  \setbox0=\hbox{\CJKunderdblline[color = red]{中}}
+  \rulecolors
+}
+
+\TEST{a bare color name is format}{
+  \setbox0=\hbox{\CJKunderdblline[red]{中}}
+  \rulecolors
+}
+
+\TEST{two colors in one box keep their own rule colors}{
+  \setbox0=\hbox{\textcolor{red}{\CJKunderdblline{中}}\textcolor{blue}{\CJKunderdblline{文}}}
+  \rulecolors
+  \setbox0=\hbox{\CJKunderdblline[format = red]{中}\CJKunderdblline[format = blue]{文}}
+  \rulecolors
+}
+
+\TEST{a symbol takes the color of its text}{
+  \setbox0=\hbox{\textcolor{blue}{\CJKunderanysymbol{0pt}{\textbullet}{中}}}
+  \rulecolors
+}
+
+\END
+
+\end{document}
