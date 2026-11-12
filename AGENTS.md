@@ -58,6 +58,8 @@ Entry points:
 | `scripts/check-charclass.lua` | compares the `CJK_RANGES` table of the `dtx` with `Scripts.txt`: it reports every code point whose script is Han, Hiragana, Katakana, Bopomofo, or Hangul that the table does not list, merging the code points into ranges.  The combining Bopomofo tone marks U+02EA and U+02EB are allowed to stay outside the table.  Exit 0 covered, 1 missing (the ranges are printed), 2 cannot run |
 | `scripts/check-bilingual.lua` | compares the two `documentation` parts of the `dtx`: the ordered structure (environment nesting, the documented objects and their arguments, section levels, list items) and the multiset of interface references (`\cs`, `\keys`, `\pkg`, `\file`, `\env`, `\tn`, `\val`, `\texttt`, `\meta`, `\oarg`, `\marg`, `\parg` and the `|…|` spans), and refuses a part in the wrong order.  Prose and section titles are not compared.  Exit 0 agree, 1 differ (the differences are printed), 2 cannot run |
 | `scripts/check-docs.sh` | compares the facts in the two guides with their sources: the layout table against `git ls-files` (both directions), version, test count, DocStrip blocks, installed file types, attribute and decoration counts, `\RequirePackage` against `DEPENDS.txt` (a package loaded from the listings guard must be `soft`), `DEPENDS.txt` against `.github/tl_packages`, the subset count, the changelog facts (the newest `\changes` version and date against `build.lua`, the first line of `CHANGELOG.md` against the released version), and the two languages of the user part through `scripts/check-bilingual.lua`.  A `\RequirePackage` name is resolved to its TeX Live package with `tlmgr search --global --file`, falling back to `expl3 -> l3kernel` and `l3draw -> l3experimental` when `tlmgr` is absent |
+| `scripts/triage-issues.sh` | lists the open issues that carry no subsystem label, one `#<number> <title>` per line.  The type of an issue is GitHub's native issue type (`Bug`, `Feature`, `Task`), which is not a label, so an issue is reported when none of its labels is one of the twenty subsystems.  Exit 0 none left, 1 some reported, 2 cannot ask GitHub (no `gh`, no `jq`, not authenticated, no remote, no network) |
+| `scripts/session-check.sh` | the declared session check, a wrapper because a repository may declare one: it runs `check-extract-changes.sh --quiet` and `triage-issues.sh` and prints one summary line for each that needs attention, so the `upkeep` plugin reports both.  Exit 0 silent, 1 with those lines, 2 only when neither part can run |
 | `.github/font-urls.txt` | the Noto CJK release URLs the `l3build` job downloads for the manual; the hash of the file is the cache key, so changing a URL invalidates the cache |
 | `.github/workflows/test.yaml` | the CI workflow |
 | `.github/workflows/ctan.yaml` | publishes a release to CTAN: on a published release it checks out the tag, refuses to run unless `build.lua`'s version is the tag's, downloads that release's own `luacjk-ctan.zip` so that the archive CTAN receives is the published one, and runs `l3build upload`; a manual run takes the latest release with the current branch's form |
@@ -382,6 +384,8 @@ l3build changelog       # ~2 s, CHANGELOG.md from the dtx \changes entries
 bash scripts/ctex-subset.sh            # ~3 min, needs ../ctex-kit or network
 bash scripts/ctex-subset.sh --skip-unpack
 bash scripts/check-docs.sh             # ~1 s, the guide facts against the code
+bash scripts/triage-issues.sh          # ~1 s, open issues with no subsystem label
+bash scripts/session-check.sh          # ~3 s, the declared session check
 texlua scripts/check-charclass.lua     # ~1 s, the CJK range table against Scripts.txt
 texlua scripts/check-bilingual.lua     # ~1 s, the two documentation languages
 ```
@@ -516,8 +520,14 @@ l3build upload --dry-run           # the form, without publishing it
 - A change that touches the node pipeline should also be checked by hand in
   `build/doc/LuaCJK.pdf` for the affected demo; the extracted examples are the
   fastest place to see the effect.
+- `bash scripts/session-check.sh` must exit 0 and print nothing: it is the
+  declared session check, and it reports a changelog drift against ctex-kit and
+  any open issue that still has no subsystem label.  `bash
+  scripts/triage-issues.sh` lists those issues itself, one `#<number> <title>`
+  per line, exit 0 when there are none, 1 when there are, and 2 when `gh` cannot
+  ask GitHub.
 
-Session check: `scripts/check-extract-changes.sh`
+Session check: `scripts/session-check.sh`
 
 ## CI
 
@@ -578,10 +588,12 @@ version guard is what stops the two from disagreeing.
 On failure it keeps `luacjk-ctan.curlopt`, the exact request, as an artifact.
 
 A change in ctex-kit cannot be seen by a workflow of this repository, so it is
-not a CI job: `scripts/check-extract-changes.sh` is the session check declared
-below, and the `upkeep` plugin of the global configuration runs it once a day
-and after a directory change, so a change in the reference implementation
-reaches the next session instead of waiting for a pull request.
+not a CI job: `scripts/session-check.sh` is the session check declared below,
+and the `upkeep` plugin of the global configuration runs it once a day and after
+a directory change, so a change in the reference implementation reaches the next
+session instead of waiting for a pull request.  The same wrapper is the only
+place a session is told that open issues are still uncategorised, because a
+repository may declare one check and not two.
 
 ## Superseded decisions
 
@@ -614,13 +626,32 @@ zip, `doc/latex/LuaCJK/` and `source/latex/LuaCJK/`; lower case there would
 need `moduledir`, which `l3build-variables.lua` assigns unconditionally after
 `build.lua` is read.
 
+## Issue triage
+
+Every issue carries **one subsystem label**; its **type** is the native GitHub
+issue type (`Bug`, `Feature`, `Task`), which is not a label and is set on
+GitHub's side, so nothing here repeats it.
+
+- The subsystem labels are the commit scopes of the "Git style" section below
+  (`core`, `fonts`, `chars`, `punct`, `spacing`, `breaks`, `verbatim`,
+  `options`, `load`, `fntef`, `listings`, `ctex`, `math`, `manual`, `readme`,
+  `doc`, `build`, `ci`, `layout`, `style`), all purple.  The label names the
+  place the fix lands, so it predicts the scope of the commit that closes the
+  issue; `fntef` is therefore right for a report about `LuaCJKfntef`, even when
+  the example also mentions a font.
+- An open issue that the session finds without a subsystem label is labelled in
+  that session, before the task it was doing: read the report and pick the
+  subsystem from where the fix belongs.  `scripts/triage-issues.sh` lists
+  exactly those issues and `scripts/session-check.sh` reports their count at the
+  start of a day.
+
 ## Git style
 
 See the global `repo-rules` skill: `type(scope): summary`, commit only when
 asked, never commit generated output or secrets. Scopes used in this
 repository, one per subsystem: `core`, `fonts`, `chars`, `punct`, `spacing`,
 `breaks`, `verbatim`, `options`, `load`, `fntef`, `listings`, `ctex`, `math`,
-`manual`, `readme`, `doc`, `build`, `ci`, `layout`, `style`.
+`manual`, `readme`, `doc`, `build`, `ci`, `layout`, `style`, `repo`.
 
 expl3 source style — names through `@@`, the interface over the primitive,
 hooks, alignment, and spaces around the slashes — is global; see the
