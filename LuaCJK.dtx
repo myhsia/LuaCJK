@@ -4977,8 +4977,8 @@ LuaCJK = LuaCJK or {}
 %     M,         GLYPH,         GLUE,          HLIST,
 %     VLIST,     KERN,          PENALTY,       MATH,
 %     DISC,      WHATSIT,       MARK,          INS,
-%     ADJUST,    LOCAL_PAR,     SPACESKIP,     new_node,
-%     free_node, has_attribute, set_attribute
+%     ADJUST,    LOCAL_PAR,     SPACESKIP,     ITALICCORR,
+%     new_node,  free_node, has_attribute, set_attribute
 %   }
 % Short names for the module table, the node types,
 % and the node functions.
@@ -4998,6 +4998,7 @@ local INS             = node.id("ins")
 local ADJUST          = node.id("adjust")
 local LOCAL_PAR       = node.id("local_par")
 local SPACESKIP       = node.subtype("spaceskip") or 13
+local ITALICCORR      = node.subtype("italiccorrection") or 3
 local new_node        = node.new
 local free_node       = node.free
 local has_attribute   = node.has_attribute
@@ -6206,10 +6207,44 @@ end
 
 %    \end{macrocode}
 % \end{macro}
+% \begin{macro}[int]{restore_source_spaces}
+% \changes{v0.0.2}{2026/11/20}{The space in front of \cs{textbf} and its
+%   siblings is still the inter-character glue: \LaTeX\ moves a space across
+%   the italic correction of a text font command, and the move leaves the glue
+%   with the subtype of a skip the document wrote.}
+% Give a source space that a text font command moved across the italic
+% correction its subtype back.
+% \cs{textbf} and the other text font commands save the skip in front of them,
+% remove it, apply the italic correction, and put it back with \tn{hskip}, so
+% the glue keeps the dimensions of the space but not its subtype.
+% The move is the only way a normal glue comes to follow an italic-correction
+% kern, and the subtype is the one thing the spacing pass reads, so putting the
+% subtype back is enough; a typeface whose interword space is rigid therefore
+% needs no special case, at the price of retiming a skip that the document
+% wrote in that very place.
+%    \begin{macrocode}
+local function restore_source_spaces (head)
+  local prev = nil
+  local cur  = head
+  while cur do
+    if cur.id == GLUE and cur.subtype ~= SPACESKIP
+       and prev and prev.id == KERN and prev.subtype == ITALICCORR then
+      cur.subtype = SPACESKIP
+    end
+    prev = cur
+    cur  = cur.next
+  end
+  return head
+end
+
+%    \end{macrocode}
+% \end{macro}
 % \begin{macro}[int]{handle_source_space}
 % Remove or retime a space typed in the source.
 % Only a space that came from the source is a candidate; an explicit
-% \tn{hskip} or \tn{hfill} has a different subtype and is left alone.
+% \tn{hskip} or \tn{hfill} has a different subtype and is left alone, and the
+% space that a text font command moved across the italic correction has had
+% its subtype put back above.
 % A space between two CJK characters is not kept when \keys{CJKspace} is off,
 % but dropping it must not drop the boundary with it: the space becomes the
 % inter-character glue of \keys{CJKglue}. Freeing it instead would leave the
@@ -6290,6 +6325,7 @@ end
 % \end{macro}
 %    \begin{macrocode}
 local function spacing (head)
+  head = restore_source_spaces(head)
   local prev         = nil
   local prev_visible = nil
   local prev_end     = nil
