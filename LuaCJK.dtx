@@ -819,10 +819,10 @@ $ x + 中文 $ and 中文
 %   用 \cs{LuaCJKsetwidth} 为某个标点设置的宽度仍然优先。
 %   \item[\keys{PunctBoundWidth}]\val{length, false}: 标点出现在行尾或行首时，
 %   它的进距中有多少留在行内；
-%   其余的墨迹悬挂到页边，或者悬挂到段落开头的缩进里，
-%   而这一行保持它的宽度。
-%   这取代了 \texttt{hangmobanjiao} 在行两端固定的半字位移。
-%   \texttt{false} 关闭这个选项。
+%   其余的墨迹悬挂到页边，或者悬挂到段落开头的缩进里。
+%   默认留下进距的一半，而断行时这一份悬挂已经算进去，
+%   所以行尾的标点能随它所在的行一起放下。
+%   \texttt{false} 恢复默认的一半。
 %   \item[\keys{LatinPunct}]\val{\TFF}: 把引号
 %   （U+2018、U+2019、U+201C、U+201D）、间隔号（U+00B7）
 %   与省略号（U+2026、U+2027、U+22EF）当作拉丁标点：
@@ -2054,10 +2054,11 @@ $ x + 中文 $ and 中文
 %   A width set with \cs{LuaCJKsetwidth} still wins for that mark.
 %   \item[\keys{PunctBoundWidth}]\val{length, false}: How much of a mark's
 %   advance stays inside the line when the mark ends or starts the line;
-%   the rest of the ink hangs into the margin, or into the indentation at the
-%   start of a paragraph, and the line keeps its width.
-%   This replaces the fixed half-em shift of \texttt{hangmobanjiao} at either
-%   end of a line. \texttt{false} turns the option off.
+%   the rest of the ink stands in the margin, or in the indentation at the
+%   start of a paragraph.
+%   The default leaves half of the advance out, and line breaking counts that
+%   hang, so a mark can end the line the natural width would refuse.
+%   \texttt{false} returns to that default.
 %   \item[\keys{LatinPunct}]\val{\TFF}: Treat the quotation marks
 %   (U+2018, U+2019, U+201C, U+201D), the middle dot (U+00B7),
 %   and the ellipses (U+2026, U+2027, U+22EF) as Latin punctuation:
@@ -5449,7 +5450,7 @@ end
 % \begin{variable}[int]{LuaCJK.punct_styles}
 % The built-in styles. Each entry holds the compression switch,
 % the compression ratio, the opening and closing exemption,
-% and optional fixed width or hanging parameters.
+% whether the line-end hanging applies, and the optional fixed width.
 %    \begin{macrocode}
 M.punct_class = function (c, s)
   return punct_class(c, s or M.settings[1])
@@ -5457,17 +5458,17 @@ end
 
 M.punct_styles = {
   quanjiao = { compress_adjacent = true,  ratio = 0.5,
-               keep_open_close = true },
+               keep_open_close = true, hang = true },
   plain    = { compress_adjacent = false, ratio = 0.0,
                keep_open_close = true },
   banjiao  = { compress_adjacent = false, ratio = 0.0, keep_open_close = true,
-               fixed_ratio = 0.5 },
+               fixed_ratio = 0.5, hang = true },
   kaiming  = { compress_adjacent = false, ratio = 0.0, keep_open_close = true,
-               fixed_ratio = 0.5, fixed_full = true },
+               fixed_ratio = 0.5, fixed_full = true, hang = true },
   CCT      = { compress_adjacent = false, ratio = 0.0, keep_open_close = true,
-               fixed_ratio = 0.7 },
+               fixed_ratio = 0.7, hang = true },
   hangmobanjiao = { compress_adjacent = false, ratio = 0.0,
-                    keep_open_close = true, hanging = true },
+                    keep_open_close = true, hang = true },
 }
 
 %    \end{macrocode}
@@ -5909,11 +5910,11 @@ local function first_punct (list)
   local n = list
   while n do
     if n.id == GLYPH then
-      return punct_class(n.char, settings_of(n)), n.char, true
+      return punct_class(n.char, settings_of(n)), n, true
     elseif n.id == HLIST or n.id == VLIST then
-      local p, c, found = first_punct(n.head)
+      local p, g, found = first_punct(n.head)
       if found then
-        return p, c, true
+        return p, g, true
       end
     elseif n.id == MATH then
       return nil, nil, true
@@ -5931,28 +5932,28 @@ end
 local function last_punct (list)
   local n     = list
   local punct = nil
-  local char  = nil
+  local glyph = nil
   local found = false
   while n do
     if n.id == GLYPH then
       punct = punct_class(n.char, settings_of(n))
-      char  = n.char
+      glyph = n
       found = true
     elseif n.id == HLIST or n.id == VLIST then
-      local p, c, deep = last_punct(n.head)
+      local p, g, deep = last_punct(n.head)
       if deep then
         punct = p
-        char  = c
+        glyph = g
         found = true
       end
     elseif n.id == MATH then
       punct = nil
-      char  = nil
+      glyph = nil
       found = true
     end
     n = n.next
   end
-  return punct, char, found
+  return punct, glyph, found
 end
 
 %    \end{macrocode}
@@ -6479,14 +6480,20 @@ end
 %    \begin{macrocode}
 local function edge_mark (n, at_end)
   if n.id == GLYPH then
-    return punct_class(n.char, settings_of(n)), n.char
+    return punct_class(n.char, settings_of(n)), n.char, n
   elseif n.id == HLIST or n.id == VLIST then
+    local mark, g = nil, nil
     if at_end then
-      return last_punct(n.head)
+      mark, g = last_punct(n.head)
+    else
+      mark, g = first_punct(n.head)
     end
-    return first_punct(n.head)
+    if g then
+      return mark, g.char, g
+    end
+    return nil, nil, nil
   end
-  return nil, nil
+  return nil, nil, nil
 end
 
 %    \end{macrocode}
@@ -6860,67 +6867,36 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% The glyph advance stays inside the line, so shifting the ink sideways lets
-% a line-final closing punctuation hang into the margin without changing
-% the line width. Line-initial opening punctuation is shifted the other way.
+% A line that ends at a closing or middle mark, or that starts with an opening
+% mark, measures the mark's advance short of its ink: the blank half stands in
+% the margin. A line that never counted that blank refuses the mark it could
+% have held, and is set loose instead. The hang therefore has to be known while
+% the line is broken, and by then only the node list is left, so it is
+% expressed as a zero-size rule of negative width beside the break: a closing
+% mark that ends a line is followed by such a rule and the break glue carries
+% the same width, so the two cancel while the line is set and the rule alone
+% shortens the line when the break is taken; a glue and a rule in the same
+% order let an opening mark begin a line.
+% A kern would not do, because a kern that follows a character is a break
+% opportunity of its own and would take a kinsoku penalty, while \TeX\ never
+% discards a rule at a line break.
 %
-% The shift is an offset on the glyph rather than character protrusion,
-% because protrusion does not move the ink at the end of a line:
-% \tn{protrudechars} together with \tn{rpcode} makes \tn{rightmarginkern}
-% report the amount, but the glyph in the output keeps its position.
-% Measured at 10pt with a right code of 1000: the marginal kern is 10pt and
-% the quad of the period is unchanged, in a short line, an overfull line, and
-% a line whose width is the natural width. The left code does move the line:
-% the same measurement with \tn{lpcode} shifts the first glyph by one em,
+% Character protrusion is no help either, because it does not move the ink at
+% the end of a line: \tn{protrudechars} together with \tn{rpcode} makes
+% \tn{rightmarginkern} report the amount while the glyph keeps its position,
+% measured at 10pt with a right code of 1000 in a short line, an overfull line,
+% and a line whose width is the natural width. Only \tn{lpcode} moves the line,
 % which is what the visible effect of \pkg{microtype}'s protrusion on a Latin
 % line consists of.
 %
-% \begin{macro}[int]{find_first_last_glyph}
-% The first and the last glyph node of a list, descending into horizontal
-% boxes. Only the two outer glyphs are wanted, so the search returns as soon
-% as a glyph is found on the left and keeps the last one it meets.
-%    \begin{macrocode}
-local function find_first_last_glyph (list)
-  local first, last
-  local function walk (l)
-    local n = l
-    while n do
-      if n.id == GLYPH then
-        if not first then first = n end
-        last = n
-      elseif n.id == HLIST then
-        walk(n.head)
-      end
-      n = n.next
-    end
-  end
-  walk(list)
-  return first, last
-end
-
-%    \end{macrocode}
-% \end{macro}
-%
-% \begin{macro}[int]{shift_glyph}
-% Move the ink of a glyph by a horizontal offset.
-% The advance is not touched, so nothing in the line changes width.
-%    \begin{macrocode}
-local function shift_glyph (g, delta)
-  if delta == 0 then return end
-  g.xoffset = g.xoffset + delta
-end
-
-%    \end{macrocode}
-% \end{macro}
-%
 % \begin{macro}[int]{bound_width}
 % \changes{v0.0.1}{2026/11/11}{Provide \keys{PunctBoundWidth}, which leaves
-%   only the given advance inside the line and hangs the rest of the mark into
-%   the margin: at the end of a line, at its start, and when the mark ends a
-%   box such as \tn{mbox}. Only the lines of the paragraph itself are shifted.}
+%   only the given advance of a mark inside the line and hangs the rest into
+%   the margin, at the end of a line, at its start, and when the mark ends a
+%   box such as \tn{mbox}.}
 % The advance that a mark keeps inside the line when it ends one,
 % or nothing when the option is off.
-% Without it the shift is half an em, as the hanging style asks.
+% Without it the hang is half of the advance the style gives the mark.
 %    \begin{macrocode}
 local function bound_width (settings)
   local value = settings and settings.bound_width or 0
@@ -6933,87 +6909,92 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}[int]{hang_line}
-% Shift the punctuation glyphs at the two ends of one line.
-% A closing or middle mark at the end, and an opening mark at the start,
-% take their own settings; with a bound width the end shift is the part
-% that would stick out otherwise.
+% \begin{macro}[int]{hang_amount}
+% How much of a mark's advance stands outside the line: the part that
+% \keys{PunctBoundWidth} leaves out, or half of the advance the style gives the
+% mark. The advance is the one \cs{apply_fixed_widths} gives it, so a
+% compressed style hangs less.
 %    \begin{macrocode}
-local function hang_line (line)
-  if line.id ~= HLIST then
-    return
+local function hang_amount (g, settings)
+  local bound  = bound_width(settings)
+  local target = fixed_width(g, settings, style_of(settings)) or g.width
+  if bound then
+    return math.max(0, target - bound)
   end
-  local first, last = find_first_last_glyph(line.head)
-  if last and disabled(last) then
-    last = nil
-  end
-  if first and disabled(first) then
-    first = nil
-  end
-  local last_settings  = settings_of(last or first)
-  local first_settings = settings_of(first or last)
-  local last_style     = style_of(last_settings)
-  local first_style    = style_of(first_settings)
-  local bound          = bound_width(last_settings)
-  local start_bound    = bound_width(first_settings)
-  if not (last_style.hanging or first_style.hanging or bound or start_bound)
-  then
-    return
-  end
-  if last and punct_class(last.char, last_settings) then
-    local cls = punct_class(last.char, last_settings)
-    if cls == "close" or cls == "middle" then
-      if bound then
-        shift_glyph(last, last.width - bound)
-      elseif last_style.hanging then
-        local f    = font.getfont(last.font)
-        local size = f and f.size or 0
-        shift_glyph(last, math.floor(0.5 * size + 0.5))
-      end
-    end
-  end
-  if first and punct_class(first.char, first_settings) then
-    local cls = punct_class(first.char, first_settings)
-    if cls == "open" then
-      if start_bound then
-        shift_glyph(first, start_bound - first.width)
-      elseif first_style.hanging then
-        local f    = font.getfont(first.font)
-        local size = f and f.size or 0
-        shift_glyph(first, -math.floor(0.5 * size + 0.5))
-      end
-    end
-  end
+  return math.floor(0.5 * target + 0.5)
 end
 
 %    \end{macrocode}
 % \end{macro}
-%
-% \begin{macro}[int]{process_lines}
-% Walk the lines of the paragraph and apply \cs{hang_line} to each.
-% The list that reaches the callback is the vertical list of line boxes, so
-% a horizontal box found here is a line. Descending into a line's own boxes
-% would shift a mark that is not at the edge of the line at all; the edge
-% glyphs are looked up inside the line instead.
+% \begin{macro}[int]{hang_bounds}
+% \changes{v0.0.2}{2026/11/20}{The hanging of a mark takes part in line
+%   breaking, so a line that ends at a closing mark or begins with an opening
+%   mark holds the mark the margin allows; the ink of that mark stands outside
+%   the line, and \keys{PunctBoundWidth} decides how much of the advance stays
+%   inside.}
+% Bracket every break point that a mark ends or starts, so the line measures
+% the hang and the text inside a line does not move. A break that a preceding
+% penalty already forbids is left alone, so a fixed width does not carry a rule
+% that can never be used.
 %    \begin{macrocode}
-local function process_lines (list)
-  local n = list
-  while n do
-    if n.id == HLIST then
-      hang_line(n)
+local function hang_bounds (head)
+  local prev = nil
+  local last = nil
+  local cur  = head
+  while cur do
+    if cur.id == GLYPH
+       or ((cur.id == HLIST or cur.id == VLIST) and box_visible(cur)) then
+      last = cur
+    elseif is_break_point(cur) and last and cur.id == GLUE
+           and not (prev and prev.id == PENALTY and prev.penalty >= 10000) then
+      local nxt                       = next_visible(cur.next)
+      local tail, _, tail_glyph       = edge_mark(last, true)
+      local lead, _, lead_glyph       = nil, nil, nil
+      if nxt then
+        lead, _, lead_glyph = edge_mark(nxt, false)
+      end
+      local w_end   = 0
+      local w_start = 0
+      if tail_glyph and not disabled(tail_glyph)
+         and (tail == "close" or tail == "middle")
+         and style_of(settings_of(tail_glyph)).hang then
+        w_end = hang_amount(tail_glyph, settings_of(tail_glyph))
+      end
+      if lead_glyph and not disabled(lead_glyph) and lead == "open"
+         and style_of(settings_of(lead_glyph)).hang then
+        w_start = hang_amount(lead_glyph, settings_of(lead_glyph))
+      end
+      if w_end > 0 or w_start > 0 then
+        local delta = w_end + w_start
+        cur.width = cur.width + delta
+        if w_end > 0 then
+          local r  = new_node("rule")
+          r.width  = -w_end
+          r.height = 0
+          r.depth  = 0
+          inherit_attributes(r, tail_glyph)
+          r.next = cur
+          if prev then
+            prev.next = r
+          else
+            head = r
+          end
+          prev = r
+        end
+        if w_start > 0 then
+          local r  = new_node("rule")
+          r.width  = -w_start
+          r.height = 0
+          r.depth  = 0
+          inherit_attributes(r, lead_glyph)
+          r.next = cur.next
+          cur.next = r
+        end
+      end
     end
-    n = n.next
+    prev = cur
+    cur  = cur.next
   end
-end
-
-%    \end{macrocode}
-% \end{macro}
-%
-% \begin{macro}[int]{hang_punctuation}
-% Apply the hanging shift to every line of the paragraph.
-%    \begin{macrocode}
-local function hang_punctuation (head)
-  process_lines(head)
   return head
 end
 
@@ -7094,11 +7075,16 @@ end
 % Run the passes over a list, in the order in which they depend on each
 % other: the font first, because the classes depend on it; then the
 % spacing, the fixed widths, the prohibitions, and the widow penalties.
+% The hang of a mark is inserted only when the list is a paragraph about to be
+% broken, because a box packed by \tn{hpack} has no break to hang at.
 %    \begin{macrocode}
-local function process (head)
+local function process (head, linebreak)
   head = rewrite_fonts(head)
   head = spacing(head)
   head = apply_fixed_widths(head)
+  if linebreak then
+    head = hang_bounds(head)
+  end
   head = apply_kinsoku(head)
   head = apply_check_single(head)
   return head
@@ -7113,7 +7099,7 @@ M.process = process
 % The line-breaking callback.
 %    \begin{macrocode}
 function M.pre_linebreak (head, groupcode)
-  return process(head)
+  return process(head, true)
 end
 
 %    \end{macrocode}
@@ -7139,26 +7125,14 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}[int]{LuaCJK.post_linebreak}
-% The hanging punctuation callback.
-%    \begin{macrocode}
-function M.post_linebreak (head, groupcode)
-  return hang_punctuation(head)
-end
-
-%    \end{macrocode}
-% \end{macro}
-%
 % The callbacks are registered in this order: spacing, font correction,
-% math, and hanging.
+% and math.
 %    \begin{macrocode}
 luatexbase.add_to_callback("pre_linebreak_filter",
   M.pre_linebreak, "LuaCJK.spacing")
 luatexbase.add_to_callback("hpack_filter", M.hpack, "LuaCJK.spacing")
 luatexbase.add_to_callback("pre_mlist_to_hlist_filter",
   M.pre_mlist_to_hlist, "LuaCJK.math")
-luatexbase.add_to_callback("post_linebreak_filter",
-  M.post_linebreak, "LuaCJK.hang")
 %</lua-core>
 %    \end{macrocode}
 %

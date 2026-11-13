@@ -100,24 +100,29 @@
   }%
 }
 
-\TEST{hangmobanjiao hangs line-final punctuation}{
+\TEST{hangmobanjiao hangs the line-final mark in the measure}{
   \begingroup
     \LuaCJKsetup{PunctStyle=hangmobanjiao}
-    \setbox0=\vbox{\hsize=4em 字字字字字字字。\par}
+    \parindent=0pt
+    \setbox0=\vbox{\hsize=2.5em 字字。字字\par}
     \directlua{
       local n = tex.box[0].head
       while n do
         if node.type(n.id) == "hlist" then
           local m = n.head
-          local last
+          local last, hang = nil, 0
           while m do
-            if m.id == node.id("glyph") then last = m end
+            if m.id == node.id("glyph") then
+              last = m
+            elseif m.id == node.id("rule") and m.width < 0 then
+              hang = hang - m.width
+            end
             m = m.next
           end
           if last then
             texio.write_nl("term and log",
-              "LINE " .. tostring(last.char) .. " " ..
-              tostring(last.xoffset))
+              "LINE " .. tostring(last.char) .. " xoff "
+              .. tostring(last.xoffset) .. " hang " .. tostring(hang))
           end
         end
         n = n.next
