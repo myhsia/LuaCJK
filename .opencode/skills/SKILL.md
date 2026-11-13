@@ -82,12 +82,27 @@ The character-level passes run in `pre_linebreak_filter` and in
 5. `apply_kinsoku` — insert a `\penalty 10000` at a break point the
    line-breaking prohibitions forbid. It reads a box at the edge that faces the
    break (`first_punct`/`last_punct`), so a mark inside an `\mbox` takes part.
+   A discretionary that is already in the list states the value of its own
+   break, so there the pass sets the node's penalty field instead of inserting
+   a penalty in front of it.
 6. `apply_check_single` — raise the penalty at the last two break points of a
    paragraph, so a single character cannot end up alone on the last line.
 
 `post_linebreak_filter` is not used: the hang of a line-final mark is part of
 the measure (see "The punctuation model"), so nothing has to be adjusted after
 the lines are packed.
+
+The `hyphenate` callback is the one that runs *inside* the line breaker:
+`\TeX` inserts the hyphens of a word there, after `pre_linebreak_filter` has
+already placed the prohibitions, so `M.hyphenate` hyphenates through
+`lang.hyphenate` and then sets the penalty of each discretionary it created to
+10000 when the letters on either side of it carry the `nobreak` attribute.
+`disc.penalty` is the break value the line breaker reads, which is why the
+prohibition is a field rather than a node: a penalty in front of a
+discretionary forbids only an empty pre-break, and a `\-` would survive it.
+Nothing else about the callback differs from the default, and a doubled
+`lang.hyphenate` call leaves the list unchanged, so it composes with a
+callback another package registers.
 
 `pre_mlist_to_hlist_filter` runs `rewrite_math`, which points the math
 character noads of a CJK character at a math family of its own; the family's
@@ -118,7 +133,7 @@ Ten attributes carry the per-node state; all are read through
 | `xecglue` | whether the CJK/Latin glue is suppressed at this space |
 | `inserted` | marks the nodes LuaCJK created, so they are not examined twice |
 | `disabled` | `\LuaCJKdisable` state |
-| `nobreak` | `\LuaCJKnobreak` and `\LuaCJKVerbAddon` state |
+| `nobreak` | `\LuaCJKnobreak` and `\LuaCJKVerbAddon` state: a break at glue, kern, or discretionary that touches a node carrying it is forbidden |
 | `settings` | number of the option snapshot that applies to this node |
 | `LuaCJKfntef/settings` | number of the decoration settings entry |
 
@@ -468,7 +483,7 @@ on `lua-ul`). Picking a backend inside `ctex` is now a public option
 The commands are in `AGENTS.md`. For this skill the points that matter are:
 
 ```bash
-l3build check                       # 54 tests, must print "All checks passed"
+l3build check                       # 55 tests, must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
 bash scripts/ctex-subset.sh         # 21/21, and no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
@@ -481,6 +496,7 @@ Existing examples are `decoration01` (the leaders pair), `selectable01` (the
 `ActualText` wrapper and the `selectable` key), `tagging01` (tagged
 decorations and both branches of `CJKfilltwosides`), `settingsscope01`
 (a group that closes before `\par`), `nobreak01`/`nobreak02` (penalties),
+`nobreak03` (the penalty field of a discretionary),
 `listings01` (glyph order inside a listing), `ctex01`, the class test that
 shows the engine file is reached through `engine = luacjk`, and `ctex02`,
 which traps the `CJKfntef` refusal by overriding `\msg_critical:nn`.
