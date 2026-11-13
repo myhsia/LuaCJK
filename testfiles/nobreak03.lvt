@@ -1,0 +1,95 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\directlua{
+  local DISC, HLIST, VLIST =
+    node.id("disc"), node.id("hlist"), node.id("vlist")
+  local function collect (n, pens, k)
+    while n do
+      if n.id == DISC then
+        k = k + 1
+        pens[k] = tostring(n.penalty)
+      elseif n.id == HLIST or n.id == VLIST then
+        k = collect(n.head, pens, k)
+      end
+      n = n.next
+    end
+    return k
+  end
+  report = function (b, tag)
+    local lines, l = 0, b.head
+    if b.id == VLIST then
+      while l do
+        if l.id == HLIST then
+          lines = lines + 1
+        end
+        l = l.next
+      end
+    end
+    local pens = {}
+    collect(b.head, pens, 0)
+    texio.write_nl("term and log",
+      tag .. " LINES " .. lines .. " DISCS " .. table.concat(pens, ","))
+  end
+}
+
+\def\reportbox#1{%
+  \directlua{report(tex.box[0], "#1")}%
+}
+\def\narrow#1{\setbox0=\vbox{\hsize=40pt \raggedright #1\par}}
+
+\begin{document}
+
+\START
+
+\TEST{an explicit hyphen is a break of its own}{
+  \narrow{well-known}
+  \reportbox{hyphen}
+}
+
+\TEST{LuaCJKnobreak forbids it}{
+  \narrow{\LuaCJKnobreak{well-known}}
+  \reportbox{hyphen}
+}
+
+\TEST{automatic hyphenation is a break of its own}{
+  \narrow{internationalization}
+  \reportbox{soft}
+}
+
+\TEST{LuaCJKnobreak forbids that too}{
+  \narrow{\LuaCJKnobreak{internationalization}}
+  \reportbox{soft}
+}
+
+\TEST{a discretionary the document writes is read in the box pass}{
+  \setbox0=\hbox{aaaa\-bbbb}
+  \reportbox{written}
+}
+
+\TEST{LuaCJKnobreak forbids that one as well}{
+  \setbox0=\hbox{\LuaCJKnobreak{aaaa\-bbbb}}
+  \reportbox{written}
+}
+
+\TEST{the marking covers the break at either side of the hyphen}{
+  \narrow{\LuaCJKnobreak{inter}nationalization}
+  \reportbox{half}
+}
+
+\TEST{the marking ends with its group}{
+  \narrow{{\LuaCJKnobreak{xx}}well-known}
+  \reportbox{group}
+}
+
+\TEST{the paragraph of the report keeps its run together}{
+  \setbox0=\vbox{\hsize=70pt \raggedright 中文\LuaCJKnobreak{字well-known字}中文中文\par}
+  \reportbox{paragraph}
+}
+
+\END
+
+\end{document}
