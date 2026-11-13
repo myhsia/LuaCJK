@@ -3,21 +3,31 @@
 \documentclass{article}
 \usepackage{LuaCJK}
 \setCJKmainfont{FandolSong-Regular.otf}
+\parindent=0pt
 
-\def\xoffsets{%
+% Report every line of box 0: its width, and the rule that carries the hang,
+% in scaled points. A rule of negative width is the blank of a mark that
+% stands in the margin.
+\def\showlines{%
   \directlua{
-    local function walk(n)
-      while n do
-        if n.id == node.id("glyph") then
-          texio.write_nl("term and log",
-            "G " .. tostring(n.char) .. " xoff=" .. tostring(n.xoffset))
-        elseif n.id == node.id("hlist") then
-          walk(n.head)
+    local lines, nlines = {}, 0
+    local line = tex.box[0].head
+    while line do
+      if line.id == node.id("hlist") then
+        local rule, n = 0, line.head
+        while n do
+          if n.id == node.id("rule") and n.width < 0 then
+            rule = rule + n.width
+          end
+          n = n.next
         end
-        n = n.next
+        nlines = nlines + 1
+        lines[nlines] = tostring(line.width) .. " hang " .. tostring(-rule)
       end
+      line = line.next
     end
-    walk(tex.box[0].head)
+    texio.write_nl("term and log",
+      "LINES " .. table.concat(lines, " | ", 1, nlines))
   }%
 }
 
@@ -25,41 +35,59 @@
 
 \START
 
-\TEST{without the option nothing hangs}{
-  \setbox0=\vbox{\hsize = 3em 字字。\par}
-  \xoffsets
+\TEST{a line-final mark hangs by half of its advance}{
+  \setbox0=\vbox{\hsize = 2.5em 字字。字字\par}
+  \showlines
 }
 
-\TEST{a line-final mark hangs by the difference}{
-  \LuaCJKsetup{PunctBoundWidth = 0.5em}
-  \setbox0=\vbox{\hsize = 3em 字字。\par}
-  \xoffsets
-}
-
-\TEST{the line width is unchanged}{
-  \setbox0=\vbox{\hsize = 3em 字字。\par}
-  \TYPE{width: \the\wd0}
-}
-
-\TEST{a mark at the start of a line is not shifted}{
-  \LuaCJKsetup{PunctBoundWidth = 0.5em}
-  \setbox0=\vbox{\hsize = 3em 。字字\par}
-  \xoffsets
-}
-
-\TEST{false turns the option off}{
+\TEST{a bound width decides how much stays inside}{
   \begingroup
-    \LuaCJKsetup{PunctBoundWidth = false}
-    \setbox0=\vbox{\hsize = 3em 字字。\par}
-    \xoffsets
+    \LuaCJKsetup{PunctBoundWidth = 0.8em}
+    \setbox0=\vbox{\hsize = 2.8em 字字。字字\par}
+    \showlines
   \endgroup
 }
 
-\TEST{the bound width replaces the hanging shift}{
+\TEST{a bound width of the whole advance leaves nothing hanging}{
+  \begingroup
+    \LuaCJKsetup{PunctBoundWidth = 1em}
+    \setbox0=\vbox{\hsize = 3em 字字。字字\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{the line width is unchanged}{
+  \setbox0=\vbox{\hsize = 2.5em 字字。字字\par}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{a mark at the edge of a box hangs with it}{
+  \setbox0=\vbox{\hsize = 2.5em 字字\mbox{。}字字\par}
+  \showlines
+}
+
+\TEST{false restores the default hang}{
+  \begingroup
+    \LuaCJKsetup{PunctBoundWidth = 0.8em}
+    \LuaCJKsetup{PunctBoundWidth = false}
+    \setbox0=\vbox{\hsize = 2.5em 字字。字字\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{a hanging style hangs the same way}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle = hangmobanjiao}
+    \setbox0=\vbox{\hsize = 2.5em 字字。字字\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{the bound width survives a style change}{
   \begingroup
     \LuaCJKsetup{PunctStyle = hangmobanjiao, PunctBoundWidth = 0.8em}
-    \setbox0=\vbox{\hsize = 3em 字字。\par}
-    \xoffsets
+    \setbox0=\vbox{\hsize = 2.8em 字字。字字\par}
+    \showlines
   \endgroup
 }
 

@@ -1,145 +1,42 @@
 This is a generated file for the l3build validation system.
 Don't change this file in any respect.
 ============================================================
-TEST 1: without the option nothing hangs
+TEST 1: a line-final mark hangs by half of its advance
 ============================================================
-Overfull \hbox (15.0pt too wide) in paragraph at lines ...
-[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 。 
-\hbox(7.69+1.75)x30.0, direction TLT
-.\localpar
-..\localinterlinepenalty=0
-..\localbrokenpenalty=0
-..\localleftbox=null
-..\localrightbox=null
-.\hbox(0.0+0.0)x15.0, direction TLT
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
-.\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
-.\penalty 10000
-.\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 。
-.\penalty 10000
-.\glue(\parfillskip) 0.0 plus 1.0fil
-.\glue(\rightskip) 0.0
-G 23383 xoff=0
-G 23383 xoff=0
-G 12290 xoff=0
+LINES 1638400 hang 327680 | 1638400 hang 0
 ============================================================
 ============================================================
-TEST 2: a line-final mark hangs by the difference
+TEST 2: a bound width decides how much stays inside
 ============================================================
-Overfull \hbox (15.0pt too wide) in paragraph at lines ...
-[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 。 
-\hbox(7.69+1.75)x30.0, direction TLT
-.\localpar
-..\localinterlinepenalty=0
-..\localbrokenpenalty=0
-..\localleftbox=null
-..\localrightbox=null
-.\hbox(0.0+0.0)x15.0, direction TLT
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
-.\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
-.\penalty 10000
-.\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 。
-.\penalty 10000
-.\glue(\parfillskip) 0.0 plus 1.0fil
-.\glue(\rightskip) 0.0
-G 23383 xoff=0
-G 23383 xoff=0
-G 12290 xoff=327680
+LINES 1835010 hang 131070 | 1835010 hang 0
 ============================================================
 ============================================================
-TEST 3: the line width is unchanged
+TEST 3: a bound width of the whole advance leaves nothing hanging
 ============================================================
-Overfull \hbox (15.0pt too wide) in paragraph at lines ...
-[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 。 
-\hbox(7.69+1.75)x30.0, direction TLT
-.\localpar
-..\localinterlinepenalty=0
-..\localbrokenpenalty=0
-..\localleftbox=null
-..\localrightbox=null
-.\hbox(0.0+0.0)x15.0, direction TLT
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
-.\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
-.\penalty 10000
-.\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 。
-.\penalty 10000
-.\glue(\parfillskip) 0.0 plus 1.0fil
-.\glue(\rightskip) 0.0
-width: 30.0pt
+LINES 1966080 hang 0 | 1966080 hang 0
 ============================================================
 ============================================================
-TEST 4: a mark at the start of a line is not shifted
+TEST 4: the line width is unchanged
 ============================================================
-Overfull \hbox (5.0pt too wide) in paragraph at lines ...
-[]\TU/FandolSong-Regular.otf(0)/m/n/10 。 字
-\hbox(7.69+1.75)x30.0, direction TLT
-.\localpar
-..\localinterlinepenalty=0
-..\localbrokenpenalty=0
-..\localleftbox=null
-..\localrightbox=null
-.\hbox(0.0+0.0)x15.0, direction TLT
-.\TU/FandolSong-Regular.otf(0)/m/n/10 。
-.\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
-.\glue(\rightskip) 0.0
-G 12290 xoff=0
-G 23383 xoff=0
-G 23383 xoff=0
+width: 25.0pt
 ============================================================
 ============================================================
-TEST 5: false turns the option off
+TEST 5: a mark at the edge of a box hangs with it
 ============================================================
-Overfull \hbox (15.0pt too wide) in paragraph at lines ...
-[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 。 
-\hbox(7.69+1.75)x30.0, direction TLT
-.\localpar
-..\localinterlinepenalty=0
-..\localbrokenpenalty=0
-..\localleftbox=null
-..\localrightbox=null
-.\hbox(0.0+0.0)x15.0, direction TLT
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
-.\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
-.\penalty 10000
-.\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 。
-.\penalty 10000
-.\glue(\parfillskip) 0.0 plus 1.0fil
-.\glue(\rightskip) 0.0
-G 23383 xoff=0
-G 23383 xoff=0
-G 12290 xoff=0
+LINES 1638400 hang 327680 | 1638400 hang 0
 ============================================================
 ============================================================
-TEST 6: the bound width replaces the hanging shift
+TEST 6: false restores the default hang
 ============================================================
-Overfull \hbox (15.0pt too wide) in paragraph at lines ...
-[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 。 
-\hbox(7.69+1.75)x30.0, direction TLT
-.\localpar
-..\localinterlinepenalty=0
-..\localbrokenpenalty=0
-..\localleftbox=null
-..\localrightbox=null
-.\hbox(0.0+0.0)x15.0, direction TLT
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
-.\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
-.\penalty 10000
-.\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 。
-.\penalty 10000
-.\glue(\parfillskip) 0.0 plus 1.0fil
-.\glue(\rightskip) 0.0
-G 23383 xoff=0
-G 23383 xoff=0
-G 12290 xoff=131070
+LINES 1638400 hang 327680 | 1638400 hang 0
+============================================================
+============================================================
+TEST 7: a hanging style hangs the same way
+============================================================
+LINES 1638400 hang 327680 | 1638400 hang 0
+============================================================
+============================================================
+TEST 8: the bound width survives a style change
+============================================================
+LINES 1835010 hang 131070 | 1835010 hang 0
 ============================================================

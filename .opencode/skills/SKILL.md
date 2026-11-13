@@ -75,26 +75,19 @@ The character-level passes run in `pre_linebreak_filter` and in
    inserting a penalty and a kern after the mark. The ink is moved by class:
    an opening mark by the whole amount, a middle mark by half, a closing mark
    not at all. A dash or an ellipsis keeps its advance.
-4. `apply_kinsoku` — insert a `\penalty 10000` at a break point the
+4. `hang_bounds` — insert the hang of a mark into the measure, as a zero-size
+   rule of negative width beside the break glue (`hang01`). Only the
+   `pre_linebreak_filter` path runs it: a box packed by `hpack_filter` cannot
+   break a line, and a line box that is packed again would take the pair twice.
+5. `apply_kinsoku` — insert a `\penalty 10000` at a break point the
    line-breaking prohibitions forbid. It reads a box at the edge that faces the
    break (`first_punct`/`last_punct`), so a mark inside an `\mbox` takes part.
-5. `apply_check_single` — raise the penalty at the last two break points of a
+6. `apply_check_single` — raise the penalty at the last two break points of a
    paragraph, so a single character cannot end up alone on the last line.
 
-`post_linebreak_filter` runs `hang_punctuation` on the packed lines: it shifts
-the ink of a mark at the start or the end of a line (hanging punctuation),
-and with `PunctBoundWidth` it shifts a line-final mark so that only the given
-advance stays inside the line.
-Only `xoffset` changes, never a width, so justification is untouched.
-
-The shift is not character protrusion, because the engine does not move the
-ink at the end of a line: `\protrudechars` with `\rpcode` makes
-`\rightmarginkern` report the amount (10pt for a right code of 1000 at 10pt)
-while the glyph in the output keeps its position, in a short line, an overfull
-line, and an exactly fitting one. `\lpcode` does move the line — the same
-measurement shifts the first glyph by one em — and that is what the visible
-part of `microtype`'s protrusion on a Latin line is. Hence `xoffset` here, and
-`hang01` pins the numbers.
+`post_linebreak_filter` is not used: the hang of a line-final mark is part of
+the measure (see "The punctuation model"), so nothing has to be adjusted after
+the lines are packed.
 
 `pre_mlist_to_hlist_filter` runs `rewrite_math`, which points the math
 character noads of a CJK character at a math family of its own; the family's
@@ -177,7 +170,10 @@ A style (`M.punct_styles`) is a table of six optional fields:
 | `compress_adjacent`, `ratio` | shorten the mark before another one by `ratio` of its width |
 | `keep_open_close` | do not compress an opening against a closing mark |
 | `fixed_ratio`, `fixed_full` | give every mark `fixed_ratio` of the em, except the `kaiming` set |
-| `hanging` | shift line-initial and line-final marks by half an em |
+| `hang` | let a line-final or line-initial mark stand in the margin by half its advance |
+
+Every style but `plain` sets `hang`, which is what `hangmobanjiao` used to
+mean on its own: the mark keeps its full advance and the line ends flush.
 
 The prohibitions in `forbids_break` are the ones that matter for correctness:
 a closing or middle mark may not start a line, an opening mark may not end one,
@@ -187,8 +183,8 @@ last alone, because the other three are rules of the script, and the adjacent
 rule leaves a dash or an ellipsis out, since a run of them is governed by the
 `nobreak` set. An explicit `nobreak` attribute bypasses both keys. The pass
 reads a box at the edge that faces the break, so a mark inside a box is seen;
-`first_punct` and `last_punct` return the group, the character that carries it,
-and whether a character was found at all.
+`first_punct` and `last_punct` return the group, the glyph that carries it, and
+whether a character was found at all.
 `CJLineBreak = strict` adds one rule of its own, from the Unicode
 `Line_Break = CJ` set: those characters may not start a line. The set is read
 from `LineBreak.txt` on the first use of the key, so the default pays nothing
@@ -197,10 +193,22 @@ for it; the key is independent of `PunctKinsoku`.
 A mark is spaced by its own advance alone: at a boundary between a mark and
 Latin text the spacing pass inserts a glue of zero width, so the mark's ink
 starts where its advance starts; the node stays a break opportunity, which the
-kinsoku penalty can then forbid, because the style's compression and hanging
-are the only means by which the model moves a mark's ink.  A character that
+kinsoku penalty can then forbid.  A character that
 `LatinPunct` treats as Latin (the quotation marks, the middle dot, the
 ellipses) is not a CJK mark and keeps the glue.
+
+The hang of a line-edge mark is part of the measure, not a shift applied after
+the fact: beside every break glue that a closing or middle mark ends, and
+before every one an opening mark starts, `hang_bounds` puts a zero-size rule of
+negative width and adds the same width to the glue. Inside a line the two
+cancel; at a break the glue is discarded and the rule alone shortens the line,
+so the mark's ink stands in the margin and the line can hold a mark its natural
+width would refuse. A kern would not do, because a kern after a character is a
+break opportunity of its own and would take a kinsoku penalty; character
+protrusion would not either, because `\rpcode` leaves the ink where it was. The
+amount is the mark's advance less `PunctBoundWidth`, or half of the advance the
+style gives it when the key is off. `hang01` pins the pair and the fit,
+`boundw01` the amount, and `punct01` the compressed style.
 
 Suspension does not take that break opportunity away.  `Verb` stops the spacing
 on both sides of a suspended run, but a mark next to it keeps its zero-width

@@ -3,10 +3,12 @@
 \documentclass{article}
 \usepackage{LuaCJK}
 \setCJKmainfont{FandolSong-Regular.otf}
+\parindent=0pt
 
-% Report every glyph of box 0 as CODE@DEPTH:OFFSET, descending into boxes.
-% The depth shows whether a mark sits on the line or inside an \mbox.
-\def\showoffsets{%
+% Report every line of box 0 as its nodes: a glyph by code point, a rule (R),
+% a kern (k), and a glue (g) by width/stretch/shrink, in scaled points.
+% A rule of negative width is the blank that a mark leaves in the margin.
+\def\showlines{%
   \directlua{
     local digits = "0123456789ABCDEF"
     local function hex (n)
@@ -22,22 +24,44 @@
       while string.len(s) < 4 do s = "0" .. s end
       return s
     end
-    local out, count = {}, 0
-    local function walk (l, depth)
-      local n = l
+    local function nodes (head)
+      local parts, count = {}, 0
+      local n = head
       while n do
+        local item = nil
         if n.id == node.id("glyph") then
-          count = count + 1
-          out[count] = hex(n.char) .. "@" .. tostring(depth)
-            .. ":" .. tostring(n.xoffset)
+          item = hex(n.char)
+        elseif n.id == node.id("rule") then
+          item = "R" .. tostring(n.width)
+        elseif n.id == node.id("kern") then
+          item = "k" .. tostring(n.kern)
+        elseif n.id == node.id("glue") then
+          item = "g" .. tostring(n.width) .. "/"
+            .. tostring(n.stretch) .. "/" .. tostring(n.shrink)
+        elseif n.id == node.id("penalty") then
+          item = "p" .. tostring(n.penalty)
         elseif n.id == node.id("hlist") then
-          walk(n.head, depth + 1)
+          item = "B" .. nodes(n.head)
+        end
+        if item then
+          count = count + 1
+          parts[count] = item
         end
         n = n.next
       end
+      return table.concat(parts, " ", 1, count)
     end
-    walk(tex.box[0].head, 0)
-    texio.write_nl("term and log", "OFFSETS " .. table.concat(out, " "))
+    local lines, nlines = {}, 0
+    local line = tex.box[0].head
+    while line do
+      if line.id == node.id("hlist") then
+        nlines = nlines + 1
+        lines[nlines] = tostring(line.width) .. " " .. nodes(line.head)
+      end
+      line = line.next
+    end
+    texio.write_nl("term and log",
+      "LINES " .. table.concat(lines, " | ", 1, nlines))
   }%
 }
 
@@ -45,55 +69,45 @@
 
 \START
 
-\TEST{no style, no shift}{
-  \setbox0=\vbox{\hsize=20em\noindent 中。\par}
-  \showoffsets
+\TEST{a mark inside a line keeps a pair that cancels}{
+  \setbox0=\vbox{\hsize=20em 中。文\par}
+  \showlines
 }
 
-\LuaCJKsetup{PunctStyle = hangmobanjiao}
-
-\TEST{a line-final closing mark hangs}{
-  \setbox0=\vbox{\hsize=20em\noindent 中。\par}
-  \showoffsets
-}
-
-\TEST{a mark in the middle of a line does not hang}{
-  \setbox0=\vbox{\hsize=20em\noindent 中\mbox{。}文\par}
-  \showoffsets
-}
-
-\TEST{a line-final mark inside a box hangs}{
-  \setbox0=\vbox{\hsize=20em\noindent 中文\mbox{。}\par}
-  \showoffsets
-}
-
-\TEST{a line-initial opening mark hangs the other way}{
-  \setbox0=\vbox{\hsize=20em\noindent （中文文\par}
-  \showoffsets
-}
-
-\LuaCJKsetup{PunctStyle = quanjiao}
-
-\TEST{a bound width fixes how much of the mark stays inside}{
-  \LuaCJKsetup{PunctBoundWidth = 0.3em}
-  \setbox0=\vbox{\hsize=20em\noindent 中。\par}
-  \showoffsets
-  \LuaCJKsetup{PunctBoundWidth = false}
-}
-
-\TEST{a line-initial mark hangs by the bound width}{
+\TEST{the hang lets the mark end the first line}{
   \begingroup
-    \LuaCJKsetup{PunctBoundWidth = 0.3em}
-    \setbox0=\vbox{\hsize=20em\noindent （中文文\par}
-    \showoffsets
+    \LuaCJKsetup{AllowBreakBetweenPuncts = true}
+    \setbox0=\vbox{\hsize=92pt 这句话“引用完毕。”他说\par}
+    \showlines
   \endgroup
 }
 
-\TEST{the bound width wins over the hanging shift at the start}{
+\TEST{a line-initial opening mark leaves its blank in the margin}{
+  \setbox0=\vbox{\hsize=4em 中文中文（中文\par}
+  \showlines
+}
+
+\TEST{a bound width also decides what fits}{
   \begingroup
-    \LuaCJKsetup{PunctStyle = hangmobanjiao, PunctBoundWidth = 0.3em}
-    \setbox0=\vbox{\hsize=20em\noindent （中文文\par}
-    \showoffsets
+    \LuaCJKsetup{PunctBoundWidth = 0.3em, AllowBreakBetweenPuncts = true}
+    \setbox0=\vbox{\hsize=92pt 这句话“引用完毕。”他说\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{the plain style does not hang}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle = plain}
+    \setbox0=\vbox{\hsize=2em 中。文\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{a compressed mark hangs by its own advance}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle = banjiao}
+    \setbox0=\vbox{\hsize=1.25em 中。文\par}
+    \showlines
   \endgroup
 }
 

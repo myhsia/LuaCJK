@@ -85,12 +85,13 @@ Overfull \hbox (5.0pt too wide) in paragraph at lines ...
 .\TU/FandolSong-Regular.otf(0)/m/n/10 字
 .\glue(\rightskip) 0.0
 Overfull \hbox (10.0pt too wide) in paragraph at lines ...
-\TU/FandolSong-Regular.otf(0)/m/n/10 字字「字 
+\TU/FandolSong-Regular.otf(0)/m/n/10 字字 |「字 
 \hbox(7.69+1.75)x30.0, direction TLT
 .\TU/FandolSong-Regular.otf(0)/m/n/10 字
 .\glue 0.0
 .\TU/FandolSong-Regular.otf(0)/m/n/10 字
-.\glue 0.0
+.\glue 5.0
+.\rule(0.0+0.0)x-5.0
 .\TU/FandolSong-Regular.otf(0)/m/n/10 「
 .\penalty 10000
 .\glue 0.0
