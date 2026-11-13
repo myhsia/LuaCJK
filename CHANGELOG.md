@@ -1,6 +1,7 @@
 ## [LuaCJK-v0.0.2](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.2)
 
 - `Baseline` shifts the glyphs of the font that declares it, so two CJK fonts whose baselines do not match can be set side by side.
+- `\LuaCJKnobreak` also forbids the break at a `discretionary`, so an explicit hyphen or an automatic hyphenation point inside the argument no longer breaks the line.
 - Restore `\CJKfamilydefault` when `\normalfont` or `\textnormal` runs, so that the default font command overrides a family chosen earlier in the group; `\CJKfamilydefault` follows `\CJKrmdefault` until the document sets it.
 - The fallback list is resolved again at every font selection, so the fallback follows the series, shape, and size of the text.
 - A CJK character in a formula takes the face of the math version: the bold face of the family under `\boldmath` when the family has one, and the upright shape instead of the shape of the text.

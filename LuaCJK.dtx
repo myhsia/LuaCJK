@@ -3752,9 +3752,12 @@ a’a\quad 字！字
 %   \keys{PunctWidth} option; neither this prohibition nor that of
 %   \cs{LuaCJKVerbAddon} depends on \keys{PunctKinsoku}, which controls only
 %   the punctuation rules.}
+% \changes{v0.0.2}{2026/11/20}{\cs{LuaCJKnobreak} also forbids the break at a
+%   \texttt{discretionary}, so an explicit hyphen or an automatic hyphenation
+%   point inside the argument no longer breaks the line.}
 % Keep the argument on one line. The nodes of the argument are marked,
-% and the line-breaking pass puts a penalty in front of every break
-% opportunity that involves a marked node.
+% and the line-breaking pass forbids every break opportunity that involves a
+% marked node, whether it is a glue, a kern, or a discretionary.
 %    \begin{macrocode}
 \NewDocumentCommand \LuaCJKnobreak { +m }
   {
@@ -4988,11 +4991,13 @@ LuaCJK = LuaCJK or {}
 %
 % \begin{variable}[int]
 %   {
-%     M,         GLYPH,         GLUE,          HLIST,
-%     VLIST,     KERN,          PENALTY,       MATH,
-%     DISC,      WHATSIT,       MARK,          INS,
-%     ADJUST,    LOCAL_PAR,     SPACESKIP,     ITALICCORR,
-%     new_node,  free_node, has_attribute, set_attribute
+%     M,          GLYPH,         GLUE,
+%     HLIST,      VLIST,         KERN,
+%     LIGATURE,   PENALTY,       MATH,
+%     DISC,       WHATSIT,       MARK,
+%     INS,        ADJUST,        LOCAL_PAR,
+%     SPACESKIP,  ITALICCORR,    new_node,
+%     free_node,  has_attribute, set_attribute
 %   }
 % Short names for the module table, the node types,
 % and the node functions.
@@ -5003,6 +5008,7 @@ local GLUE            = node.id("glue")
 local HLIST           = node.id("hlist")
 local VLIST           = node.id("vlist")
 local KERN            = node.id("kern")
+local LIGATURE        = node.id("ligature")
 local PENALTY         = node.id("penalty")
 local MATH            = node.id("math")
 local DISC            = node.id("disc")
@@ -6398,9 +6404,15 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% \TeX\ may break at glue and at kern. Both are places where LuaCJK inserts
-% its own nodes, so after building the list a second pass puts a penalty
-% 10000 in front of every break opportunity that must not be used.
+% \TeX\ may break at glue, at kern, and at a discretionary. The first two are
+% places where LuaCJK inserts its own nodes, so after building the list a
+% second pass puts a penalty 10000 in front of every break opportunity that
+% must not be used.
+% A discretionary states the value of its own break, so there the pass sets
+% the node's penalty field rather than inserting a penalty.
+% The hyphens of a word are not in the list yet when the pass runs: \TeX\
+% inserts them during line breaking, so a \texttt{hyphenate} callback forbids
+% those as well.
 %
 % \begin{macro}[int]{apply_kinsoku}
 % \changes{v0.0.1}{2026/11/11}{Provide \keys{PunctKinsoku} line-breaking
@@ -6426,6 +6438,40 @@ local function no_break_mark (n)
   end
   local value = has_attribute(n, M.attr_nobreak)
   return value ~= nil and value ~= 0
+end
+
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}[int]{next_glyph}
+% The glyph a discretionary is followed by: the letters of a word are
+% separated from it by a kern or a ligature at most, and a glue, a penalty,
+% another discretionary or a formula ends the word.
+%    \begin{macrocode}
+local function next_glyph (n)
+  while n and (n.id == KERN or n.id == LIGATURE) do
+    n = n.next
+  end
+  if n and n.id == GLYPH then
+    return n
+  end
+  return nil
+end
+
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}[int]{forbid_marked_disc}
+% Forbid the break at a discretionary that involves a marked node.
+% The break lies between the letters on either side of the discretionary, so
+% it is prohibited when either of them is marked, the way the break at a glue
+% is.
+% \TeX\ gives a discretionary the attributes of the character in front of it,
+% which is why the node itself is read as well as its neighbours.
+%    \begin{macrocode}
+local function forbid_marked_disc (disc, left)
+  if no_break_mark(disc) or no_break_mark(left)
+     or no_break_mark(next_glyph(disc.next)) then
+    disc.penalty = 10000
+  end
 end
 
 %    \end{macrocode}
@@ -6544,6 +6590,8 @@ local function apply_kinsoku (head)
     if cur.id == GLYPH
        or ((cur.id == HLIST or cur.id == VLIST) and box_visible(cur)) then
       last = cur
+    elseif cur.id == DISC then
+      forbid_marked_disc(cur, last)
     elseif is_break_point(cur) and last then
       local nxt                  = next_visible(cur.next)
       local settings             = settings_of(last)
@@ -7686,14 +7734,45 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{LuaCJK.hyphenate}
+% The hyphenation callback.
+% \TeX\ hyphenates a word while it breaks the lines, after the
+% pre-linebreaking pass has already built the list, so the discretionaries of
+% a word appear after the prohibitions have been placed and nothing forbids
+% them yet.
+% The callback hyphenates exactly as \TeX\ does and then reads the
+% discretionaries it has just created, one word at a time.
+%    \begin{macrocode}
+function M.hyphenate (head, tail)
+  lang.hyphenate(head, tail)
+  local left = nil
+  local cur  = head
+  while cur do
+    if cur.id == GLYPH then
+      left = cur
+    elseif cur.id == DISC then
+      forbid_marked_disc(cur, left)
+    end
+    if cur == tail then
+      break
+    end
+    cur = cur.next
+  end
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
 % The callbacks are registered in this order: spacing, font correction,
-% and math.
+% math, and hyphenation, which is the only one that runs inside the line
+% breaker rather than around it.
 %    \begin{macrocode}
 luatexbase.add_to_callback("pre_linebreak_filter",
   M.pre_linebreak, "LuaCJK.spacing")
 luatexbase.add_to_callback("hpack_filter", M.hpack, "LuaCJK.spacing")
 luatexbase.add_to_callback("pre_mlist_to_hlist_filter",
   M.pre_mlist_to_hlist, "LuaCJK.math")
+luatexbase.add_to_callback("hyphenate", M.hyphenate, "LuaCJK.hyphenate")
 %</lua-core>
 %    \end{macrocode}
 %

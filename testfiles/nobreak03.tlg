@@ -1,0 +1,148 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: an explicit hyphen is a break of its own
+============================================================
+hyphen LINES 2 DISCS 50
+============================================================
+============================================================
+TEST 2: LuaCJKnobreak forbids it
+============================================================
+Overfull \hbox (8.61pt too wide) in paragraph at lines ...
+[]\TU/lmr/m/n/10 well-known  
+\hbox(6.94+0.11)x40.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x0.0, direction TLT
+.\TU/lmr/m/n/10 w
+.\kern-0.28 (font)
+.\TU/lmr/m/n/10 e
+.\TU/lmr/m/n/10 l
+.\TU/lmr/m/n/10 l
+.\discretionary (penalty 10000)
+..< \TU/lmr/m/n/10 -
+..= \TU/lmr/m/n/10 -
+.\TU/lmr/m/n/10 k
+.\TU/lmr/m/n/10 n
+.\TU/lmr/m/n/10 o
+.\kern-0.28 (font)
+.\TU/lmr/m/n/10 w
+.\TU/lmr/m/n/10 n
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0 plus 1.0fil
+hyphen LINES 1 DISCS 10000
+============================================================
+============================================================
+TEST 3: automatic hyphenation is a break of its own
+============================================================
+soft LINES 3 DISCS 50,50,50,50,50,50
+============================================================
+============================================================
+TEST 4: LuaCJKnobreak forbids that too
+============================================================
+Overfull \hbox (45.32999pt too wide) in paragraph at lines ...
+[]\TU/lmr/m/n/10 in-ter-na-tion-al-iza-tion  
+\hbox(6.94+0.11)x40.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x0.0, direction TLT
+.\TU/lmr/m/n/10 i
+.\TU/lmr/m/n/10 n
+.\discretionary (penalty 10000)
+..< \TU/lmr/m/n/10 -
+..= \kern-0.28 (font)
+.\TU/lmr/m/n/10 t
+.\TU/lmr/m/n/10 e
+.\TU/lmr/m/n/10 r
+.\discretionary (penalty 10000)
+..< \TU/lmr/m/n/10 -
+.\TU/lmr/m/n/10 n
+.\TU/lmr/m/n/10 a
+.\discretionary (penalty 10000)
+..< \TU/lmr/m/n/10 -
+.\TU/lmr/m/n/10 t
+.\TU/lmr/m/n/10 i
+.\TU/lmr/m/n/10 o
+.\TU/lmr/m/n/10 n
+.\discretionary (penalty 10000)
+..< \TU/lmr/m/n/10 -
+.\TU/lmr/m/n/10 a
+.\TU/lmr/m/n/10 l
+.\discretionary (penalty 10000)
+..< \TU/lmr/m/n/10 -
+.\TU/lmr/m/n/10 i
+.\TU/lmr/m/n/10 z
+.\TU/lmr/m/n/10 a
+.\discretionary (penalty 10000)
+..< \TU/lmr/m/n/10 -
+.\TU/lmr/m/n/10 t
+.\TU/lmr/m/n/10 i
+.\TU/lmr/m/n/10 o
+.\TU/lmr/m/n/10 n
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0 plus 1.0fil
+soft LINES 1 DISCS 10000,10000,10000,10000,10000,10000
+============================================================
+============================================================
+TEST 5: a discretionary the document writes is read in the box pass
+============================================================
+written LINES 0 DISCS 50
+============================================================
+============================================================
+TEST 6: LuaCJKnobreak forbids that one as well
+============================================================
+written LINES 0 DISCS 10000
+============================================================
+============================================================
+TEST 7: the marking covers the break at either side of the hyphen
+============================================================
+half LINES 3 DISCS 10000,10000,50,50,50,50
+============================================================
+============================================================
+TEST 8: the marking ends with its group
+============================================================
+group LINES 2 DISCS 50
+============================================================
+============================================================
+TEST 9: the paragraph of the report keeps its run together
+============================================================
+Overfull \hbox (23.05397pt too wide) in paragraph at lines ...
+\TU/FandolSong-Regular.otf(0)/m/n/10 文 字 \TU/lmr/m/n/10 well-known \TU/FandolSong-Regular.otf(0)/m/n/10 字 中 
+\hbox(7.78+1.75)x70.0, glue set - 1.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 文
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue 3.33298 plus 1.66702 minus 1.111
+.\TU/lmr/m/n/10 w
+.\kern-0.28 (font)
+.\TU/lmr/m/n/10 e
+.\TU/lmr/m/n/10 l
+.\TU/lmr/m/n/10 l
+.\discretionary (penalty 10000)
+..< \TU/lmr/m/n/10 -
+..= \TU/lmr/m/n/10 -
+.\TU/lmr/m/n/10 k
+.\TU/lmr/m/n/10 n
+.\TU/lmr/m/n/10 o
+.\kern-0.28 (font)
+.\TU/lmr/m/n/10 w
+.\TU/lmr/m/n/10 n
+.\penalty 10000
+.\glue 3.33298 plus 1.66702 minus 1.111
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\glue(\rightskip) 0.0 plus 1.0fil
+paragraph LINES 3 DISCS 10000
+============================================================
