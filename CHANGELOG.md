@@ -7,6 +7,7 @@
 - `\CJKfontspec` and `\newCJKfontfamily` take their options after the font name as well.
 - The space in front of `\textbf` and its siblings is still the inter-character glue: LaTeX moves a space across the italic correction of a text font command, and the move leaves the glue with the subtype of a skip the document wrote.
 - `AllowBreakBetweenPuncts` no longer lets a closing mark start a line or an opening mark end one, and a mark inside a box takes part in the prohibitions.
+- The hang of a mark is the blank its font carries, read from the outline, so the ink of a line-final or line-initial mark stands on the measure instead of half an em inside it; a file that cannot be read falls back to half the advance.
 - The hanging of a mark takes part in line breaking, so a line that ends at a closing mark or begins with an opening mark holds the mark the margin allows; the ink of that mark stands outside the line, and `PunctBoundWidth` decides how much of the advance stays inside.
 - The double rule takes `format` like the other decorations, and a rule or a symbol that carries no `format` follows the color of the surrounding text.
 

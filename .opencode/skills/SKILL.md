@@ -206,9 +206,13 @@ so the mark's ink stands in the margin and the line can hold a mark its natural
 width would refuse. A kern would not do, because a kern after a character is a
 break opportunity of its own and would take a kinsoku penalty; character
 protrusion would not either, because `\rpcode` leaves the ink where it was. The
-amount is the mark's advance less `PunctBoundWidth`, or half of the advance the
-style gives it when the key is off. `hang01` pins the pair and the fit,
-`boundw01` the amount, and `punct01` the compressed style.
+amount is the blank the mark's font carries, read from the outline by
+`mark_blank` (`CFF` charstring or `glyf` header, cached per file and glyph, the
+file never held whole), or half of the advance the style gives it when the file
+cannot be read; `PunctBoundWidth` replaces it by the part that stays inside.
+LuaTeX has no `\XeTeXglyphbounds`, which is why xeCJK's one-line query is a
+small font reader here. `hang01` pins the pair and the fit, `boundw01` the
+amount, and `punct01` the compressed style.
 
 Suspension does not take that break opportunity away.  `Verb` stops the spacing
 on both sides of a suspended run, but a mark next to it keeps its zero-width

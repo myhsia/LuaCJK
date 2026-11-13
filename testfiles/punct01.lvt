@@ -102,9 +102,10 @@
 
 \TEST{hangmobanjiao hangs the line-final mark in the measure}{
   \begingroup
-    \LuaCJKsetup{PunctStyle=hangmobanjiao}
+    \LuaCJKsetup{PunctStyle=hangmobanjiao,
+      CJKglue=0pt plus 0.08\baselineskip}
     \parindent=0pt
-    \setbox0=\vbox{\hsize=2.5em 字字。字字\par}
+    \setbox0=\vbox{\hsize=2.4em 字字。字字\par}
     \directlua{
       local n = tex.box[0].head
       while n do

@@ -106,7 +106,7 @@
 \TEST{a compressed mark hangs by its own advance}{
   \begingroup
     \LuaCJKsetup{PunctStyle = banjiao}
-    \setbox0=\vbox{\hsize=1.25em 中。文\par}
+    \setbox0=\vbox{\hsize=1.4em 中。文\par}
     \showlines
   \endgroup
 }
