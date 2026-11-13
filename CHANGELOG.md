@@ -7,6 +7,7 @@
 - `\CJKfontspec` and `\newCJKfontfamily` take their options after the font name as well.
 - The space in front of `\textbf` and its siblings is still the inter-character glue: LaTeX moves a space across the italic correction of a text font command, and the move leaves the glue with the subtype of a skip the document wrote.
 - `AllowBreakBetweenPuncts` no longer lets a closing mark start a line or an opening mark end one, and a mark inside a box takes part in the prohibitions.
+- The hanging of a mark takes part in line breaking, so a line that ends at a closing mark or begins with an opening mark holds the mark the margin allows; the ink of that mark stands outside the line, and `PunctBoundWidth` decides how much of the advance stays inside.
 - The double rule takes `format` like the other decorations, and a rule or a symbol that carries no `format` follows the color of the surrounding text.
 
 ## [LuaCJK-v0.0.1](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.1)
@@ -47,7 +48,7 @@
 - A mark keeps its break opportunity beside suspended text: the boundary glue at a mark has no width.
 - Provide `PunctKinsoku` line-breaking prohibitions: closing punctuation cannot start a line and opening punctuation cannot end a line.
 - Provide `CJKmath` and `\setCJKmathfont` for CJK characters in math mode, including nested math lists such as fractions. The family is registered as a math family, so a character in a script or a fraction keeps the size of that math style; with `CJKmath` off, a CJK character in math mode warns once.
-- Provide `PunctBoundWidth`, which leaves only the given advance inside the line and hangs the rest of the mark into the margin: at the end of a line, at its start, and when the mark ends a box such as `\mbox`. Only the lines of the paragraph itself are shifted.
+- Provide `PunctBoundWidth`, which leaves only the given advance of a mark inside the line and hangs the rest into the margin, at the end of a line, at its start, and when the mark ends a box such as `\mbox`.
 - Provide `CheckSingle` and `WidowPenalty`, which stop a single CJK character from ending up alone on the last line of a paragraph.
 - Provide `LuaCJKfntef`, a `lua-ul` based companion package providing `\CJKunderline`, `\CJKunderdot`, and `\CJKsout`. `\CJKunderline` takes `thickness`, `depth`, `format` for the color of the rule, and any other key of `lua-ul`; the geometry defaults to `depth = 0.2em` and `thickness = 0.4pt`, and `top` and `bottom` override the computed values.
 - Every decoration takes the same key set: `color`, `gap`, `height`, `symbol`, `sep`, `textformat`, and `hidden`, which keeps the dimensions of the text and draws no glyph. A bare color name is accepted, so `[red]` and `[subtract]` both work, and a key that a command does not use is ignored. Every decoration accepts `selectable`, `false` by default: a decoration symbol is then wrapped in an `ActualText` sequence that readers drop from the text they copy or select. Every decoration also accepts `subtract` (inset at both ends) and `skip` (leave out the punctuation). `\CJKsout` strikes at `height = 0.3em`, through the middle of a CJK glyph; `0.5ex` gives the Latin position.
