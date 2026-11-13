@@ -12,6 +12,8 @@
     while n do
       if n.id == node.id("penalty") then
         table.insert(out, "P" .. tostring(n.penalty))
+      elseif n.id == node.id("hlist") then
+        table.insert(out, "B")
       elseif n.id == node.id("glue") then
         table.insert(out, "g")
       elseif n.id == node.id("kern") then
@@ -113,6 +115,19 @@
   \probe
 }
 
+\TEST{AllowBreakBetweenPuncts keeps a closing mark out of the line start}{
+  \begingroup
+    \LuaCJKsetup{AllowBreakBetweenPuncts=true}
+    \setbox0=\hbox{字」。}
+    \probe
+  \endgroup
+}
+
+\TEST{a box takes the class of the mark at its edge}{
+  \setbox0=\hbox{字（\mbox{字}字）}
+  \probe
+}
+
 \TEST{latin boundary is not affected}{
   \setbox0=\hbox{字A字}
   \probe
@@ -125,6 +140,11 @@
 
 \TEST{no line ends with an opening bracket}{
   \setbox0=\vbox{\hsize=3em 字字字字字字字「字\par}
+  \linefirsts{0}
+}
+
+\TEST{no line ends with an opening bracket before a box}{
+  \setbox0=\vbox{\hsize=60pt \raggedright 中文中文（\mbox{中文}中文中文）\par}
   \linefirsts{0}
 }
 

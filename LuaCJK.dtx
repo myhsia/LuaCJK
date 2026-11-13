@@ -833,10 +833,16 @@ $ x + 中文 $ and 中文
 %   该字族必须用 \cs{setCJKfamilyfont} 声明；\texttt{false}
 %   （初始值）让标点重新跟随文字。
 %   \item[\keys{AllowBreakBetweenPuncts}]\val{\TFF}: 两个相邻的标点是否可以
-%   被断行分开。标点仍然会被压缩。
+%   被断行分开。
+%   破折号与省略号不在此列，一串连续的破折号或省略号由
+%   \texttt{NoBreakLongPunct} 控制。
+%   收尾的或中间的标点不能出现在行首、开头的标点不能出现在行尾，
+%   这两条禁则不由本选项放开，所以一个收尾的引号不会被单独排在行首。
+%   标点仍然会被压缩。
 %   \item[\keys{PunctKinsoku}]\val{\TTF}: 是否对标点施加断行禁则。
 %   收尾的或中间的标点不能出现在行首，开头的标点不能出现在行尾，
-%   一串连续的破折号或省略号保持在一起。
+%   两个相邻的标点不会被分开，一串连续的破折号或省略号保持在一起。
+%   盒子边缘的标点同样参与判断。
 %   这些禁则与 \texttt{PunctStyle} 无关，
 %   所以 |PunctStyle = plain| 时它们仍然有效。
 % \end{keyval}
@@ -2064,11 +2070,18 @@ $ x + 中文 $ and 中文
 %   (the initial value) makes the marks follow the text again.
 %   \item[\keys{AllowBreakBetweenPuncts}]\val{\TFF}: Whether two adjacent
 %   punctuation marks may be separated by a line break.
+%   A dash or an ellipsis is not affected: a run of them is governed by
+%   \texttt{NoBreakLongPunct}.
+%   The prohibitions that keep a closing or middle mark out of the line start
+%   and an opening mark out of the line end are not lifted, so a closing
+%   quotation mark is never set at the start of a line.
 %   The marks are still compressed.
 %   \item[\keys{PunctKinsoku}]\val{\TTF}: Whether to apply line-breaking
 %   prohibitions for punctuation.
 %   A closing or middle punctuation cannot start a line, an opening punctuation
-%   cannot end a line, and a run of long punctuation is kept together.
+%   cannot end a line, two adjacent marks are not separated, and a run of long
+%   punctuation is kept together.
+%   A mark at the edge of a box takes part as well.
 %   The prohibitions are independent of \texttt{PunctStyle},
 %   so they stay active with |PunctStyle = plain|.
 % \end{keyval}
@@ -5888,27 +5901,26 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{first_punct}
-% The punctuation group of the first visible character of a list, or
-% \meta{nil} when that character is not a mark.  The second result says
-% whether a character was found at all, so that a box with no text can be
-% skipped.  A formula counts as material with no mark.
+% The punctuation group of the first visible character of a list, the
+% character itself, and whether a character was found at all, so that a box
+% with no text can be skipped.  A formula counts as material with no mark.
 %    \begin{macrocode}
 local function first_punct (list)
   local n = list
   while n do
     if n.id == GLYPH then
-      return punct_class(n.char, settings_of(n)), true
+      return punct_class(n.char, settings_of(n)), n.char, true
     elseif n.id == HLIST or n.id == VLIST then
-      local p, found = first_punct(n.head)
+      local p, c, found = first_punct(n.head)
       if found then
-        return p, true
+        return p, c, true
       end
     elseif n.id == MATH then
-      return nil, true
+      return nil, nil, true
     end
     n = n.next
   end
-  return nil, false
+  return nil, nil, false
 end
 
 %    \end{macrocode}
@@ -5919,24 +5931,28 @@ end
 local function last_punct (list)
   local n     = list
   local punct = nil
+  local char  = nil
   local found = false
   while n do
     if n.id == GLYPH then
       punct = punct_class(n.char, settings_of(n))
+      char  = n.char
       found = true
     elseif n.id == HLIST or n.id == VLIST then
-      local p, deep = last_punct(n.head)
+      local p, c, deep = last_punct(n.head)
       if deep then
         punct = p
+        char  = c
         found = true
       end
     elseif n.id == MATH then
       punct = nil
+      char  = nil
       found = true
     end
     n = n.next
   end
-  return punct, found
+  return punct, char, found
 end
 
 %    \end{macrocode}
@@ -6389,13 +6405,19 @@ end
 % \changes{v0.0.1}{2026/11/11}{Provide \keys{PunctKinsoku} line-breaking
 %   prohibitions: closing punctuation cannot start a line and opening
 %   punctuation cannot end a line.}
+% \changes{v0.0.2}{2026/11/20}{\keys{AllowBreakBetweenPuncts} no longer lets a
+%   closing mark start a line or an opening mark end one, and a mark inside a
+%   box takes part in the prohibitions.}
 % Add the prohibitions where the settings of the text ask for them.
 % A node marked by \cs{LuaCJKnobreak} or by the verbatim addon
 % is prohibited regardless, because the mark itself is the prohibition.
+% A box is read at the edge that faces the break, the way the spacing pass
+% reads it, so that a mark at the edge of the box is neither a line start nor
+% a line end.
 %    \begin{macrocode}
 %    \end{macrocode}
-% \begin{macro}[int]{class_char}
-% The character of a glyph, or nothing for any other node.
+% \begin{macro}[int]{no_break_mark}
+% Whether a node carries the attribute of \cs{LuaCJKnobreak}.
 %    \begin{macrocode}
 local function no_break_mark (n)
   if not (M.attr_nobreak and n) then
@@ -6405,32 +6427,17 @@ local function no_break_mark (n)
   return value ~= nil and value ~= 0
 end
 
-local function class_char (n)
-  if n and n.id == GLYPH then
-    return n.char
-  end
-  return nil
-end
-
 %    \end{macrocode}
 % \end{macro}
-% \begin{macro}[int]{next_visible}
-% The next visible glyph, stopping at an explicit break barrier.
+% \begin{macro}[int]{adjacent_marks}
+% Whether two marks are neighbours that stay together: a dash or an ellipsis
+% is left out, because a run of them is one unit of its own, governed by the
+% \texttt{nobreak} character set.
 %    \begin{macrocode}
-local function next_visible (n)
-  while n do
-    if n.id == GLYPH then
-      return n
-    elseif n.id == HLIST or n.id == VLIST then
-      if box_visible(n) then
-        return nil
-      end
-    elseif n.id == PENALTY or n.id == DISC then
-      return nil
-    end
-    n = n.next
-  end
-  return nil
+local function adjacent_marks (prev_mark, next_mark)
+  return prev_mark and next_mark
+     and prev_mark ~= "dash" and prev_mark ~= "ellipsis"
+     and next_mark ~= "dash" and next_mark ~= "ellipsis"
 end
 
 %    \end{macrocode}
@@ -6438,24 +6445,70 @@ end
 % \begin{macro}[int]{forbids_break}
 % The rules: closing and middle punctuation must not start a line,
 % opening punctuation must not end one,
-% and a run of dashes or ellipses stays together.
+% a run of dashes or ellipses stays together,
+% and two adjacent marks are not separated.
+% \keys{AllowBreakBetweenPuncts} lifts the last rule alone: a mark that may
+% not begin or end a line is a rule of the script, so the option cannot
+% permit one.
 %    \begin{macrocode}
-local function forbids_break (prev_char, next_char, settings)
-  local prev_punct = prev_char and punct_class(prev_char, settings)
-  local next_punct = next_char and punct_class(next_char, settings)
-  if settings and settings.allow_break and prev_punct and next_punct then
-    return false
-  end
-  if next_punct == "close" or next_punct == "middle" then
+local function forbids_break (prev_mark, prev_char, next_mark, next_char,
+                              settings)
+  if next_mark == "close" or next_mark == "middle" then
     return true
   end
-  if prev_punct == "open" then
+  if prev_mark == "open" then
     return true
   end
   if M.charsets.nobreak[prev_char] and M.charsets.nobreak[next_char] then
     return true
   end
+  if adjacent_marks(prev_mark, next_mark)
+     and not (settings and settings.allow_break) then
+    return true
+  end
   return false
+end
+
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}[int]{edge_mark}
+% The punctuation group and the character at one edge of a visible node:
+% a glyph is its own edge, and a box is read at the edge that faces the
+% break, so a mark inside a box takes part in the rules.  A formula carries
+% no mark.
+%    \begin{macrocode}
+local function edge_mark (n, at_end)
+  if n.id == GLYPH then
+    return punct_class(n.char, settings_of(n)), n.char
+  elseif n.id == HLIST or n.id == VLIST then
+    if at_end then
+      return last_punct(n.head)
+    end
+    return first_punct(n.head)
+  end
+  return nil, nil
+end
+
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}[int]{next_visible}
+% The next node that carries text: a glyph, a formula, or a box.  A box of
+% no size is passed over, and an explicit break barrier ends the search.
+%    \begin{macrocode}
+local function next_visible (n)
+  while n do
+    if n.id == GLYPH or n.id == MATH then
+      return n
+    elseif n.id == HLIST or n.id == VLIST then
+      if box_visible(n) then
+        return n
+      end
+    elseif n.id == PENALTY or n.id == DISC then
+      return nil
+    end
+    n = n.next
+  end
+  return nil
 end
 
 %    \end{macrocode}
@@ -6477,27 +6530,32 @@ end
 % \end{macro}
 %    \begin{macrocode}
 local function apply_kinsoku (head)
-  local prev         = nil
-  local last_visible = nil
-  local cur          = head
+  local prev = nil
+  local last = nil
+  local cur  = head
   while cur do
-    if cur.id == GLYPH then
-      last_visible = cur
-    elseif is_break_point(cur) and last_visible then
-      local nxt      = next_visible(cur.next)
-      local settings = settings_of(last_visible)
-      local cj       = settings.cj_strict and class_char(nxt)
-                       and M.cj[class_char(nxt)]
-      if nxt and (no_break_mark(last_visible) or no_break_mark(nxt)
+    if cur.id == GLYPH
+       or ((cur.id == HLIST or cur.id == VLIST) and box_visible(cur)) then
+      last = cur
+    elseif is_break_point(cur) and last then
+      local nxt                  = next_visible(cur.next)
+      local settings             = settings_of(last)
+      local prev_mark, prev_char = edge_mark(last, true)
+      local next_mark, next_char = nil, nil
+      if nxt then
+        next_mark, next_char = edge_mark(nxt, false)
+      end
+      local cj = settings.cj_strict and next_char and M.cj[next_char]
+      if nxt and (no_break_mark(last) or no_break_mark(nxt)
                   or cj
                   or (settings.kinsoku
-                      and not disabled(last_visible) and not disabled(nxt)
-                      and forbids_break(
-                        class_char(last_visible), class_char(nxt), settings)))
+                      and not disabled(last) and not disabled(nxt)
+                      and forbids_break(prev_mark, prev_char,
+                                        next_mark, next_char, settings)))
       then
         if not (prev and prev.id == PENALTY and prev.penalty >= 10000) then
           local p = new_node("penalty")
-          inherit_attributes(p, last_visible)
+          inherit_attributes(p, last)
           p.penalty = 10000
           if M.attr_inserted then
             set_attribute(p, M.attr_inserted, 1)
