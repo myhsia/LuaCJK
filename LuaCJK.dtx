@@ -160,27 +160,27 @@ LaTeX Project Public License, version 1.3c or later.
 \NewDocumentCommand \LuaCJKdocsetup { }
   {
     \LuaCJKsetup{AutoFakeBold = false, AutoFakeSlant = false}
-    \setCJKmainfont{Noto Serif CJK SC}[
+    \setCJKmainfont[
       Language   = Chinese Simplified,
       ItalicFont = LXGWWenKaiGBLite-Regular.ttf
-    ]
-    \setCJKsansfont{Noto Sans CJK SC}[Language = Chinese Simplified]
-    \setCJKmonofont{LXGWZhuqueFangsong-Regular.ttf}
-      [Language = Chinese Simplified]
-    \setCJKfamilyfont{zhsong}{Noto Serif CJK SC}
-      [Language = Chinese Simplified]
-    \setCJKfamilyfont{zhhei}{Noto Sans CJK SC}
-      [Language = Chinese Simplified]
-    \setCJKfamilyfont{zhkai}{LXGWWenKaiGBLite-Regular.ttf}
-      [Language = Chinese Simplified]
-    \setCJKfamilyfont{zhfs}{LXGWZhuqueFangsong-Regular.ttf}
-      [Language = Chinese Simplified]
+    ]{Noto Serif CJK SC}
+    \setCJKsansfont[Language = Chinese Simplified]{Noto Sans CJK SC}
+    \setCJKmonofont[Language = Chinese Simplified]
+      {LXGWZhuqueFangsong-Regular.ttf}
+    \setCJKfamilyfont{zhsong}[Language = Chinese Simplified]
+      {Noto Serif CJK SC}
+    \setCJKfamilyfont{zhhei}[Language = Chinese Simplified]
+      {Noto Sans CJK SC}
+    \setCJKfamilyfont{zhkai}[Language = Chinese Simplified]
+      {LXGWWenKaiGBLite-Regular.ttf}
+    \setCJKfamilyfont{zhfs}[Language = Chinese Simplified]
+      {LXGWZhuqueFangsong-Regular.ttf}
   }
 \LuaCJKdocsetup
 \AddToHook{env/codemo/after}{\LuaCJKdocsetup}
 \usepackage{LuaCJKfntef}
 \LuaCJKsetup{CJKmath = true, LatinPunct = true}
-\setCJKmathfont{Noto Serif CJK SC}[Language = Chinese Simplified]
+\setCJKmathfont[Language = Chinese Simplified]{Noto Serif CJK SC}
 \renewcommand \contentsname
   {\texorpdfstring{目录\quad Contents}{目录 Contents}}
 \renewcommand \abstractname {摘要 \texttt\textbar\ Abstract}
@@ -375,8 +375,8 @@ LaTeX Project Public License, version 1.3c or later.
 \begin{codemo}
 \setCJKmainfont[Scale = 1.2]
   {FandolSong-Regular.otf}中文\\
-\setCJKsansfont{FandolKai-Regular.otf}
-  [Scale = 1.2]\sffamily 中文
+\setCJKsansfont[Scale = 1.2]
+  {FandolKai-Regular.otf}\sffamily 中文
 \end{codemo}
 % \iffalse
 %</example>
@@ -558,7 +558,8 @@ LaTeX Project Public License, version 1.3c or later.
 % \fi
 \begingroup
 \begin{codemo}
-\setCJKfamilyfont{high}{FandolKai-Regular.otf}[Baseline = 0.3em]
+\setCJKfamilyfont{high}[Baseline = .3em]
+  {FandolKai-Regular.otf}
 \songti 基线\quad\CJKfamily{high}基线
 \end{codemo}
 \endgroup
@@ -1006,10 +1007,10 @@ a’a\quad 字！字
 % \end{function}
 %
 % \begin{keyval}
-%   \item[\keys{compress-adjacent}]\val{\TTF}：是否压缩相邻的标点。
-%   \item[\keys{adjacent-ratio}]\val{number}：压缩的比例，
+%   \item[\keys{compress-adjacent}]\val{\TTF}:是否压缩相邻的标点。
+%   \item[\keys{adjacent-ratio}]\val{number}:压缩的比例，
 %   相对于被压缩标点的宽度。
-%   \item[\keys{keep-open-close}]\val{\TTF}：开标点与闭标点相邻时
+%   \item[\keys{keep-open-close}]\val{\TTF}:开标点与闭标点相邻时
 %   是否保持不压缩。
 % \end{keyval}
 %
@@ -1196,26 +1197,26 @@ a’a\quad 字！字
 % 画出的图案从不改变被装饰行的高度或深度，所以行距不会变大。
 %
 % \begin{keyval}
-%   \item[\keys{thickness}]\val{length}：横线的粗细，初始 \texttt{0.4pt}。
-%   \item[\keys{depth}]\val{length}：从基线到横线顶部的距离，
+%   \item[\keys{thickness}]\val{length}: 横线的粗细，初始 \texttt{0.4pt}。
+%   \item[\keys{depth}]\val{length}:从基线到横线顶部的距离，
 %   初始 \texttt{0.2em}。
-%   \item[\keys{textformat}]\val{code}：作用于文字的代码，例如
+%   \item[\keys{textformat}]\val{code}: 作用于文字的代码，例如
 %   |textformat = \bfseries|。
-%   \item[\keys{format}]\val{color name}：横线的颜色，例如
+%   \item[\keys{format}]\val{color name}: 横线的颜色，例如
 %   |format = red|；它只影响横线，不影响文字。
-%   \item[\keys{color}]\val{color name}：\texttt{format} 的另一个名字。
-%   \item[\keys{subtract}]\val{length}：在横线两端各去掉的长度，
+%   \item[\keys{color}]\val{color name}: \texttt{format} 的另一个名字。
+%   \item[\keys{subtract}]\val{length}:在横线两端各去掉的长度，
 %   初始关闭；\texttt{true} 表示半字宽，
 %   这样相邻的两个命令不会连在一起。
-%   \item[\keys{skip}]\val{\TFF}：把标点排除在横线之外。
-%   \item[\keys{hidden}]\val{\TFF}：隐藏文字而保留横线，
+%   \item[\keys{skip}]\val{\TFF}: 把标点排除在横线之外。
+%   \item[\keys{hidden}]\val{\TFF}:隐藏文字而保留横线，
 %   横线取隐藏文字的宽度、高度与深度。
-%   \item[\keys{gap}]\val{length}：双线两条横线之间的距离，
+%   \item[\keys{gap}]\val{length}: 双线两条横线之间的距离，
 %   初始 \texttt{1.1pt}。
-%   \item[\keys{height}]\val{length}：删除线中心到基线的距离，
+%   \item[\keys{height}]\val{length}: 删除线中心到基线的距离，
 %   初始 \texttt{0.3em}。
-%   \item[\keys{symbol}]\val{code}：替代波浪或圆点的符号。
-%   \item[\keys{selectable}]\val{\TFF}：装饰符号是否保留为文字，
+%   \item[\keys{symbol}]\val{code}: 替代波浪或圆点的符号。
+%   \item[\keys{selectable}]\val{\TFF}: 装饰符号是否保留为文字，
 %   初始 \texttt{false}；\texttt{true} 时 PDF 阅读器可以复制与选择它。
 % \end{keyval}
 %
@@ -1599,8 +1600,8 @@ a’a\quad 字！字
 \begin{codemo}
 \setCJKmainfont[Scale = 1.2]
   {FandolSong-Regular.otf}中文\\
-\setCJKsansfont{FandolKai-Regular.otf}
-  [Scale = 1.2]\sffamily 中文
+\setCJKsansfont[Scale = 1.2]
+  {FandolKai-Regular.otf}\sffamily 中文
 \end{codemo}
 % \iffalse
 %</example>
@@ -1782,7 +1783,8 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\setCJKfamilyfont{high}{FandolKai-Regular.otf}[Baseline = 0.3em]
+\setCJKfamilyfont{high}[Baseline = .3em]
+  {FandolKai-Regular.otf}
 \songti 基线\quad\CJKfamily{high}基线
 \end{codemo}
 \endgroup
@@ -1860,8 +1862,8 @@ a’a\quad 字！字
 \begin{codemo}
 \defaultCJKfontfeatures{Scale = 1.5}
 \setCJKfamilyfont{big}{FandolSong-Regular.otf}
-\CJKfamily{big}中文\quad%
-\CJKfamily{zhsong}中文\quad%
+\CJKfamily{big}中文\quad
+\CJKfamily{zhsong}中文\quad
 \addCJKfontfeatures{Scale = 1.2}中文
 \end{codemo}
 \endgroup

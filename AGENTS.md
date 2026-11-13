@@ -318,8 +318,13 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **Demos.**  A command without arguments gets no `syntax` block; a command with a
   visible effect gets a `codemo`. In a demo, parallel commands align their
   arguments, a command is not split from the text it affects, and font options
-  come before the font name. Align a `syntax` continuation with `\` plus spaces,
-  not `\phantom`.  Three constraints come from `docext` and `l3doc` rather than
+  come before the font name, with the break between the two arguments: the
+  option list closes the line and `{font}` opens the next, so a family command
+  reads `\setCJKfamilyfont{fam}[options]` then `{font}`.  A length in code drops
+  the leading zero (`.3em`) while the prose keeps it (`0.3em`), and a
+  line-ending `%` stays only where the space it removes would show in the demo's
+  result.  Align a `syntax` continuation with `\` plus spaces, not `\phantom`.
+  Three constraints come from `docext` and `l3doc` rather than
   from the package: the box is sized by the number of *source* lines, so the
   output must not have more lines than the body (let a decorated line wrap
   instead of adding a `\parbox`); a setting that is read at line breaking
