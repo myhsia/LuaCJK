@@ -225,8 +225,8 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   Suspension suppresses the spacing, not the break: a punctuation mark next to
   suspended text keeps its zero-width boundary glue, so a line may still end at
   the mark (`verb02`), while an opening mark gets none, because a break after it
-  is prohibited and the kinsoku pass cannot see the prohibition across a
-  suspended node.
+  is prohibited and the kinsoku pass skips a break that involves suspended
+  material.
 - **A rule decoration adjusts `lua-ul`, it does not draw.**  `lua-ul` emits a
   leaders glue of width *w* followed by a glue of width *-w*; the adjustment
   replaces the leaders with kerns and shorter leaders so that the total stays

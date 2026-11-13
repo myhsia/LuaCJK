@@ -76,7 +76,8 @@ The character-level passes run in `pre_linebreak_filter` and in
    an opening mark by the whole amount, a middle mark by half, a closing mark
    not at all. A dash or an ellipsis keeps its advance.
 4. `apply_kinsoku` — insert a `\penalty 10000` at a break point the
-   line-breaking prohibitions forbid.
+   line-breaking prohibitions forbid. It reads a box at the edge that faces the
+   break (`first_punct`/`last_punct`), so a mark inside an `\mbox` takes part.
 5. `apply_check_single` — raise the penalty at the last two break points of a
    paragraph, so a single character cannot end up alone on the last line.
 
@@ -180,8 +181,14 @@ A style (`M.punct_styles`) is a table of six optional fields:
 
 The prohibitions in `forbids_break` are the ones that matter for correctness:
 a closing or middle mark may not start a line, an opening mark may not end one,
-and a run of `nobreak` long marks is one unit. `AllowBreakBetweenPuncts` and
-`PunctKinsoku` gate these, but an explicit `nobreak` attribute bypasses both.
+a run of `nobreak` long marks is one unit, and two adjacent marks are not
+separated. `PunctKinsoku` gates all four; `AllowBreakBetweenPuncts` lifts the
+last alone, because the other three are rules of the script, and the adjacent
+rule leaves a dash or an ellipsis out, since a run of them is governed by the
+`nobreak` set. An explicit `nobreak` attribute bypasses both keys. The pass
+reads a box at the edge that faces the break, so a mark inside a box is seen;
+`first_punct` and `last_punct` return the group, the character that carries it,
+and whether a character was found at all.
 `CJLineBreak = strict` adds one rule of its own, from the Unicode
 `Line_Break = CJ` set: those characters may not start a line. The set is read
 from `LineBreak.txt` on the first use of the key, so the default pays nothing
@@ -199,8 +206,9 @@ Suspension does not take that break opportunity away.  `Verb` stops the spacing
 on both sides of a suspended run, but a mark next to it keeps its zero-width
 glue: the glue moves no ink, and the mark belongs to the running text rather
 than to the run.  An opening mark is the exception, because a break after it is
-prohibited and the kinsoku pass cannot see the prohibition across a suspended
-node; `verb02` pins both cases, together with the line that ends at the mark.
+prohibited and the pass skips a break that involves suspended material, so the
+prohibition cannot be applied across it; `verb02` pins both cases, together with
+the line that ends at the mark.
 
 ### Rule decorations adjust `lua-ul`
 

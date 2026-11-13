@@ -36,12 +36,22 @@ TEST 7: PunctKinsoku restored after group
 PROBE G P10000 g G P10000 k P10000 g G
 ============================================================
 ============================================================
-TEST 8: latin boundary is not affected
+TEST 8: AllowBreakBetweenPuncts keeps a closing mark out of the line start
+============================================================
+PROBE G P10000 g G P10000 k P10000 g G
+============================================================
+============================================================
+TEST 9: a box takes the class of the mark at its edge
+============================================================
+PROBE G g G P10000 g B g G P10000 g G
+============================================================
+============================================================
+TEST 10: latin boundary is not affected
 ============================================================
 PROBE G g G g G
 ============================================================
 ============================================================
-TEST 9: no line starts with a full stop
+TEST 11: no line starts with a full stop
 ============================================================
 Overfull \hbox (5.0pt too wide) in paragraph at lines ...
 []\TU/FandolSong-Regular.otf(0)/m/n/10 字字
@@ -59,7 +69,7 @@ Overfull \hbox (5.0pt too wide) in paragraph at lines ...
 LINES 23383 23383 23383 / LAST 23383 23383 12290
 ============================================================
 ============================================================
-TEST 10: no line ends with an opening bracket
+TEST 12: no line ends with an opening bracket
 ============================================================
 Overfull \hbox (5.0pt too wide) in paragraph at lines ...
 []\TU/FandolSong-Regular.otf(0)/m/n/10 字字
@@ -89,4 +99,9 @@ Overfull \hbox (10.0pt too wide) in paragraph at lines ...
 .\glue(\parfillskip) 0.0 plus 1.0fil
 .\glue(\rightskip) 0.0
 LINES 23383 23383 23383 / LAST 23383 23383 23383
+============================================================
+============================================================
+TEST 13: no line ends with an opening bracket before a box
+============================================================
+LINES 20013 65288 25991 / LAST 25991 20013 65289
 ============================================================

@@ -47,19 +47,19 @@
 }
 
 \TEST{by default no break is allowed between punctuation}{
-  \setbox0=\hbox{字」。}
+  \setbox0=\hbox{字」「}
   \countpenalties
 }
 
 \TEST{AllowBreakBetweenPuncts removes those penalties}{
   \LuaCJKsetup{AllowBreakBetweenPuncts = true}
-  \setbox0=\hbox{字」。}
+  \setbox0=\hbox{字」「}
   \countpenalties
 }
 
 \TEST{the option can be turned off again}{
   \LuaCJKsetup{AllowBreakBetweenPuncts = false}
-  \setbox0=\hbox{字」。}
+  \setbox0=\hbox{字」「}
   \countpenalties
 }
 
