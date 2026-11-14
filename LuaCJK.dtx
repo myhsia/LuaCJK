@@ -772,17 +772,17 @@ $ x + 中文 $ and 中文
 % 用 \tn{char} 请求的字符不会被删除，因为 \tn{char} 要的就是字形本身。
 %
 % \begin{environment}{CJKfilltwosides}
-%   \begin{syntax}
-%   \tn{begin}\{CJKfilltwosides\}\oarg{position}\marg{width}
-%   \   \meta{lines} \\
-%   \tn{end}\{CJKfilltwosides\}
-%   \end{syntax}
 %   把各行排进一个竖直盒子里，
 %   盒中的行两端对齐到 \meta{width}，各行之间用 |\\| 分开。
 %   它的 \meta{position} 参数决定盒子在基线上的位置：
 %   \texttt{t} 表示顶部，\texttt{c} 表示居中（默认），\texttt{b} 表示底部。
 %   宽度为零或为负时沿用周围的行宽。
 %   带星号的形式行为相同；它不与内容的自然宽度作比较。
+%   \begin{syntax}
+%   \tn{begin}\{CJKfilltwosides\}\oarg{position}\marg{width}
+%   \   \meta{lines} \\
+%   \tn{end}\{CJKfilltwosides\}
+%   \end{syntax}
 % \end{environment}
 %
 % \iffalse
@@ -2012,17 +2012,17 @@ $ x + 中文 $ and 中文
 % asks for the glyph itself.
 %
 % \begin{environment}{CJKfilltwosides}
-%   \begin{syntax}
-%   \tn{begin}\{CJKfilltwosides\}\oarg{position}\marg{width}
-%   \   \meta{lines} \\
-%   \tn{end}\{CJKfilltwosides\}
-%   \end{syntax}
 %   Set the lines in a vertical box whose lines are justified
 %   to \meta{width}, separated by |\\|. Its \meta{position} argument puts
 %   the box on the baseline: \texttt{t} for top, \texttt{c} for centered
 %   (the default), or \texttt{b} for bottom. A width of zero or less keeps
 %   the surrounding line width. The starred form behaves the same;
 %   it does not compare against the natural width of the content.
+%   \begin{syntax}
+%   \tn{begin}\{CJKfilltwosides\}\oarg{position}\marg{width}
+%   \   \meta{lines} \\
+%   \tn{end}\{CJKfilltwosides\}
+%   \end{syntax}
 % \end{environment}
 %
 % \iffalse
