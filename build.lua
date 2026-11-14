@@ -20,7 +20,7 @@ description         = "LuaCJK provides Chinese typesetting for the LuaTeX engine
 --[==========================================================================[--
     Configuration: Check, Tag, Pack, Upload      Do NOT Modify if Unnecessary
 --]==========================================================================]--
-packtdszip          = true
+packtdszip          = false
 ctanpkg             = pkg
 sourcefiles         = {module .. ".dtx", module .. ".ins"}
 unpackfiles         = {module .. ".ins"}
