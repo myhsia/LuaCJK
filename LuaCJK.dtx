@@ -374,9 +374,11 @@ LaTeX Project Public License, version 1.3c or later.
 % \fi
 \begin{codemo}
 \setCJKmainfont[Scale = 1.2]
-  {FandolSong-Regular.otf}中文\\
+  {FandolSong-Regular.otf}
+English 中文字体\\
 \setCJKsansfont[Scale = 1.2]
-  {FandolKai-Regular.otf}\sffamily 中文
+  {FandolKai-Regular.otf}
+\sffamily English 中文字体
 \end{codemo}
 % \iffalse
 %</example>
@@ -400,10 +402,10 @@ LaTeX Project Public License, version 1.3c or later.
 %<*example>
 % \fi
 \begin{codemo}
-\CJKfamily{zhsong}中文宋体\quad
-\CJKfamily{zhhei}中文黑体\\
-\CJKfamily{zhkai}中文楷体\quad
-\CJKfamily{zhfs}中文仿宋
+\CJKfamily{zhsong}English 中文字体\\
+\CJKfamily{zhhei}English 中文字体\\
+\CJKfamily{zhkai}English 中文字体\\
+\CJKfamily{zhfs}English 中文字体
 \end{codemo}
 % \iffalse
 %</example>
@@ -439,7 +441,8 @@ LaTeX Project Public License, version 1.3c or later.
 \begin{codemo}
 \newCJKfontfamily[kai]\mykai
   {FandolKai-Regular.otf}
-\mykai 中文\quad \songti 中文
+\mykai English 中文字体\\
+\songti English 中文字体
 \end{codemo}
 \endgroup
 % \iffalse
@@ -477,7 +480,8 @@ LaTeX Project Public License, version 1.3c or later.
 \begin{codemo}
 \LuaCJKDeclareSubCJKBlock{Kana}{3040 -> 30FF}
 \setCJKmainfont[Kana = FandolKai-Regular.otf]
-  {FandolSong-Regular.otf}中 あ
+  {FandolSong-Regular.otf}
+汉字 かんじ
 \end{codemo}
 \endgroup
 % \iffalse
@@ -606,7 +610,8 @@ LaTeX Project Public License, version 1.3c or later.
 \begin{codemo}
 \LuaCJKsetup{AutoFakeBold = true}
 \setCJKmainfont{FandolSong-Regular.otf}
-\textbf{中文} and 中文
+\textbf{English 中文字体}\\
+English 中文字体
 \end{codemo}
 \endgroup
 % \iffalse
@@ -639,9 +644,10 @@ LaTeX Project Public License, version 1.3c or later.
 \defaultCJKfontfeatures{Scale = 1.5}
 \setCJKfamilyfont{big}
   {FandolSong-Regular.otf}
-\CJKfamily{big}中文\quad%
-\CJKfamily{zhsong}中文\quad%
-\addCJKfontfeatures{Scale = 1.2}中文
+\CJKfamily{big}中文字体\\
+\CJKfamily{zhsong}中文字体\\
+\addCJKfontfeatures{Scale = 1.2}
+\CJKfamily{zhsong}中文字体
 \end{codemo}
 \endgroup
 % \iffalse
@@ -694,7 +700,7 @@ LaTeX Project Public License, version 1.3c or later.
 %<*example>
 % \fi
 \begin{codemo}
-$ x + 中文 $ and 中文
+$ 天地玄黄 $ and 天地玄黄
 \end{codemo}
 % \iffalse
 %</example>
@@ -734,7 +740,7 @@ $ x + 中文 $ and 中文
 % \fi
 \begingroup
 \begin{codemo}
-\LuaCJKsetup{CJKspace = true}中 文 中 文
+\LuaCJKsetup{CJKspace = true}天 地 玄 黄 宇 宙
 \end{codemo}
 \endgroup
 % \iffalse
@@ -855,8 +861,9 @@ $ x + 中文 $ and 中文
 % \fi
 \begingroup
 \begin{codemo}
-字，字\\
-\LuaCJKsetup{PunctFamily = zhkai}字，字
+不亦说乎，不亦乐乎\\
+\LuaCJKsetup{PunctFamily = zhkai}
+不亦说乎，不亦乐乎
 \end{codemo}
 \endgroup
 % \iffalse
@@ -869,9 +876,9 @@ $ x + 中文 $ and 中文
 \begingroup
 \begin{codemo}
 \LuaCJKsetup{LatinPunct = false}%
-a’a\quad 字！字\\
+a’a\quad 不亦说乎！\\
 \LuaCJKsetup{LatinPunct, PunctWidth = .8em}
-a’a\quad 字！字
+a’a\quad 不亦说乎！
 \end{codemo}
 \endgroup
 % \iffalse
@@ -883,9 +890,10 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-字字。\\
-\LuaCJKsetup{PunctBoundWidth = .5em}字字。\\
-（字字
+列位看官。\\
+\LuaCJKsetup{PunctBoundWidth = .5em}
+列位看官。\\
+（列位看官
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1060,9 +1068,9 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\parbox{4em}{字字字字字字\par}\par
-\LuaCJKsetup{CheckSingle = true}
-\parbox{4em}{字字字字字字\par}
+\parbox{3em}{天地玄黄宇宙洪荒\par}\quad
+\LuaCJKsetup{CheckSingle = true}%
+\parbox{3em}{天地玄黄宇宙洪荒\par}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1082,8 +1090,8 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\parbox{5em}{字字字字字字}\quad
-\parbox{5em}{字字字字\LuaCJKnobreak{字字}}
+\parbox{3em}{天地玄黄}\quad
+\parbox{3em}{\LuaCJKnobreak{天地玄黄}}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1109,8 +1117,8 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-中 文\\
-\LuaCJKdisable 中 文
+精致甲版 红楼梦\\
+\LuaCJKdisable 精致甲版 红楼梦
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1145,8 +1153,9 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\ttfamily 中中\\
-\ttfamily\LuaCJKVerbAddon 中中
+\ttfamily abc汉字abc\\
+\ttfamily\LuaCJKVerbAddon
+abc汉字abc
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1232,10 +1241,11 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\CJKunderline[thickness = 1pt]{中}\\
-\CJKunderline[format = red]{中}\\
-\CJKunderline[textformat = \bfseries]{中}\\
-\CJKunderline[hidden]{中}
+\CJKunderline[thickness = 1pt]{有涯}\\
+\CJKunderline[format = red]{有涯}\\
+\CJKunderline[textformat = \bfseries]
+  {有涯}\\
+\CJKunderline[hidden]{有涯}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1260,9 +1270,9 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\CJKunderline{中文}\CJKunderline{中文}\\
-\CJKunderline[subtract]{中文}\\
-\CJKunderline[skip]{中，文}
+\CJKunderline{有涯}\CJKunderline{有涯}\\
+\CJKunderline[subtract]{吾生也有涯}\\
+\CJKunderline[skip]{有涯，无涯}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1297,10 +1307,12 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\CJKunderwave{中文}\quad
-\CJKunderwave[symbol = \textbullet]{中文}\\
-\CJKunderdot {中文}\quad
-\CJKunderdot [symbol = \textbullet]{中文}
+\CJKunderwave{吾生也有涯}\\
+\CJKunderwave[symbol = \textbullet]
+  {吾生也有涯}\\
+\CJKunderdot{吾生也有涯}\\
+\CJKunderdot[symbol = \textbullet]
+  {吾生也有涯}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1359,8 +1371,8 @@ a’a\quad 字！字
 \begingroup
 \begin{codemo}
 \CJKunderanyline{\LuaCJKemdescent}
-  {\color{yellow}\rule{1pt}{1em}}{中}\\
-\CJKunderanysymbol{0pt}{\tiny$\triangle$}{中}
+  {\color{yellow}\rule{1pt}{1em}}{有涯}\\
+\CJKunderanysymbol{0pt}{\tiny$\triangle$}{有涯}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1405,8 +1417,9 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\CJKsout[thickness = 2pt, format = red]{中文}\\
-\CJKsout[height = .5ex]{中文}
+\CJKsout[thickness = 2pt, format = red]
+  {吾生也有涯}\\
+\CJKsout[height = .5ex]{吾生也有涯}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1417,12 +1430,12 @@ a’a\quad 字！字
 %<*example>
 % \fi
 \begin{codemo}
-\CJKunderline   {中文 test 中文}\\
-\CJKunderdblline{中文 test 中文}\\
-\CJKunderwave   {中文 test 中文}\\
-\CJKunderdot    {中文 test 中文}\\
-\CJKsout        {中文 test 中文}\\
-\CJKxout        {中文 test 中文}
+\CJKunderline   {吾生也有涯}\\
+\CJKunderdblline{吾生也有涯}\\
+\CJKunderwave   {吾生也有涯}\\
+\CJKunderdot    {吾生也有涯}\\
+\CJKsout        {吾生也有涯}\\
+\CJKxout        {吾生也有涯}
 \end{codemo}
 % \iffalse
 %</example>
@@ -1601,9 +1614,11 @@ a’a\quad 字！字
 % \fi
 \begin{codemo}
 \setCJKmainfont[Scale = 1.2]
-  {FandolSong-Regular.otf}中文\\
+  {FandolSong-Regular.otf}
+English 中文字体\\
 \setCJKsansfont[Scale = 1.2]
-  {FandolKai-Regular.otf}\sffamily 中文
+  {FandolKai-Regular.otf}
+\sffamily English 中文字体
 \end{codemo}
 % \iffalse
 %</example>
@@ -1627,10 +1642,10 @@ a’a\quad 字！字
 %<*example>
 % \fi
 \begin{codemo}
-\CJKfamily{zhsong}中文宋体\quad
-\CJKfamily{zhhei}中文黑体\\
-\CJKfamily{zhkai}中文楷体\quad
-\CJKfamily{zhfs}中文仿宋
+\CJKfamily{zhsong}English 中文字体\\
+\CJKfamily{zhhei}English 中文字体\\
+\CJKfamily{zhkai}English 中文字体\\
+\CJKfamily{zhfs}English 中文字体
 \end{codemo}
 % \iffalse
 %</example>
@@ -1666,7 +1681,8 @@ a’a\quad 字！字
 \begin{codemo}
 \newCJKfontfamily[kai]\mykai
   {FandolKai-Regular.otf}
-  \mykai 中文\quad \songti 中文
+  \mykai English 中文字体\\
+  \songti English 中文字体
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1705,7 +1721,8 @@ a’a\quad 字！字
 \begin{codemo}
 \LuaCJKDeclareSubCJKBlock{Kana}{3040 -> 30FF}
 \setCJKmainfont[Kana = FandolKai-Regular.otf]
-  {FandolSong-Regular.otf}中 あ
+  {FandolSong-Regular.otf}
+汉字 かんじ
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1834,7 +1851,8 @@ a’a\quad 字！字
 \begin{codemo}
 \LuaCJKsetup{AutoFakeBold = true}
 \setCJKmainfont{FandolSong-Regular.otf}
-\textbf{中文} and 中文
+\textbf{English 中文字体}\\
+English 中文字体
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1867,9 +1885,10 @@ a’a\quad 字！字
 \defaultCJKfontfeatures{Scale = 1.5}
 \setCJKfamilyfont{big}
   {FandolSong-Regular.otf}
-\CJKfamily{big}中文\quad
-\CJKfamily{zhsong}中文\quad
-\addCJKfontfeatures{Scale = 1.2}中文
+\CJKfamily{big}中文字体\\
+\CJKfamily{zhsong}中文字体\\
+\addCJKfontfeatures{Scale = 1.2}
+\CJKfamily{zhsong}中文字体
 \end{codemo}
 \endgroup
 % \iffalse
@@ -1927,7 +1946,7 @@ a’a\quad 字！字
 %<*example>
 % \fi
 \begin{codemo}
-$ x + 中文 $ and 中文
+$ 天地玄黄 $ and 天地玄黄
 \end{codemo}
 % \iffalse
 %</example>
@@ -1972,7 +1991,7 @@ $ x + 中文 $ and 中文
 % \fi
 \begingroup
 \begin{codemo}
-\LuaCJKsetup{CJKspace = true}中 文 中 文
+\LuaCJKsetup{CJKspace = true}天 地 玄 黄 宇 宙
 \end{codemo}
 \endgroup
 % \iffalse
@@ -2100,8 +2119,9 @@ $ x + 中文 $ and 中文
 % \fi
 \begingroup
 \begin{codemo}
-字，字\\
-\LuaCJKsetup{PunctFamily = zhkai}字，字
+不亦说乎，不亦乐乎\\
+\LuaCJKsetup{PunctFamily = zhkai}
+不亦说乎，不亦乐乎
 \end{codemo}
 \endgroup
 % \iffalse
@@ -2114,9 +2134,9 @@ $ x + 中文 $ and 中文
 \begingroup
 \begin{codemo}
 \LuaCJKsetup{LatinPunct = false}%
-a’a\quad 字！字\\
+a’a\quad 不亦说乎！\\
 \LuaCJKsetup{LatinPunct, PunctWidth = .8em}
-a’a\quad 字！字
+a’a\quad 不亦说乎！
 \end{codemo}
 \endgroup
 % \iffalse
@@ -2128,9 +2148,10 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-字字。\\
-\LuaCJKsetup{PunctBoundWidth = .5em}字字。\\
-（字字
+列位看官。\\
+\LuaCJKsetup{PunctBoundWidth = .5em}
+列位看官。\\
+（列位看官
 \end{codemo}
 \endgroup
 % \iffalse
@@ -2315,9 +2336,9 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\parbox{4em}{字字字字字字\par}\par
-\LuaCJKsetup{CheckSingle = true}
-\parbox{4em}{字字字字字字\par}
+\parbox{3em}{天地玄黄宇宙洪荒\par}\quad
+\LuaCJKsetup{CheckSingle = true}%
+\parbox{3em}{天地玄黄宇宙洪荒\par}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -2338,8 +2359,8 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\parbox{5em}{字字字字字字}\quad
-\parbox{5em}{字字字字\LuaCJKnobreak{字字}}
+\parbox{3em}{天地玄黄}\quad
+\parbox{3em}{\LuaCJKnobreak{天地玄黄}}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -2365,8 +2386,8 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-中 文\\
-\LuaCJKdisable 中 文
+精致甲版 红楼梦\\
+\LuaCJKdisable 精致甲版 红楼梦
 \end{codemo}
 \endgroup
 % \iffalse
@@ -2402,8 +2423,9 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\ttfamily 中中\\
-\ttfamily\LuaCJKVerbAddon 中中
+\ttfamily abc汉字abc\\
+\ttfamily\LuaCJKVerbAddon
+abc汉字abc
 \end{codemo}
 \endgroup
 % \iffalse
@@ -2497,10 +2519,11 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\CJKunderline[thickness = 1pt]{中}\\
-\CJKunderline[format = red]{中}\\
-\CJKunderline[textformat = \bfseries]{中}\\
-\CJKunderline[hidden]{中}
+\CJKunderline[thickness = 1pt]{有涯}\\
+\CJKunderline[format = red]{有涯}\\
+\CJKunderline[textformat = \bfseries]
+  {有涯}\\
+\CJKunderline[hidden]{有涯}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -2525,9 +2548,9 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\CJKunderline{中文}\CJKunderline{中文}\\
-\CJKunderline[subtract]{中文}\\
-\CJKunderline[skip]{中，文}
+\CJKunderline{有涯}\CJKunderline{有涯}\\
+\CJKunderline[subtract]{吾生也有涯}\\
+\CJKunderline[skip]{有涯，无涯}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -2562,10 +2585,12 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\CJKunderwave{中文}\quad
-\CJKunderwave[symbol = \textbullet]{中文}\\
-\CJKunderdot {中文}\quad
-\CJKunderdot [symbol = \textbullet]{中文}
+\CJKunderwave{吾生也有涯}\\
+\CJKunderwave[symbol = \textbullet]
+  {吾生也有涯}\\
+\CJKunderdot{吾生也有涯}\\
+\CJKunderdot[symbol = \textbullet]
+  {吾生也有涯}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -2624,8 +2649,8 @@ a’a\quad 字！字
 \begingroup
 \begin{codemo}
 \CJKunderanyline{\LuaCJKemdescent}
-  {\color{yellow}\rule{1pt}{1em}}{中}\\
-\CJKunderanysymbol{0pt}{\tiny$\triangle$}{中}
+  {\color{yellow}\rule{1pt}{1em}}{有涯}\\
+\CJKunderanysymbol{0pt}{\tiny$\triangle$}{有涯}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -2670,8 +2695,9 @@ a’a\quad 字！字
 % \fi
 \begingroup
 \begin{codemo}
-\CJKsout[thickness = 2pt, format = red]{中文}\\
-\CJKsout[height = .5ex]{中文}
+\CJKsout[thickness = 2pt, format = red]
+  {吾生也有涯}\\
+\CJKsout[height = .5ex]{吾生也有涯}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -2682,12 +2708,12 @@ a’a\quad 字！字
 %<*example>
 % \fi
 \begin{codemo}
-\CJKunderline   {中文 test 中文}\\
-\CJKunderdblline{中文 test 中文}\\
-\CJKunderwave   {中文 test 中文}\\
-\CJKunderdot    {中文 test 中文}\\
-\CJKsout        {中文 test 中文}\\
-\CJKxout        {中文 test 中文}
+\CJKunderline   {吾生也有涯}\\
+\CJKunderdblline{吾生也有涯}\\
+\CJKunderwave   {吾生也有涯}\\
+\CJKunderdot    {吾生也有涯}\\
+\CJKsout        {吾生也有涯}\\
+\CJKxout        {吾生也有涯}
 \end{codemo}
 % \iffalse
 %</example>
