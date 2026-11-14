@@ -15,7 +15,7 @@
 ## [LuaCJK-v0.0.1](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.1)
 
 - Provide the CJK font family interface (`\setCJKmainfont`, `\setCJKsansfont`, `\setCJKmonofont`, `\setCJKfamilyfont`, `\CJKfamily`, `\newCJKfontfamily`, `\CJKfontspec`); an undeclared family warns once.
-- Provide `LuaCJK-listings`, which keeps CJK characters in place inside a `listings` block and counts each of them as two columns; LuaCJK loads it automatically with `listings`.
+- Provide `LuaCJK-listings`, which keeps CJK characters in place inside a `listings` block and counts each of them as two columns; `LuaCJK` loads it automatically with `listings`.
 - Ship `ctex-engine-luacjk.def` as the LuaTeX backend for `ctex`, selected with the option `engine = luacjk`; like `ctex`'s own backend it refuses `CJKfntef` and points at `LuaCJKfntef`.
 - Refuse to load with `luatexja`.
 - Provide `\LuaCJKversion`, which prints the version of the package.
