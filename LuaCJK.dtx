@@ -97,7 +97,7 @@ LaTeX Project Public License, version 1.3c or later.
 %<*package|fntef|listings|ctex>
 \NeedsTeXFormat{LaTeX2e}[2026/06/01]
 \RequirePackage { expl3 }
-\GetIdInfo $Id: LuaCJK.dtx v0.0.2 2026-11-20 myhsia<myhsia@outlook.com>$
+\GetIdInfo $Id: LuaCJK.dtx v0.0.2 2026-11-15 myhsia<myhsia@outlook.com>$
 %<package>  {A LuaTeX CJK typesetting package}
 %<package>\ProvidesExplPackage {\ExplFileName}
 %<fntef>  {Font effects for LuaCJK (CTEX)}
@@ -3138,7 +3138,7 @@ abc汉字abc
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_extract_font_keys:nn, \@@_parse_font_options:n}
-% \changes{v0.0.2}{2026/11/20}{\keys{Baseline} shifts the glyphs of the font
+% \changes{v0.0.2}{2026/11/15}{\keys{Baseline} shifts the glyphs of the font
 %   that declares it, so two CJK fonts whose baselines do not match can be set
 %   side by side.}
 % Pull the keys that \pkg{LuaCJK} keeps for itself out of a font option list:
@@ -3786,7 +3786,7 @@ abc汉字abc
 %   \keys{PunctWidth} option; neither this prohibition nor that of
 %   \cs{LuaCJKVerbAddon} depends on \keys{PunctKinsoku}, which controls only
 %   the punctuation rules.}
-% \changes{v0.0.2}{2026/11/20}{\cs{LuaCJKnobreak} also forbids the break at a
+% \changes{v0.0.2}{2026/11/15}{\cs{LuaCJKnobreak} also forbids the break at a
 %   \texttt{discretionary}, so an explicit hyphen or an automatic hyphenation
 %   point inside the argument no longer breaks the line.}
 % Keep the argument on one line. The nodes of the argument are marked,
@@ -4267,7 +4267,7 @@ abc汉字abc
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_reset_family:}
-% \changes{v0.0.2}{2026/11/20}{Restore \cs{CJKfamilydefault} when
+% \changes{v0.0.2}{2026/11/15}{Restore \cs{CJKfamilydefault} when
 %   \cs{normalfont} or \cs{textnormal} runs, so that the default font command
 %   overrides a family chosen earlier in the group; \cs{CJKfamilydefault}
 %   follows \cs{CJKrmdefault} until the document sets it.}
@@ -4707,7 +4707,7 @@ abc汉字abc
 % \changes{v0.0.1}{2026/11/11}{Provide \cs{setCJKfallbackfamilyfont} and
 %   \keys{AutoFallBack} for characters that the selected CJK font does not
 %   have.}
-% \changes{v0.0.2}{2026/11/20}{The fallback list is resolved again at every
+% \changes{v0.0.2}{2026/11/15}{The fallback list is resolved again at every
 %   font selection, so the fallback follows the series, shape, and size of
 %   the text.}
 % Register one fallback font for a CJK family,
@@ -4764,7 +4764,7 @@ abc汉字abc
 % \end{macro}
 %
 % \begin{macro}{\setCJKmathfont}
-% \changes{v0.0.2}{2026/11/20}{A CJK character in a formula takes the face of
+% \changes{v0.0.2}{2026/11/15}{A CJK character in a formula takes the face of
 %   the math version: the bold face of the family under \cs{boldmath} when the
 %   family has one, and the upright shape instead of the shape of the text.}
 % Register a family used for CJK characters in math mode and refresh
@@ -4780,7 +4780,7 @@ abc汉字abc
 % \end{macro}
 %
 % \begin{macro}{\CJKfontspec}
-% \changes{v0.0.2}{2026/11/20}{\cs{CJKfontspec} and \cs{newCJKfontfamily}
+% \changes{v0.0.2}{2026/11/15}{\cs{CJKfontspec} and \cs{newCJKfontfamily}
 %   take their options after the font name as well.}
 % Register a one-off family and switch to it immediately.
 % \begin{variable}[int]{\g_@@_fontspec_int}
@@ -6265,7 +6265,7 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{restore_source_spaces}
-% \changes{v0.0.2}{2026/11/20}{The space in front of \cs{textbf} and its
+% \changes{v0.0.2}{2026/11/15}{The space in front of \cs{textbf} and its
 %   siblings is still the inter-character glue: \LaTeX\ moves a space across
 %   the italic correction of a text font command, and the move leaves the glue
 %   with the subtype of a skip the document wrote.}
@@ -6452,7 +6452,7 @@ end
 % \changes{v0.0.1}{2026/11/11}{Provide \keys{PunctKinsoku} line-breaking
 %   prohibitions: closing punctuation cannot start a line and opening
 %   punctuation cannot end a line.}
-% \changes{v0.0.2}{2026/11/20}{\keys{AllowBreakBetweenPuncts} no longer lets a
+% \changes{v0.0.2}{2026/11/15}{\keys{AllowBreakBetweenPuncts} no longer lets a
 %   closing mark start a line or an opening mark end one, and a mark inside a
 %   box takes part in the prohibitions.}
 % Add the prohibitions where the settings of the text ask for them.
@@ -7503,7 +7503,7 @@ end
 % \end{macro}
 
 % \begin{macro}[int]{mark_blank}
-% \changes{v0.0.2}{2026/11/20}{The hang of a mark is the blank its font
+% \changes{v0.0.2}{2026/11/15}{The hang of a mark is the blank its font
 %   carries, read from the outline, so the ink of a line-final or line-initial
 %   mark stands on the measure instead of half an em inside it; a file that
 %   cannot be read falls back to half the advance.}
@@ -7570,7 +7570,7 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{hang_bounds}
-% \changes{v0.0.2}{2026/11/20}{The hanging of a mark takes part in line
+% \changes{v0.0.2}{2026/11/15}{The hanging of a mark takes part in line
 %   breaking, so a line that ends at a closing mark or begins with an opening
 %   mark holds the mark the margin allows; the ink of that mark stands outside
 %   the line, and \keys{PunctBoundWidth} decides how much of the advance stays
@@ -8594,7 +8594,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   \cs{CJKunderwave}, and \cs{CJKxout}; the wave and the slash stay in phase
 %   along a line, their patterns scale with the font size, a decoration does
 %   not open up its line, and it fills its span exactly.}
-% \changes{v0.0.2}{2026/11/20}{The double rule takes \keys{format} like the
+% \changes{v0.0.2}{2026/11/15}{The double rule takes \keys{format} like the
 %   other decorations, and a rule or a symbol that carries no \keys{format}
 %   follows the color of the surrounding text.}
 % Two parallel rules. The optional argument takes the whole key set of the
