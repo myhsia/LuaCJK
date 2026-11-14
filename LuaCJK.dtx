@@ -223,7 +223,7 @@ LaTeX Project Public License, version 1.3c or later.
 %   \cs{CJKfontspec}); an undeclared family warns once.}
 % \changes{v0.0.1}{2026/11/11}{Provide \pkg{LuaCJK-listings}, which keeps CJK
 %   characters in place inside a \pkg{listings} block and counts each of them
-%   as two columns; LuaCJK loads it automatically with \pkg{listings}.}
+%   as two columns; \pkg{LuaCJK} loads it automatically with \pkg{listings}.}
 % \changes{v0.0.1}{2026/11/11}{Ship \file{ctex-engine-luacjk.def} as the
 %   \LuaTeX\ backend for \pkg{ctex}, selected with the option |engine =
 %   luacjk|; like \pkg{ctex}'s own backend it refuses \pkg{CJKfntef} and
@@ -273,18 +273,18 @@ LaTeX Project Public License, version 1.3c or later.
 %   \cs{usepackage}\oarg{options}"{LuaCJK}"
 % \end{quote}
 %
-% LuaCJK 需要 \LuaTeX\ 引擎。它与 \pkg{luatexja} 冲突：
+% \pkg{LuaCJK} 需要 \LuaTeX\ 引擎。它与 \pkg{luatexja} 冲突：
 % 无论先后加载哪一个，都会报错。
 %
 % \begin{function}{\LuaCJKversion}
-%   打印 LuaCJK 的版本。
+%   打印 \pkg{LuaCJK} 的版本。
 % \end{function}
 %
 % \begin{function}{\LuaCJKsetup}
 %   \begin{syntax}
 %     \tn{LuaCJKsetup} \marg{key-value list}
 %   \end{syntax}
-%   配置 LuaCJK。
+%   配置 \pkg{LuaCJK}。
 %   这些键就是随后各节中记录的那些键。
 % \end{function}
 %
@@ -332,19 +332,19 @@ LaTeX Project Public License, version 1.3c or later.
 %   \texttt{true} 加载 \file{luacjk.cfg}，
 %   \meta{name} 加载 \file{luacjk-}\meta{name}\file{.cfg}，
 %   而 \texttt{false}（初始值）什么都不加载。
-%   文件在宏包末尾读取，所以它可以使用 LuaCJK 定义的每一个命令。
+%   文件在宏包末尾读取，所以它可以使用 \pkg{LuaCJK} 定义的每一个命令。
 %   文件不存在时只给出警告。
 % \end{keyval}
 %
-% 要在 \pkg{ctex} 中使用 LuaCJK，把它的 \keys{engine} 选项设为
+% 要在 \pkg{ctex} 中使用 \pkg{LuaCJK}，把它的 \keys{engine} 选项设为
 % \val{luacjk}：
 % \begin{quote}
 %   |\documentclass[engine = luacjk]{ctexart}|
 % \end{quote}
-% \pkg{ctex} 于是载入 LuaCJK 的 |ctex-engine-luacjk.def| 而不是它自己的
-% \LuaTeX\ 后端，这个文件同时载入宏包，LuaCJK 不必再单独载入。
+% \pkg{ctex} 于是载入 \pkg{LuaCJK} 的 |ctex-engine-luacjk.def| 而不是它自己的
+% \LuaTeX\ 后端，这个文件同时载入宏包，\pkg{LuaCJK} 不必再单独载入。
 %
-% LuaCJK 与 \LaTeX\ 的标记 PDF（tagged PDF）项目协同工作。
+% \pkg{LuaCJK} 与 \LaTeX\ 的标记 PDF（tagged PDF）项目协同工作。
 % 文档开头声明
 % \begin{quote}
 %   |\DocumentMetadata{tagging = on}|
@@ -355,7 +355,7 @@ LaTeX Project Public License, version 1.3c or later.
 % 本手册就是这样生成的。
 % 选区的高度由 PDF 阅读器按字体的 \texttt{hhea} 上伸部和下伸部决定，
 % 对 \texttt{Noto Serif CJK SC} 是 1.437em，所以选区比 1em 的方块更高；
-% 这不是 LuaCJK 能改变的，也不影响字形本身。
+% 这不是 \pkg{LuaCJK} 能改变的，也不影响字形本身。
 %
 % \section{字体}
 %
@@ -437,8 +437,9 @@ LaTeX Project Public License, version 1.3c or later.
 % \fi
 \begingroup
 \begin{codemo}
-\newCJKfontfamily[kai]\mykai{FandolKai-Regular.otf}
-  \mykai 中文\quad \songti 中文
+\newCJKfontfamily[kai]\mykai
+  {FandolKai-Regular.otf}
+\mykai 中文\quad \songti 中文
 \end{codemo}
 \endgroup
 % \iffalse
@@ -579,7 +580,7 @@ LaTeX Project Public License, version 1.3c or later.
 %
 % \subsection{伪粗体与伪斜体}
 %
-% 一种 CJK 字族常常没有粗体或斜体。下面这些键让 LuaCJK 请求
+% 一种 CJK 字族常常没有粗体或斜体。下面这些键让 \pkg{LuaCJK} 请求
 % \pkg{fontspec} 加粗或倾斜常规字体，而不去使用粗体或斜体。
 % 它们作用于此后注册的字族，并且在字族自己设置了 \texttt{BoldFont} 或
 % \texttt{ItalicFont} 时不生效。它们是全局的：
@@ -659,7 +660,7 @@ LaTeX Project Public License, version 1.3c or later.
 %   在 \texttt{bold} 版本里用字族的粗体，字族没有粗体时保持正体；
 %   字形取字族的正体，不随周围的正文。
 %   不打开它时，数学模式里的汉字会到数学字体里去找，通常就此消失，
-%   所以这种情况下 LuaCJK 给出一次性的警告。
+%   所以这种情况下 \pkg{LuaCJK} 给出一次性的警告。
 % \end{keyval}
 %
 % \begin{function}{\setCJKmathfont}
@@ -1159,7 +1160,7 @@ a’a\quad 字！字
 %   这样代码里含有 CJK 文字时各列仍然对齐；
 %   \texttt{env+} 在所有地方都保留调整；\texttt{false} 完全不碰抄录材料。
 %   既然 \texttt{env+} 与 \texttt{false} 都保留调整，
-%   它们在 LuaCJK 里行为相同。
+%   它们在 \pkg{LuaCJK} 里行为相同。
 %   暂停只去掉间距：紧挨着被暂停材料的一个标点，
 %   仍然保留它后面的断行机会。
 % \end{keyval}
@@ -1169,7 +1170,7 @@ a’a\quad 字！字
 % 于是会跑到周围拉丁文字的前面。配套的 \pkg{LuaCJK-listings} 修正了这一点：
 % 它把 CJK 字符加入 \pkg{listings} 的字符表，所以它们留在原处，
 % 把每个字符算作两列，并在列表内部关掉间距调整。
-% 使用 \pkg{listings} 时 LuaCJK 自动加载它，所以不需要额外的命令。
+% 使用 \pkg{listings} 时 \pkg{LuaCJK} 自动加载它，所以不需要额外的命令。
 %
 % \tn{lstinline} 以改变了的类别码读取参数；
 % 补丁会破坏那个扫描器，所以行内代码保持不动，按通常的方式处理。
@@ -1448,7 +1449,7 @@ a’a\quad 字！字
 %   \item \texttt{CJKfilltwosides*} 不与自然宽度作比较。
 %   \item CJK 字体是在文字用当前字体定形之后才应用到字形节点上的，
 %   所以 CJK 字体的 OpenType 特性（连字、\texttt{locl}、\texttt{palt}、
-%   变体序列）不生效：间距、标点进距与禁则都来自 LuaCJK 自己。
+%   变体序列）不生效：间距、标点进距与禁则都来自 \pkg{LuaCJK} 自己。
 %   \item 在 \pkg{LuaCJKfntef} 里，\keys{format} 接受颜色名而不是代码，
 %   而且装饰由 \pkg{lua-ul} 画出，所以 \texttt{ulem} 的选项列表不存在，
 %   \tn{underLine} 直接配置。
@@ -1461,7 +1462,7 @@ a’a\quad 字！字
 %   \texttt{PlainEquation}：它们的存在是为了让 \pkg{xeCJK} 在扫描记号时
 %   认出 \TeX\ 构造，而一个已经完成的节点列表不需要提示。
 %   \item \texttt{PoZheHaoLigature}，理由同上：字体的两字宽破折号连字
-%   在 LuaCJK 应用 CJK 字体之前就已经定了。
+%   在 \pkg{LuaCJK} 应用 CJK 字体之前就已经定了。
 %   \item \texttt{RubberPunctSkip}：标点的进距是一个 kern，
 %   它既不是断行机会，也不参与两端对齐，
 %   而正是这一点让固定宽度的样式保持稳定。
@@ -1492,18 +1493,18 @@ a’a\quad 字！字
 %   \cs{usepackage}\oarg{options}"{LuaCJK}"
 % \end{quote}
 %
-% LuaCJK requires the \LuaTeX\ engine. It conflicts with \pkg{luatexja}:
+% \pkg{LuaCJK} requires the \LuaTeX\ engine. It conflicts with \pkg{luatexja}:
 % loading either package before or after the other raises an error.
 %
 % \begin{function}{\LuaCJKversion}
-%   Print the version of LuaCJK.
+%   Print the version of \pkg{LuaCJK}.
 % \end{function}
 %
 % \begin{function}{\LuaCJKsetup}
 %   \begin{syntax}
 %     \tn{LuaCJKsetup} \marg{key-value list}
 %   \end{syntax}
-%   Configure LuaCJK.
+%   Configure \pkg{LuaCJK}.
 %   The keys are the ones documented in the following sections.
 % \end{function}
 %
@@ -1555,19 +1556,19 @@ a’a\quad 字！字
 %   \meta{name} loads \file{luacjk-}\meta{name}\file{.cfg},
 %   and \texttt{false} (the initial value) loads nothing.
 %   The file is read at the end of the package, so it may use every
-%   command LuaCJK defines. A missing file only warns.
+%   command \pkg{LuaCJK} defines. A missing file only warns.
 % \end{keyval}
 %
-% To use LuaCJK with \pkg{ctex}, pass the \keys{engine} option with the value
-% \val{luacjk}:
+% To use \pkg{LuaCJK} with \pkg{ctex}, pass the \keys{engine} option with the
+% value \val{luacjk}:
 % \begin{quote}
 %   |\documentclass[engine = luacjk]{ctexart}|
 % \end{quote}
-% \pkg{ctex} then inputs |ctex-engine-luacjk.def| instead of its own
-% \LuaTeX\ backend, and that file loads the package, so LuaCJK is not loaded
-% separately.
+% \pkg{ctex} then inputs \pkg{LuaCJK}'s |ctex-engine-luacjk.def| instead of
+% its own \LuaTeX\ backend, and that file loads the package, so \pkg{LuaCJK}
+% is not loaded separately.
 %
-% LuaCJK cooperates with the \LaTeX\ tagged-PDF project.
+% \pkg{LuaCJK} cooperates with the \LaTeX\ tagged-PDF project.
 % A document that declares
 % \begin{quote}
 %   |\DocumentMetadata{tagging = on}|
@@ -1580,7 +1581,7 @@ a’a\quad 字！字
 % A PDF reader derives the height of a selection from the font's
 % \texttt{hhea} ascent and descent, which is 1.437em for
 % \texttt{Noto Serif CJK SC}; the selection is therefore taller than the 1em
-% square.  LuaCJK cannot change that, and it does not affect the glyph.
+% square.  \pkg{LuaCJK} cannot change that, and it does not affect the glyph.
 %
 % \section{Fonts}
 %
@@ -1805,7 +1806,8 @@ a’a\quad 字！字
 % \subsection{Fake bold and slant}
 %
 % A CJK family often has no bold or italic face. The following keys make
-% LuaCJK ask \pkg{fontspec} to embolden or slant the regular face instead.
+% \pkg{LuaCJK} ask \pkg{fontspec} to embolden or slant the regular face
+% instead.
 % They apply to families registered afterwards, and are not used when the
 % family itself sets \texttt{BoldFont} or \texttt{ItalicFont}. They are
 % global: a group does not change what an already registered family uses.
@@ -1886,7 +1888,8 @@ a’a\quad 字！字
 %   regular face when it has no bold one, and the upright shape of the family
 %   rather than the shape of the text.
 %   Without it a CJK character in math mode is looked up in the math font
-%   and usually disappears, so LuaCJK issues a one-time warning in that case.
+%   and usually disappears, so \pkg{LuaCJK} issues a one-time warning in that
+%   case.
 % \end{keyval}
 %
 % \begin{function}{\setCJKmathfont}
@@ -2413,7 +2416,7 @@ a’a\quad 字！字
 %   which preserves column alignment when the code contains CJK text;
 %   \texttt{env+} keeps them everywhere; \texttt{false} leaves verbatim
 %   material entirely alone. Since \texttt{env+} and \texttt{false} both
-%   leave the adjustments on, they behave the same in LuaCJK.
+%   leave the adjustments on, they behave the same in \pkg{LuaCJK}.
 %   Suspension removes the spacing only: a punctuation mark next to suspended
 %   material still keeps the break opportunity that follows it.
 % \end{keyval}
@@ -2425,7 +2428,7 @@ a’a\quad 字！字
 % this: it adds the CJK characters to the character table of \pkg{listings},
 % so they stay in place, counts each of them as two columns,
 % and turns the spacing adjustments off inside the listing.
-% LuaCJK loads it automatically when \pkg{listings} is used,
+% \pkg{LuaCJK} loads it automatically when \pkg{listings} is used,
 % so no extra command is needed.
 %
 % \tn{lstinline} reads its argument with changed category codes;
@@ -2712,7 +2715,7 @@ a’a\quad 字！字
 %   shaped with the current font, so the OpenType features of the CJK font
 %   (ligatures, \texttt{locl}, \texttt{palt}, variation sequences) do not take
 %   effect: the spacing, the punctuation advance, and the prohibitions come
-%   from LuaCJK itself.
+%   from \pkg{LuaCJK} itself.
 %   \item In \pkg{LuaCJKfntef}, \keys{format} takes a color name rather than
 %   code, and the decoration is drawn by \pkg{lua-ul}, so the \texttt{ulem}
 %   option list does not exist and \tn{underLine} is configured directly.
@@ -2726,7 +2729,7 @@ a’a\quad 字！字
 %   \TeX\ constructs while it scans tokens, and a finished node list needs no
 %   hint.
 %   \item \texttt{PoZheHaoLigature}, for the reason given above: the font's
-%   two-em dash ligature is decided before LuaCJK applies the CJK font.
+%   two-em dash ligature is decided before \pkg{LuaCJK} applies the CJK font.
 %   \item \texttt{RubberPunctSkip}: the advance of a mark is a kern, which is
 %   neither a break opportunity nor part of justification, and that is what
 %   keeps a fixed-width style stable.
@@ -2753,7 +2756,7 @@ a’a\quad 字！字
 %
 % \subsection{Loading and conflicts}
 %
-% LuaCJK only works with \LuaTeX. The engine test runs before any other
+% \pkg{LuaCJK} only works with \LuaTeX. The engine test runs before any other
 % package is loaded, so that a wrong engine stops with a clear message.
 %    \begin{macrocode}
 \sys_if_engine_luatex:F
@@ -2782,7 +2785,7 @@ a’a\quad 字！字
 % \end{macro}
 %
 % \pkg{luatexja} installs its own CJK font and spacing layer and works
-% on the same callbacks as LuaCJK, so the two are rejected
+% on the same callbacks as \pkg{LuaCJK}, so the two are rejected
 % whatever the loading order. \pkg{xeCJK} needs no check here:
 % it stops by itself on any engine other than \XeTeX.
 %    \begin{macrocode}
@@ -2815,7 +2818,7 @@ a’a\quad 字！字
 %     \g_@@_nobreak_attr,    \c_@@_nobreak_attr_int
 %   }
 % The attributes record, per node, the CJK font, the space and glue
-% policies, whether the node was inserted by LuaCJK, the CJK math font,
+% policies, whether the node was inserted by \pkg{LuaCJK}, the CJK math font,
 % and whether the adjustments are suspended. The integer constants hold
 % the allocated attribute numbers for the Lua side.
 %    \begin{macrocode}
@@ -2884,7 +2887,7 @@ a’a\quad 字！字
 % read through the settings of each node.
 %
 % \begin{variable}[int]{\g_@@_punct_style_prop}
-% The names of the styles LuaCJK knows about,
+% The names of the styles \pkg{LuaCJK} knows about,
 % including those defined by \cs{LuaCJKDeclarePunctStyle}.
 %    \begin{macrocode}
 \prop_new:N \g_@@_punct_style_prop
@@ -4571,7 +4574,7 @@ a’a\quad 字！字
 % \begin{macro}{\addCJKfontfeatures}
 % Add features to the current family for the rest of the group.
 % The star form is accepted for compatibility;
-% LuaCJK has no concept of blocks, so both forms act on the same font.
+% \pkg{LuaCJK} has no concept of blocks, so both forms act on the same font.
 %    \begin{macrocode}
 \NewDocumentCommand \addCJKfontfeatures { s o m }
   {
@@ -4876,7 +4879,7 @@ a’a\quad 字！字
 %   package.}
 % Load the file chosen by the \keys{LocalConfig} option.
 % The key is read while the package is being loaded, but the file is only input
-% at the end, so that it can use everything LuaCJK defines.
+% at the end, so that it can use everything \pkg{LuaCJK} defines.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_load_local_config:
   {
@@ -5307,7 +5310,7 @@ M.is_cjk = is_cjk
 % \end{macro}
 %
 % \begin{variable}[int]{PUNCT_CLASS}
-% The punctuation LuaCJK knows about, grouped as opening, closing,
+% The punctuation \pkg{LuaCJK} knows about, grouped as opening, closing,
 % middle, dash, and ellipsis.
 % The group decides compression, line-breaking prohibitions, and hanging.
 %    \begin{macrocode}
@@ -5983,7 +5986,7 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{is_inserted}
-% Test whether a node was inserted by LuaCJK.
+% Test whether a node was inserted by \pkg{LuaCJK}.
 %    \begin{macrocode}
 local function is_inserted (n)
   return M.attr_inserted
@@ -5999,7 +6002,7 @@ end
 %   such as \cs{CJKunderdot} covers CJK/CJK and CJK/Latin boundaries without a
 %   gap.}
 % Give a new node the attribute list of the node it is spliced next to.
-% LuaCJK creates glue, kerns, and penalties after \TeX\ has attached
+% \pkg{LuaCJK} creates glue, kerns, and penalties after \TeX\ has attached
 % the surrounding attributes to the text, so a package that
 % marks spans with attributes, such as \pkg{lua-ul}, would otherwise read
 % the new node as the end of its span and start a new one. Assigning
@@ -6407,7 +6410,7 @@ end
 % \end{macro}
 %
 % \TeX\ may break at glue, at kern, and at a discretionary. The first two are
-% places where LuaCJK inserts its own nodes, so after building the list a
+% places where \pkg{LuaCJK} inserts its own nodes, so after building the list a
 % second pass puts a penalty 10000 in front of every break opportunity that
 % must not be used.
 % A discretionary states the value of its own break, so there the pass sets
@@ -6570,7 +6573,7 @@ end
 % \end{macro}
 % \begin{macro}[int]{is_break_point}
 % Glue and kerns are break opportunities;
-% only the ones LuaCJK inserted and the source spaces are considered.
+% only the ones \pkg{LuaCJK} inserted and the source spaces are considered.
 %    \begin{macrocode}
 local function is_break_point (n)
   if n.id == GLUE then
@@ -6716,8 +6719,8 @@ end
 %
 % A CJK character in math mode reaches the math list as a \texttt{math_char}
 % noad. Its family points at the math font, which usually has no CJK glyph,
-% so LuaCJK replaces the nucleus by a \texttt{sub_box} holding the character
-% in the CJK font.
+% so \pkg{LuaCJK} replaces the nucleus by a \texttt{sub_box} holding the
+% character in the CJK font.
 %
 % \begin{variable}[int]{MATH_CHAR, MATH_TEXT_CHAR}
 % The node types of the two kinds of math character noad.
@@ -7612,7 +7615,7 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% \TeX\ can break at the glue that LuaCJK inserts between CJK characters.
+% \TeX\ can break at the glue that \pkg{LuaCJK} inserts between CJK characters.
 % At the end of a paragraph the last two such break points get a penalty,
 % so that at least three CJK characters travel to the last line together
 % instead of a single one.
@@ -7783,7 +7786,7 @@ luatexbase.add_to_callback("hyphenate", M.hyphenate, "LuaCJK.hyphenate")
 % \pkg{lua-ul} draws each decoration as a pair of nodes: a leaders glue
 % of width $w$ and a glue of width $-w$ that gives the space back,
 % so the text does not move. Changing those numbers is enough to inset
-% the decoration and to leave out the punctuation, which is why LuaCJK
+% the decoration and to leave out the punctuation, which is why \pkg{LuaCJK}
 % adjusts the box instead of drawing the decoration itself.
 % \TeX\ numbers the glue subtypes, and 100 is \tn{leaders},
 % the one both \pkg{lua-ul} and this package use.
@@ -8122,7 +8125,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %
 % The \pkg*{LuaCJKfntef} package is a thin layer over \pkg{lua-ul},
 % which provides the underlining engine. It is generated from this file
-% and may be loaded on its own; it loads LuaCJK first.
+% and may be loaded on its own; it loads \pkg{LuaCJK} first.
 %    \begin{macrocode}
 %<*fntef>
 \sys_if_engine_luatex:F
@@ -9151,8 +9154,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %
 % \pkg{ctex} inputs an engine file named |ctex-engine-|\meta{name}|.def|,
 % where \meta{name} is the detected engine unless the |engine| option names
-% another. LuaCJK's file is therefore called |ctex-engine-luacjk.def| and is
-% selected with |engine = luacjk|. The middle part must differ from |luatex|:
+% another. \pkg{LuaCJK}'s file is therefore called |ctex-engine-luacjk.def| and
+% is selected with |engine = luacjk|. The middle part must differ from
+% |luatex|:
 % \pkg{ctex} installs |ctex-engine-luatex.def|, a second file of that name
 % would collide on CTAN, and the two files would describe different backends
 % under one name.
@@ -9173,7 +9177,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \end{macrocode}
 %
 % \pkg{CJKfntef} loads the legacy \pkg{CJK} package, which redefines the font
-% family interface LuaCJK owns, so this file refuses it in both orders:
+% family interface \pkg{LuaCJK} owns, so this file refuses it in both orders:
 % the run stops when \pkg{CJKfntef} is already loaded, and the
 % \texttt{package/CJKfntef/before} hook stops it when it is requested later.
 % The message points at \pkg{LuaCJKfntef}, which does the same work through
@@ -9198,7 +9202,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \end{macrocode}
 %
 % The fontset of \pkg{ctex} defines these shortcuts itself and checks
-% for an existing definition, so the ones of LuaCJK have to go first.
+% for an existing definition, so the ones of \pkg{LuaCJK} have to go first.
 %    \begin{macrocode}
 \clist_map_inline:nn
   { \songti, \heiti, \fangsong, \kaishu, \lishu, \youyuan, \yahei, \pingfang }

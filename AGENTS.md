@@ -312,6 +312,10 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   collapses runs of spaces and breaks lines itself, so neither controls the
   output; alignment padding in code, `syntax` blocks, docstrip tables, and
   license boxes stays as it is.
+- **The package names itself.**  In prose the package is `\pkg{LuaCJK}`, like
+  every other package it mentions; a file name is `\file{…}`, and a Lua field
+  such as `LuaCJK.settings` is not marked at all.  The `\changes` entries
+  follow the same rule, so the generated changelog carries the markup too.
 - **Key names.**  An option name in running text is `\keys{name}`, not
   `\texttt{name}`, even outside a `keyval` environment. Inside one it appends
   `=`, so a cross-reference inside a `keyval` description stays `\texttt`.
