@@ -483,11 +483,15 @@ on `lua-ul`). Picking a backend inside `ctex` is now a public option
 The commands are in `AGENTS.md`. For this skill the points that matter are:
 
 ```bash
-l3build check                       # 55 tests, must print "All checks passed"
+l3build check <name>                # the local loop; must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
-bash scripts/ctex-subset.sh         # 21/21, and no log may mention luatexja
+l3build check                       # 55 tests, CI on every push
+bash scripts/ctex-subset.sh         # 21/21, CI; no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
 ```
+
+A change is verified here with the test it touches; the full suite, the manual
+and the `ctex` subset are CI's, as the global `repo-rules` skill states.
 
 When a change touches a pass, add a test that inspects nodes rather than
 guessing from widths alone: walk `tex.box[0].head` and report the glue, kern,
