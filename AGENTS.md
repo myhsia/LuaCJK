@@ -304,6 +304,10 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   grep -nE '^%[ ]{0,3}\\(begin|end)\{macrocode\}' LuaCJK.dtx   # must be empty
   grep -c 'Reference `doc' build/doc/LuaCJK.log                      # must be 0
   ```
+
+  The second reads a log a doc build leaves, so it applies when one exists:
+  CI's, downloaded from the failing run, or else a local run made for that
+  purpose.
 - **Line breaks in prose.**  Start a sentence on a new line, and break a long
   sentence at a comma, semicolon, or colon rather than mid-phrase.  The line
   count of a paragraph and its width do not change; only the break points move.
@@ -383,24 +387,35 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 ## Workflows
 
 ```bash
+# the local loop: seconds to a minute
 l3build unpack          # ~5 s, regenerates the derived files
-l3build check           # ~3 min, 55 tests, both test runs
 l3build check <name>    # one test, the first thing to run after a change
 l3build save <name>     # rewrite one baseline after an intended change
-l3build doc             # ~2 min, tagged manual, needs latex-lab and tagpdf
-l3build ctan            # ~5 min, check + doc, then both release archives
-l3build upload --dry-run  # validates the CTAN form, publishes nothing
-l3build tag             # syncs \GetIdInfo with build.lua's version and date
 l3build changelog       # ~2 s, CHANGELOG.md from the dtx \changes entries
-bash scripts/ctex-subset.sh            # ~3 min, needs ../ctex-kit or network
-bash scripts/ctex-subset.sh --skip-unpack
 bash scripts/check-docs.sh             # ~1 s, the guide facts against the code
 bash scripts/triage-issues.sh          # ~1 s, open issues with no subsystem label
 bash scripts/session-check.sh          # ~3 s, the declared session check
 texlua scripts/check-charclass.lua     # ~1 s, the CJK range table against Scripts.txt
 texlua scripts/check-bilingual.lua     # ~1 s, the two documentation languages
+
+# CI, on every push: the full suite and the manual
+l3build check           # ~3 min, 55 tests, both test runs
+l3build doc             # ~2 min, tagged manual, needs latex-lab and tagpdf
+bash scripts/ctex-subset.sh            # ~3 min, needs ../ctex-kit or network
+bash scripts/ctex-subset.sh --skip-unpack
+
+# release time only
+l3build tag             # syncs \GetIdInfo with build.lua's version and date
+l3build ctan            # ~5 min, check + doc, then both release archives
+l3build upload --dry-run  # validates the CTAN form, publishes nothing
 ```
 
+The three groups are not interchangeable: the first is how a change is verified here,
+the second is what CI decides on every push, and the third runs once per release.
+A full `l3build check` joins the first only before a push that touches the node
+pipeline, `build.lua`, or more than one baseline, because one test cannot see a
+baseline broken elsewhere; `l3build doc` joins it when the appearance of a demo is
+what is under test.  The global `repo-rules` skill states the rule and its reason.
 `l3build doc`, `l3build tag` and `l3build changelog` all write into the
 working tree: review and commit the README, the `\GetIdInfo` date and
 `CHANGELOG.md` with the change that caused them.
@@ -479,8 +494,20 @@ l3build upload --dry-run           # the form, without publishing it
 - The GitHub release attaches `luacjk-ctan.zip` and `LuaCJK.pdf`, and takes
   the release section of `CHANGELOG.md` as its notes.
 
+This is the one place a full build runs locally. `l3build ctan` is the only
+producer of those two assets, and `ctan.yaml` downloads the published archive
+rather than building one; the full check and the manual are already green in the
+CI run of the commit being tagged, so the run adds the archives and not a second
+opinion.
+
 ## Validation
 
+- A change is verified here with the local loop: `l3build unpack` and
+  `l3build check <name>` for every test the change touches, plus the checks that
+  fail in about a second (`scripts/check-docs.sh`, `l3build changelog` and its
+  `git diff --exit-code`, `check-charclass.lua`, `check-bilingual.lua`).  The
+  full suite, the manual and the `ctex` subset are CI's, on the pushed commit,
+  and a report says which side ran what rather than implying the suite passed.
 - `bash scripts/check-docs.sh` must print `OK: the guides agree with the
   sources`; it is the first thing CI runs and the thing to run before a
   commit that touches a number in either guide, or adds, renames, or removes
@@ -498,7 +525,9 @@ l3build upload --dry-run           # the form, without publishing it
   comment.
 - `l3build check` must print `All checks passed`; the `.tlg` baselines must
   match byte for byte. A difference is a behavior change until proven
-  otherwise.
+  otherwise.  CI runs the full suite on every push, so the whole thing is run
+  here only before a push that touches the node pipeline, `build.lua`, or more
+  than one baseline.
 - Prove a documentation-only change inert rather than arguing it: unpack from
   a worktree of the previous commit, then `cmp build/unpacked/*` against the
   current build, and compare `mutool draw -F txt` output of the two PDFs. Both
@@ -514,30 +543,36 @@ l3build upload --dry-run           # the form, without publishing it
   and `bash scripts/check-docs.sh` checks the changelog facts: the newest
   `\changes` version and date against `build.lua`, and the first line of
   `CHANGELOG.md` against the released version.
-- `l3build doc` must finish with no `^!` error, no `Reference ... undefined`,
-  no `Missing character`, and no `multiply defined` label or
-  `duplicate destination` warning: the two language parts restart the section
-  numbering, so the `\LuaCJKdoclang` tags are what keeps their labels and PDF
-  destinations apart.  The manual ends with a Change History part;
-  it is absent without `LuaCJK.gls`, which only the `glo`→`gls` dependency in
-  `tex()` builds, and adding it to the table of contents shifts every page
-  reference in the manual by one.
-- The `docext.sty` that `l3build doc` resolves is v0.2D or later, which
+- The manual is held to CI's `doc` step: no `^!` error, no
+  `Reference ... undefined`, no `Missing character`, and no `multiply defined`
+  label or `duplicate destination` warning in `build/doc/LuaCJK.log`: the two
+  language parts restart the section numbering, so the `\LuaCJKdoclang` tags are
+  what keep their labels and PDF destinations apart.  The manual ends with a
+  Change History part; it is absent without `LuaCJK.gls`, which only the
+  `glo`→`gls` dependency in `tex()` builds, and adding it to the table of
+  contents shifts every page reference in the manual by one.  A doc build is run
+  here only to debug a failure that CI reported, and then the log CI kept comes
+  first (`gh run download`, see the `ci-artifacts` skill).
+- The `docext.sty` that CI's `l3build doc` resolves is v0.2D or later, which
   `kpsewhich docext.sty` and its `\ProvidesPackage` line show.  An older copy
   in `TEXMFHOME` narrows the result panel of a demo whose body is a single
   vertical box, and nothing in the log says so.
 - `bash scripts/ctex-subset.sh` must print `ctex subset: 21/21 passed`, every
   log must be free of `luatexja`, and the script additionally greps for the
-  glue strings that prove the `ctex` option plumbing reached LuaCJK.
+  glue strings that prove the `ctex` option plumbing reached LuaCJK.  It is a
+  CI job only: it needs a `ctex` checkout and three minutes.
 - The `ctex` baselines cannot be compared: they were produced with LuaTeX-ja
   and describe a different line-breaking implementation, so the subset script
   only compiles the files and checks for the fallback. `ctex01.lvt` covers
   the real path inside `l3build check`, because it passes `engine = luacjk` to
   the class and so loads the engine file through the public option; the subset
   script needs a `ctex` checkout and therefore stays outside the normal run.
-- A change that touches the node pipeline should also be checked by hand in
-  `build/doc/LuaCJK.pdf` for the affected demo; the extracted examples are the
-  fastest place to see the effect.
+- A change that touches the node pipeline should also be looked at by hand in
+  `build/doc/LuaCJK.pdf` for the affected demo, because a demo can typeset
+  wrongly and still match its baseline; the extracted examples are the fastest
+  place to see the effect.  That is the one reason to build the manual here, so
+  the build happens when the appearance is the thing under test rather than
+  after every change.
 - `bash scripts/session-check.sh` must exit 0 and print nothing: it is the
   declared session check, and it reports a changelog drift against ctex-kit and
   any open issue that still has no subsystem label.  `bash
@@ -573,6 +608,11 @@ requests. Two jobs, each on `ubuntu-latest`, `macos-latest`, and
 - `ctex-subset`: install TeX Live and the same ctex-kit branch, then
   `l3build unpack`, then `bash scripts/ctex-subset.sh --skip-unpack`.
 
+CI is the authority for the slow ones — the full suite, the manual and the
+`ctex` subset — so a session pushes and reads that run rather than repeating
+them here; a local repeat is made only for the two reasons the global
+`repo-rules` skill states.
+
 Both jobs install ctex-kit's `feat/1122-engine-option` branch into `TEXMFHOME`
 before anything is compiled: the package and the manual select the backend with
 ctex's `engine` option, which ctex 2.6.6 adds and TeX Live 2026 does not ship
@@ -586,12 +626,13 @@ Live**; the condition on the doc step stays as it is.
 On failure the `l3build` job uploads `build/**/*.diff`, `build/**/*.fc` and
 `build/**/*.log` as
 `luacjk-diff-<short-sha>-<os>`; download it with `gh run download` through the
-proxy (see the `network-access` skill). Local and CI run the same commands; a
-local run gets the same ctex from an `l3build install` of that branch into
-`TEXMFHOME` (`~/Library/texmf` on this Mac), and the remaining parity risks are
-a missing or surplus entry in `.github/tl_packages` and the fonts the manual
-needs (Noto CJK from `.github/font-urls.txt`, the two LXGW faces from
-`lxgw-fonts`).
+proxy (see the `network-access` skill). CI and a local full run work from the
+same tooling; a local full run — the manual for a demo's appearance, or
+`l3build ctan` at release — gets the same ctex from an `l3build install` of that
+branch into `TEXMFHOME` (`~/Library/texmf` on this Mac), and the remaining
+parity risks are a missing or surplus entry in `.github/tl_packages` and the
+fonts the manual needs (Noto CJK from `.github/font-urls.txt`, the two LXGW
+faces from `lxgw-fonts`).
 
 A second workflow, `ctan.yaml`, is not a test: publishing a GitHub release
 starts it, and it publishes that release to CTAN.
