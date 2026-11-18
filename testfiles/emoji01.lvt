@@ -1,0 +1,46 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\newfontfamily\emojifont[Renderer=HarfBuzz]{NotoColorEmoji.ttf}
+
+% Report how many glyphs box 0 holds. A joined emoji sequence is one glyph
+% of the font, a sequence the shaper cannot join is one glyph per character,
+% so the count is the signature; the code point of a ligature glyph is a
+% detail of the font and is left out.
+\def\showglyphcount{%
+  \directlua{
+    local count = 0
+    local n = tex.box[0].head
+    while n do
+      if n.id == node.id("glyph") then
+        count = count + 1
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "GLYPHS " .. count)
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{a joined emoji sequence stays one glyph}{
+  \setbox0=\hbox{{\emojifont 👩‍💻}}\showglyphcount
+}
+\TEST{the same two emoji without the joiner are two glyphs}{
+  \setbox0=\hbox{{\emojifont 👩💻}}\showglyphcount
+}
+\TEST{a joined emoji sequence adds no advance of its own}{
+  \setbox0=\hbox{{\emojifont 👩‍💻}}\setbox2=\hbox{{\emojifont 👩💻}}%
+  \ifdim\wd0<\wd2 \TYPE{narrower}\else\TYPE{not narrower}\fi
+}
+\TEST{a joiner between CJK characters is not set}{
+  \setbox0=\hbox{中‍文}\showglyphcount
+}
+
+\END
+
+\end{document}

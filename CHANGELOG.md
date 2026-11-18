@@ -6,7 +6,10 @@
 - A document whose default CJK family is not declared is reported, and its text takes a family it did declare instead of none at all.
 - The three sizes of a CJK math family come from the text size of the formula, so a `\text` inside it no longer sets the other characters of the formula in a script size.
 - A CJK character in math mode takes a fallback font when the CJK font of the formula does not have it.
+- The joiners (U+200C, U+200D) and the variation selectors are no longer removed at the input: they reach the font, so an emoji sequence is not split and a CJK variation sequence selects its glyph, and what the font leaves of them is dropped before the spacing pass, so two CJK characters still take no glue around them.
 - `LoadFandol` is on by default, so a document that declares no CJK font is set in the four Fandol faces without asking for them.
+- The CJK font is applied to the characters before the text is shaped instead of to the glyph nodes after it: a combining mark attaches to its base, a variation sequence selects its glyph, and the font's own ligatures and `locl` forms appear. An older `luaotfload` keeps the previous behavior.
+- A joiner or a variation selector that the font cannot use leaves nothing behind, and neither does a CJK character the CJK font does not have.
 - `top` and `bottom` are keys of the decoration, so they reach a rule that `format` colors as well, and an underline type is built per font size, so a rule built from `em` units keeps its thickness when the size changes.
 - A decoration keeps the width, the stretch, and the shrink of the text it covers, so a rule no longer changes the spacing of the line it sits in, `skip` no longer tightens a justified line, and a `\kern` inside the text no longer moves the gap `skip` leaves at a punctuation mark.
 - `hidden` takes the ink out of the text instead of putting it in a `\phantom`: the text keeps its line breaks, so a hidden paragraph breaks like the visible one instead of overflowing in one line.

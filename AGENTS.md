@@ -50,7 +50,7 @@ Entry points:
 | `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
 | `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.3`, `packtdszip = false` with `tdslocations` kept for `l3build install`, `ctanpkg`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
-| `testfiles/NN.lvt` + `.tlg` | 60 regression tests and their baselines, one pair per feature |
+| `testfiles/NN.lvt` + `.tlg` | 62 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree |
 | `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, collapses only ASCII whitespace, and names the forge repository of the release link with `--repo`.  It also exports `newest` and `announcement`, which `build.lua` calls to turn the newest section of that changelog into the CTAN announcement |
@@ -65,7 +65,7 @@ Entry points:
 | `.github/workflows/test.yaml` | the CI workflow |
 | `.github/workflows/ctan.yaml` | publishes a release to CTAN: on a published release it checks out the tag, refuses to run unless `build.lua`'s version is the tag's, downloads that release's own `luacjk-ctan.zip` so that the archive CTAN receives is the published one, and runs `l3build upload`; a manual run takes the latest release with the current branch's form |
 | `.github/workflows/triage.yaml` | labels a new issue with the subsystem of the fix: on `issues: opened` and `reopened` it runs `scripts/triage-issues.sh --apply --number <n>` with the default token, `issues: write`; an issue the keyword table cannot place keeps no label, and the session check reports it |
-| `.github/tl_packages` | the package list CI installs; a dependency must be added **or removed** here or the Ubuntu job fails first; the tagged manual and `tagging01` need `latex-lab` and `tagpdf` |
+| `.github/tl_packages` | the package list CI installs; a dependency must be added **or removed** here or the Ubuntu job fails first; the tagged manual and `tagging01` need `latex-lab` and `tagpdf`, and `emoji01` renders `NotoColorEmoji.ttf`, which is `noto-emoji` |
 | `CHANGELOG.md` | user-visible changes, newest first, generated from the `\changes` entries by `l3build changelog` |
 | `CTAN-NOTE.md` | the internal note of the next CTAN upload, read by `l3build upload` and sent verbatim; empty it once that upload is through |
 | `LICENSE` | the LPPL text the meta-comment refers to |
@@ -261,6 +261,24 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   at all, so `\@@_ensure_family_default:` warns and uses `\CJKrmdefault` or the
   first declared family, and a document that declared nothing with the option
   off is warned about as well.
+- **The CJK font is applied before the text is shaped.**  `M.pre_shaping` is
+  installed on luaotfload's `pre_shaping_filter`, so the font is set on the
+  glyph in place and the font's own features apply: a combining mark attaches
+  to its base (`shaping01`), a variation sequence selects its glyph, and a
+  font that joins two em dashes does so on its own, which is why the manual no
+  longer lists `PoZheHaoLigature` as absent.  The `Baseline` shift is added
+  only where the font actually changes, which is what keeps the pass
+  idempotent across the paragraph and again on each line packed from it — a
+  second copy of the shift would move every shifted line twice.
+  What shaping leaves of a joiner, a variation selector, or a CJK character
+  the font does not have is removed by `drop_orphans` before the spacing pass;
+  it consults `missing_chars`, filled by `pre_shaping`, so the box a document
+  with no CJK font shows stays (`loadfandol03`).  A luaotfload without the
+  callback keeps the previous path in full — `rewrite_fonts` through
+  `copy_glyph` after shaping, and every zero-width character removed at the
+  input — and no test reaches it, because a callback type cannot be taken out
+  of a live callback list; check that path by hand with a probe against an
+  unpacked copy whose `M.shaping` is forced to `false`.
 - **A drawn pattern is colored inside its own drawing.**  The ink of the wave
   and the slash is stroked by `l3draw`, which uses the color `l3color` holds,
   so `luacolor`'s attribute never reaches it; an attribute on a leader box whose
@@ -463,7 +481,7 @@ texlua scripts/check-charclass.lua     # ~1 s, the CJK range table against Scrip
 texlua scripts/check-bilingual.lua     # ~1 s, the two documentation languages
 
 # CI, on every push: the full suite and the manual
-l3build check           # ~3 min, 60 tests, both test runs
+l3build check           # ~3 min, 62 tests, both test runs
 l3build doc             # ~2 min, tagged manual, needs latex-lab and tagpdf
 bash scripts/ctex-subset.sh            # ~3 min, needs ../ctex-kit or network
 bash scripts/ctex-subset.sh --skip-unpack
@@ -769,6 +787,17 @@ package owns and derives the id as `pkg = string.lower(module)`, which
 zip, `doc/latex/LuaCJK/` and `source/latex/LuaCJK/`; lower case there would
 need `moduledir`, which `l3build-variables.lua` assigns unconditionally after
 `build.lua` is read.
+
+A fifth was the font applied to the glyph nodes *after* the text was shaped:
+`rewrite_fonts` copied each CJK glyph into the font its attribute named, and
+the manual listed the CJK font's OpenType features as a consequence it could
+not have.  It was replaced for the two reports that read it from the outside:
+a base and a combining mark stayed two glyphs because the copy carries no
+position, so `か` + U+3099 came out beside its base while the precomposed `が`
+was one glyph, and a joiner never reached the font at all, so an emoji
+sequence was split.  What replaces it is the substitution in front of shaping;
+copying a shaped glyph cannot carry what shaping decided, and a character the
+shaper must see cannot be removed at the input.
 
 ## Issue triage
 
