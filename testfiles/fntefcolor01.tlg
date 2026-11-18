@@ -48,10 +48,76 @@ TEST 8: a symbol takes the color of its text
 rules: blue
 ============================================================
 ============================================================
-TEST 9: the wave and the slash take format
+TEST 9: the wave and the slash are stroked in the color of format
 ============================================================
-rules: red
-rules: red
+rules: black
+> \box...=
+\hbox(7.78+1.62)x10.0, direction TLT
+.\leaders 10.0
+..\hbox(0.0+0.0)x5.0, glue set - 0.2fil, direction TLT
+...\glue 0.0 plus 1.0fil minus 1.0fil
+...\hbox(0.0+0.0)x5.4, direction TLT
+....\hbox(3.6+0.0)x5.4, shifted 4.19998, direction TLT
+.....\hbox(3.6+0.0)x5.4, direction TLT
+......\glue 0.2
+......\hbox(0.0+0.0)x0.0, shifted -1.8, direction TLT
+.......\pdfsave
+.......\pdfliteral origin{0.39851 w}
+.......\pdfliteral origin{0 J}
+.......\pdfliteral origin{0 j}
+.......\pdfliteral origin{10 M}
+.......\pdfliteral origin{[] 0 d}
+.......\hbox(0.0+0.0)x0.0, direction TLT
+........\hbox(0.0+0.0)x0.0, direction TLT
+.........\savepos
+.........\write1{\new@label@record{draw.1}{{xpos}{\__property_code_xpos: }{ypos}{\__property_code_ypos: }{abspage}{\__property_code_abspage: }}}
+.........\savepos
+........\pdfliteral direct{1 0 0 rg 1 0 0 RG}
+........\pdfliteral origin{0.39851 w}
+........\pdfliteral origin{0 0 m}
+........\pdfliteral origin{0.62267 1.59404 1.868 1.59404 2.49066 0 c}
+........\pdfliteral origin{3.11333 -1.59404 4.35866 -1.59404 4.98132 0 c}
+........\pdfliteral origin{S}
+.......\pdfrestore
+...\glue 0.0 plus 1.0fil minus 1.0fil
+.\glue -10.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+! OK.
+<argument> ...= red]{中}} \rulecolors \showbox 0 
+                                                  \setbox 0=\hbox {\CJKxout ...
+l. ...}
+rules: black
+> \box...=
+\hbox(7.78+1.62)x10.0, direction TLT
+.\leaders 10.0
+..\hbox(0.0+0.0)x4.59999, direction TLT
+...\hbox(0.0+0.0)x4.59999, direction TLT
+....\hbox(9.9+0.0)x4.59999, shifted 1.69998, direction TLT
+.....\hbox(9.9+0.0)x4.59999, direction TLT
+......\glue 0.2
+......\hbox(0.0+0.0)x0.0, shifted -1.7, direction TLT
+.......\pdfsave
+.......\pdfliteral origin{0.39851 w}
+.......\pdfliteral origin{0 J}
+.......\pdfliteral origin{0 j}
+.......\pdfliteral origin{10 M}
+.......\pdfliteral origin{[] 0 d}
+.......\hbox(0.0+0.0)x0.0, direction TLT
+........\hbox(0.0+0.0)x0.0, direction TLT
+.........\savepos
+.........\write1{\new@label@record{draw.2}{{xpos}{\__property_code_xpos: }{ypos}{\__property_code_ypos: }{abspage}{\__property_code_abspage: }}}
+.........\savepos
+........\pdfliteral direct{1 0 0 rg 1 0 0 RG}
+........\pdfliteral origin{0.39851 w}
+........\pdfliteral origin{0 -1.4944 m}
+........\pdfliteral origin{4.18431 7.97012 l}
+........\pdfliteral origin{S}
+.......\pdfrestore
+.\glue -10.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+! OK.
+<argument> ...= red]{中}} \rulecolors \showbox 0 
+l. ...}
 ============================================================
 ============================================================
 TEST 10: an object that carries its own color keeps it
@@ -59,8 +125,43 @@ TEST 10: an object that carries its own color keeps it
 rules: magenta
 ============================================================
 ============================================================
-TEST 11: a drawn pattern without format follows the color of its text
+TEST 11: a drawn pattern follows the color of its text without format
 ============================================================
 rules: blue
+> \box...=
+\hbox(7.78+1.62)x10.0, direction TLT
+.\leaders 10.0
+..\hbox(0.0+0.0)x5.0, glue set - 0.2fil, direction TLT
+...\glue 0.0 plus 1.0fil minus 1.0fil
+...\hbox(0.0+0.0)x5.4, direction TLT
+....\hbox(3.6+0.0)x5.4, shifted 4.19998, direction TLT
+.....\hbox(3.6+0.0)x5.4, direction TLT
+......\glue 0.2
+......\hbox(0.0+0.0)x0.0, shifted -1.8, direction TLT
+.......\pdfsave
+.......\pdfliteral origin{0.39851 w}
+.......\pdfliteral origin{0 J}
+.......\pdfliteral origin{0 j}
+.......\pdfliteral origin{10 M}
+.......\pdfliteral origin{[] 0 d}
+.......\hbox(0.0+0.0)x0.0, direction TLT
+........\hbox(0.0+0.0)x0.0, direction TLT
+.........\savepos
+.........\write1{\new@label@record{draw.3}{{xpos}{\__property_code_xpos: }{ypos}{\__property_code_ypos: }{abspage}{\__property_code_abspage: }}}
+.........\savepos
+........\pdfliteral direct{0 0 1 rg 0 0 1 RG}
+........\pdfliteral origin{0.39851 w}
+........\pdfliteral origin{0 0 m}
+........\pdfliteral origin{0.62267 1.59404 1.868 1.59404 2.49066 0 c}
+........\pdfliteral origin{3.11333 -1.59404 4.35866 -1.59404 4.98132 0 c}
+........\pdfliteral origin{S}
+.......\pdfrestore
+...\glue 0.0 plus 1.0fil minus 1.0fil
+.\glue -10.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+! OK.
+<argument> ...wave {中}}} \rulecolors \showbox 0 
+                                                  \setbox 0=\hbox {\CJKunder...
+l. ...}
 rules: black
 ============================================================
