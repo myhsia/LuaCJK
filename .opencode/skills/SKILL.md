@@ -334,6 +334,17 @@ the cell, its top a given distance under the *bottom of the em box*. The
 measured descent is part of the cached type key, so a font change does not
 reuse a stale placement.
 
+The color of a drawn pattern travels in the drawing, not in an attribute.
+`l3draw` strokes with the color `l3color` holds, so an attribute set by
+`luacolor` cannot reach the ink; worse, it leaks: `luacolor` writes the color
+before a leaders box and restores it only when it meets a later node that
+carries an attribute, and a repeated box leaves none behind. The type is
+therefore built without `\luaul_apply_color:`, and the pattern writes the
+operations of `\current@color` — `format` resolved in a group of its own, or the
+color of the text — right after `\draw_begin:`, inside the graphics scope of
+`l3draw`. They are expanded when the box is built, since a literal expands its
+payload at shipout, when that variable holds another call's color.
+
 ### The listings patch
 
 `listings` typesets a character it does not know at the moment it reads it, so

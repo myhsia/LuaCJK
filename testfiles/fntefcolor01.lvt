@@ -35,6 +35,8 @@
   end
 }
 \newcommand\rulecolors{\directlua{luacjk_rule_colors()}}
+\showboxbreadth = 100
+\showboxdepth = 100
 
 \begin{document}
 
@@ -94,11 +96,15 @@
   \rulecolors
 }
 
-\TEST{the wave and the slash take format}{
+% The wave and the slash are drawn, so their color is in the PDF literal of
+% the pattern rather than in an attribute: \showbox prints it.
+\TEST{the wave and the slash are stroked in the color of format}{
   \setbox0=\hbox{\CJKunderwave[format = red]{中}}
   \rulecolors
+  \showbox0
   \setbox0=\hbox{\CJKxout[format = red]{中}}
   \rulecolors
+  \showbox0
 }
 
 \TEST{an object that carries its own color keeps it}{
@@ -106,9 +112,10 @@
   \rulecolors
 }
 
-\TEST{a drawn pattern without format follows the color of its text}{
+\TEST{a drawn pattern follows the color of its text without format}{
   \setbox0=\hbox{\textcolor{blue}{\CJKunderwave{中}}}
   \rulecolors
+  \showbox0
   \setbox0=\hbox{\CJKunderwave{中}}
   \rulecolors
 }

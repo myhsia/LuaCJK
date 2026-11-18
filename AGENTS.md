@@ -242,6 +242,17 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   at all, so `\@@_ensure_family_default:` warns and uses `\CJKrmdefault` or the
   first declared family, and a document that declared nothing with the option
   off is warned about as well.
+- **A drawn pattern is colored inside its own drawing.**  The ink of the wave
+  and the slash is stroked by `l3draw`, which uses the color `l3color` holds,
+  so `luacolor`'s attribute never reaches it; an attribute on a leader box whose
+  content is a drawing only leaks, because `luacolor` writes the color in front
+  of the repeated box and finds no node after it that carries an attribute to
+  restore the previous one.  The type is built without `\luaul_apply_color:`,
+  and the drawing writes the operations it reads from `\current@color` — the
+  resolved `format`, or the color of the text — right after `\draw_begin:`,
+  expanded when the box is built, because a literal expands its payload at
+  shipout, when the variable belongs to another call.  `fntefcolor01` pins the
+  literal in the box and the attribute of the leaders glue.
 - **Inserted nodes must inherit attributes.**  Glue, kern, and penalty nodes
   created after TeX attached the attributes need `inherit_attributes(...)`, or
   attribute-driven packages such as `lua-ul` see the span end there.
