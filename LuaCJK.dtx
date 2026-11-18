@@ -8504,10 +8504,12 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %     \l_@@_fntef_textformat_tl, \l_@@_fntef_pass_tl,
 %     \l_@@_fntef_top_dim,       \l_@@_fntef_bottom_dim,
 %     \l_@@_fntef_top_given_bool, \l_@@_fntef_bottom_given_bool,
-%     \l_@@_fntef_color_key_tl,  \l_@@_fntef_silent_bool
+%     \l_@@_fntef_color_key_tl,  \l_@@_fntef_silent_bool,
+%     \l_@@_fntef_color_ops_tl,  \g_@@_fntef_color_ops_tl
 %   }
 % The requested geometry, the format of the text,
 % the color that an underline type is cached by,
+% the color operations of a drawn pattern,
 % and the keys that \pkg{lua-ul} receives.
 %    \begin{macrocode}
 \dim_new:N \l_@@_fntef_depth_dim
@@ -8529,6 +8531,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \tl_new:N \l_@@_fntef_cache_key_tl
 \tl_new:N \l_@@_fntef_cache_name_tl
 \tl_new:N \l_@@_fntef_color_key_tl
+\tl_new:N \l_@@_fntef_color_ops_tl
+\tl_new:N \g_@@_fntef_color_ops_tl
 \tl_new:N \l_@@_fntef_pass_tl
 \dim_new:N \l_@@_fntef_top_dim
 \dim_new:N \l_@@_fntef_bottom_dim
@@ -8945,16 +8949,17 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %
 % \begin{macro}{\CJKunderwave}
 % \changes{v0.0.3}{2026/11/18}{The wave takes \keys{format} like the other
-%   decorations, and \keys{format} colors the drawn patterns instead of the
-%   rule alone.}
+%   decorations: the pattern is stroked in that color, in the color of its text
+%   when the key is absent, and neither color reaches the text outside it.}
 % A wave drawn with \pkg{l3draw}, one period per half em, repeated
 % by \tn{leaders}. The drawing is kept as code rather than as a box,
 % so the |em| units are resolved when the decoration is used
 % and the pattern follows the current font size.
 %
-% The drawing goes through \cs{@@_fntef_use_leader_type:nn} like the other
-% patterns, so that it takes \keys{format} and is built once per font size
-% and color.
+% The drawing goes through \cs{@@_fntef_use_drawn_type:nn} rather than
+% \cs{@@_fntef_use_leader_type:nn}, because its ink is stroked and not a rule
+% that \pkg{luacolor} could color by attribute; the color travels into the
+% drawing itself, so the pattern is built once per font size and color.
 %
 % The period is forced to exactly half an em by \tn{hbox}| to .5em|.
 % \pkg{l3draw} sizes its box by the bounding box of the stroked path,
@@ -8991,6 +8996,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
                     \hbox:n
                       {
                         \draw_begin:
+                          \@@_fntef_pattern_color:
                           \draw_set_linewidth:n { .04em }
                           \draw_path_moveto:n { 0em , 0em }
                           \draw_path_curveto:nnn { .0625em , .16em }
@@ -9009,7 +9015,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
           }
       }
     \tl_set:Nn \l_@@_fntef_cache_key_tl { wave }
-    \exp_args:NV \@@_fntef_use_leader_type:nn
+    \exp_args:NV \@@_fntef_use_drawn_type:nn
       \l_@@_fntef_cache_key_tl \l_@@_fntef_any_code_tl
   }
 \cs_new_protected:Npn \@@_fntef_silent_begin:
@@ -9099,7 +9105,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKxout}
-% \changes{v0.0.3}{2026/11/18}{The slash takes \keys{format} like the wave.}
+% \changes{v0.0.3}{2026/11/18}{The slash takes \keys{format} like the wave, and
+%   follows the color of its text when the key is absent.}
 % A repeated slash, as in \pkg{ulem}'s \tn{xout}.
 % The drawing is kept as code so that it scales with the font size,
 % and the stroke width is |.04em| like the wave.
@@ -9112,8 +9119,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % by the part that lies below the baseline (|.15em|) plus half the stroke,
 % so the ink lands where the path says.
 %
-% Like the wave, the slash goes through \cs{@@_fntef_use_leader_type:nn},
-% so it takes \keys{format}.
+% Like the wave, the slash goes through \cs{@@_fntef_use_drawn_type:nn},
+% so it is stroked in the color of \keys{format} or of its text.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_slash:
   {
@@ -9128,6 +9135,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
                     \hbox:n
                       {
                         \draw_begin:
+                          \@@_fntef_pattern_color:
                           \draw_set_linewidth:n { .04em }
                           \draw_path_moveto:n { 0em , -.15em }
                           \draw_path_lineto:n { .42em , .8em }
@@ -9142,7 +9150,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
           }
       }
     \tl_set:Nn \l_@@_fntef_cache_key_tl { xout }
-    \exp_args:NV \@@_fntef_use_leader_type:nn
+    \exp_args:NV \@@_fntef_use_drawn_type:nn
       \l_@@_fntef_cache_key_tl \l_@@_fntef_any_code_tl
   }
 \NewDocumentCommand \CJKxout { s t- o +m }
@@ -9237,8 +9245,24 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \pkg{lua-ul} puts in the name of the type it defines is a constant: one
 % that expands again when the type is used would rebuild the type with
 % whatever color happened to be current then.
+%
+% A drawn pattern takes its color another way.
+% Its ink comes from \pkg{l3draw}, which strokes with the color that
+% \pkg{l3color} holds, so \pkg{luacolor}'s attribute never reaches it;
+% an attribute on a leader box that holds a drawing only leaks, because
+% \pkg{luacolor} writes the color in front of the repeated box and finds no
+% node after it to restore the previous one.
+% The color operations are therefore read from \tn{current@color}, the
+% resolved command that \pkg{luacolor} itself would write, and the drawing
+% emits them inside its own graphics scope.
+% A \keys{format} is resolved in a group of its own, so the attribute it sets
+% ends with that group and no text outside the pattern takes its color.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_use_leader_type:nn #1#2
+  { \@@_fntef_use_type:nnn {#1} {#2} { attribute } }
+\cs_new_protected:Npn \@@_fntef_use_drawn_type:nn #1#2
+  { \@@_fntef_use_type:nnn {#1} {#2} { drawn } }
+\cs_new_protected:Npn \@@_fntef_use_type:nnn #1#2#3
   {
     \tl_if_empty:NTF \l_@@_fntef_format_tl
       {
@@ -9250,6 +9274,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         \tl_set:Nn \l_@@_fntef_color_key_tl
           { format | \l_@@_fntef_format_tl }
       }
+    \str_if_eq:nnT {#3} { drawn } { \@@_fntef_capture_color: }
     \tl_set:Ne \l_@@_fntef_cache_key_tl
       {
         \exp_not:n {#1}
@@ -9262,20 +9287,67 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         \int_gincr:N \g_@@_fntef_format_int
         \tl_set:Ne \l_@@_fntef_cache_name_tl
           { LuaCJKfntef / ul / \int_use:N \g_@@_fntef_format_int }
-        \tl_if_empty:NTF \l_@@_fntef_format_tl
+        \str_if_eq:nnTF {#3} { drawn }
           {
             \exp_args:Nc \newunderlinetype
               { \l_@@_fntef_cache_name_tl } [ LuaCJKfntef ] {#2}
           }
           {
-            \exp_args:Nc \newunderlinetype
-              { \l_@@_fntef_cache_name_tl } [ LuaCJKfntef ]
-              { \luaul_apply_color: #2 }
+            \tl_if_empty:NTF \l_@@_fntef_format_tl
+              {
+                \exp_args:Nc \newunderlinetype
+                  { \l_@@_fntef_cache_name_tl } [ LuaCJKfntef ] {#2}
+              }
+              {
+                \exp_args:Nc \newunderlinetype
+                  { \l_@@_fntef_cache_name_tl } [ LuaCJKfntef ]
+                  { \luaul_apply_color: #2 }
+              }
           }
         \prop_gput:NVV \g_@@_fntef_format_prop
           \l_@@_fntef_cache_key_tl \l_@@_fntef_cache_name_tl
       }
     \use:c { \l_@@_fntef_cache_name_tl }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]
+%   {\@@_fntef_capture_color:, \@@_fntef_pattern_color:,
+%     \@@_fntef_literal_direct:n}
+% Read the color operations of the pattern.
+% Without \keys{format} they are the ones of the text the pattern decorates,
+% which \tn{current@color} already holds; with it, the color is resolved the
+% way \pkg{luacolor} resolves it and read from the same place, in a group that
+% keeps the attribute to itself.
+% The drawing then writes them, expanded, so that the literal keeps the color
+% of the call that built it: a literal whose payload still held the variable
+% would expand it at shipout, with whatever color is current then.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_fntef_capture_color:
+  {
+    \tl_if_empty:NTF \l_@@_fntef_format_tl
+      { \tl_set_eq:Nc \l_@@_fntef_color_ops_tl { current@color } }
+      {
+        \group_begin:
+          \luaul_apply_color:
+          \tl_gset_eq:Nc \g_@@_fntef_color_ops_tl { current@color }
+        \group_end:
+        \tl_set_eq:NN \l_@@_fntef_color_ops_tl \g_@@_fntef_color_ops_tl
+      }
+  }
+\cs_new_protected:Npn \@@_fntef_pattern_color:
+  {
+    \tl_if_empty:NF \l_@@_fntef_color_ops_tl
+      {
+        \exp_args:NV \@@_fntef_literal_direct:n
+          \l_@@_fntef_color_ops_tl
+      }
+  }
+\cs_new_protected:Npn \@@_fntef_literal_direct:n #1
+  {
+    \tex_expanded:D
+      { \exp_not:N \tex_pdfextension:D literal direct {#1} }
   }
 %    \end{macrocode}
 % \end{macro}
