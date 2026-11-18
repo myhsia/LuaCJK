@@ -56,6 +56,14 @@
   \endgroup
 }
 
+\TEST{a zero bound width hangs the whole advance}{
+  \begingroup
+    \LuaCJKsetup{PunctBoundWidth = 0pt}
+    \setbox0=\vbox{\hsize = 2.5em 字字。字字\par}
+    \showlines
+  \endgroup
+}
+
 \TEST{the line width is unchanged}{
   \setbox0=\vbox{\hsize = 2.5em 字字。字字\par}
   \TYPE{width: \the\wd0}
