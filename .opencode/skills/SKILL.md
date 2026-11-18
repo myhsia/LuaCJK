@@ -427,6 +427,31 @@ follows the glue when the line stretches, and it keeps the rule's attributes,
 so the color survives. The height and depth are shifted by the box's own
 translation. A box that holds a pattern (the symbols) keeps the leaders.
 
+The remainder cannot be spread at all. `\xleaders` divides it between the
+copies, but that glue separates two butt caps, and a cap ends where its path
+ends: every gap shows as a hole in the stroke, one stroke width wide at the
+stretch of an ordinary justified line. `\leaders` keeps the copies adjacent and
+leaves the remainder at the end, `\cleaders` splits it between the two ends.
+Neither reaches the last character.
+
+So the append callback divides the piece instead. It is the one place where the
+width of the piece is final — the packed box carries `glue_set`, and a glue's
+actual width is its natural width plus its share of the box's stretch or shrink
+— and there `tile` divides that width into `round(w / period)` whole patterns
+and gives this piece its own copy of the leader box at `floor(w / k)`. `\leaders`
+then places exactly that many adjacent copies: no glue between them, nothing
+left at the end, and the period follows the stretch of the line. That width comes
+from `glue_set` together with `glue_sign`, since `glue_set` stays positive on a
+shrunk line; and the ink of the copy is painted inside a scope scaled
+horizontally to the slot, because the drawing's own period is one em and the slot
+is not. The scale must be undone without losing the advance the backend expects,
+so the closing literal carries the `Q` and a translation of one period. A leader box is
+tiled only when it holds a whatsit and no glyph or rule, so the dots,
+`\CJKunderanyline`, `\CJKunderanysymbol` and the `symbol` cells keep their own
+box, and a box that never reaches a vertical list keeps the plain `\leaders`
+remainder. The wave and the slash therefore use `\leaders`, the wave with a
+period of one em and an amplitude of a quarter em.
+
 The `depth` key places the rule below the baseline. `boxdepth`, which used to
 cap how much a rule added to the box, is gone: it was a workaround for the
 drawn patterns growing the line, and on a rule it removed the rule itself.
@@ -472,7 +497,10 @@ wrapped in `\hbox to <period>` with `\hss` on both sides and the period stays
 exact instead of leaving a stroke-wide gap. It also places the drawing by the
 bottom of that box, which lifts a path that goes below the baseline, so the
 xout slash is lowered again by the part below the baseline plus half the
-stroke. The `symbol` variants of `\CJKunderdot` and `\CJKunderwave`, and
+stroke. The wave's period is one em and its amplitude a quarter em, so a span
+of whole characters is an exact number of periods and the crest lands in the
+same place in every character; the drawn type's key carries the em alone. The
+`symbol` variants of `\CJKunderdot` and `\CJKunderwave`, and
 `\CJKunderanysymbol`, follow one placement rule: one symbol per em, centered in
 the cell, its top a given distance under the *bottom of the em box*. The
 measured descent is part of the cached type key, so a font change does not

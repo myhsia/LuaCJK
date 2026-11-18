@@ -24,7 +24,9 @@
     local out, i = {}, 0
     local n = tex.box[0].head
     while n do
-      if n.id == node.id("glue") and n.subtype == 100 then
+      if n.id == node.id("glue")
+         and (n.subtype == 100 or n.subtype == 101
+              or n.subtype == 102) then
         i = i + 1
         local v = node.has_attribute(n, attr)
         out[i] = v and (names[v] or tostring(v)) or "none"

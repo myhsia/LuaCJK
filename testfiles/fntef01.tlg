@@ -93,42 +93,48 @@ RULES anyline 1
 RUNS anysymbol 1
 ============================================================
 ============================================================
-TEST 12: wave period is half an em and closes the gap
-============================================================
-LEADER width=327680 height=0 depth=0
-============================================================
-============================================================
-TEST 13: wave scales with the font size
+TEST 12: the wave period is one em
 ============================================================
 LEADER width=655360 height=0 depth=0
 ============================================================
 ============================================================
-TEST 14: xout slash scales with the font size
+TEST 13: the wave period follows the em, not the x-height
+============================================================
+LEADER width=655360 height=0 depth=0
+LEADER width=655360 height=0 depth=0
+============================================================
+============================================================
+TEST 14: wave scales with the font size
+============================================================
+LEADER width=1310720 height=0 depth=0
+============================================================
+============================================================
+TEST 15: xout slash scales with the font size
 ============================================================
 LEADER width=301465 height=0 depth=0
 LEADER width=602930 height=0 depth=0
 ============================================================
 ============================================================
-TEST 15: strike-through crosses the middle of a CJK glyph
+TEST 16: strike-through crosses the middle of a CJK glyph
 ============================================================
 LEADER width=26214 height=209717 depth=-183503
 LEADER width=26214 height=154337 depth=-128123
 ============================================================
 ============================================================
-TEST 16: the em descent is the font's em box and scales
+TEST 17: the em descent is the font's em box and scales
 ============================================================
 descent: 2.0pt
 descent: 4.0pt
 ============================================================
 ============================================================
-TEST 17: a hidden paragraph keeps the lines of the visible one
+TEST 18: a hidden paragraph keeps the lines of the visible one
 ============================================================
 hidden: 60.0pt43.78pt
 shown: 60.0pt43.78pt
 LINES 4 GLYPHS 0
 ============================================================
 ============================================================
-TEST 18: a highlight on the em box is a square
+TEST 19: a highlight on the em box is a square
 ============================================================
 span: 10.0pt
 RULE w=655360 h+d=655360 dp=131072

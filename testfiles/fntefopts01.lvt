@@ -9,7 +9,9 @@
   \directlua{
     local n = tex.box[0].head
     while n do
-      if n.id == node.id("glue") and n.subtype == 100 and n.leader then
+      if n.id == node.id("glue")
+         and (n.subtype == 100 or n.subtype == 101
+              or n.subtype == 102) and n.leader then
         local leader = n.leader
         if leader.id == node.id("rule") then
           texio.write_nl("term and log",
