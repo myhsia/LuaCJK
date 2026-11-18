@@ -1,5 +1,6 @@
 ## [LuaCJK-v0.0.3](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.3)
 
+- A mark that the CJK class shares with Latin, such as a curly quotation mark or the em dash, keeps its place inside an `lstlisting` block and counts as two columns: the character table covers the CJK ranges of the Basic Multilingual Plane, both ends of each included.
 - Process the package options after the helpers their key codes call, so that `AutoFallBack`, `CJKmath`, `PunctFamily`, and `CJLineBreak` act as package options as well.
 - `PunctWidth` and `PunctBoundWidth` take `0pt` as a length: the former gives every mark no advance and the latter hangs the whole of it, where a zero length used to act as `false` and return the mark to its style.
 - A document whose default CJK family is not declared is reported, and its text takes a family it did declare instead of none at all.

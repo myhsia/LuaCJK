@@ -300,6 +300,27 @@ if ! bilingual=$(texlua scripts/check-bilingual.lua "$dtx" 2>&1); then
   printf '%s\n' "$bilingual" | sed 's/^/        /'
 fi
 
+# --- 12. the listings character table against CJK_RANGES ------------------
+lua_table=$(awk '
+  /^local CJK_RANGES = \{/ { inside = 1; next }
+  inside && /^\}/ { inside = 0; next }
+  inside {
+    n = 0
+    s = $0
+    while (match(s, /0x[0-9A-Fa-f]+/)) {
+      n++
+      v[n] = toupper(substr(s, RSTART + 2, RLENGTH - 2))
+      s = substr(s, RSTART + RLENGTH)
+    }
+    if (n == 2 && length(v[1]) <= 4) print v[1] "-" v[2]
+  }' "$dtx" | sort -u)
+tex_table=$(sed -n 's/^ *#1{"\([0-9A-F]*\)}{"\([0-9A-F]*\)}.*/\1-\2/p' \
+              "$dtx" | sort -u)
+[ "$lua_table" = "$tex_table" ] ||
+  report "the listings character table is not the BMP of CJK_RANGES" \
+         "CJK_RANGES: $(printf '%s' "$lua_table" | tr '\n' ' ')" \
+         "listings:   $(printf '%s' "$tex_table" | tr '\n' ' ')"
+
 if [ "$fail" -eq 0 ]; then
   echo "OK: the guides agree with the sources"
   exit 0

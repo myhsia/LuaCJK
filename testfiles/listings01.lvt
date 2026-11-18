@@ -72,6 +72,14 @@ a中b
 aaab
 \end{lstlisting}}
 
+\setbox6=\vbox{\begin{lstlisting}
+中“文”
+\end{lstlisting}}
+
+\setbox8=\vbox{\begin{lstlisting}
+中！文
+\end{lstlisting}}
+
 \START
 
 \TEST{LuaCJK-listings is loaded together with listings}{
@@ -86,6 +94,16 @@ aaab
 \TEST{a CJK character takes two columns}{
   \listingcontent{2}
   \listingcontent{4}
+}
+
+\TEST{a mark the CJK class shares with Latin keeps its place}{
+  \listingorder{6}
+  \listingcontent{6}
+}
+
+\TEST{a CJK range includes its first code point}{
+  \listingorder{8}
+  \listingcontent{8}
 }
 
 \TEST{lstinline is left alone}{
