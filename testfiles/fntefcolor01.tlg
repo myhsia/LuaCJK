@@ -54,7 +54,12 @@ rules: red
 rules: red
 ============================================================
 ============================================================
-TEST 10: a drawn pattern without format follows the color of its text
+TEST 10: an object that carries its own color keeps it
+============================================================
+rules: magenta
+============================================================
+============================================================
+TEST 11: a drawn pattern without format follows the color of its text
 ============================================================
 rules: blue
 rules: black

@@ -29,6 +29,24 @@
   }%
 }
 
+\def\dimensions{%
+  \directlua{
+    local n = tex.box[0].head
+    local w, st, sh = 0, 0, 0
+    while n do
+      if n.id == node.id("glue") then
+        w, st, sh = w + n.width, st + (n.stretch or 0), sh + (n.shrink or 0)
+      elseif n.id == node.id("kern") then
+        w = w + n.kern
+      else
+        w = w + (n.width or 0)
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "DIM w=" .. w .. " st=" .. st .. " sh=" .. sh)
+  }%
+}
+
 \begin{document}
 
 \START
@@ -129,12 +147,35 @@
   \directlua{
     local n = tex.box[2].head
     while n do
-      if n.id == node.id("rule") then
-        texio.write_nl("term and log", "RULE " .. tostring(n.width))
+      if n.id == node.id("glue") and n.subtype == 100 then
+        texio.write_nl("term and log", "LEADERS " .. tostring(n.width))
       end
       n = n.next
     end
   }
+}
+
+\TEST{a decoration keeps the width, stretch, and shrink of its text}{
+  \begingroup
+  \LuaCJKsetup{CJKglue = 0pt plus 1fil}
+  \setbox0=\hbox{甲乙，丙丁}
+  \dimensions
+  \setbox0=\hbox{\CJKunderline{甲乙，丙丁}}
+  \dimensions
+  \setbox0=\hbox{\CJKunderline[skip]{甲乙，丙丁}}
+  \dimensions
+  \setbox0=\hbox{\CJKunderline[subtract]{甲乙，丙丁}}
+  \dimensions
+  \setbox0=\hbox{\CJKunderwave[skip]{甲乙，丙丁}}
+  \dimensions
+  \endgroup
+}
+
+\TEST{a kern inside the text moves the cut of skip}{
+  \setbox0=\hbox{\CJKunderline[skip]{甲\kern1em，乙}}
+  \nodes
+  \setbox0=\hbox{\CJKunderline[skip]{甲\hspace{1em}，乙}}
+  \nodes
 }
 
 \TEST{a pattern built from em units is rebuilt per font size}{
