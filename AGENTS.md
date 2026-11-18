@@ -215,6 +215,13 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   `\@@_settings_push:`, and a read through `settings_of(node)` in Lua.
   Skipping any of the five makes the option global, which contradicts the
   documented grouping.
+- **A zero length is a length.**  An option whose documented type is
+  `length, false` keeps its off state outside the length, in a `_given_`
+  boolean beside the `\dim`, because the settings snapshot carries a number
+  and `0` would otherwise be indistinguishable from `false`; the Lua side
+  then tests the pushed value for truth instead of comparing it.  `PunctWidth`
+  and `PunctBoundWidth` are the two that carry one, and `\LuaCJKsetwidth`
+  already accepts `0pt` for a single mark.
 - **Options and `\LuaCJKsetup` share one key path.**  Every key is defined in
   `LuaCJK / options` and read by `\ProcessKeyOptions`, so a new key is a
   package option for free. Do not add a second path or a separate option

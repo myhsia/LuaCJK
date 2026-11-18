@@ -16,27 +16,51 @@ TEST 3: a bound width of the whole advance leaves nothing hanging
 LINES 1966080 hang 0 | 1966080 hang 0
 ============================================================
 ============================================================
-TEST 4: the line width is unchanged
+TEST 4: a zero bound width hangs the whole advance
+============================================================
+Overfull \hbox (15.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 。| 字
+\hbox(7.69+1.75)x25.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x0.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 。
+.\rule(0.0+0.0)x-10.0
+.\glue 10.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue(\rightskip) 0.0
+LINES 1638400 hang 655360 | 1638400 hang 0
+============================================================
+============================================================
+TEST 5: the line width is unchanged
 ============================================================
 width: 25.0pt
 ============================================================
 ============================================================
-TEST 5: a mark at the edge of a box hangs with it
+TEST 6: a mark at the edge of a box hangs with it
 ============================================================
 LINES 1638400 hang 422052 | 1638400 hang 0
 ============================================================
 ============================================================
-TEST 6: false restores the default hang
+TEST 7: false restores the default hang
 ============================================================
 LINES 1638400 hang 422052 | 1638400 hang 0
 ============================================================
 ============================================================
-TEST 7: a hanging style hangs the same way
+TEST 8: a hanging style hangs the same way
 ============================================================
 LINES 1638400 hang 422052 | 1638400 hang 0
 ============================================================
 ============================================================
-TEST 8: the bound width survives a style change
+TEST 9: the bound width survives a style change
 ============================================================
 LINES 1835010 hang 131070 | 1835010 hang 0
 ============================================================
