@@ -24,7 +24,7 @@ width: 20.0pt
 > \box...=
 \hbox(7.78+2.39996)x20.0, direction TLT
 .\kern5.0 (font)
-.\leaders 10.0
+.\leaders 10.0 plus 0.96002
 ..\rule(-1.99997+2.39996)x0.4
 .\kern5.0 (font)
 .\glue -20.0 plus -0.96002
@@ -41,7 +41,7 @@ TEST 3: subtract takes a length
 > \box...=
 \hbox(7.78+2.39996)x20.0, direction TLT
 .\kern2.0 (font)
-.\leaders 16.0
+.\leaders 16.0 plus 0.96002
 ..\rule(-1.99997+2.39996)x0.4
 .\kern2.0 (font)
 .\glue -20.0 plus -0.96002
@@ -58,6 +58,7 @@ TEST 4: a fully inset span draws no rule
 > \box...=
 \hbox(7.78+1.62)x20.0, direction TLT
 .\kern20.0 (font)
+.\glue 0.0 plus 0.96002
 .\glue -20.0 plus -0.96002
 .\TU/FandolSong-Regular.otf(0)/m/n/10 中
 .\glue 0.0 plus 0.96002
@@ -72,10 +73,10 @@ TEST 5: skip leaves out the punctuation
 width: 30.0pt
 > \box...=
 \hbox(7.78+2.39996)x30.0, direction TLT
-.\leaders 10.0
+.\leaders 10.0 plus 0.64001
 ..\rule(-1.99997+2.39996)x0.4
 .\kern10.0 (font)
-.\leaders 10.0
+.\leaders 10.0 plus 1.28003
 ..\rule(-1.99997+2.39996)x0.4
 .\glue -30.0 plus -1.92004
 .\TU/FandolSong-Regular.otf(0)/m/n/10 中
@@ -94,10 +95,10 @@ TEST 6: skip and subtract can be combined
 > \box...=
 \hbox(7.78+2.39996)x30.0, direction TLT
 .\kern2.0 (font)
-.\leaders 8.0
+.\leaders 8.0 plus 0.51201
 ..\rule(-1.99997+2.39996)x0.4
 .\kern10.0 (font)
-.\leaders 8.0
+.\leaders 8.0 plus 1.40804
 ..\rule(-1.99997+2.39996)x0.4
 .\kern2.0 (font)
 .\glue -30.0 plus -1.92004
@@ -179,14 +180,30 @@ NODES kern:327680 leaders:218430 kern:327680 glue:-873790 glyph glue:218430 glyp
 TEST 16: settings do not leak to another decoration
 ============================================================
 span: 20.0pt
-RULE 1310720
+LEADERS 1310720
 ============================================================
 ============================================================
-TEST 17: a pattern built from em units is rebuilt per font size
+TEST 17: a decoration keeps the width, stretch, and shrink of its text
+============================================================
+DIM w=3276800 st=262144 sh=0
+DIM w=3276800 st=262144 sh=0
+DIM w=3276800 st=262144 sh=0
+DIM w=3276800 st=262144 sh=0
+DIM w=3276800 st=262144 sh=0
+============================================================
+============================================================
+TEST 18: a kern inside the text moves the cut of skip
+============================================================
+NODES leaders:1310720 kern:655360 leaders:655360 glue:-2621440 glyph kern:655360 glue:0 glyph glue:0 glyph
+NODES leaders:1310720 kern:655360 leaders:655360 glue:-2621440 glyph glue:655360 glyph glue:0 glyph
+============================================================
+============================================================
+TEST 19: a pattern built from em units is rebuilt per font size
 ============================================================
 > \box...=
 \hbox(7.78+1.99997)x10.0, direction TLT
-.\rule(-0.99991+1.99997)x10.0
+.\leaders 10.0
+..\rule(-0.99991+1.99997)x0.0
 .\glue -10.0
 .\TU/FandolSong-Regular.otf(0)/m/n/10 中
 ! OK.
@@ -195,7 +212,8 @@ TEST 17: a pattern built from em units is rebuilt per font size
 l. ...}
 > \box...=
 \hbox(11.2032+2.87994)x14.4, direction TLT
-.\rule(-1.43987+2.87994)x14.4
+.\leaders 14.4
+..\rule(-1.43987+2.87994)x0.0
 .\glue -14.4
 .\TU/FandolSong-Regular.otf(0)/m/n/14.4 中
 ! OK.
@@ -204,7 +222,8 @@ l. ...}
 l. ...}
 > \box...=
 \hbox(7.78+1.99997)x10.0, direction TLT
-.\rule(-0.99991+1.99997)x10.0
+.\leaders 10.0
+..\rule(-0.99991+1.99997)x0.0
 .\glue -10.0
 .\TU/FandolSong-Regular.otf(0)/m/n/10 中
 ! OK.
@@ -212,7 +231,7 @@ l. ...}
 l. ...}
 ============================================================
 ============================================================
-TEST 18: a rule sized in em keeps its thickness when the size changes
+TEST 20: a rule sized in em keeps its thickness when the size changes
 ============================================================
 > \box...=
 \hbox(7.78+1.62)x10.0, direction TLT
