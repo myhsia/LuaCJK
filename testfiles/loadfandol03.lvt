@@ -1,0 +1,44 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage[LoadFandol = false]{LuaCJK}
+
+% The font a CJK glyph is set in, or that there is none.
+\def\psname#1{%
+  \directlua{
+    local n = tex.box[#1].head
+    while n do
+      if n.id == node.id("glyph") then
+        local f = font.getfont(n.font)
+        texio.write_nl("term and log", "PSNAME " .. tostring(f and f.psname))
+        return
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "PSNAME none")
+  }%
+}
+
+% The warning is issued at |\begin{document}|, before \START, so the check is
+% run again here to keep its text in the baseline.
+\ExplSyntaxOn
+\cs_new_protected:Npn \checkdefault { \__LuaCJK_ensure_family_default: }
+\ExplSyntaxOff
+
+\begin{document}
+
+\START
+
+\TEST{a document with no font and LoadFandol off is reported}{
+  \checkdefault
+}
+
+\TEST{the text is set in no CJK font}{
+  \setbox0=\hbox{中}
+  \TYPE{width: \the\wd0}
+  \psname{0}
+}
+
+\END
+
+\end{document}
