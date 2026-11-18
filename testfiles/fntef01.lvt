@@ -131,7 +131,14 @@
     local n = tex.box[0].head
     local rules = 0
     while n do
+      local r
       if n.id == node.id("rule") then
+        r = n
+      elseif n.id == node.id("glue") and n.subtype == 100
+             and n.leader and n.leader.id == node.id("rule") then
+        r = n.leader
+      end
+      if r then
         rules = rules + 1
         texio.write_nl("term and log", "RULE " .. tostring(n.width))
       end
@@ -220,11 +227,18 @@
   \directlua{
     local n = tex.box[0].head
     while n do
+      local r
       if n.id == node.id("rule") then
+        r = n
+      elseif n.id == node.id("glue") and n.subtype == 100
+             and n.leader and n.leader.id == node.id("rule") then
+        r = n.leader
+      end
+      if r then
         texio.write_nl("term and log",
           "RULE w=" .. tostring(n.width) ..
-          " h+d=" .. tostring(n.height + n.depth) ..
-          " dp=" .. tostring(n.depth))
+          " h+d=" .. tostring(r.height + r.depth) ..
+          " dp=" .. tostring(r.depth))
       end
       n = n.next
     end

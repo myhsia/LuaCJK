@@ -41,6 +41,7 @@
 \setbox0=\hbox{x}\directlua{luacjk_name_color("black")}
 \setbox0=\hbox{\textcolor{red}{x}}\directlua{luacjk_name_color("red")}
 \setbox0=\hbox{\textcolor{blue}{x}}\directlua{luacjk_name_color("blue")}
+\setbox0=\hbox{\textcolor{magenta}{x}}\directlua{luacjk_name_color("magenta")}
 
 \START
 
@@ -97,6 +98,11 @@
   \setbox0=\hbox{\CJKunderwave[format = red]{中}}
   \rulecolors
   \setbox0=\hbox{\CJKxout[format = red]{中}}
+  \rulecolors
+}
+
+\TEST{an object that carries its own color keeps it}{
+  \setbox0=\hbox{\CJKunderanyline{0.2em}{\color{magenta}\rule{.5em}{.1em}}{中}}
   \rulecolors
 }
 

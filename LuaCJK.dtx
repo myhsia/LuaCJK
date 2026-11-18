@@ -7954,6 +7954,21 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{node_width}
+% The horizontal extent of a node, whether it stores it as a width or as a
+% kern: a \texttt{kern} node has no |width| field in \LuaTeX, and reading a
+% nil where a dimension belongs put every later interval in the wrong place.
+%    \begin{macrocode}
+local function node_width (n)
+  if n.id == KERN then
+    return n.kern or 0
+  end
+  return n.width or 0
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{segments}
 % The intervals of a span of width \meta{w} that the decoration may cover:
 % the first and the last \meta{inset} are taken off, and with
@@ -7967,7 +7982,7 @@ local function segments (w, start, inset, skip_punct)
     local x = 0
     local g = start
     while g and x < w do
-      local width = g.width or 0
+      local width = node_width(g)
       if g.id == GLYPH and kind(g.char) then
         cuts[#cuts + 1] = { x, math.min(x + width, w) }
       end
@@ -8069,11 +8084,35 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{copy_attributes}
+% Copy every attribute of one node onto another.
+% The ink of a leaders box takes the attributes of the glue, not of the box
+% it repeats, so a piece whose rule carries a color of its own would lose it.
+%    \begin{macrocode}
+local function copy_attributes (target, source)
+  local a = source.attr
+  while a do
+    node.set_attribute(target, a.number, a.value)
+    a = a.next
+  end
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{replace_pair}
 % Replace the leaders glue of one decoration.
-% The pieces are kerns and shorter leaders whose total width stays
-% \meta{w}, so the text does not move; the negative glue that follows
-% the leaders is kept and becomes the tail of the replacement.
+% The replacement covers the same span, with the same natural width,
+% stretch, and shrink, in the same orders: the pieces are leaders of the
+% intervals that \texttt{segments} allows, with their share of the dimensions
+% of the pair, and kerns where a mark is cut out or the span is shortened.
+% The last piece takes the remainder, so the sums are exact, and the negative
+% glue that follows the leaders is kept as the tail.
+%
+% A pair whose leader box reduces to one solid rule gets a leader box of zero
+% width instead: \TeX\ fills such a rule to the whole width of the glue, so the
+% rule covers the interval exactly and grows with the glue, where a repeated
+% rule box would leave the last fraction of the interval empty.
 %    \begin{macrocode}
 local function replace_pair (head, prev, leaders, settings)
   local w     = leaders.width
@@ -8082,6 +8121,23 @@ local function replace_pair (head, prev, leaders, settings)
   local skip     = settings and settings.skip or false
   local parts = segments(w, neg.next, subtract, skip)
   local rule, down = box_rule(leaders.leader)
+  local block
+  if rule then
+    block = node.copy(rule)
+    block.width  = 0
+    block.height = rule.height - down
+    block.depth  = rule.depth + down
+    block.next   = nil
+  end
+  local covered = {}
+  for _, part in ipairs(parts) do
+    if part[2] > part[1] then
+      covered[#covered + 1] = part
+    end
+  end
+  local stretch = leaders.stretch or 0
+  local shrink  = leaders.shrink or 0
+  local given_st, given_sh = 0, 0
   local first, last
   local cursor = 0
   local function append (node_)
@@ -8092,33 +8148,44 @@ local function replace_pair (head, prev, leaders, settings)
     end
     last = node_
   end
-  for _, part in ipairs(parts) do
-    if part[1] > cursor then
+  local function gap (to)
+    if to > cursor then
       local k = node.new("kern")
-      k.kern  = part[1] - cursor
+      k.kern  = to - cursor
       append(k)
+      cursor = to
     end
-    if rule then
-      local r  = node.copy(rule)
-      r.width  = part[2] - part[1]
-      r.height = rule.height - down
-      r.depth  = rule.depth + down
-      r.next   = nil
-      append(r)
+  end
+  for i, part in ipairs(covered) do
+    gap(part[1])
+    local piece    = node.copy(leaders)
+    piece.width    = part[2] - part[1]
+    piece.next     = nil
+    if i < #covered then
+      piece.stretch  = math.floor(stretch * piece.width / w + 0.5)
+      piece.shrink   = math.floor(shrink  * piece.width / w + 0.5)
+      given_st = given_st + piece.stretch
+      given_sh = given_sh + piece.shrink
     else
-      local copy   = node.copy(leaders)
-      copy.width   = part[2] - part[1]
-      copy.stretch = 0
-      copy.shrink  = 0
-      copy.next    = nil
-      append(copy)
+      piece.stretch  = stretch - given_st
+      piece.shrink   = shrink - given_sh
     end
+    if block then
+      piece.leader = node.copy(block)
+      copy_attributes(piece, piece.leader)
+    end
+    append(piece)
     cursor = part[2]
   end
-  if cursor < w then
-    local k = node.new("kern")
-    k.kern  = w - cursor
-    append(k)
+  gap(w)
+  if #covered == 0 then
+    -- Every interval was cut away, so the pair keeps its dimensions in one
+    -- glue of no width, or the line would lose the stretch it had.
+    local g = node.new("glue")
+    g.width, g.stretch, g.shrink = 0, stretch, shrink
+    g.stretch_order, g.shrink_order =
+      leaders.stretch_order or 0, leaders.shrink_order or 0
+    append(g)
   end
   if first then
     if prev then
@@ -8218,6 +8285,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   decoration, so they reach a rule that \keys{format} colors as well, and
 %   an underline type is built per font size, so a rule built from |em| units
 %   keeps its thickness when the size changes.}
+% \changes{v0.0.3}{2026/11/18}{A decoration keeps the width, the stretch, and
+%   the shrink of the text it covers, so a rule no longer changes the spacing
+%   of the line it sits in, \keys{skip} no longer tightens a justified line,
+%   and a \tn{kern} inside the text no longer moves the gap \keys{skip} leaves
+%   at a punctuation mark.}
 % Underline the argument. The optional argument takes
 % \keys{thickness, depth, textformat}, and any other key is passed on to
 % \pkg{lua-ul}, which understands
