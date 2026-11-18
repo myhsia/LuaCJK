@@ -860,13 +860,15 @@ $ 天地玄黄 $ and 天地玄黄
 %   未知的名字给出警告并回退到 \texttt{plain}。
 %   \item[\keys{PunctWidth}]\val{length, false}: 不管样式怎么说，
 %   给每个标点同样的进距。
+%   \texttt{0pt} 也是一个进距，标点因此不占任何进距；
+%   \texttt{false}（初始值）让标点回到样式给出的宽度。
 %   用 \cs{LuaCJKsetwidth} 为某个标点设置的宽度仍然优先。
 %   \item[\keys{PunctBoundWidth}]\val{length, false}: 标点出现在行尾或行首时，
 %   它的进距中有多少留在行内；
 %   其余的墨迹悬挂到页边，或者悬挂到段落开头的缩进里。
 %   默认悬挂标点自带的空白，所以它的墨迹正好落在版心边上；
 %   断行时这一份悬挂已经算进去，行尾的标点因此能随它所在的行一起放下。
-%   \texttt{false} 恢复这个默认值。
+%   \texttt{0pt} 把整个进距都悬挂出去，\texttt{false} 恢复这个默认值。
 %   \item[\keys{LatinPunct}]\val{\TFF}: 把引号
 %   （U+2018、U+2019、U+201C、U+201D）、间隔号（U+00B7）
 %   与省略号（U+2026、U+2027、U+22EF）当作拉丁标点：
@@ -914,6 +916,20 @@ $ 天地玄黄 $ and 天地玄黄
 a’a\quad 不亦说乎！\\
 \LuaCJKsetup{LatinPunct, PunctWidth = .8em}
 a’a\quad 不亦说乎！
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\fbox{甲，乙}\\
+\LuaCJKsetup{PunctWidth = 0pt}%
+\fbox{甲，乙}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -2121,6 +2137,8 @@ $ 天地玄黄 $ and 天地玄黄
 %   An unknown name issues a warning and falls back to \texttt{plain}.
 %   \item[\keys{PunctWidth}]\val{length, false}: Give
 %   every punctuation mark the same advance, whatever the style says.
+%   \texttt{0pt} is an advance too, so the marks take none at all;
+%   \texttt{false} (the initial value) returns them to the width the style gives.
 %   A width set with \cs{LuaCJKsetwidth} still wins for that mark.
 %   \item[\keys{PunctBoundWidth}]\val{length, false}: How much of a mark's
 %   advance stays inside the line when the mark ends or starts the line;
@@ -2128,7 +2146,9 @@ $ 天地玄黄 $ and 天地玄黄
 %   start of a paragraph.
 %   The default leaves the mark's own blank out, so its ink stands on the
 %   measure, and line breaking counts that hang, so a mark can end the line the
-%   natural width would refuse. \texttt{false} returns to that default.
+%   natural width would refuse.
+%   \texttt{0pt} hangs the whole advance;
+%   \texttt{false} returns to that default.
 %   \item[\keys{LatinPunct}]\val{\TFF}: Treat the quotation marks
 %   (U+2018, U+2019, U+201C, U+201D), the middle dot (U+00B7),
 %   and the ellipses (U+2026, U+2027, U+22EF) as Latin punctuation:
@@ -2180,6 +2200,20 @@ $ 天地玄黄 $ and 天地玄黄
 a’a\quad 不亦说乎！\\
 \LuaCJKsetup{LatinPunct, PunctWidth = .8em}
 a’a\quad 不亦说乎！
+\end{codemo}
+\endgroup
+% \iffalse
+%</example>
+% \fi
+%
+% \iffalse
+%<*example>
+% \fi
+\begingroup
+\begin{codemo}
+\fbox{甲，乙}\\
+\LuaCJKsetup{PunctWidth = 0pt}%
+\fbox{甲，乙}
 \end{codemo}
 \endgroup
 % \iffalse
@@ -3516,6 +3550,10 @@ abc汉字abc
 % \changes{v0.0.3}{2026/11/18}{Process the package options after the helpers
 %   their key codes call, so that \keys{AutoFallBack}, \keys{CJKmath},
 %   \keys{PunctFamily}, and \keys{CJLineBreak} act as package options as well.}
+% \changes{v0.0.3}{2026/11/18}{\keys{PunctWidth} and \keys{PunctBoundWidth}
+%   take \texttt{0pt} as a length: the former gives every mark no advance and
+%   the latter hangs the whole of it, where a zero length used to act as
+%   \texttt{false} and return the mark to its style.}
 % The same key path serves \cs{LuaCJKsetup} and the package options.
 % The keys are defined here, but the package options are read at the end of the
 % package, once every helper a key code calls has been defined and the Lua
@@ -3530,6 +3568,8 @@ abc汉字abc
 %     \l_@@_verb_mode_tl,       \l_@@_local_config_tl,
 %     \l_@@_check_single_tl,    \l_@@_widow_penalty_int,
 %     \l_@@_punct_width_dim,    \l_@@_punct_bound_width_dim,
+%     \l_@@_punct_width_given_bool,
+%     \l_@@_punct_bound_width_given_bool,
 %     \l_@@_break_between_puncts_bool,
 %     \g_@@_autofake_bold_tl,   \g_@@_autofake_slant_tl,
 %     \g_@@_embolden_factor_tl, \g_@@_slant_factor_tl,
@@ -3558,8 +3598,10 @@ abc汉字abc
 \bool_new:N \l_@@_break_between_puncts_bool
 \dim_new:N  \l_@@_punct_width_dim
 \dim_set:Nn \l_@@_punct_width_dim { 0pt }
+\bool_new:N \l_@@_punct_width_given_bool
 \dim_new:N  \l_@@_punct_bound_width_dim
 \dim_set:Nn \l_@@_punct_bound_width_dim { 0pt }
+\bool_new:N \l_@@_punct_bound_width_given_bool
 \tl_new:N \l_@@_check_single_tl
 \tl_set:Nn \l_@@_check_single_tl { 0 }
 \int_new:N \l_@@_widow_penalty_int
@@ -3663,8 +3705,14 @@ abc汉字abc
     PunctWidth          .code:n      =
       {
         \str_if_eq:nnTF {#1} { false }
-          { \dim_zero:N \l_@@_punct_width_dim      }
-          { \dim_set:Nn \l_@@_punct_width_dim {#1} }
+          {
+            \bool_set_false:N \l_@@_punct_width_given_bool
+            \dim_zero:N \l_@@_punct_width_dim
+          }
+          {
+            \bool_set_true:N \l_@@_punct_width_given_bool
+            \dim_set:Nn \l_@@_punct_width_dim {#1}
+          }
       },
     PunctWidth          .default:n   = { false },
     PunctFamily         .code:n      =
@@ -3678,8 +3726,14 @@ abc汉字abc
     PunctBoundWidth     .code:n      =
       {
         \str_if_eq:nnTF {#1} { false }
-          { \dim_zero:N \l_@@_punct_bound_width_dim }
-          { \dim_set:Nn \l_@@_punct_bound_width_dim {#1} }
+          {
+            \bool_set_false:N \l_@@_punct_bound_width_given_bool
+            \dim_zero:N \l_@@_punct_bound_width_dim
+          }
+          {
+            \bool_set_true:N \l_@@_punct_bound_width_given_bool
+            \dim_set:Nn \l_@@_punct_bound_width_dim {#1}
+          }
       },
     PunctBoundWidth     .default:n   = { false },
     LatinPunct          .choice:,
@@ -3781,6 +3835,8 @@ abc汉字abc
 %    \begin{macrocode}
 \cs_new:Npn \@@_bool_js:N #1
   { \str_if_eq:VnTF #1 { 1 } { true } { false } }
+\cs_new:Npn \@@_width_js:Nn #1#2
+  { \bool_if:NTF #1 { \dim_to_decimal_in_sp:n {#2} } { false } }
 \cs_new_protected:Npn \@@_settings_push:
   {
     \bool_if:NT \g_@@_lua_loaded_bool
@@ -3794,8 +3850,11 @@ abc汉字abc
                 \@@_bool_js:N \l_@@_cj_strict_tl ,
                 \@@_bool_js:N \l_@@_latin_punct_tl ,
                 \@@_bool_js:N \l_@@_cjk_math_tl ,
-                \dim_to_decimal_in_sp:n { \l_@@_punct_width_dim } ,
-                \dim_to_decimal_in_sp:n { \l_@@_punct_bound_width_dim } ,
+                \@@_width_js:Nn
+                  \l_@@_punct_width_given_bool \l_@@_punct_width_dim ,
+                \@@_width_js:Nn
+                  \l_@@_punct_bound_width_given_bool
+                  \l_@@_punct_bound_width_dim ,
                 \@@_bool_js:N \l_@@_check_single_tl ,
                 \int_use:N \l_@@_widow_penalty_int ,
                 \bool_if:NTF \l_@@_break_between_puncts_bool
@@ -5215,8 +5274,8 @@ local DEFAULT_SETTINGS = {
   cj_strict     = false,
   latin_punct   = false,
   cjk_math      = false,
-  punct_width   = 0,
-  bound_width   = 0,
+  punct_width   = false,
+  bound_width   = false,
   check_single  = false,
   widow_penalty = 10000,
   allow_break   = false,
@@ -5282,7 +5341,8 @@ function M.new_settings (style, kinsoku, cj_strict, latin_punct, cjk_math,
     entry.ecglue.stretch_order, entry.ecglue.shrink_order,
     style, tostring(kinsoku), tostring(cj_strict), tostring(latin_punct),
     tostring(cjk_math),
-    punct_width, bound_width, tostring(check_single), widow_penalty,
+    tostring(punct_width), tostring(bound_width),
+    tostring(check_single), widow_penalty,
     tostring(allow_break), tostring(auto_fallback), off_list,
   }, "|")
   local id = M.settings_by_signature[signature]
@@ -6804,7 +6864,7 @@ end
 
 local function fixed_width (cur, settings, style)
   local target = user_width(cur.char)
-  if not target and settings.punct_width > 0 then
+  if not target and settings.punct_width then
     target = settings.punct_width
   end
   if target then
@@ -7095,8 +7155,8 @@ end
 % when the file has no outline to read.
 %    \begin{macrocode}
 local function bound_width (settings)
-  local value = settings and settings.bound_width or 0
-  if value > 0 then
+  local value = settings and settings.bound_width
+  if value then
     return value
   end
   return nil

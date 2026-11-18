@@ -94,6 +94,14 @@
   \kernsof{2}
 }
 
+\TEST{a zero PunctWidth inside such a group applies to that text}{
+  \setbox0=\vbox{\hsize=6em
+    \begingroup\LuaCJKsetup{PunctWidth=0pt}字！字\endgroup\par}
+  \kernsof{0}
+  \setbox2=\vbox{\hsize=6em 字！字\par}
+  \kernsof{2}
+}
+
 \TEST{a CJKglue given by the document is kept as written}{
   \begingroup
     \LuaCJKsetup{CJKglue = 0pt plus 0.1\baselineskip}

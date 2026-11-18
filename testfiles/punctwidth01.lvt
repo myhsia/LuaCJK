@@ -62,6 +62,23 @@
   \endgroup
 }
 
+\TEST{a zero width is a width, not false}{
+  \begingroup
+    \LuaCJKsetup{PunctWidth = 0pt}
+    \setbox0=\hbox{字！字}
+    \TYPE{width: \the\wd0}
+  \endgroup
+}
+
+\TEST{false returns the mark to the width of its style}{
+  \begingroup
+    \LuaCJKsetup{PunctWidth = 0pt}
+    \LuaCJKsetup{PunctStyle = quanjiao, PunctWidth = false}
+    \setbox0=\hbox{字！字}
+    \TYPE{width: \the\wd0}
+  \endgroup
+}
+
 \TEST{a per-mark width still wins over PunctWidth}{
   \begingroup
     \LuaCJKsetup{PunctWidth = 0.8em}
