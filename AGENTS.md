@@ -753,6 +753,18 @@ GitHub's side, so nothing here repeats it.
   option, and `LoadFandol` is `load` although it loads fonts, because that is
   where the change goes.
 
+**Fixing an issue** follows the global rule in `repo-rules` ("Fixing an
+issue"); what is local to this repository is the shape of the work.  The branch
+is `fix/<scope>-<topic>`, off `main`, one theme per pull request, and the body
+lists every issue that theme closes.  Before the reply, `l3build check` runs on
+the tests the change touches, and the `\changes` entry and the regenerated
+`CHANGELOG.md` travel in the same commit; `scripts/check-docs.sh` and
+`l3build changelog` with a clean diff decide whether the commit is ready, and
+the full suite, the manual and the `ctex` subset are CI's.  The before/after
+image is rendered here from the merge base — `lualatex` on the report's MWE,
+`pdfcrop`, then `mutool draw -r 300` — because the MWE in the report is what
+the reader compares with.
+
 ## Git style
 
 See the global `repo-rules` skill: `type(scope): summary`, commit only when
