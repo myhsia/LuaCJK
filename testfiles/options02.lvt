@@ -1,0 +1,58 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage[AutoFallBack = true, PunctFamily = zhkai,
+            CJLineBreak = strict]{LuaCJK}
+\setCJKmainfont{TeX Gyre Pagella}
+\setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
+\setCJKfallbackfamilyfont{\CJKrmdefault}{FandolSong-Regular.otf}
+
+\def\psnamesof#1{%
+  \directlua{
+    local n = tex.box[#1].head
+    local out = {}
+    while n do
+      if n.id == node.id("glyph") then
+        local f = font.getfont(n.font)
+        table.insert(out, tostring(f and f.psname))
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "PS " .. table.concat(out, " "))
+  }%
+}
+
+% Whether the CJ set holds the given code points.  A literal count would
+% follow every Unicode release; membership of two characters is the point.
+\def\cjuniverse{%
+  \directlua{
+    local out = {}
+    local cps = { 0x3041, 0x3083, 0x4E2D }
+    for i, c in ipairs(cps) do
+      out[i] = tostring(c) .. "=" .. tostring(LuaCJK.cj and LuaCJK.cj[c] == true)
+    end
+    texio.write_nl("term and log", "CJ " .. table.concat(out, " "))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{strict mode reads the CJ set when it is a package option}{
+  \cjuniverse
+}
+
+\TEST{a fallback declared for the main family applies from the first line}{
+  \setbox0=\hbox{中}
+  \psnamesof{0}
+}
+
+\TEST{the punctuation family is the one the option names}{
+  \setbox0=\hbox{字。}
+  \psnamesof{0}
+}
+
+\END
+
+\end{document}
