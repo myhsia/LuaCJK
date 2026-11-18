@@ -278,11 +278,11 @@ The Current Maintainer of this work is **Mingyu Xia**.
 % \begin{abstract}
 %   \pkg{LuaCJK} 为 \LuaTeX\ 提供中文排版。
 %   它把当前的 CJK 字体记录在一个 \LuaTeX\ 属性里，
-%   并在断行与盒子打包之前替换 CJK 字形节点。
+%   并在文字定形之前把每个 CJK 字形放进该字体。
 %   \setlength \parindent {1.5em}\par
 %   \pkg{LuaCJK} provides Chinese typesetting for \LuaTeX.
 %   It records the current CJK font in a \LuaTeX\ attribute
-%   and replaces CJK glyph nodes before line breaking and box packing.
+%   and sets each CJK glyph in that font before the text is shaped.
 % \end{abstract}
 %
 % \tableofcontents
@@ -299,7 +299,7 @@ The Current Maintainer of this work is **Mingyu Xia**.
 % \cs{setCJKfamilyfont}、\cs{CJKfamily} 与 \cs{LuaCJKsetup}。
 %
 % 当前的 CJK 字体记录在一个 \LuaTeX\ 属性里，
-% 并在断行与盒子打包之前替换 CJK 字形节点。
+% 每个 CJK 字形在文字定形之前就放进该字体。
 %
 % \section{加载}
 %
@@ -814,11 +814,14 @@ $ 天地玄黄 $ and 天地玄黄
 %</example>
 % \fi
 %
-% 只用于控制文字、本身没有进距的字符
-% （U+200B、U+200C、U+200D、U+2060、U+180E、U+FEFF 以及各个变体选择符）
-% 在输入时就已删除。因此它们既不占胶，也不把两个 CJK 字符分开：
-% 零宽空格不会加上本来会在它两侧出现的两个 \keys{CJKecglue}，
-% 而它想提供的断行机会在周围的胶上本来就存在。
+% 只用于控制文字、本身没有进距的字符分两类。
+% U+200B、U+2060、U+180E 与 U+FEFF 不含字体能用的信息，
+% 在输入时就已删除，因此它们既不占胶，也不把两个 CJK 字符分开。
+% 连接符（U+200C、U+200D）与各个变体选择符留给字体：
+% 它们跟随前一个字符的字体，所以一个 emoji 序列不会被拆成两个图形，
+% 一个变体序列也能选到它的字形；
+% 字体用不到它们时留下的占位字形在断行之前就去掉，
+% 因此它们既不占进距，也不在两个 CJK 字符之间加上 \keys{CJKecglue}。
 % 用 \tn{char} 请求的字符不会被删除，因为 \tn{char} 要的就是字形本身。
 %
 % \begin{environment}{CJKfilltwosides}
@@ -1524,9 +1527,11 @@ abc汉字abc
 %   \keys{keep-open-close}；\pkg{xeCJK} 的三十个几何键描述它的侧边距模型，
 %   在这里没有对应物。
 %   \item \texttt{CJKfilltwosides*} 不与自然宽度作比较。
-%   \item CJK 字体是在文字用当前字体定形之后才应用到字形节点上的，
-%   所以 CJK 字体的 OpenType 特性（连字、\texttt{locl}、\texttt{palt}、
-%   变体序列）不生效：间距、标点进距与禁则都来自 \pkg{LuaCJK} 自己。
+%   \item CJK 字体在文字定形之前就应用到字符上，所以 CJK 字体的
+%   OpenType 特性生效：组合记号附到它的基字上，变体序列选到它的字形，
+%   字体自己的连字（例如两个破折号并成一个两字宽的破折号）与
+%   \texttt{locl} 形式也会出现；间距、标点进距与禁则仍然来自
+%   \pkg{LuaCJK} 自己。
 %   \item 在 \pkg{LuaCJKfntef} 里，\keys{format} 接受颜色名而不是代码，
 %   而且装饰由 \pkg{lua-ul} 画出，所以 \texttt{ulem} 的选项列表不存在，
 %   \tn{underLine} 直接配置。
@@ -1538,8 +1543,8 @@ abc汉字abc
 %   \item \texttt{NewLineCS}、\texttt{EnvCS}、\texttt{InlineEnv} 与
 %   \texttt{PlainEquation}：它们的存在是为了让 \pkg{xeCJK} 在扫描记号时
 %   认出 \TeX\ 构造，而一个已经完成的节点列表不需要提示。
-%   \item \texttt{PoZheHaoLigature}，理由同上：字体的两字宽破折号连字
-%   在 \pkg{LuaCJK} 应用 CJK 字体之前就已经定了。
+%   \item \texttt{PoZheHaoLigature}：字体自带的两字宽破折号连字
+%   在定形时就会出现，所以没有开关它的选项。
 %   \item \texttt{RubberPunctSkip}：标点的进距是一个 kern，
 %   它既不是断行机会，也不参与两端对齐，
 %   而正是这一点让固定宽度的样式保持稳定。
@@ -1562,7 +1567,7 @@ abc汉字abc
 % \cs{setCJKfamilyfont}, \cs{CJKfamily}, and \cs{LuaCJKsetup}.
 %
 % The current CJK font is recorded in a \LuaTeX\ attribute,
-% and CJK glyph nodes are replaced before line breaking and box packing.
+% and each CJK glyph is set in that font before the text is shaped.
 %
 % \section{Loading}
 %
@@ -2097,14 +2102,19 @@ $ 天地玄黄 $ and 天地玄黄
 %</example>
 % \fi
 %
-% Characters that only control the text and have no advance of their own
-% (U+200B, U+200C, U+200D, U+2060, U+180E, U+FEFF, and the variation
-% selectors) are removed at the input. They therefore neither take glue nor
-% separate two CJK characters: a zero-width space does not add the two
-% \keys{CJKecglue} that would otherwise surround it, and the break
-% opportunity it was meant to create already exists at the surrounding glue.
-% A character requested with \tn{char} is not removed, because \tn{char}
-% asks for the glyph itself.
+% Characters that only control the text and have no advance of their own come
+% in two kinds.
+% U+200B, U+2060, U+180E, and U+FEFF carry nothing a font can use, so they are
+% removed at the input: they neither take glue nor separate two CJK
+% characters.
+% The joiners (U+200C, U+200D) and the variation selectors are left to the
+% font: each follows the font of the character in front of it, so an emoji
+% sequence is not split into two pictures and a variation sequence selects its
+% glyph; what the font leaves of them is removed before the line is broken, so
+% they take no advance and add no \keys{CJKecglue} between two CJK
+% characters.
+% A character requested with \tn{char} is not removed, because \tn{char} asks
+% for the glyph itself.
 %
 % \begin{environment}{CJKfilltwosides}
 %   Set the lines in a vertical box whose lines are justified
@@ -2838,11 +2848,12 @@ abc汉字abc
 %   \keys{keep-open-close}; the thirty geometry keys of \pkg{xeCJK} describe
 %   its side-bearing model and have no counterpart here.
 %   \item \texttt{CJKfilltwosides*} does not compare with the natural width.
-%   \item The CJK font is applied to the glyph node after the text has been
-%   shaped with the current font, so the OpenType features of the CJK font
-%   (ligatures, \texttt{locl}, \texttt{palt}, variation sequences) do not take
-%   effect: the spacing, the punctuation advance, and the prohibitions come
-%   from \pkg{LuaCJK} itself.
+%   \item The CJK font is applied to the characters before the text is
+%   shaped, so the OpenType features of the CJK font take effect: a combining
+%   mark attaches to its base, a variation sequence selects its glyph, and the
+%   font's own ligatures and \texttt{locl} forms appear, two dashes joined into
+%   one two-em dash for instance. The spacing, the punctuation advance, and the
+%   prohibitions still come from \pkg{LuaCJK} itself.
 %   \item In \pkg{LuaCJKfntef}, \keys{format} takes a color name rather than
 %   code, and the decoration is drawn by \pkg{lua-ul}, so the \texttt{ulem}
 %   option list does not exist and \tn{underLine} is configured directly.
@@ -2855,8 +2866,8 @@ abc汉字abc
 %   \texttt{PlainEquation}: they exist so that \pkg{xeCJK} can recognize
 %   \TeX\ constructs while it scans tokens, and a finished node list needs no
 %   hint.
-%   \item \texttt{PoZheHaoLigature}, for the reason given above: the font's
-%   two-em dash ligature is decided before \pkg{LuaCJK} applies the CJK font.
+%   \item \texttt{PoZheHaoLigature}: the font's own two-em dash ligature
+%   applies when it has one, so there is no option that switches it on.
 %   \item \texttt{RubberPunctSkip}: the advance of a mark is a kern, which is
 %   neither a break opportunity nor part of justification, and that is what
 %   keeps a fixed-width style stable.
@@ -2942,17 +2953,19 @@ abc汉字abc
 %     \g_@@_disabled_attr,   \c_@@_disabled_attr_int,
 %     \g_@@_punct_font_attr, \c_@@_punct_font_attr_int,
 %     \g_@@_settings_attr,   \c_@@_settings_attr_int,
-%     \g_@@_nobreak_attr,    \c_@@_nobreak_attr_int
+%     \g_@@_nobreak_attr,    \c_@@_nobreak_attr_int,
+%     \g_@@_attached_attr,   \c_@@_attached_attr_int
 %   }
 % The attributes record, per node, the CJK font, the space and glue
 % policies, whether the node was inserted by \pkg{LuaCJK}, the CJK math font,
-% and whether the adjustments are suspended. The integer constants hold
+% whether the adjustments are suspended, and whether the character is one
+% that attaches to the character in front of it. The integer constants hold
 % the allocated attribute numbers for the Lua side.
 %    \begin{macrocode}
 \clist_map_inline:nn
   {
-    font,     cjk_space,  xecglue,  inserted, math_font,
-    disabled, punct_font, settings, nobreak
+    font,     cjk_space,  xecglue,   inserted,   math_font,
+    disabled, punct_font, settings,  nobreak,    attached
   }
   {
     \exp_args:Nc \newattribute { g_@@_#1_attr }
@@ -5154,31 +5167,50 @@ abc汉字abc
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}[int]{\@@_ignore_format_chars:}
+% \begin{macro}[int]{\@@_setup_format_chars:}
 % \changes{v0.0.1}{2026/11/05}{Ignore the zero-width format characters
 %   (U+200B, U+200C, U+200D, U+2060, U+180E) and the variation selectors at
 %   the input, so that they neither take glue nor separate two CJK characters.}
-% These characters have no advance of their own, but the font loader replaces
-% one that the font does not have by a space glyph and a negative kern.
-% The spacing pass then sees a Latin atom and surrounds it with
-% \keys{CJKecglue} on both sides, so a zero-width space would widen the line
-% by two \keys{CJKecglue} and remove the break opportunity it was meant to
-% create.
-% Giving the characters category 9 removes them before the font loader runs.
+% \changes{v0.0.3}{2026/11/19}{The joiners (U+200C, U+200D) and the variation
+%   selectors are no longer removed at the input: they reach the font, so an
+%   emoji sequence is not split and a CJK variation sequence selects its
+%   glyph, and what the font leaves of them is dropped before the spacing
+%   pass, so two CJK characters still take no glue around them.}
+% A character that only controls the text and has no advance of its own needs
+% care: the font loader replaces one that the font does not have by a space
+% glyph and a negative kern, and the spacing pass then sees a Latin atom and
+% surrounds it with \keys{CJKecglue} on both sides.
+% There are two kinds.
+% U+180E, U+200B, U+2060, and U+FEFF carry no information a font can use, so
+% they are given category 9 and removed before the font loader runs.
+% U+200C, U+200D, and the variation selectors are the ones a font shapes
+% with: they are left alone here, and the pass that runs before shaping lets
+% them follow the font of the character in front of them, so that what the
+% font leaves of them can be dropped afterwards.
 % A character produced by \tn{char} bypasses the category codes and is left
 % alone: \tn{char} asks for the glyph itself, not for the character's
 % typographic role.
+% Without \texttt{pre\_shaping\_filter} there is no pass to tell the two
+% kinds apart, so every character of the set is removed, which is what the
+% package did before the shaping change.
 %    \begin{macrocode}
-\clist_const:Nn \c_@@_ignored_chars_clist
-  { "180E , "200B , "200C , "200D , "2060 , "FEFF }
-\cs_new_protected:Npn \@@_ignore_format_chars:
+\clist_const:Nn \c_@@_removed_chars_clist
+  { "180E , "200B , "2060 , "FEFF }
+\clist_const:Nn \c_@@_attached_chars_clist
+  { "200C , "200D }
+\cs_new_protected:Npn \@@_setup_format_chars:
   {
-    \clist_map_inline:Nn \c_@@_ignored_chars_clist
+    \clist_map_inline:Nn \c_@@_removed_chars_clist
       { \char_set_catcode_ignore:n {##1} }
-    \int_step_inline:nnn { "FE00 } { "FE0F }
-      { \char_set_catcode_ignore:n {##1} }
-    \int_step_inline:nnn { "E0100 } { "E01EF }
-      { \char_set_catcode_ignore:n {##1} }
+    \bool_if:NF \g_@@_shaping_bool
+      {
+        \clist_map_inline:Nn \c_@@_attached_chars_clist
+          { \char_set_catcode_ignore:n {##1} }
+        \int_step_inline:nnn { "FE00 } { "FE0F }
+          { \char_set_catcode_ignore:n {##1} }
+        \int_step_inline:nnn { "E0100 } { "E01EF }
+          { \char_set_catcode_ignore:n {##1} }
+      }
   }
 %    \end{macrocode}
 % \end{macro}
@@ -5266,11 +5298,40 @@ abc汉字abc
     LuaCJK.attr_nobreak     =  \int_use:N   \c_@@_nobreak_attr_int ;
     LuaCJK.attr_settings    =  \int_use:N   \c_@@_settings_attr_int ;
     LuaCJK.attr_disabled    =  \int_use:N   \c_@@_disabled_attr_int ;
+    LuaCJK.attr_attached    =  \int_use:N   \c_@@_attached_attr_int ;
     LuaCJK.name_ccglue      = "\cs_to_str:N \l_@@_ccglue_skip" ;
     LuaCJK.name_ecglue      = "\cs_to_str:N \l_@@_ecglue_skip" ;
   }
 \bool_gset_true:N \g_@@_lua_loaded_bool
 %    \end{macrocode}
+%
+% \begin{macro}[int]{\@@_detect_shaping:}
+% Ask the module whether \pkg{luaotfload} offers the callback that runs before
+% shaping, and record the answer for the two places that depend on it: the
+% character setup below and the pass that \file{LuaCJK-core.lua} installs.
+% Without the callback the package keeps its previous behavior in full,
+% including the input removal of every zero-width character, so that a system
+% never applies half of the change.
+%    \begin{macrocode}
+\bool_new:N \g_@@_shaping_bool
+\cs_new_protected:Npn \@@_detect_shaping:
+  {
+    \str_if_eq:eeT
+      { \lua_now:e { tex.sprint(tostring(LuaCJK.shaping)) } }
+      { true }
+      { \bool_gset_true:N \g_@@_shaping_bool }
+    \bool_if:NF \g_@@_shaping_bool
+      { \msg_warning:nn { LuaCJK } { no-pre-shaping } }
+  }
+\msg_new:nnn { LuaCJK } { no-pre-shaping }
+  {
+    This~ luaotfload~ has~ no~ pre_shaping_filter,~ so~ the~ CJK~ font~ is~
+    applied~ after~ the~ text~ is~ shaped:~ a~ combining~ mark~ will~ not~
+    attach~ to~ its~ base,~ and~ the~ joiners~ and~ variation~ selectors~
+    are~ removed~ at~ the~ input.
+  }
+%    \end{macrocode}
+% \end{macro}
 %
 % Read the package options now that every helper a key code calls exists and
 % the Lua module is loaded, which \keys{CJLineBreak} needs.
@@ -5278,7 +5339,8 @@ abc汉字abc
 \ProcessKeyOptions [ LuaCJK / options ]
 \@@_settings_push:
 \@@_set_normal_spaced_chars:
-\@@_ignore_format_chars:
+\@@_detect_shaping:
+\@@_setup_format_chars:
 \hook_gput_code:nnn { begindocument } { LuaCJK }
   {
     \tl_if_eq:NNT \CJKfamilydefault \l_@@_family_default_init_tl
@@ -5365,6 +5427,17 @@ local unset_attribute = node.unset_attribute
 %    \end{macrocode}
 % \end{variable}
 %
+% \begin{variable}[int]{LuaCJK.shaping}
+% Whether \pkg{luaotfload} offers the callback that runs before a list is
+% shaped. The \TeX\ side reads this to decide how the zero-width characters
+% are handled at the input, and the module uses it to choose between the
+% substitution before shaping and the copy after it.
+%    \begin{macrocode}
+M.shaping = luatexbase.callbacktypes ~= nil
+  and luatexbase.callbacktypes.pre_shaping_filter ~= nil
+%    \end{macrocode}
+% \end{variable}
+%
 % \begin{variable}[int]
 %   {
 %     LuaCJK.attr_font,     LuaCJK.attr_cjk_space, LuaCJK.attr_xecglue,
@@ -5376,6 +5449,7 @@ local unset_attribute = node.unset_attribute
 for _, field in ipairs {
   "font",      "cjk_space",  "xecglue", "inserted",
   "math_font", "punct_font", "nobreak", "settings",
+  "attached",
 } do
   local key = "attr_" .. field
   M[key] = M[key] or nil
@@ -5638,6 +5712,29 @@ local function is_cjk (c, s)
 end
 
 M.is_cjk = is_cjk
+
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{LuaCJK.is_attached}
+% Test whether a character attaches to the character in front of it instead of
+% standing on its own: the two joiners and the variation selectors.
+% A font shapes with these, and their own advance is nothing, so they follow
+% the font of the character they attach to and take no part in the classes.
+% The combining marks are not in this set: a CJK one is in the CJK ranges and
+% is shaped with its base, which is where its attachment comes from.
+%    \begin{macrocode}
+local ATTACHED = {
+  [0x200C] = true, [0x200D] = true,
+}
+
+local function is_attached (c)
+  return ATTACHED[c]
+    or (c >= 0xFE00  and c <= 0xFE0F)
+    or (c >= 0xE0100 and c <= 0xE01EF)
+end
+
+M.is_attached = is_attached
 
 %    \end{macrocode}
 % \end{macro}
@@ -6008,8 +6105,9 @@ end
 % \begin{variable}[int]{M.yoffset}
 % The vertical offset of each font, in scaled points, positive upwards.
 % The \keys{Baseline} key of a font declaration fills it,
-% and \texttt{copy_glyph} applies it, so the offset belongs to the font
-% a glyph is taken from and not to the text that asks for it.
+% and \texttt{pre_shaping} adds it when it moves a glyph into the font, so the
+% offset belongs to the font the glyph is set in and not to the text that
+% asks for it.
 %    \begin{macrocode}
 M.yoffset = {}
 
@@ -6067,11 +6165,173 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{target_font}
+% The font a CJK glyph takes: the family recorded on the glyph, then a
+% sub-block font when one is declared for its block, then the punctuation
+% family when the character is a mark it covers, then a fallback font when
+% the font that applies does not have the character.
+%    \begin{macrocode}
+local function target_font (n)
+  if not M.attr_font then
+    return nil
+  end
+  local target = has_attribute(n, M.attr_font)
+  if not (target and target > 0) then
+    return nil
+  end
+  local settings = settings_of(n)
+  local block    = block_font(target, n.char, settings)
+  if block then
+    target = block
+  end
+  if M.attr_punct_font and punct_class(n.char) then
+    local punct = has_attribute(n, M.attr_punct_font)
+    if punct and punct > 0 then
+      target = punct
+    end
+  end
+  if not has_char(target, n.char) then
+    target = fallback_font(target, n.char, settings) or target
+  end
+  return target
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{placeholder}
+% Whether a glyph is the one \pkg{luaotfload} substitutes for a character the
+% font does not have: the box it draws, or the slot it leaves empty.
+%    \begin{macrocode}
+local function placeholder (c)
+  return c == 0 or (c >= 0xF0000 and c <= 0x10FFFD)
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{pre_shaping}
+% \changes{v0.0.3}{2026/11/19}{The CJK font is applied to the characters before
+%   the text is shaped instead of to the glyph nodes after it: a combining mark
+%   attaches to its base, a variation sequence selects its glyph, and the
+%   font's own ligatures and \texttt{locl} forms appear. An older
+%   \pkg{luaotfload} keeps the previous behavior.}
+% Set each CJK glyph in the font that sets it, before the list is shaped, and
+% let a character that attaches to the one in front of it follow that font.
+% The substitution comes before shaping because shaping is what attaches a
+% mark to its base and what a variation selector and a joiner act on; a glyph
+% copied into another font afterwards keeps the form of the font it was
+% shaped in.
+% A glyph already in its font is left alone, so the pass is idempotent across
+% the two lists it sees, the paragraph and each line packed from it, and the
+% \keys{Baseline} shift is added once.
+% The joiner or selector is marked, because shaping may leave a space glyph
+% and a negative kern where the font had no use for the character, and
+% \texttt{drop_orphans} cannot recognize them afterwards.
+% A CJK character that its CJK font does not have is remembered, because the
+% box \pkg{luaotfload} leaves for it is removed only where the package moved
+% the character into that font: a document with no CJK font at all still
+% shows the box, which is what tells the reader that nothing sets the text.
+%    \begin{macrocode}
+local missing_chars = {}
+
+local function pre_shaping (head)
+  local last = nil
+  local cur  = head
+  while cur do
+    if cur.id == GLYPH then
+      if is_attached(cur.char) then
+        if M.attr_attached then
+          set_attribute(cur, M.attr_attached, 1)
+        end
+        if last then
+          cur.font = last.font
+        end
+      elseif is_cjk(cur.char, settings_of(cur)) then
+        local target = target_font(cur)
+        if target and target > 0 and target ~= cur.font then
+          if not has_char(target, cur.char) then
+            missing_chars[target * 0x200000 + cur.char] = true
+          end
+          local shift = M.yoffset[target]
+          if shift then
+            cur.yoffset = (cur.yoffset or 0) + shift
+          end
+          cur.font = target
+        end
+      end
+      last = cur
+    end
+    cur = cur.next
+  end
+  return head
+end
+
+M.pre_shaping = pre_shaping
+
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{drop_orphans}
+% \changes{v0.0.3}{2026/11/19}{A joiner or a variation selector that the font
+%   cannot use leaves nothing behind, and neither does a CJK character the CJK
+%   font does not have.}
+% Remove what shaping left of the two kinds of character that must not reach
+% the spacing pass.
+% A marked joiner or selector has done its work by now: the font either used
+% it, in which case it is a ligature or a variant glyph and the node is gone,
+% or it left a space glyph whose advance a negative kern cancels. Both the
+% glyph and the kern are freed, so the text around it closes up and the two
+% CJK characters on its sides take their glue.
+% A CJK character that its CJK font does not have leaves the box glyph the
+% font loader draws; it is freed as well, because the character was moved
+% into a font that does not set it rather than left in the text font.
+%    \begin{macrocode}
+local function drop_orphans (head)
+  local prev = nil
+  local cur  = head
+  while cur do
+    local nxt  = cur.next
+    local drop = false
+    if cur.id == GLYPH and M.attr_attached
+       and has_attribute(cur, M.attr_attached) ~= nil then
+      drop = true
+      if nxt and nxt.id == KERN and nxt.kern == -(cur.width or 0) then
+        local after = nxt.next
+        free_node(nxt)
+        nxt = after
+      end
+    elseif cur.id == GLYPH and placeholder(cur.char)
+       and prev and prev.id == GLYPH
+       and missing_chars[prev.font * 0x200000 + prev.char] then
+      drop = true
+    end
+    if drop then
+      if prev then
+        prev.next = nxt
+      else
+        head = nxt
+      end
+      free_node(cur)
+      cur = nxt
+    else
+      prev = cur
+      cur  = nxt
+    end
+  end
+  return head
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{copy_glyph}
 % \changes{v0.0.1}{2026/11/05}{A character the font lacks leaves no
 %   placeholder: the \texttt{.notdef} or private-use glyph a font substitutes
 %   for it is removed.}
 % Copy a glyph node, changing only its font.
+% Only the fallback for a \pkg{luaotfload} without
+% \texttt{pre\_shaping\_filter} uses it.
 %    \begin{macrocode}
 local function copy_glyph (n, fid)
   local g = new_node("glyph")
@@ -6098,8 +6358,12 @@ end
 % \changes{v0.0.1}{2026/11/05}{Provide \keys{LatinPunct}, which keeps the
 %   shared quotation marks, the middle dot, and the ellipses in the Latin font
 %   instead of the CJK font.}
-% Replace each CJK glyph by a copy in the font its attribute names,
-% after giving way to a sub-block font or to a fallback font.
+% Replace each CJK glyph by a copy in the font its attribute names, after
+% shaping.
+% This is the fallback for a \pkg{luaotfload} without
+% \texttt{pre\_shaping\_filter}; the package then behaves as it did before the
+% substitution moved in front of shaping, and every zero-width character is
+% removed at the input, so no attached character reaches this point.
 % A glyph that the old font did not have may sit next to the placeholder
 % \pkg{luaotfload} emitted for it; the placeholder is freed at the same
 % time, because it would otherwise add an advance of its own.
@@ -6109,28 +6373,11 @@ local function rewrite_fonts (head)
   local cur  = head
   while cur do
     local nxt = cur.next
-    if cur.id == GLYPH and is_cjk(cur.char, settings_of(cur))
-       and M.attr_font then
-      local target = has_attribute(cur, M.attr_font)
-      if target and target > 0 then
-        local block = block_font(target, cur.char, settings_of(cur))
-        if block then
-          target = block
-        end
-      end
-      if target and M.attr_punct_font and punct_class(cur.char) then
-        local punct = has_attribute(cur, M.attr_punct_font)
-        if punct and punct > 0 then
-          target = punct
-        end
-      end
-      if target and target > 0 and not has_char(target, cur.char) then
-        target = fallback_font(target, cur.char, settings_of(cur)) or target
-      end
+    if cur.id == GLYPH and is_cjk(cur.char, settings_of(cur)) then
+      local target = target_font(cur)
       if target and target > 0 and target ~= cur.font then
         if nxt and nxt.id == GLYPH and nxt.font == cur.font
-           and (nxt.char == 0
-             or (nxt.char >= 0xF0000 and nxt.char <= 0x10FFFD)) then
+           and placeholder(nxt.char) then
           local after = nxt.next
           free_node(nxt)
           nxt = after
@@ -8063,13 +8310,20 @@ end
 %
 % \begin{macro}[int]{LuaCJK.process}
 % Run the passes over a list, in the order in which they depend on each
-% other: the font first, because the classes depend on it; then the
-% spacing, the fixed widths, the prohibitions, and the widow penalties.
+% other: what shaping left of the zero-width characters first, so that the
+% spacing pass sees the text as it is set; then the spacing, the fixed
+% widths, the prohibitions, and the widow penalties.
+% Without \texttt{pre\_shaping\_filter} the font is moved here instead, after
+% shaping, because there was no pass in front of it.
 % The hang of a mark is inserted only when the list is a paragraph about to be
 % broken, because a box packed by \tn{hpack} has no break to hang at.
 %    \begin{macrocode}
 local function process (head, linebreak)
-  head = rewrite_fonts(head)
+  if M.shaping then
+    head = drop_orphans(head)
+  else
+    head = rewrite_fonts(head)
+  end
   head = spacing(head)
   head = apply_fixed_widths(head)
   if linebreak then
@@ -8144,10 +8398,17 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% The callbacks are registered in this order: spacing, font correction,
-% math, and hyphenation, which is the only one that runs inside the line
-% breaker rather than around it.
+% The callbacks are registered in this order: the font substitution, which
+% \pkg{luaotfload} calls from its own handler before it shapes a list; the
+% spacing, which runs on both lists; the math; and the hyphenation, which is
+% the only one that runs inside the line breaker rather than around it.
+% The substitution is registered only when \pkg{luaotfload} has the callback;
+% without it, \texttt{process} applies the font after shaping instead.
 %    \begin{macrocode}
+if M.shaping then
+  luatexbase.add_to_callback("pre_shaping_filter",
+    M.pre_shaping, "LuaCJK.font")
+end
 luatexbase.add_to_callback("pre_linebreak_filter",
   M.pre_linebreak, "LuaCJK.spacing")
 luatexbase.add_to_callback("hpack_filter", M.hpack, "LuaCJK.spacing")

@@ -1,0 +1,84 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKsansfont{FandolHei-Regular.otf}
+
+% Report the nodes of box 0: a glyph by its code point, any other node by
+% its kind. Widths are left out so the signature does not follow a font.
+\def\shownodes{%
+  \directlua{
+    local digits = "0123456789ABCDEF"
+    local function hex (n)
+      local out, count = {}, 0
+      repeat
+        count = count + 1
+        local d = math.fmod(n, 16) + 1
+        out[count] = digits:sub(d, d)
+        n = math.floor(n / 16)
+      until n == 0
+      local s = ""
+      for i = count, 1, -1 do s = s .. out[i] end
+      while string.len(s) < 4 do s = "0" .. s end
+      return s
+    end
+    local out, count = {}, 0
+    local n = tex.box[0].head
+    while n do
+      count = count + 1
+      if n.id == node.id("glyph") then
+        out[count] = hex(n.char)
+      elseif n.id == node.id("glue") then
+        out[count] = "glue"
+      elseif n.id == node.id("kern") then
+        out[count] = "kern"
+      elseif n.id == node.id("penalty") then
+        out[count] = "penalty"
+      elseif n.id == node.id("hlist") then
+        out[count] = "hlist"
+      else
+        out[count] = "node"
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "NODES " .. table.concat(out, " "))
+  }%
+}
+
+% Report the advance of box 0 in scaled points, and how many ems that is.
+\def\showwidth{%
+  \directlua{
+    local width = tex.box[0].width
+    texio.write_nl("term and log",
+      "WIDTH " .. width .. " / " .. math.floor(width / 65536 + 0.5) .. "pt")
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{a precomposed kana is one glyph}{
+  \setbox0=\hbox{が}\shownodes
+}
+\TEST{a base and a combining mark are shaped as one glyph}{
+  \setbox0=\hbox{が}\shownodes
+}
+\TEST{the two spellings have the same advance}{
+  \setbox0=\hbox{が}\setbox2=\hbox{が}%
+  \ifdim\wd0=\wd2 \TYPE{same width}\else\TYPE{different width}\fi
+  \setbox0=\hbox{が}\showwidth
+}
+\TEST{a mark inside CJK text leaves no break between base and mark}{
+  \setbox0=\hbox{中が文}\shownodes
+  \setbox0=\hbox{中が文}\showwidth
+}
+\TEST{a character the CJK font lacks leaves no advance}{
+  \setbox0=\hbox{\char"3FFFF}\showwidth
+  \shownodes
+}
+
+\END
+
+\end{document}

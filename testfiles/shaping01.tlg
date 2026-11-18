@@ -1,0 +1,31 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: a precomposed kana is one glyph
+============================================================
+NODES 304C
+============================================================
+============================================================
+TEST 2: a base and a combining mark are shaped as one glyph
+============================================================
+NODES 304C
+============================================================
+============================================================
+TEST 3: the two spellings have the same advance
+============================================================
+same width
+WIDTH 655360 / 10pt
+============================================================
+============================================================
+TEST 4: a mark inside CJK text leaves no break between base and mark
+============================================================
+NODES 4E2D glue 304C glue 6587
+WIDTH 1966080 / 30pt
+============================================================
+============================================================
+TEST 5: a character the CJK font lacks leaves no advance
+============================================================
+Missing character: There is no 𿿿 (U+3FFFF) in font [FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;!
+WIDTH 0 / 0pt
+NODES 3FFFF
+============================================================
