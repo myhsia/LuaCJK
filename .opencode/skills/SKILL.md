@@ -108,16 +108,22 @@ callback another package registers.
 character noads of a CJK character at a math family of its own; the family's
 three style fonts are filled from the CJK family at the text, script, and
 scriptscript size (0.7 and 0.5 of the text size), so a CJK character in a
-superscript or a fraction takes the size of that math style. The face is the
-one of the math version — `\bfdefault` in `bold`, `\mddefault` in the others,
-always the upright shape — and `\@@_math_version_refresh:` re-registers the
-family from `\every@math@size`, because `\mathversion` cannot reach a family
-number it does not know; a group that asks for `\boldmath` therefore gets the
-bold face and the group end restores the previous one. The family
-number is allocated per CJK family name from 240--255 and travels in the
-`math_font` attribute, which keeps `\setCJKmathfont` local to a group.
-The math parameters stay those of the document's math font, because the CJK
-font has no `MathConstants` table.
+superscript or a fraction takes the size of that math style. The text size is
+`\glb@currsize`, not `\f@size`: `\text` sets `\f@size` to the script size for
+the branches of its `\mathchoice` that it discards, and a family built there
+would keep that size. The face is the one of the math version — `\bfdefault`
+in `bold`, `\mddefault` in the others, always the upright shape — and
+`\@@_math_version_refresh:` re-registers the family from `\every@math@size`,
+because `\mathversion` cannot reach a family number it does not know; a group
+that asks for `\boldmath` therefore gets the bold face and the group end
+restores the previous one. The family number is allocated per CJK family name
+from 240--255 and travels in the `math_font` attribute, which keeps
+`\setCJKmathfont` local to a group. The fallback fonts of the family are
+registered as math families too; `M.math_fallback` holds, per family number, a
+flat chain of (font to test, family to set) pairs with the family's own text
+font first, and `rewrite_math` sets a character in the first font of the chain
+that has it, gated by `AutoFallBack`. The math parameters stay those of the
+document's math font, because the CJK font has no `MathConstants` table.
 
 ### Attributes
 
@@ -512,7 +518,7 @@ The commands are in `AGENTS.md`. For this skill the points that matter are:
 ```bash
 l3build check <name>                # the local loop; must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
-l3build check                       # 59 tests, CI on every push
+l3build check                       # 60 tests, CI on every push
 bash scripts/ctex-subset.sh         # 21/21, CI; no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
 ```
