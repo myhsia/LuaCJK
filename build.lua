@@ -153,7 +153,7 @@ end
 
 uploadconfig        = {
   pkg          = pkg,
-  version      = version,
+  version      = version .. " " .. date,
   author       = maintainer,
   uploader     = uploader,
   email        = email,
@@ -162,10 +162,8 @@ uploadconfig        = {
   license      = "lppl1.3c",
   ctanPath     = "/macros/luatex/latex/" .. pkg,
   repository   = repository,
-  home         = repository,
-  support      = repository .. "/issues",
   bugtracker   = repository .. "/issues",
-  development  = repository,
+  development  = "https://github.com/" .. maintainid,
   topic        = {"chinese", "luatex", "tagged-pdf"},
   note         = slurp("CTAN-NOTE.md"),
   announcement = extract_changes.announcement{
