@@ -3,6 +3,7 @@
 \documentclass{article}
 \usepackage{fontspec}
 \setmainfont{TeX Gyre Pagella}
+\usepackage{amsmath}
 \usepackage{unicode-math}
 \setmathfont{TeX Gyre Pagella Math}
 \usepackage{LuaCJK}
@@ -93,6 +94,21 @@
     \setbox0=\hbox{$中$}
     \showmathsizes
   \endgroup
+}
+
+\TEST{a \cs{text} keeps the text size of the formula}{
+  \setbox0=\hbox{$甲\text{注}乙$}
+  \showmathsizes
+}
+
+\TEST{the formula after a \cs{text} keeps the text size}{
+  \setbox0=\hbox{$甲乙$}
+  \showmathsizes
+}
+
+\TEST{a \cs{text} in a script does not shrink the formula}{
+  \setbox0=\hbox{$x^{甲\text{注}}$}
+  \showmathsizes
 }
 
 \END

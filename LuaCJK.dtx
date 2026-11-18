@@ -545,6 +545,8 @@ English 中文字体\\
 %   这条链按文字的字重、字形与字号解析，
 %   所以粗体里的字符取自后备字体的粗体字面，
 %   放大后的字符取自对应字号的字面。
+%   打开 \keys{CJKmath} 时，排在数学模式里的汉字也走同一条链：
+%   列表取自负则这个数学字体的 CJK 字族，字号取数学样式的字号。
 % \end{function}
 %
 % \begin{keyval}
@@ -723,10 +725,12 @@ English 中文字体
 % 所以 \cs{boldmath} 会把公式里的汉字换成粗体，而且只作用于当前分组；
 % 字族没有粗体时保持正体，也不报警告。
 % 字族号取自 240--255 这一段，是 \LuaTeX\ 允许的 256 个字族里的最后十六个，
-% 正常文档不会用到那里；一个文档如果在数学里用到十六个以上的 CJK 字族，
-% 就会报错停止。
+% 正常文档不会用到那里；数学里用到的每一个后备字体也各占一个号，
+% 声明了它的字族共用这个号，一个文档如果需要十六个以上的号就会报错停止。
 % 脚本尺寸是当前正文尺寸的百分之七十五，
 % 也就是标准尺寸表里的比例。
+% 这个正文尺寸是公式周围文字的尺寸，而不是公式里 \tn{text} 临时切换到的尺寸，
+% 所以含有 \tn{text} 的公式与不含它的公式一样大。
 % 数学参数不取自 CJK 字体，因为它没有
 % \texttt{MathConstants} 表：这些参数仍然是文档数学字体的，
 % 这就是为什么两个汉字组成的分数用的是周围数学的横线与间距。
@@ -1810,6 +1814,9 @@ English 中文字体\\
 %   times to build a chain; the first font that has the character wins.
 %   The chain is resolved in the weight, shape, and size of the text, so a
 %   character in bold takes the bold face of the fallback font.
+%   With \keys{CJKmath} on, a CJK character in math mode falls back through
+%   the same chain: the list of the CJK family that supplies the math font is
+%   tried, at the size of the math style.
 % \end{function}
 %
 % \begin{keyval}
@@ -1993,9 +2000,14 @@ English 中文字体
 % keeps its regular one without a warning.
 % The family number comes from the range 240--255, the last sixteen of the 256
 % that \LaTeXe\ allocates under \LuaTeX, which an ordinary document never
-% reaches; more than sixteen CJK families in math stops with an error.
+% reaches; every fallback font used in math takes a number of its own, shared
+% by the families that declare it, and a document that needs more than sixteen
+% numbers stops with an error.
 % The script sizes are seven and five tenths of the current text size, the
 % ratio of the standard size tables.
+% That text size is the one of the text around the formula, not the size a
+% \tn{text} inside it switches to, so a formula that contains a \tn{text} is
+% as large as one that does not.
 % The math parameters are not taken from the CJK font, which has no
 % \texttt{MathConstants} table: they stay those of the document's math font,
 % which is why a fraction of two CJK characters has the rule and the gaps of
@@ -4258,6 +4270,9 @@ abc汉字abc
 % The guard of \cs{@@_update_font:} is raised around the resolution, so the
 % temporary selections it makes do not change the identifier they are
 % resolved for.
+% The math chain is refreshed in the same pass, so a fallback declared after
+% the document started, or an \keys{AutoFallBack} that is switched on, reaches
+% the next formula even when no font is selected before it.
 %    \begin{macrocode}
 \prop_new:N \g_@@_fallback_pushed_prop
 \bool_new:N \g_@@_lua_loaded_bool
@@ -4310,6 +4325,7 @@ abc汉字abc
     \prop_gclear:N \g_@@_fallback_pushed_prop
     \bool_set_true:N \l_@@_selectfont_bool
     \@@_push_fallback:
+    \@@_math_font_update:
     \bool_set_false:N \l_@@_selectfont_bool
   }
 %    \end{macrocode}
@@ -4449,9 +4465,9 @@ abc汉字abc
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_math_font_update:}
-% Register the CJK family used by the current settings as a math family, or
-% clear the math font attribute when \keys{CJKmath} is off or the family is
-% not known.
+% Register the CJK family used by the current settings as a math family and
+% hand the fallback chain of that family to Lua, or clear the math font
+% attribute when \keys{CJKmath} is off or the family is not known.
 % \cs{@@_update_font:} runs it at every font selection, and
 % \cs{@@_math_version_refresh:} runs it again when the math version changes,
 % which is why it stands on its own.
@@ -4464,7 +4480,10 @@ abc汉字abc
           { \tl_set_eq:NN \l_@@_tmpa_tl \l_@@_family_tl }
           { \tl_set_eq:NN \l_@@_tmpa_tl \l_@@_math_family_tl }
         \prop_get:NVNTF \g_@@_family_prop \l_@@_tmpa_tl \l_@@_tmpb_tl
-          { \exp_args:NV \@@_register_math_family:n \l_@@_tmpb_tl }
+          {
+            \exp_args:NV \@@_register_math_family:n \l_@@_tmpb_tl
+            \exp_args:NV \@@_math_fallbacks_push:n \l_@@_tmpa_tl
+          }
           { \g_@@_math_font_attr = \c_zero_int }
       }
       { \g_@@_math_font_attr = \c_zero_int }
@@ -4509,8 +4528,10 @@ abc汉字abc
 % A CJK character in a math list needs a math family of its own, because the
 % family is what selects the font \emph{and} its size for the three math
 % styles.  \LaTeXe\ allocates the 256 families that \LuaTeX\ allows from zero
-% upwards, so the numbers start at 240; a document with more than sixteen CJK
-% families is out of luck and gets an error.
+% upwards, so the numbers start at 240; a document that needs more than
+% sixteen numbers is out of luck and gets an error.
+% A fallback font used in math takes a number of its own, and the families
+% that declare it share that number.
 %    \begin{macrocode}
 \int_new:N \g_@@_math_family_int
 \int_gset:Nn \g_@@_math_family_int { 239 }
@@ -4565,27 +4586,16 @@ abc汉字abc
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}[int]{\@@_register_math_family:n}
-% Give a CJK family a math family number and fill the three style fonts of
-% that number from the family at the current size.
-% A CJK character in a math list needs a family rather than a box, because the
-% family is what selects the font \emph{and} its size for text, script, and
-% scriptscript style; a box is built once and keeps the size it was built at.
-% The script sizes are seven and five tenths of the text size, which is the
-% ratio of the standard \LaTeX\ size tables.  The family is selected inside a
-% group, so the caller's font is not disturbed, and the assignments are global
-% because a math font belongs to a family, not to a group.
-% The series and the shape come from the math version, not from the text
-% around the formula: the family is selected at \cs{mddefault} and
-% \cs{shapedefault}, and, in the \texttt{bold} math version, at
-% \cs{bfdefault} as well when the family declares that shape.  The regular
-% face is what loads the shape list the test reads, and a family without a
-% bold face keeps its regular one in silence.  A formula therefore follows
-% \cs{boldmath}, and a \cs{bfseries} that happens to precede it no longer
-% leaks into it.
+% \begin{macro}[int]{\@@_math_family:n}
+% Give a CJK family or one of its fallback fonts a math family number.
+% A number is handed out once per family name, so two CJK families that
+% declare the same fallback font share its number.
 %    \begin{macrocode}
 \msg_new:nnn { LuaCJK } { math-family-exhausted }
-  { Too ~ many ~ CJK ~ families ~ for ~ the ~ math ~ families ~ 240--255. }
+  {
+    Too ~ many ~ CJK ~ and ~ fallback ~ families ~ for ~ the ~ math ~
+    families ~ 240--255.
+  }
 \cs_new_protected:Npn \@@_math_family:n #1
   {
     \prop_if_in:NnF \g_@@_math_family_prop {#1}
@@ -4597,16 +4607,60 @@ abc汉字abc
           \g_@@_math_family_int
       }
   }
-\cs_new_protected:Npn \@@_register_math_family:n #1
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{\@@_math_size_set:}
+% \begin{variable}[int]{\l_@@_math_size_tl}
+% The text size a math family is built at: the size \LaTeXe\ has installed
+% the math fonts for, which is \tn{glb@currsize}, and \tn{f@size} before the
+% document starts.
+% The two differ inside \pkg{amsmath}'s \tn{text}, whose \tn{mathchoice} sets
+% \tn{f@size} to the script and scriptscript size for the branches it
+% discards, and a math family built there would keep that size for every
+% character after the \tn{text}.
+%    \begin{macrocode}
+\tl_new:N \l_@@_math_size_tl
+\cs_new_protected:Npn \@@_math_size_set:
   {
-    \@@_math_family:n {#1}
-    \int_set:Nn \l_@@_tmpa_int
-      { \prop_item:Nn \g_@@_math_family_prop {#1} }
+    \tl_set_eq:NN \l_@@_math_size_tl \f@size
+    \cs_if_exist:NT \glb@currsize
+      {
+        \tl_if_empty:NF \glb@currsize
+          { \tl_set_eq:NN \l_@@_math_size_tl \glb@currsize }
+      }
+  }
+%    \end{macrocode}
+% \end{variable}
+% \end{macro}
+%
+% \begin{macro}[int]{\@@_math_family_fonts:nn}
+% Fill the three style fonts of one math family number from a CJK family, at
+% the text size of the formula and at seven and five tenths of it, which is
+% the ratio of the standard \LaTeX\ size tables.
+% The family is selected inside a group, so the caller's font is not
+% disturbed, and the assignments are global because a math font belongs to a
+% family, not to a group.
+% The series and the shape come from the math version, not from the text
+% around the formula: the family is selected at \cs{mddefault} and
+% \cs{shapedefault}, and, in the \texttt{bold} math version, at
+% \cs{bfdefault} as well when the family declares that shape.  The regular
+% face is what loads the shape list the test reads, and a family without a
+% bold face keeps its regular one in silence.  A formula therefore follows
+% \cs{boldmath}, and a \cs{bfseries} that happens to precede it no longer
+% leaks into it.
+% The font identifier of the text size is recorded in
+% \cs{g_@@_math_textfont_int}, which is the font a fallback chain tests for
+% the character, because coverage does not depend on the size.
+%    \begin{macrocode}
+\int_new:N \g_@@_math_textfont_int
+\cs_new_protected:Npn \@@_math_family_fonts:nn #1#2
+  {
     \group_begin:
       \fontfamily {#1}
       \fontseries { \mddefault }
       \fontshape { \shapedefault }
-      \fontsize { \use:c { f@size } pt } { \baselineskip }
+      \fontsize { \l_@@_math_size_tl pt } { \baselineskip }
       \selectfont
       \bool_lazy_and:nnT
         { \str_if_eq_p:ee { \math@version } { bold } }
@@ -4615,19 +4669,91 @@ abc汉字abc
             { \use:c { f@encoding } / #1 / \bfdefault / \shapedefault }
         }
         { \fontseries { \bfdefault } \selectfont }
-      \global \textfont \l_@@_tmpa_int = \font
+      \global \textfont #2 = \font
+      \int_gset:Nn \g_@@_math_textfont_int
+        { \tex_fontid:D \tex_font:D }
       \fontsize
-        { \dim_eval:n { \use:c { f@size } pt * 7 / 10 } }
+        { \dim_eval:n { \l_@@_math_size_tl pt * 7 / 10 } }
         { \baselineskip }
       \selectfont
-      \global \scriptfont \l_@@_tmpa_int = \font
+      \global \scriptfont #2 = \font
       \fontsize
-        { \dim_eval:n { \use:c { f@size } pt * 5 / 10 } }
+        { \dim_eval:n { \l_@@_math_size_tl pt * 5 / 10 } }
         { \baselineskip }
       \selectfont
-      \global \scriptscriptfont \l_@@_tmpa_int = \font
+      \global \scriptscriptfont #2 = \font
     \group_end:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{\@@_register_math_family:n}
+% \changes{v0.0.3}{2026/11/18}{The three sizes of a CJK math family come from
+%   the text size of the formula, so a \tn{text} inside it no longer sets the
+%   other characters of the formula in a script size.}
+% Register a CJK family as a math family and point the math font attribute at
+% its number.
+% A CJK character in a math list needs a family rather than a box, because the
+% family is what selects the font \emph{and} its size for text, script, and
+% scriptscript style; a box is built once and keeps the size it was built at.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_register_math_family:n #1
+  {
+    \@@_math_family:n {#1}
+    \int_set:Nn \l_@@_tmpa_int
+      { \prop_item:Nn \g_@@_math_family_prop {#1} }
+    \@@_math_size_set:
+    \@@_math_family_fonts:nn {#1} \l_@@_tmpa_int
     \g_@@_math_font_attr = \l_@@_tmpa_int
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{\@@_math_fallbacks_push:n}
+% \changes{v0.0.3}{2026/11/18}{A CJK character in math mode takes a fallback
+%   font when the CJK font of the formula does not have it.}
+% Register the fallback fonts of a CJK family as math families and hand the
+% chain to Lua, which sets the character in the first font that has it.
+% The chain holds the text font of the family itself first, so that Lua can
+% test it too, then each fallback in the order it was declared, as pairs of a
+% font identifier and a math family number.
+% The family is given by the key it was declared under, which is the key of
+% the fallback list, so a formula falls back like the text of the same family.
+%    \begin{macrocode}
+\tl_new:N \l_@@_math_fallback_ids_tl
+\cs_new_protected:Npn \@@_math_fallbacks_push:n #1
+  {
+    \bool_if:NT \g_@@_lua_loaded_bool
+      {
+        \@@_math_size_set:
+        \tl_clear:N \l_@@_math_fallback_ids_tl
+        \tl_put_right:Nx \l_@@_math_fallback_ids_tl
+          {
+            \int_use:N \g_@@_math_textfont_int ,
+            \int_use:N \g_@@_math_font_attr ,
+          }
+        \prop_get:NnNT \g_@@_fallback_prop {#1} \l_@@_tmpa_tl
+          {
+            \exp_args:NV \clist_map_inline:nn \l_@@_tmpa_tl
+              {
+                \@@_math_family:n {##1}
+                \int_set:Nn \l_@@_tmpa_int
+                  { \prop_item:Nn \g_@@_math_family_prop {##1} }
+                \@@_math_family_fonts:nn {##1} \l_@@_tmpa_int
+                \tl_put_right:Nx \l_@@_math_fallback_ids_tl
+                  {
+                    \int_use:N \g_@@_math_textfont_int ,
+                    \int_use:N \l_@@_tmpa_int ,
+                  }
+              }
+          }
+        \lua_now:e
+          {
+            LuaCJK.set_math_fallback
+              ( \int_use:N \g_@@_math_font_attr ,
+                { \l_@@_math_fallback_ids_tl } )
+          }
+      }
   }
 %    \end{macrocode}
 % \end{macro}
@@ -6975,10 +7101,52 @@ local SUB_MLIST = node.id("sub_mlist")
 local rewrite_math_list
 
 %    \end{macrocode}
+% \begin{variable}[int]{M.math_fallback}
+% The fallback chain of each CJK math family, as a flat list that alternates
+% the identifier of the font a character is tested in and the number of the
+% math family that sets it.
+% The text font of the family itself comes first, so a character the family
+% has is set by the family.
+%    \begin{macrocode}
+M.math_fallback = {}
+
+function M.set_math_fallback (main, list)
+  M.math_fallback[main] = list
+end
+
+%    \end{macrocode}
+% \end{variable}
+%
+% \begin{macro}[int]{math_family_for}
+% The first math family of the chain of \meta{family} whose font has
+% \meta{char}, or the family itself when none does.
+% The fallback fonts are consulted only when \keys{AutoFallBack} is on, which
+% the settings of the noad carry, so the switch reaches math mode like it
+% reaches the text.
+%    \begin{macrocode}
+local function math_family_for (char, family, settings)
+  local list = M.math_fallback[family]
+  if not list then
+    return family
+  end
+  for i = 1, #list, 2 do
+    if i > 1 and not (settings and settings.auto_fallback) then
+      break
+    end
+    if has_char(list[i], char) then
+      return list[i + 1]
+    end
+  end
+  return family
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{rewrite_noad}
-% Point the nucleus of one noad at the math family of its CJK family, and
-% recurse into the sub lists of its numerator, denominator, superscript, and
-% subscript.
+% Point the nucleus of one noad at the math family of its CJK family, or at
+% the first fallback family that has the character, and recurse into the sub
+% lists of its numerator, denominator, superscript, and subscript.
 % The family number comes from the attribute \TeX\ set for the current group,
 % which is why \cs{setCJKmathfont} keeps its meaning inside a group: the
 % family of the node changes, not a global font.
@@ -6996,7 +7164,8 @@ local function rewrite_field (s, noad, on, family)
   end
   if s.id == MATH_CHAR or s.id == MATH_TEXT_CHAR then
     if is_cjk(s.char, settings_of(noad)) then
-      point_at_family(s, family)
+      point_at_family(s,
+        math_family_for(s.char, family, settings_of(noad)))
     end
   elseif s.id == SUB_MLIST then
     rewrite_math_list(s.head, on, family)
