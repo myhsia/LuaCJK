@@ -43,6 +43,20 @@
   \TYPE{same depth: \the\dp0\space\the\dp2}
 }
 
+\TEST{top and bottom reach a rule that format colors}{
+  \setbox0=\hbox{\CJKunderline[top = -2pt, bottom = -4pt]{中}}
+  \showbox0
+  \setbox0=\hbox{\CJKunderline[top = -2pt, bottom = -4pt, format = red]{中}}
+  \showbox0
+}
+
+\TEST{top and bottom still override depth and thickness}{
+  \setbox0=\hbox{\CJKunderline[top = -3pt, bottom = -5pt]{中}}
+  \showbox0
+  \setbox0=\hbox{\CJKunderline[top = -1pt, bottom = -2pt]{中}}
+  \showbox0
+}
+
 \END
 
 \end{document}

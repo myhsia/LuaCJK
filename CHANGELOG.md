@@ -1,3 +1,9 @@
+## [LuaCJK-v0.0.3](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.3)
+
+- `top` and `bottom` are keys of the decoration, so they reach a rule that `format` colors as well, and an underline type is built per font size, so a rule built from `em` units keeps its thickness when the size changes.
+- The wave takes `format` like the other decorations, and `format` colors the drawn patterns instead of the rule alone.
+- The slash takes `format` like the wave.
+
 ## [LuaCJK-v0.0.2](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.2)
 
 - `Baseline` shifts the glyphs of the font that declares it, so two CJK fonts whose baselines do not match can be set side by side.
