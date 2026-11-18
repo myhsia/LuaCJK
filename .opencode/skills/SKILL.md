@@ -243,8 +243,13 @@ the line that ends at the mark.
 glue of width *w* followed by a glue of width *-w* that gives the space back.
 `LuaCJKfntef.lua` finds that pair in `hpack_filter` and
 `pre_append_to_vlist_filter`, and replaces the leaders by a sequence of kerns
-and shorter leaders whose total is still *w*; the text therefore does not move
-while the rule is inset (`subtract`) or left out over punctuation (`skip`).
+and shorter leaders whose widths, stretches, and shrinks still add up to *w*,
+*st*, and *sh*: the text therefore does not move while the rule is inset
+(`subtract`) or left out over punctuation (`skip`), and the line spaces as it
+would with no decoration.  The stretch of the pair mirrors the text under it,
+so each piece takes its share in proportion to its width and the last piece
+takes the remainder.  A `kern` node has no `width` field in LuaTeX, so every
+interval is measured through `node_width`, which reads `kern` for a kern.
 The settings of one call live in `LuaCJKfntef.settings`, numbered by the
 decoration attribute, so two decorations in one paragraph keep their own
 settings.
@@ -291,10 +296,11 @@ Leaders repeat the box and only whole copies fit, so the last fraction of a
 span stays empty. With a one-point object that shortened a highlight at the
 right end by up to a point whenever the em was not a whole number of points,
 which is the case at `\small` in an 11pt document. A leader box that holds
-nothing but one rule is therefore replaced by a single rule node of the
-segment width, with the height and depth shifted by the box's own
-translation; the replacement keeps the rule's attributes, so the color
-survives. A box that holds a pattern (the symbols) keeps the leaders.
+nothing but one rule is therefore given a rule of zero width, which `\leaders`
+fills to the whole width of the glue: the rule covers the interval exactly, it
+follows the glue when the line stretches, and it keeps the rule's attributes,
+so the color survives. The height and depth are shifted by the box's own
+translation. A box that holds a pattern (the symbols) keeps the leaders.
 
 The `depth` key places the rule below the baseline. `boxdepth`, which used to
 cap how much a rule added to the box, is gone: it was a workaround for the

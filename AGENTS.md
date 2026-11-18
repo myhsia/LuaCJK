@@ -231,9 +231,14 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   is prohibited and the kinsoku pass skips a break that involves suspended
   material.
 - **A rule decoration adjusts `lua-ul`, it does not draw.**  `lua-ul` emits a
-  leaders glue of width *w* followed by a glue of width *-w*; the adjustment
-  replaces the leaders with kerns and shorter leaders so that the total stays
-  *w*. Any rule-based decoration must keep that invariant.
+  leaders glue of width *w*, stretch *st*, and shrink *sh*, followed by a glue
+  of width *-w*, stretch *-st*, and shrink *-sh*; the adjustment replaces the
+  leaders with kerns and shorter leaders whose widths, stretches, and shrinks
+  still add up to *w*, *st*, and *sh*.  Dropping the stretch leaves the line
+  with the negative half of the pair, which moves every other word in it, so a
+  rule-based decoration must keep the whole invariant.  A piece whose leader
+  box holds nothing but one rule gets a rule of zero width, which `\leaders`
+  fills to the width of the glue.
 - **A decoration's underline type keeps the color and the font size it was
   built with.**  `luacolor` colors a rule by attribute, and `lua-ul` puts the
   attributes of the built box on every leader it inserts, so a type cached by
