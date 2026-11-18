@@ -1,0 +1,56 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+
+\def\psname#1{%
+  \directlua{
+    local n = tex.box[#1].head
+    while n do
+      if n.id == node.id("glyph") then
+        local f = font.getfont(n.font)
+        texio.write_nl("term and log", "PSNAME " .. tostring(f and f.psname))
+        break
+      end
+      n = n.next
+    end
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{a document that declares no font is set in Fandol Song by default}{
+  \setbox0=\hbox{中}
+  \psname{0}
+}
+
+\TEST{the bold shape is Fandol Song Bold}{
+  \setbox0=\hbox{\bfseries 中}
+  \psname{0}
+}
+
+\TEST{the heiti shortcut is Fandol Hei}{
+  \setbox2=\hbox{\heiti 中}
+  \psname{2}
+}
+
+\TEST{the kaiti shortcut is Fandol Kai}{
+  \setbox4=\hbox{\kaishu 中}
+  \psname{4}
+}
+
+\TEST{the sans serif family is Fandol Hei}{
+  \setbox4=\hbox{\textsf{中}}
+  \psname{4}
+}
+
+\TEST{the monospaced family is Fandol Fang}{
+  \setbox4=\hbox{\texttt{中}}
+  \psname{4}
+}
+
+\END
+
+\end{document}

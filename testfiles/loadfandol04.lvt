@@ -1,0 +1,52 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage[LoadFandol]{LuaCJK}
+\setCJKsansfont{FandolHei-Regular.otf}
+
+\def\psname#1{%
+  \directlua{
+    local n = tex.box[#1].head
+    while n do
+      if n.id == node.id("glyph") then
+        local f = font.getfont(n.font)
+        texio.write_nl("term and log", "PSNAME " .. tostring(f and f.psname))
+        break
+      end
+      n = n.next
+    end
+  }%
+}
+
+% The warning is issued at |\begin{document}|, before \START, so the check is
+% run again here, with a family that nobody declared, to keep the text of the
+% message in the baseline.
+\ExplSyntaxOn
+\cs_new_protected:Npn \undefault
+  {
+    \tl_gset:Nn \CJKfamilydefault { zhnonexistent }
+    \__LuaCJK_ensure_family_default:
+  }
+\ExplSyntaxOff
+
+\begin{document}
+
+\START
+
+\TEST{a default family that is not declared is reported}{
+  \undefault
+}
+
+\TEST{the main text takes the declared family}{
+  \setbox0=\hbox{中}
+  \psname{0}
+}
+
+\TEST{the declared family is the sans serif one}{
+  \setbox2=\hbox{\textsf{中}}
+  \psname{2}
+}
+
+\END
+
+\end{document}

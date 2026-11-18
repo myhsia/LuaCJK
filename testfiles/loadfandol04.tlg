@@ -1,0 +1,18 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: a default family that is not declared is reported
+============================================================
+Package LuaCJK Warning: The default CJK family `zhnonexistent' is not declared;
+(LuaCJK)                using `zhhei' instead.
+============================================================
+============================================================
+TEST 2: the main text takes the declared family
+============================================================
+PSNAME FandolHei-Regular
+============================================================
+============================================================
+TEST 3: the declared family is the sans serif one
+============================================================
+PSNAME FandolHei-Regular
+============================================================

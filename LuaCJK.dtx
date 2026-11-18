@@ -344,7 +344,8 @@ The Current Maintainer of this work is **Mingyu Xia**.
 %   与 \keys{NoBreakLongPunct} 修改字符集合；
 %   \item \keys{AutoFakeBold, AutoFakeSlant, EmboldenFactor}
 %   与 \keys{SlantFactor} 在注册字族时起作用；
-%   \item \keys{LoadFandol} 与 \keys{LocalConfig} 在加载宏包时起作用。
+%   \item \keys{LocalConfig} 在加载宏包时起作用，
+%   \keys{LoadFandol} 在 |\begin{document}| 处起作用。
 % \end{itemize}
 % 声明 \cs{LuaCJKDeclareCharClass}、\cs{LuaCJKDeclarePunctClass}、
 % \cs{LuaCJKDeclareSubCJKBlock}、\cs{LuaCJKsetwidth} 与 \cs{LuaCJKsetkern}
@@ -605,10 +606,15 @@ English 中文字体\\
 %
 % \begin{keyval}
 %   \item[\keys{LoadFandol}]\val{\TTF}
-%   当文档没有声明任何 CJK 字体时，在 |\begin{document}| 处加载
+%   默认打开。当文档没有声明任何 CJK 字体时，在 |\begin{document}| 处加载
 %   四款 Fandol 字体：宋体作为主字体，
 %   黑体作为无衬线字体，仿宋作为等宽字体，
 %   并且把宋、黑、楷、仿宋全部注册为具名字族。
+%   已经声明了字体的文档保留自己的字体，所以 Fandol 不会混进来；
+%   但若它恰好没有声明 \cs{CJKfamilydefault} 所用的那一族，
+%   正文就会用 \cs{CJKrmdefault} 那一族，若也没有则用最先声明的一族，
+%   并且给出警告。
+%   什么字体都没声明又关掉这个键时，同样会给出警告。
 % \end{keyval}
 %
 % \subsection{伪粗体与伪斜体}
@@ -1582,8 +1588,8 @@ abc汉字abc
 %   and \keys{NoBreakLongPunct} edit character sets;
 %   \item \keys{AutoFakeBold, AutoFakeSlant, EmboldenFactor},
 %   and \keys{SlantFactor} act when a family is registered;
-%   \item \keys{LoadFandol} and \keys{LocalConfig} act while the package
-%   is loaded.
+%   \item \keys{LocalConfig} acts while the package is loaded,
+%   and \keys{LoadFandol} at |\begin{document}|.
 % \end{itemize}
 % The declarations \cs{LuaCJKDeclareCharClass},
 % \cs{LuaCJKDeclarePunctClass}, \cs{LuaCJKDeclareSubCJKBlock},
@@ -1848,10 +1854,15 @@ English 中文字体\\
 %
 % \begin{keyval}
 %   \item[\keys{LoadFandol}]\val{\TTF}
-%   When the document does not declare any CJK font, load the four Fandol
-%   faces at |\begin{document}|: Song as the main font,
+%   On by default. When the document declares no CJK font, load the four
+%   Fandol faces at |\begin{document}|: Song as the main font,
 %   Hei as the sans serif font, Fang as the monospaced font,
 %   and all of Song, Hei, Kai, and Fang as the named families.
+%   A document that declares fonts keeps its own, so Fandol does not mix into
+%   it; when it does not declare the family \cs{CJKfamilydefault} names, its
+%   text takes the family \cs{CJKrmdefault} names, or the first declared family
+%   when that one is missing too, and a warning says so.
+%   A document that declares nothing with the key off is warned about as well.
 % \end{keyval}
 %
 % \subsection{Fake bold and slant}
@@ -3723,6 +3734,7 @@ abc汉字abc
     LoadFandol / false  .code:n      =
       { \bool_gset_false:N \g_@@_load_fandol_bool },
     LoadFandol          .default:n   = { true  },
+    LoadFandol          .initial:n   = { true  },
     SlantFactor         .code:n      =
       {
         \tl_gset:Nn \g_@@_slant_factor_tl {#1}
@@ -4319,6 +4331,52 @@ abc汉字abc
     \tl_set:Ne \l_@@_tmpa_tl { \CJKfamilydefault }
     \prop_if_in:NVT \g_@@_family_prop \l_@@_tmpa_tl
       { \exp_args:NV \@@_switch_family:n \l_@@_tmpa_tl }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{\@@_ensure_family_default:}
+% \changes{v0.0.3}{2026/11/18}{A document whose default CJK family is not
+%   declared is reported, and its text takes a family it did declare instead of
+%   none at all.}
+% Check that the family \cs{CJKfamilydefault} names was declared.
+% A document that declares only some of its families sets its main text in no
+% CJK font at all, and says nothing about it, so the family is replaced by
+% \cs{CJKrmdefault} when that one is declared and by the first declared family
+% otherwise.
+% A document that declared nothing gets a warning of its own, because
+% \keys{LoadFandol} is off and there is no family to fall back to.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_ensure_family_default:
+  {
+    \tl_set:Ne \l_@@_tmpa_tl { \CJKfamilydefault }
+    \prop_if_in:NVF \g_@@_family_prop \l_@@_tmpa_tl
+      {
+        \prop_if_empty:NTF \g_@@_family_prop
+          { \msg_warning:nn { LuaCJK } { no-cjk-font } }
+          {
+            \tl_set:Ne \l_@@_tmpb_tl { \CJKrmdefault }
+            \prop_if_in:NVF \g_@@_family_prop \l_@@_tmpb_tl
+              {
+                \prop_map_inline:Nn \g_@@_family_prop
+                  { \tl_set:Nn \l_@@_tmpb_tl {##1} \prop_map_break: }
+              }
+            \msg_warning:nnee { LuaCJK } { family-default-undefined }
+              { \l_@@_tmpa_tl } { \l_@@_tmpb_tl }
+            \tl_gset_eq:NN \CJKfamilydefault \l_@@_tmpb_tl
+            \exp_args:NV \@@_switch_family:n \l_@@_tmpb_tl
+          }
+      }
+  }
+\msg_new:nnn { LuaCJK } { no-cjk-font }
+  {
+    No ~ CJK ~ font ~ is ~ set, ~ and ~ LoadFandol ~ is ~ off.\\
+    Declare ~ one ~ with ~ \token_to_str:N \setCJKmainfont.
+  }
+\msg_new:nnn { LuaCJK } { family-default-undefined }
+  {
+    The ~ default ~ CJK ~ family ~ `#1' ~ is ~ not ~ declared;\\
+    using ~ `#2' ~ instead.
   }
 %    \end{macrocode}
 % \end{macro}
@@ -4967,10 +5025,14 @@ abc汉字abc
 % \begin{macro}[int]{\@@_load_fandol:}
 % \changes{v0.0.1}{2026/11/05}{Provide the \keys{LoadFandol} option, which
 %   supplies Fandol fonts when the document declares none.}
+% \changes{v0.0.3}{2026/11/18}{\keys{LoadFandol} is on by default, so a
+%   document that declares no CJK font is set in the four Fandol faces without
+%   asking for them.}
 % When the \keys{LoadFandol} option is on and the document
 % did not declare any CJK font, fall back to the four Fandol faces.
 % This runs at |\begin{document}| so that a family declared anywhere
-% in the preamble still wins.
+% in the preamble still wins, and a document that declares some families but
+% not the default one is reported by \cs{@@_ensure_family_default:} instead.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_load_fandol:
   {
@@ -5022,6 +5084,7 @@ abc汉字abc
         \prop_if_empty:NT \g_@@_family_prop
           { \@@_load_fandol: }
       }
+    \@@_ensure_family_default:
     \@@_update_font:
     \g_@@_font_attr = \g_@@_fontid_int
   }
