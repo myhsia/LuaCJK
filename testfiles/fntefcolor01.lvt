@@ -93,6 +93,20 @@
   \rulecolors
 }
 
+\TEST{the wave and the slash take format}{
+  \setbox0=\hbox{\CJKunderwave[format = red]{中}}
+  \rulecolors
+  \setbox0=\hbox{\CJKxout[format = red]{中}}
+  \rulecolors
+}
+
+\TEST{a drawn pattern without format follows the color of its text}{
+  \setbox0=\hbox{\textcolor{blue}{\CJKunderwave{中}}}
+  \rulecolors
+  \setbox0=\hbox{\CJKunderwave{中}}
+  \rulecolors
+}
+
 \END
 
 \end{document}

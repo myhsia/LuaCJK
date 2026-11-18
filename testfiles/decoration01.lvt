@@ -137,6 +137,22 @@
   }
 }
 
+\TEST{a pattern built from em units is rebuilt per font size}{
+  \setbox0=\hbox{\CJKunderanyline{.2em}{\rule{.5em}{.1em}}{中}}
+  \showbox0
+  \setbox0=\hbox{\Large\CJKunderanyline{.2em}{\rule{.5em}{.1em}}{中}}
+  \showbox0
+  \setbox0=\hbox{\CJKunderanyline{.2em}{\rule{.5em}{.1em}}{中}}
+  \showbox0
+}
+
+\TEST{a rule sized in em keeps its thickness when the size changes}{
+  \setbox0=\hbox{\CJKsout{中}}
+  \showbox0
+  \setbox0=\hbox{\Large\CJKsout{中}}
+  \showbox0
+}
+
 \END
 
 \end{document}

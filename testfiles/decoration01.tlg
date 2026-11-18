@@ -181,3 +181,56 @@ TEST 16: settings do not leak to another decoration
 span: 20.0pt
 RULE 1310720
 ============================================================
+============================================================
+TEST 17: a pattern built from em units is rebuilt per font size
+============================================================
+> \box...=
+\hbox(7.78+1.99997)x10.0, direction TLT
+.\rule(-0.99991+1.99997)x10.0
+.\glue -10.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+! OK.
+<argument> ...rule {.5em}{.1em}}{中}} \showbox 0 
+                                                  \setbox 0=\hbox {\Large \C...
+l. ...}
+> \box...=
+\hbox(11.2032+2.87994)x14.4, direction TLT
+.\rule(-1.43987+2.87994)x14.4
+.\glue -14.4
+.\TU/FandolSong-Regular.otf(0)/m/n/14.4 中
+! OK.
+<argument> ...rule {.5em}{.1em}}{中}} \showbox 0 
+                                                  \setbox 0=\hbox {\CJKunder...
+l. ...}
+> \box...=
+\hbox(7.78+1.99997)x10.0, direction TLT
+.\rule(-0.99991+1.99997)x10.0
+.\glue -10.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+! OK.
+<argument> ...rule {.5em}{.1em}}{中}} \showbox 0 
+l. ...}
+============================================================
+============================================================
+TEST 18: a rule sized in em keeps its thickness when the size changes
+============================================================
+> \box...=
+\hbox(7.78+1.62)x10.0, direction TLT
+.\leaders 10.0
+..\rule(3.20003+-2.80003)x0.4
+.\glue -10.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+! OK.
+<argument> ...0=\hbox {\CJKsout {中}} \showbox 0 
+                                                  \setbox 0=\hbox {\Large \C...
+l. ...}
+> \box...=
+\hbox(11.2032+2.3328)x14.4, direction TLT
+.\leaders 14.4
+..\rule(4.52003+-4.12004)x0.4
+.\glue -14.4
+.\TU/FandolSong-Regular.otf(0)/m/n/14.4 中
+! OK.
+<argument> ... {\Large \CJKsout {中}} \showbox 0 
+l. ...}
+============================================================
