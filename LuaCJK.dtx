@@ -253,6 +253,11 @@ The Current Maintainer of this work is **Mingyu Xia**.
 % \changes{v0.0.1}{2026/11/05}{Provide \pkg{LuaCJK-listings}, which keeps CJK
 %   characters in place inside a \pkg{listings} block and counts each of them
 %   as two columns; \pkg{LuaCJK} loads it automatically with \pkg{listings}.}
+% \changes{v0.0.3}{2026/11/19}{A mark that the CJK class shares with Latin,
+%   such as a curly quotation mark or the em dash, keeps its place inside an
+%   \env{lstlisting} block and counts as two columns: the character table
+%   covers the CJK ranges of the Basic Multilingual Plane, both ends of each
+%   included.}
 % \changes{v0.0.1}{2026/11/05}{Ship \file{ctex-engine-luacjk.def} as the
 %   \LuaTeX\ backend for \pkg{ctex}, selected with the option |engine =
 %   luacjk|; like \pkg{ctex}'s own backend it refuses \pkg{CJKfntef} and
@@ -9719,6 +9724,15 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % token in the body keeps category code 12, so it can be stored in the token
 % list of \pkg{listings} and typeset later. The definitions are made once;
 % each listing only sets the category codes again in its own group.
+% A character outside the table is typeset the moment \pkg{listings} reads it,
+% which puts it next to the wrong text and counts it as one column.
+%
+% The ranges are those of \cs{LuaCJK.is_cjk}, limited to the Basic
+% Multilingual Plane: each definition costs an entry of the string pool, and
+% the supplementary planes would triple it for ideographs a listing almost
+% never holds. A range includes its first and its last code point, since a
+% mark that opens a range would otherwise return to the character handling
+% above.
 %    \begin{macrocode}
 %<*listings>
 \RequirePackage { LuaCJK, listings }
@@ -9741,23 +9755,33 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   \LuaCJK@listings@cjkruntrue}
 \def\LuaCJK@listings@define#1#2{%
   \@tempcnta=#1\relax
-  \loop\ifnum\@tempcnta<#2\relax
-    \advance\@tempcnta\@ne
+  \loop
     \lccode`\~=\@tempcnta
     \lccode`\/=\@tempcnta
     \lowercase{\gdef~{\LuaCJK@listings@process/}}%
+    \ifnum\@tempcnta<#2\relax
+    \advance\@tempcnta\@ne
   \repeat}
 \def\LuaCJK@listings@catcodes#1#2{%
   \@tempcnta=#1\relax
-  \loop\ifnum\@tempcnta<#2\relax
-    \advance\@tempcnta\@ne
+  \loop
     \catcode\@tempcnta=13\relax
+    \ifnum\@tempcnta<#2\relax
+    \advance\@tempcnta\@ne
   \repeat}
 \def\LuaCJK@listings@ranges#1{%
+  #1{"1100}{"11FF}%
+  #1{"2014}{"2014}%
+  #1{"2018}{"2019}%
+  #1{"201C}{"201D}%
+  #1{"2026}{"2026}%
   #1{"2E80}{"9FFF}%
+  #1{"A960}{"A97C}%
+  #1{"AC00}{"D7C6}%
+  #1{"D7CB}{"D7FB}%
   #1{"F900}{"FAFF}%
-  #1{"FF00}{"FFEF}%
-  #1{"AC00}{"D7AF}}
+  #1{"FE30}{"FE4F}%
+  #1{"FF00}{"FFEF}}
 \def\LuaCJK@listings@activate{%
   \ifLuaCJK@listings@defined\else
     \LuaCJK@listings@ranges\LuaCJK@listings@define

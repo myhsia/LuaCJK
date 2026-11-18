@@ -364,6 +364,17 @@ characters are defined once through the `lccode` of two helper characters and
 stored in a token list and typeset later. `\lstinline` reads its argument with
 changed category codes, so the patch is limited to the block environments.
 
+The range list repeats `CJK_RANGES`, limited to the Basic Multilingual Plane,
+and `scripts/check-docs.sh` compares the two. The supplementary planes would
+triple the string pool of the run for ideographs a listing almost never holds:
+with them, one listing reaches 177 668 strings and 200 684 control sequences
+against 45 865 and 68 881. Both ends of a range belong to it — the loop tests
+after the body, not before — because a mark that opens a range (U+FF01, or a
+curly quote in a range of its own) would otherwise stay outside the table:
+`listings` would typeset it at scan time, next to the wrong text and one column
+wide, which is the bug that a mark of `CJK_RANGES` outside the four ranges the
+patch used to carry produced.
+
 ### The ctex adapter
 
 `ctex` inputs an engine file named `ctex-engine-<name>.def`, where `<name>` is
