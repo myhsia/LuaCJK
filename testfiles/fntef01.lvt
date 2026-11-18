@@ -221,6 +221,34 @@
   \endgroup
 }
 
+\TEST{a hidden paragraph keeps the lines of the visible one}{
+  \setbox0=\vbox{\hsize = 60pt \rightskip = 0pt plus 1fil \parindent = 0pt
+    \CJKunderline[hidden]{中文测试中文测试中文测试中文测试中文测试中文测试}\par}
+  \setbox2=\vbox{\hsize = 60pt \rightskip = 0pt plus 1fil \parindent = 0pt
+    \CJKunderline{中文测试中文测试中文测试中文测试中文测试中文测试}\par}
+  \TYPE{hidden: \the\wd0\space\the\ht0}
+  \TYPE{shown: \the\wd2\space\the\ht2}
+  \directlua{
+    local n = tex.box[0].head
+    local lines, glyphs = 0, 0
+    while n do
+      if node.type(n.id) == "hlist" then
+        lines = lines + 1
+        local g = n.head
+        while g do
+          if g.id == node.id("glyph") then
+            glyphs = glyphs + 1
+          end
+          g = g.next
+        end
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log",
+      "LINES " .. lines .. " GLYPHS " .. glyphs)
+  }
+}
+
 \TEST{a highlight on the em box is a square}{
   \setbox0=\hbox{\CJKunderanyline{\LuaCJKemdescent}{\rule{1pt}{1em}}{中}}
   \TYPE{span: \the\wd0}

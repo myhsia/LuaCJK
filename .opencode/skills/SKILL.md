@@ -275,8 +275,16 @@ way, in `\@@_fntef_formatted_underline:` and `\@@_fntef_use_sout:`.
 Every decoration parses one key set: a pair goes to the keys, and a bare item
 that names no key is a color and means `format`, so `[red]` and `[subtract]`
 both work. A key that a command does not use is accepted and ignored, and
-`textformat` and `hidden` go through one body helper, so they behave the same
-in all eight commands.
+`textformat` goes through one body helper, so it behaves the same in all eight
+commands.
+
+`hidden` is not a key of that helper: a `\phantom` is one unbreakable box, so a
+hidden paragraph overflowed in a single line instead of breaking. It travels in
+the settings snapshot like `skip` and `subtract`, and the pass replaces every
+glyph of the span by a kern of the same width, with one rule of no width
+carrying the height and the depth. The line breaking of a paragraph is decided
+before the pass runs, so the hidden text breaks exactly like the visible one,
+and no glyph of it reaches the PDF to be read or selected.
 
 A CJK em box is one em square, so a highlight that covers a character is
 `1em` wide and `1em` high, with the box bottom at the em descent below the
