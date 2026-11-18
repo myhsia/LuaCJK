@@ -50,7 +50,7 @@ Entry points:
 | `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
 | `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.3`, `packtdszip = false` with `tdslocations` kept for `l3build install`, `ctanpkg`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
-| `testfiles/NN.lvt` + `.tlg` | 55 regression tests and their baselines, one pair per feature |
+| `testfiles/NN.lvt` + `.tlg` | 58 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree |
 | `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, collapses only ASCII whitespace, and names the forge repository of the release link with `--repo`.  It also exports `newest` and `announcement`, which `build.lua` calls to turn the newest section of that changelog into the CTAN announcement |
@@ -69,7 +69,7 @@ Entry points:
 | `CTAN-NOTE.md` | the internal note of the next CTAN upload, read by `l3build upload` and sent verbatim; empty it once that upload is through |
 | `LICENSE` | the LPPL text the meta-comment refers to |
 | `.gitattributes` | `* text=auto`; a Windows checkout is CRLF, so a script that reads a source file normalizes `\r\n` before matching a `\n` |
-| `DEPENDS.txt` | the TeX Live packages the package needs at run time, one per line as `hard <bundle>` and `soft <bundle>`; `soft` marks a dependency that only an optional output needs |
+| `DEPENDS.txt` | the TeX Live packages the package needs at run time, one per line as `hard <bundle>` and `soft <bundle>`; `soft` marks a dependency that only an optional output or the default font set needs |
 
 Generated, never edited by hand: `*.sty`, `*.lua`, `*.def` in the root,
 `README.md` (from the `<readme>` block), `CHANGELOG.md` (from the `\changes`
@@ -218,6 +218,16 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   `LuaCJK / options` and read by `\ProcessKeyOptions`, so a new key is a
   package option for free. Do not add a second path or a separate option
   list.
+- **`LoadFandol` is the base font set, not a per-family default.**  It is on by
+  default and acts at `\begin{document}` only when the document declared no CJK
+  family at all, so a document that set a font of its own never gets a Fandol
+  face it did not ask for; that is xeCJK's rule, and the baselines of the four
+  tests that expect `Unknown CJK family 'zhfs'` depend on it.  What a partial
+  declaration needs is a diagnosis, not a merge: a document that declared some
+  families but not `\CJKfamilydefault` would set its main text in no CJK font
+  at all, so `\@@_ensure_family_default:` warns and uses `\CJKrmdefault` or the
+  first declared family, and a document that declared nothing with the option
+  off is warned about as well.
 - **Inserted nodes must inherit attributes.**  Glue, kern, and penalty nodes
   created after TeX attached the attributes need `inherit_attributes(...)`, or
   attribute-driven packages such as `lua-ul` see the span end there.
@@ -409,7 +419,7 @@ texlua scripts/check-charclass.lua     # ~1 s, the CJK range table against Scrip
 texlua scripts/check-bilingual.lua     # ~1 s, the two documentation languages
 
 # CI, on every push: the full suite and the manual
-l3build check           # ~3 min, 55 tests, both test runs
+l3build check           # ~3 min, 58 tests, both test runs
 l3build doc             # ~2 min, tagged manual, needs latex-lab and tagpdf
 bash scripts/ctex-subset.sh            # ~3 min, needs ../ctex-kit or network
 bash scripts/ctex-subset.sh --skip-unpack

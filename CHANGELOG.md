@@ -1,5 +1,7 @@
 ## [LuaCJK-v0.0.3](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.3)
 
+- A document whose default CJK family is not declared is reported, and its text takes a family it did declare instead of none at all.
+- `LoadFandol` is on by default, so a document that declares no CJK font is set in the four Fandol faces without asking for them.
 - `top` and `bottom` are keys of the decoration, so they reach a rule that `format` colors as well, and an underline type is built per font size, so a rule built from `em` units keeps its thickness when the size changes.
 - A decoration keeps the width, the stretch, and the shrink of the text it covers, so a rule no longer changes the spacing of the line it sits in, `skip` no longer tightens a justified line, and a `\kern` inside the text no longer moves the gap `skip` leaves at a punctuation mark.
 - `hidden` takes the ink out of the text instead of putting it in a `\phantom`: the text keeps its line breaks, so a hidden paragraph breaks like the visible one instead of overflowing in one line.

@@ -1,0 +1,15 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: a document with no font and LoadFandol off is reported
+============================================================
+Package LuaCJK Warning: No CJK font is set, and LoadFandol is off.
+(LuaCJK)                Declare one with \setCJKmainfont.
+============================================================
+============================================================
+TEST 2: the text is set in no CJK font
+============================================================
+Missing character: There is no 中 (U+4E2D) in font [lmroman10-regular]:+tlig;!
+width: 6.13298pt
+PSNAME LMRoman10-Regular
+============================================================
