@@ -1,0 +1,95 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\usepackage{amsmath}
+\usepackage{unicode-math}
+\setmathfont{TeX Gyre Pagella Math}
+% The Latin math font has no bold face; declaring the regular one as the bold
+% version keeps the test log about the fallback, not about Pagella.
+\setmathfont{TeX Gyre Pagella Math}[version = bold]
+\usepackage{LuaCJK}
+% The CJK main font has no CJK glyph at all, so every CJK character needs the
+% fallback font, in the text and in a formula alike.
+\setCJKmainfont{TeX Gyre Pagella}
+\setCJKfallbackfamilyfont{\CJKrmdefault}{FandolSong-Regular.otf}[
+  BoldFont = FandolSong-Bold.otf]
+% Declared without a fallback, and given one inside the document.
+\setCJKfamilyfont{late}{TeX Gyre Pagella}
+\LuaCJKsetup{AutoFallBack = true, CJKmath = true}
+
+% Report the font and the size of every CJK glyph of box 0, one glyph per
+% line, so that a line stays short enough for the log.
+\def\probe{%
+  \directlua{
+    local function walk (l)
+      local n = l
+      while n do
+        if n.id == node.id("glyph") and n.char >= 0x2E80
+           and n.char < 0xA000 then
+          local f = font.getfont(n.font)
+          texio.write_nl("term and log",
+            "GLYPH " .. tostring(n.char) .. " " ..
+            tostring(f and (f.fullname or f.name) or "?") .. " " ..
+            tostring(f and f.size or 0))
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          walk(n.head)
+        end
+        n = n.next
+      end
+    end
+    walk(tex.box[0].head)
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{a character in math takes the fallback font}{
+  \setbox0=\hbox{$中$}
+  \probe
+}
+
+\TEST{the text takes the same font}{
+  \setbox0=\hbox{中}
+  \probe
+}
+
+\TEST{a script character takes the fallback at the script size}{
+  \setbox0=\hbox{$x^{中}$}
+  \probe
+}
+
+\TEST{a fraction takes the fallback at the script size}{
+  \setbox0=\hbox{$\frac{中}{文}$}
+  \probe
+}
+
+\TEST{the bold math version takes the bold fallback}{
+  \setbox0=\hbox{\boldmath $中$}
+  \probe
+}
+
+\TEST{AutoFallBack=false keeps the main font in math}{
+  \begingroup
+    \LuaCJKsetup{AutoFallBack = false}
+    \setbox0=\hbox{$中$}
+    \probe
+  \endgroup
+}
+
+\TEST{a fallback declared in the document reaches the next formula}{
+  \begingroup
+    \CJKfamily{late}
+    \setCJKfallbackfamilyfont{late}{FandolSong-Regular.otf}[
+      BoldFont = FandolSong-Bold.otf]
+    \setbox0=\hbox{$中$}
+    \probe
+  \endgroup
+}
+
+\END
+
+\end{document}
