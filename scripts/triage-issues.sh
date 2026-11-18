@@ -28,6 +28,11 @@
 # the reports of one decoration pass land.  An issue that matches no rule gets
 # no label at all and stays in the report, so the classifier never invents a
 # category; a session reads it and labels it by hand.
+#
+# `AutoFallBack` used to be part of the `load` rule.  Its fix lands in the
+# option pipeline (`options`) or in the font layer (`fonts`) depending on the
+# report, and no title says which, so it is not guessed: such an issue is left
+# unclassified for a session to read.
 
 set -u
 
@@ -71,7 +76,7 @@ listings	listing|lstlisting|LuaCJK-listings
 verbatim	verbatim|fancyvrb
 math	CJKmath|boldmath|amsmath|公式
 punct	PunctStyle|PunctWidth|setwidth|setkern|EditPunctStyle|标点|禁则
-load	LoadFandol|AutoFallBack
+load	LoadFandol
 fonts	CJKfontspec|newCJKfontfamily|fakebold|fakeslant|BoldFont|字体|加粗
 breaks	AllowBreakBetweenPuncts|kinsoku|nobreak|断行|换行
 chars	DeclareCharClass|DeclarePunctClass|SubCJKBlock|CharClass

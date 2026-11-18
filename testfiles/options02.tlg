@@ -1,0 +1,17 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: strict mode reads the CJ set when it is a package option
+============================================================
+CJ 12353=true 12419=true 20013=false
+============================================================
+============================================================
+TEST 2: a fallback declared for the main family applies from the first line
+============================================================
+PS FandolSong-Regular
+============================================================
+============================================================
+TEST 3: the punctuation family is the one the option names
+============================================================
+PS FandolSong-Regular FandolKai-Regular
+============================================================

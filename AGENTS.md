@@ -50,7 +50,7 @@ Entry points:
 | `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
 | `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.3`, `packtdszip = false` with `tdslocations` kept for `l3build install`, `ctanpkg`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
-| `testfiles/NN.lvt` + `.tlg` | 58 regression tests and their baselines, one pair per feature |
+| `testfiles/NN.lvt` + `.tlg` | 59 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree |
 | `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, collapses only ASCII whitespace, and names the forge repository of the release link with `--repo`.  It also exports `newest` and `announcement`, which `build.lua` calls to turn the newest section of that changelog into the CTAN announcement |
@@ -58,6 +58,7 @@ Entry points:
 | `scripts/check-charclass.lua` | compares the `CJK_RANGES` table of the `dtx` with `Scripts.txt`: it reports every code point whose script is Han, Hiragana, Katakana, Bopomofo, or Hangul that the table does not list, merging the code points into ranges.  The combining Bopomofo tone marks U+02EA and U+02EB are allowed to stay outside the table.  Exit 0 covered, 1 missing (the ranges are printed), 2 cannot run |
 | `scripts/check-bilingual.lua` | compares the two `documentation` parts of the `dtx`: the ordered structure (environment nesting, the documented objects and their arguments, section levels, list items) and the multiset of interface references (`\cs`, `\keys`, `\pkg`, `\file`, `\env`, `\tn`, `\val`, `\texttt`, `\meta`, `\oarg`, `\marg`, `\parg` and the `|…|` spans), and refuses a part in the wrong order.  Prose and section titles are not compared.  Exit 0 agree, 1 differ (the differences are printed), 2 cannot run |
 | `scripts/check-docs.sh` | compares the facts in the two guides with their sources: the layout table against `git ls-files` (both directions), version, test count, DocStrip blocks, installed file types, attribute and decoration counts, `\RequirePackage` against `DEPENDS.txt` (a package loaded from the listings guard must be `soft`), `DEPENDS.txt` against `.github/tl_packages`, the subset count, the changelog facts (the newest `\changes` version and date against `build.lua`, the first line of `CHANGELOG.md` against the released version), and the two languages of the user part through `scripts/check-bilingual.lua`.  A `\RequirePackage` name is resolved to its TeX Live package with `tlmgr search --global --file`, falling back to `expl3 -> l3kernel` and `l3draw -> l3experimental` when `tlmgr` is absent |
+| `scripts/check-test-logs.sh` | reports every TeX error the last `l3build check` left in `build/check/*.log`, one `file:line:text` record per line; exit 0 when every log is clean, 1 when something is printed, 2 when there is no log to read.  The `.tlg` comparison cannot see an error: `nonstopmode` skips the undefined token and the run continues, so a test passes with `! Undefined control sequence` in its log.  Three headlines are expected and allowed, because a test provokes each on purpose: `! OK.` from `\showbox`, the unknown `luaul` key of `fntefopts01`, and the preamble paragraph of `verb02` and `boundary03` |
 | `scripts/triage-issues.sh` | lists the open issues that carry no subsystem label.  The type of an issue is GitHub's native issue type (`Bug`, `Feature`, `Task`), which is not a label, so an issue is reported when none of its labels is one of the twenty-one subsystems.  Exit 0 none left, 1 some reported, 2 cannot ask GitHub (no `gh`, no `jq`, not authenticated, no remote, no network).  `--explain` prints the label an ordered keyword table suggests for every open issue, labelled or not, and exits 0; `--apply` adds the suggestion to each issue that has no subsystem label yet and exits 0, or 2 when GitHub refuses an edit; `--number <n>` restricts the run to one issue, which is what the workflow uses so that two runs cannot race.  The table reads the title only, and an issue that matches no rule is printed as `unclassified` and keeps no label |
 | `scripts/session-check.sh` | the declared session check, a wrapper because a repository may declare one: it runs `check-extract-changes.sh --quiet` and `triage-issues.sh` and prints one summary line for each that needs attention, so the `upkeep` plugin reports both.  Exit 0 silent, 1 with those lines, 2 only when neither part can run |
 | `.github/font-urls.txt` | the Noto CJK release URLs the `l3build` job downloads for the manual; the hash of the file is the cache key, so changing a URL invalidates the cache |
@@ -217,7 +218,13 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **Options and `\LuaCJKsetup` share one key path.**  Every key is defined in
   `LuaCJK / options` and read by `\ProcessKeyOptions`, so a new key is a
   package option for free. Do not add a second path or a separate option
-  list.
+  list.  The keys are defined early but the options are read at the end of the
+  package, after every helper a key code calls and after the Lua module is
+  loaded, because `CJLineBreak` needs the module and the other three — 
+  `AutoFallBack`, `CJKmath`, and `PunctFamily` — call helpers of the font
+  section; reading them where the key table stands left an undefined control
+  sequence in the log and a skipped assignment, so the option acted through
+  `\LuaCJKsetup` alone.
 - **`LoadFandol` is the base font set, not a per-family default.**  It is on by
   default and acts at `\begin{document}` only when the document declared no CJK
   family at all, so a document that set a font of its own never gets a Fandol
@@ -419,7 +426,7 @@ texlua scripts/check-charclass.lua     # ~1 s, the CJK range table against Scrip
 texlua scripts/check-bilingual.lua     # ~1 s, the two documentation languages
 
 # CI, on every push: the full suite and the manual
-l3build check           # ~3 min, 58 tests, both test runs
+l3build check           # ~3 min, 59 tests, both test runs
 l3build doc             # ~2 min, tagged manual, needs latex-lab and tagpdf
 bash scripts/ctex-subset.sh            # ~3 min, needs ../ctex-kit or network
 bash scripts/ctex-subset.sh --skip-unpack
@@ -628,7 +635,10 @@ requests. Two jobs, each on `ubuntu-latest`, `macos-latest`, and
   `texlua` for the bilingual check, so it cannot run before the install),
   then `texlua scripts/check-charclass.lua`, then `l3build changelog` and a
   `git diff --exit-code CHANGELOG.md` that fails when the generated file is
-  stale, then `l3build check`, then `l3build doc` (only if the check passed).
+  stale, then `l3build check`, then `bash scripts/check-test-logs.sh`, which
+  fails on a TeX error in a test log other than the three a test provokes on
+  purpose (`.tlg` comparison cannot see them: `nonstopmode` skips the token),
+  then `l3build doc` (only if the check passed).
   The doc step does not trust latexmk's exit code: latexmk counts LuaTeX's
   `unreferenced destination` warning as a broken reference, and
   `latex-lab-testphase-l3doc` creates four such destinations for the name
