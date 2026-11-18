@@ -1252,7 +1252,8 @@ abc汉字abc
 %   这样相邻的两个命令不会连在一起。
 %   \item[\keys{skip}]\val{\TFF}: 把标点排除在横线之外。
 %   \item[\keys{hidden}]\val{\TFF}: 隐藏文字而保留横线，
-%   横线取隐藏文字的宽度、高度与深度。
+%   横线取隐藏文字的宽度、高度与深度；
+%   文字照常断行，也不留在 PDF 里，所以读不到、选不中。
 %   \item[\keys{gap}]\val{length}: 双线两条横线之间的距离，
 %   初始 \texttt{1.1pt}。
 %   \item[\keys{height}]\val{length}: 删除线中心到基线的距离，
@@ -2531,7 +2532,9 @@ abc汉字abc
 %   commands do not run together.
 %   \item[\keys{skip}]\val{\TFF}: leaves the punctuation out of the rule.
 %   \item[\keys{hidden}]\val{\TFF}: hides the text and keeps the rule,
-%   with the width, height, and depth of the hidden text.
+%   with the width, height, and depth of the hidden text; the text still breaks
+%   between lines, and no glyph of it reaches the PDF, so it cannot be read or
+%   selected.
 %   \item[\keys{gap}]\val{length}: the distance between the two rules of
 %   the double line, initially \texttt{1.1pt}.
 %   \item[\keys{height}]\val{length}: the distance from the baseline to the
@@ -7929,10 +7932,10 @@ end
 % \begin{macro}[int]{LuaCJKfntef.new_settings}
 % Register one entry and select it.
 %    \begin{macrocode}
-function M.new_settings (subtract, skip)
+function M.new_settings (subtract, skip, hidden)
   local id       = M.next_id
   M.next_id      = id + 1
-  M.settings[id] = { subtract = subtract, skip = skip }
+  M.settings[id] = { subtract = subtract, skip = skip, hidden = hidden }
   if M.attr then
     tex.setattribute(M.attr, id)
   end
@@ -8100,6 +8103,63 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{hide_text}
+% Take the ink out of a decorated span and keep its dimensions.
+% Every glyph becomes a kern of the same width, so the text still occupies the
+% same space and the line breaks of the paragraph are the ones TeX found
+% before the pass ran; one rule of no width carries the height and the depth,
+% because a kern has neither.  The span is the text the leaders pair covers,
+% so the walk stops at the width of that pair.
+%    \begin{macrocode}
+local function hide_text (start, w)
+  local x, height, depth = 0, 0, 0
+  local prev = nil
+  local n    = start
+  while n and x < w do
+    local nxt = n.next
+    local width = node_width(n)
+    if n.id == GLYPH then
+      height = math.max(height, n.height or 0)
+      depth  = math.max(depth,  n.depth  or 0)
+      local k = node.new("kern")
+      k.kern  = width
+      copy_attributes(k, n)
+      k.next  = nxt
+      if prev then
+        prev.next = k
+      else
+        start = k
+      end
+      node.free(n)
+      prev = k
+    else
+      if n.id == HLIST then
+        height = math.max(height, n.height or 0)
+        depth  = math.max(depth,  n.depth  or 0)
+        n.head = hide_text(n.head, n.width)
+      end
+      prev = n
+    end
+    x = x + width
+    n = nxt
+  end
+  if height ~= 0 or depth ~= 0 then
+    local r = node.new("rule")
+    r.width, r.height, r.depth = 0, height, depth
+    if prev then
+      r.next    = prev.next
+      prev.next = r
+    else
+      r.next = start
+      start  = r
+    end
+  end
+  return start
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{replace_pair}
 % Replace the leaders glue of one decoration.
 % The replacement covers the same span, with the same natural width,
@@ -8120,6 +8180,9 @@ local function replace_pair (head, prev, leaders, settings)
   local subtract = settings and settings.subtract or 0
   local skip     = settings and settings.skip or false
   local parts = segments(w, neg.next, subtract, skip)
+  if settings and settings.hidden then
+    neg.next = hide_text(neg.next, w)
+  end
   local rule, down = box_rule(leaders.leader)
   local block
   if rule then
@@ -8290,6 +8353,10 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   of the line it sits in, \keys{skip} no longer tightens a justified line,
 %   and a \tn{kern} inside the text no longer moves the gap \keys{skip} leaves
 %   at a punctuation mark.}
+% \changes{v0.0.3}{2026/11/18}{\keys{hidden} takes the ink out of the text
+%   instead of putting it in a \tn{phantom}: the text keeps its line breaks, so
+%   a hidden paragraph breaks like the visible one instead of overflowing in
+%   one line.}
 % Underline the argument. The optional argument takes
 % \keys{thickness, depth, textformat}, and any other key is passed on to
 % \pkg{lua-ul}, which understands
@@ -8313,6 +8380,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \dim_new:N \l_@@_fntef_subtract_dim
 \tl_new:N \l_@@_fntef_skip_tl
 \tl_new:N \l_@@_fntef_skip_js_tl
+\tl_new:N \l_@@_fntef_hidden_js_tl
 \bool_new:N \l_@@_fntef_silent_bool
 \bool_new:N \l_@@_fntef_hidden_bool
 \bool_new:N \l_@@_fntef_top_given_bool
@@ -8370,23 +8438,13 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_fntef_body:n}
-% The text of a decoration, with the format of the call applied and hidden
-% when \keys{hidden} is on.  Every command goes through this, so
-% \keys{textformat} and \keys{hidden} mean the same thing everywhere.
+% The text of a decoration, with the format of the call applied.
+% Every command goes through this, so \keys{textformat} means the same thing
+% everywhere; \keys{hidden} is a setting of the decoration pass instead,
+% because a hidden text has to keep its line breaks.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_body:n #1
-  { \l_@@_fntef_textformat_tl \@@_fntef_hide:n {#1} }
-%    \end{macrocode}
-% \end{macro}
-%
-% \begin{macro}[int]{\@@_fntef_hide:n}
-% The text of a decoration when \keys{hidden} is on.
-%    \begin{macrocode}
-\cs_new_protected:Npn \@@_fntef_hide:n #1
-  {
-    \bool_if:NTF \l_@@_fntef_hidden_bool
-      { \phantom {#1} } { #1 }
-  }
+  { \l_@@_fntef_textformat_tl #1 }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -8396,9 +8454,12 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_push_settings:
   {
-    \bool_lazy_and:nnTF
-      { \dim_compare_p:nNn { \l_@@_fntef_subtract_dim } = { 0pt } }
-      { \str_if_eq_p:Vn \l_@@_fntef_skip_tl { 0 } }
+    \bool_lazy_all:nTF
+      {
+        { \dim_compare_p:nNn { \l_@@_fntef_subtract_dim } = { 0pt } }
+        { \str_if_eq_p:Vn \l_@@_fntef_skip_tl { 0 } }
+        { \bool_not_p:n { \l_@@_fntef_hidden_bool } }
+      }
       {
         \lua_now:e
           {
@@ -8410,11 +8471,15 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         \str_if_eq:VnTF \l_@@_fntef_skip_tl { 1 }
           { \tl_set:Nn \l_@@_fntef_skip_js_tl { true  } }
           { \tl_set:Nn \l_@@_fntef_skip_js_tl { false } }
+        \bool_if:NTF \l_@@_fntef_hidden_bool
+          { \tl_set:Nn \l_@@_fntef_hidden_js_tl { true  } }
+          { \tl_set:Nn \l_@@_fntef_hidden_js_tl { false } }
         \lua_now:e
           {
             LuaCJKfntef.new_settings
               ( \dim_to_decimal_in_sp:n { \l_@@_fntef_subtract_dim } ,
-                \l_@@_fntef_skip_js_tl )
+                \l_@@_fntef_skip_js_tl ,
+                \l_@@_fntef_hidden_js_tl )
           }
       }
   }

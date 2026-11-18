@@ -161,7 +161,7 @@ NODES leaders:1310720 glue:-1310720 glyph glue:0 glyph
 TEST 13: hidden keeps the dimensions and drops the text
 ============================================================
 width: 20.0pt, height: 7.78pt, depth: 2.39996pt
-NODES leaders:1310720 glue:-1310720
+NODES leaders:1310720 glue:-1310720 kern:655360 glue:0 kern:655360
 ============================================================
 ============================================================
 TEST 14: drawn decorations do not add height or depth
