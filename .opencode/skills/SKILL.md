@@ -254,16 +254,18 @@ A colored rule cannot use `\color`, which emits whatsits in front of
 (`\luaul_set_color:n` plus `\luaul_apply_color:`),
 which is why `format` takes a color name rather than code.
 
-A type is built once and reused, and it keeps the color it was built with:
-`lua-ul` copies the attributes of the built box onto every leader, so the cache
-key of a rule or a symbol decoration carries the color — `format` when it is
-set, otherwise the value of `luacolor`'s attribute, which is the color of the
-surrounding text.  Without that, a second call inherits the color of the first.
-The name of the type already carries a counter, which is why the `lua-ul`
-context can be the constant `LuaCJKfntef`; a context that expands again when the
-type is used would rebuild it with whatever color is current at that moment.
-The single rule and the strike-out carry their own color in the same way, in
-`\@@_fntef_formatted_underline:` and `\@@_fntef_use_sout:`.
+A type is built once and reused, and it keeps the color and the font size it
+was built with: `lua-ul` copies the attributes of the built box onto every
+leader, and it scans that box once per type, so the cache key of a rule or a
+symbol decoration carries the color — `format` when it is set, otherwise the
+value of `luacolor`'s attribute, which is the color of the surrounding text —
+and the current font size, without which a pattern written in `em` units keeps
+the size of the first call.  Without the color a second call inherits the color
+of the first.  The name of the type already carries a counter, which is why the
+`lua-ul` context can be the constant `LuaCJKfntef`; a context that expands again
+when the type is used would rebuild it with whatever color is current at that
+moment.  The single rule and the strike-out carry their own color in the same
+way, in `\@@_fntef_formatted_underline:` and `\@@_fntef_use_sout:`.
 
 Every decoration parses one key set: a pair goes to the keys, and a bare item
 that names no key is a color and means `format`, so `[red]` and `[subtract]`
@@ -437,7 +439,7 @@ sub-blocks, and a per-font baseline shift,
 six punctuation styles plus the character-set and style editing keys,
 punctuation hanging and bound width, `CheckSingle`, `CJLineBreak`, `CJKmath`,
 `\LuaCJKnobreak`, `\LuaCJKVerbAddon`, `\LuaCJKShipoutHook`, `LocalConfig`,
-`LoadFandol`, eight decorations in `LuaCJKfntef` with thirteen options, tagged
+`LoadFandol`, eight decorations in `LuaCJKfntef` with fifteen options, tagged
 PDF output, and `LuaCJK-listings`.
 
 Two inputs are handled before the passes: the zero-width format characters and

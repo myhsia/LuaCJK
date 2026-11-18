@@ -126,7 +126,7 @@ The Current Maintainer of this work is **Mingyu Xia**.
 %<*package|fntef|listings|ctex>
 \NeedsTeXFormat{LaTeX2e}[2026/06/01]
 \RequirePackage { expl3 }
-\GetIdInfo $Id: LuaCJK.dtx v0.0.2 2026-11-15 myhsia<myhsia@outlook.com>$
+\GetIdInfo $Id: LuaCJK.dtx v0.0.3 2026-11-18 myhsia<myhsia@outlook.com>$
 %<package>  {A LuaTeX CJK typesetting package}
 %<package>\ProvidesExplPackage {\ExplFileName}
 %<fntef>  {Font effects for LuaCJK (CTEX)}
@@ -1232,9 +1232,11 @@ abc汉字abc
 %
 % 所有装饰命令共用下面这组键：与某个命令无关的键照样接受，只是不起作用。
 % 只给一个颜色名而不写键名，等价于 \texttt{format = }\meta{color}。
-% 键 \texttt{top} 与 \texttt{bottom} 被传给 \pkg{lua-ul}，
-% 因此只对 \cs{CJKunderline} 有效，并覆盖计算出来的几何。
+% 键 \keys{top} 与 \keys{bottom} 只对 \cs{CJKunderline} 有效，
+% 并覆盖计算出来的几何，不论横线是否由 \keys{format} 着色。
 % 画出的图案从不改变被装饰行的高度或深度，所以行距不会变大。
+% 下划线、双线、波浪、斜删除线与符号都按当前字号各建一个图案，
+% 所以字体变大时图案跟着变大。
 %
 % \begin{keyval}
 %   \item[\keys{thickness}]\val{length}: 横线的粗细，初始 \texttt{0.4pt}。
@@ -2507,10 +2509,12 @@ abc汉字abc
 %
 % Every decoration takes the keys below; a key that a command does not use
 % is accepted and has no effect. A bare color name with no key means
-% \texttt{format = }\meta{color}. The keys \texttt{top} and \texttt{bottom}
-% are passed to \pkg{lua-ul}, so they apply to \cs{CJKunderline} alone and
-% override the computed geometry. A drawn pattern never changes the height
-% or depth of the line it decorates, so the leading does not grow.
+% \texttt{format = }\meta{color}. The keys \keys{top} and \keys{bottom}
+% apply to \cs{CJKunderline} alone and override the computed geometry,
+% whether or not \keys{format} colors the rule. A drawn pattern never changes
+% the height or depth of the line it decorates, so the leading does not grow.
+% The underline, the double rule, the wave, the slash, and a symbol each get
+% one pattern per font size, so a pattern grows with the size of the text.
 %
 % \begin{keyval}
 %   \item[\keys{thickness}]\val{length}: the thickness of the rule,
@@ -8210,6 +8214,10 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   \pkg{lua-ul}; the geometry defaults to \texttt{depth = 0.2em} and
 %   \texttt{thickness = 0.4pt}, and \keys{top} and \keys{bottom} override the
 %   computed values.}
+% \changes{v0.0.3}{2026/11/18}{\keys{top} and \keys{bottom} are keys of the
+%   decoration, so they reach a rule that \keys{format} colors as well, and
+%   an underline type is built per font size, so a rule built from |em| units
+%   keeps its thickness when the size changes.}
 % Underline the argument. The optional argument takes
 % \keys{thickness, depth, textformat}, and any other key is passed on to
 % \pkg{lua-ul}, which understands
@@ -8219,6 +8227,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %     \l_@@_fntef_depth_dim,     \l_@@_fntef_thickness_dim,
 %     \l_@@_fntef_textformat_tl, \l_@@_fntef_pass_tl,
 %     \l_@@_fntef_top_dim,       \l_@@_fntef_bottom_dim,
+%     \l_@@_fntef_top_given_bool, \l_@@_fntef_bottom_given_bool,
 %     \l_@@_fntef_color_key_tl,  \l_@@_fntef_silent_bool
 %   }
 % The requested geometry, the format of the text,
@@ -8234,6 +8243,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \tl_new:N \l_@@_fntef_skip_js_tl
 \bool_new:N \l_@@_fntef_silent_bool
 \bool_new:N \l_@@_fntef_hidden_bool
+\bool_new:N \l_@@_fntef_top_given_bool
+\bool_new:N \l_@@_fntef_bottom_given_bool
 \dim_new:N \l_@@_fntef_rule_height_dim
 \dim_new:N \l_@@_fntef_rule_depth_dim
 \prop_new:N \g_@@_fntef_format_prop
@@ -8338,9 +8349,13 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \cs_new_protected:Npn \@@_fntef_prepare_underline:n #1
   {
     \@@_fntef_options:n {#1}
-    \dim_set:Nn \l_@@_fntef_top_dim    { -\l_@@_fntef_depth_dim }
-    \dim_set:Nn \l_@@_fntef_bottom_dim
-      { -\l_@@_fntef_depth_dim - \l_@@_fntef_thickness_dim }
+    \bool_if:NF \l_@@_fntef_top_given_bool
+      { \dim_set:Nn \l_@@_fntef_top_dim { -\l_@@_fntef_depth_dim } }
+    \bool_if:NF \l_@@_fntef_bottom_given_bool
+      {
+        \dim_set:Nn \l_@@_fntef_bottom_dim
+          { -\l_@@_fntef_depth_dim - \l_@@_fntef_thickness_dim }
+      }
     \tl_put_left:Nx \l_@@_fntef_pass_tl
       {
         top    = \dim_use:N \l_@@_fntef_top_dim ,
@@ -8578,6 +8593,18 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     gap       .value_required:n   = true,
     height    .dim_set:N          = \l_@@_fntef_height_dim,
     height    .value_required:n   = true,
+    top       .code:n             =
+      {
+        \dim_set:Nn \l_@@_fntef_top_dim {#1}
+        \bool_set_true:N \l_@@_fntef_top_given_bool
+      },
+    top       .value_required:n   = true,
+    bottom    .code:n             =
+      {
+        \dim_set:Nn \l_@@_fntef_bottom_dim {#1}
+        \bool_set_true:N \l_@@_fntef_bottom_given_bool
+      },
+    bottom    .value_required:n   = true,
     format    .tl_set:N           = \l_@@_fntef_format_tl,
     color     .tl_set:N           = \l_@@_fntef_format_tl,
     color     .value_required:n   = true,
@@ -8602,6 +8629,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \tl_set:Nn \l_@@_fntef_skip_tl { 0 }
     \bool_set_true:N \l_@@_fntef_silent_bool
     \bool_set_false:N \l_@@_fntef_hidden_bool
+    \bool_set_false:N \l_@@_fntef_top_given_bool
+    \bool_set_false:N \l_@@_fntef_bottom_given_bool
     \dim_set:Nn \l_@@_fntef_depth_dim     { .2em }
     \dim_set:Nn \l_@@_fntef_thickness_dim { .4pt }
     \dim_set:Nn \l_@@_fntef_gap_dim       { 1.1pt }
@@ -8641,10 +8670,17 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKunderwave}
+% \changes{v0.0.3}{2026/11/18}{The wave takes \keys{format} like the other
+%   decorations, and \keys{format} colors the drawn patterns instead of the
+%   rule alone.}
 % A wave drawn with \pkg{l3draw}, one period per half em, repeated
 % by \tn{leaders}. The drawing is kept as code rather than as a box,
 % so the |em| units are resolved when the decoration is used
 % and the pattern follows the current font size.
+%
+% The drawing goes through \cs{@@_fntef_use_leader_type:nn} like the other
+% patterns, so that it takes \keys{format} and is built once per font size
+% and color.
 %
 % The period is forced to exactly half an em by \tn{hbox}| to .5em|.
 % \pkg{l3draw} sizes its box by the bounding box of the stroked path,
@@ -8667,34 +8703,40 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %    \end{macrocode}
 %   \end{variable}
 %    \begin{macrocode}
-\newunderlinetype \@@_fntef_wave
+\cs_new_protected:Npn \@@_fntef_wave:
   {
-    \tex_leaders:D \hbox_to_wd:nn { .5em }
+    \tl_set:Nn \l_@@_fntef_any_code_tl
       {
-        \tex_hss:D
-        \hbox_set:Nn \l_@@_fntef_pattern_box
+        \tex_leaders:D \hbox_to_wd:nn { .5em }
           {
-            \box_move_up:nn { -.42em }
+            \tex_hss:D
+            \hbox_set:Nn \l_@@_fntef_pattern_box
               {
-                \hbox:n
+                \box_move_up:nn { -.42em }
                   {
-                    \draw_begin:
-                      \draw_set_linewidth:n { .04em }
-                      \draw_path_moveto:n { 0em , 0em }
-                      \draw_path_curveto:nnn { .0625em , .16em }
-                        { .1875em , .16em } { .25em , 0em }
-                      \draw_path_curveto:nnn { .3125em , -.16em }
-                        { .4375em , -.16em } { .5em , 0em }
-                      \draw_path_use_clear:n { stroke }
-                    \draw_end:
+                    \hbox:n
+                      {
+                        \draw_begin:
+                          \draw_set_linewidth:n { .04em }
+                          \draw_path_moveto:n { 0em , 0em }
+                          \draw_path_curveto:nnn { .0625em , .16em }
+                            { .1875em , .16em } { .25em , 0em }
+                          \draw_path_curveto:nnn { .3125em , -.16em }
+                            { .4375em , -.16em } { .5em , 0em }
+                          \draw_path_use_clear:n { stroke }
+                        \draw_end:
+                      }
                   }
               }
+            \box_set_ht:Nn  \l_@@_fntef_pattern_box { \c_zero_dim }
+            \box_set_dp:Nn  \l_@@_fntef_pattern_box { \c_zero_dim }
+            \box_use_drop:N \l_@@_fntef_pattern_box
+            \tex_hss:D
           }
-        \box_set_ht:Nn  \l_@@_fntef_pattern_box { \c_zero_dim }
-        \box_set_dp:Nn  \l_@@_fntef_pattern_box { \c_zero_dim }
-        \box_use_drop:N \l_@@_fntef_pattern_box
-        \tex_hss:D
       }
+    \tl_set:Nn \l_@@_fntef_cache_key_tl { wave }
+    \exp_args:NV \@@_fntef_use_leader_type:nn
+      \l_@@_fntef_cache_key_tl \l_@@_fntef_any_code_tl
   }
 \cs_new_protected:Npn \@@_fntef_silent_begin:
   {
@@ -8775,7 +8817,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \group_begin:
       \@@_fntef_decoration_setup:n {#3}
       \tl_if_empty:NTF \l_@@_fntef_symbol_tl
-        { \@@_fntef_wave } { \@@_fntef_use_symbol:n { .42em } }
+        { \@@_fntef_wave: } { \@@_fntef_use_symbol:n { .42em } }
       \@@_fntef_body:n {#4}
     \group_end:
   }
@@ -8783,6 +8825,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKxout}
+% \changes{v0.0.3}{2026/11/18}{The slash takes \keys{format} like the wave.}
 % A repeated slash, as in \pkg{ulem}'s \tn{xout}.
 % The drawing is kept as code so that it scales with the font size,
 % and the stroke width is |.04em| like the wave.
@@ -8794,36 +8837,45 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % baseline upwards. The \tn{raise} of |-.17em| takes the slash back down
 % by the part that lies below the baseline (|.15em|) plus half the stroke,
 % so the ink lands where the path says.
+%
+% Like the wave, the slash goes through \cs{@@_fntef_use_leader_type:nn},
+% so it takes \keys{format}.
 %    \begin{macrocode}
-\newunderlinetype \@@_fntef_slash
+\cs_new_protected:Npn \@@_fntef_slash:
   {
-    \tex_leaders:D \hbox:n
+    \tl_set:Nn \l_@@_fntef_any_code_tl
       {
-        \hbox_set:Nn \l_@@_fntef_pattern_box
+        \tex_leaders:D \hbox:n
           {
-            \box_move_up:nn { -.17em }
+            \hbox_set:Nn \l_@@_fntef_pattern_box
               {
-                \hbox:n
+                \box_move_up:nn { -.17em }
                   {
-                    \draw_begin:
-                      \draw_set_linewidth:n { .04em }
-                      \draw_path_moveto:n { 0em , -.15em }
-                      \draw_path_lineto:n { .42em , .8em }
-                      \draw_path_use_clear:n { stroke }
-                    \draw_end:
+                    \hbox:n
+                      {
+                        \draw_begin:
+                          \draw_set_linewidth:n { .04em }
+                          \draw_path_moveto:n { 0em , -.15em }
+                          \draw_path_lineto:n { .42em , .8em }
+                          \draw_path_use_clear:n { stroke }
+                        \draw_end:
+                      }
                   }
               }
+            \box_set_ht:Nn  \l_@@_fntef_pattern_box { \c_zero_dim }
+            \box_set_dp:Nn  \l_@@_fntef_pattern_box { \c_zero_dim }
+            \box_use_drop:N \l_@@_fntef_pattern_box
           }
-        \box_set_ht:Nn  \l_@@_fntef_pattern_box { \c_zero_dim }
-        \box_set_dp:Nn  \l_@@_fntef_pattern_box { \c_zero_dim }
-        \box_use_drop:N \l_@@_fntef_pattern_box
       }
+    \tl_set:Nn \l_@@_fntef_cache_key_tl { xout }
+    \exp_args:NV \@@_fntef_use_leader_type:nn
+      \l_@@_fntef_cache_key_tl \l_@@_fntef_any_code_tl
   }
 \NewDocumentCommand \CJKxout { s t- o +m }
   {
     \group_begin:
       \@@_fntef_decoration_setup:n {#3}
-      \@@_fntef_slash
+      \@@_fntef_slash:
       \@@_fntef_body:n {#4}
     \group_end:
   }
@@ -8925,7 +8977,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
           { format | \l_@@_fntef_format_tl }
       }
     \tl_set:Ne \l_@@_fntef_cache_key_tl
-      { \exp_not:n {#1} | \l_@@_fntef_color_key_tl }
+      {
+        \exp_not:n {#1}
+        | \dim_to_decimal_in_sp:n { 1em }
+        | \l_@@_fntef_color_key_tl
+      }
     \prop_get:NVNF \g_@@_fntef_format_prop
       \l_@@_fntef_cache_key_tl \l_@@_fntef_cache_name_tl
       {

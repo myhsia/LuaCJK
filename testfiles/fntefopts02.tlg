@@ -30,3 +30,49 @@ TEST 5: color is a name for format
 ============================================================
 same depth: 2.39996pt2.39996pt
 ============================================================
+============================================================
+TEST 6: top and bottom reach a rule that format colors
+============================================================
+> \box...=
+\hbox(7.78+4.0)x10.0, direction TLT
+.\leaders 10.0
+..\rule(-2.0+4.0)x0.4
+.\glue -10.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+! OK.
+<argument> ...pt, bottom = -4pt]{中}} \showbox 0 
+                                                  \setbox 0=\hbox {\CJKunder...
+l. ...}
+> \box...=
+\hbox(7.78+4.0)x10.0, direction TLT
+.\leaders 10.0
+..\rule(-2.0+4.0)x0.4
+.\glue -10.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+! OK.
+<argument> ...4pt, format = red]{中}} \showbox 0 
+l. ...}
+============================================================
+============================================================
+TEST 7: top and bottom still override depth and thickness
+============================================================
+> \box...=
+\hbox(7.78+5.0)x10.0, direction TLT
+.\leaders 10.0
+..\rule(-3.0+5.0)x0.4
+.\glue -10.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+! OK.
+<argument> ...pt, bottom = -5pt]{中}} \showbox 0 
+                                                  \setbox 0=\hbox {\CJKunder...
+l. ...}
+> \box...=
+\hbox(7.78+2.0)x10.0, direction TLT
+.\leaders 10.0
+..\rule(-1.0+2.0)x0.4
+.\glue -10.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+! OK.
+<argument> ...pt, bottom = -2pt]{中}} \showbox 0 
+l. ...}
+============================================================
