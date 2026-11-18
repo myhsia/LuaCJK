@@ -464,9 +464,19 @@ l3build upload --dry-run           # the form, without publishing it
 - Every field of the CTAN form comes from `uploadconfig` in `build.lua`, so a
   new release edits that table and nothing else.
   `pkg` is `string.lower(module)`, the id the archive's top directory must
-  carry, `version` is the tag's version as written — CTAN takes the `v` —
+  carry, and `version` is the tag's version as written followed by the release
+  date, `v0.0.2 2026-11-15`: CTAN drops the leading `v` when it displays the
+  record, and its maintainers ask that the date found in the package files be
+  repeated there.  `date` is the one source of it, so `scripts/check-docs.sh`
+  keeps the record and the `\changes` history in step.
   `update` is left unset so that `l3build` detects a first release by itself,
   and the topics are `chinese`, `luatex` and `tagged-pdf`.
+- Each contact URL is given once.  `repository` carries the checkout and
+  `bugtracker` its `/issues`; `home` and `support` are left out because they
+  would only repeat that pair, and `development` stays because
+  `https://github.com/myhsia` is the owner's page and no other field names it.
+  CTAN's maintainers drop the repeated ones themselves and say there is no
+  need to fill in every field.
 - Two fields are read rather than written.
   `announcement` is built at load time by `scripts/extract-changes.lua` from
   the newest section of `CHANGELOG.md`: a subject line, then that release's
