@@ -96,6 +96,8 @@ jobs:
       - name: Run l3build check
         id: test-luacjk
         run: l3build check
+      - name: Fail when a test log carries an error
+        run: bash scripts/check-test-logs.sh
       - name: Run l3build doc
         if: ${{ !cancelled() && steps.test-luacjk.outcome == 'success' }}
         shell: bash
