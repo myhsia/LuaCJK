@@ -45,6 +45,29 @@
   }%
 }
 
+% Count the joiners and variation selectors that reach the pass in front of
+% shaping, which is where a font gets to use them.
+\directlua{
+  local count = 0
+  luatexbase.add_to_callback("pre_shaping_filter", function (head)
+    local n = head
+    while n do
+      if n.id == node.id("glyph")
+         and (n.char == 0x200D or n.char == 0xFE00) then
+        count = count + 1
+      end
+      n = n.next
+    end
+    return head
+  end, "test.count")
+  function resetattached () count = 0 end
+  function showattached ()
+    texio.write_nl("term and log", "ATTACHED " .. count)
+  end
+}
+\def\resetattached{\directlua{resetattached()}}
+\def\showattached{\directlua{showattached()}}
+
 \begin{document}
 
 \START
@@ -52,6 +75,7 @@
 \TEST{a CJK pair is the reference}{
   \setbox0=\hbox{中文}\shownodes
 }
+
 \TEST{U+200B is the same as no space}{
   \setbox0=\hbox{中文}\setbox2=\hbox{中​文}%
   \ifdim\wd0=\wd2 \TYPE{same width}\else\TYPE{different width}\fi
@@ -92,7 +116,13 @@
   \setbox0=\hbox{中\char"200B 文}\shownodes
 }
 
-\TEST{the characters are ignored by category code}{
+\TEST{the joiners and the variation selectors reach the font}{
+  \resetattached
+  \setbox0=\hbox{中‍︀文}%
+  \showattached
+}
+
+\TEST{only the characters that carry no information are ignored by category}{
   \TYPE{200B=\the\catcode"200B; 200C=\the\catcode"200C; 200D=\the\catcode"200D;
         2060=\the\catcode"2060; FE00=\the\catcode"FE00;
         E0100=\the\catcode"E0100}

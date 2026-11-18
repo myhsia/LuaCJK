@@ -29,11 +29,22 @@ layout, and the validation criteria are in the repository's `AGENTS.md`.
 ### Passes and where they run
 
 The character-level passes run in `pre_linebreak_filter` and in
-`hpack_filter` (the source is `local function process`):
+`hpack_filter` (the source is `local function process`), except the font
+substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
 
-1. `rewrite_fonts` — point each CJK glyph at the font family recorded on it
-   (`\g_@@_font_attr`), then at the punctuation family or a sub-block font
-   if one applies, then at a fallback font when the target lacks the glyph.
+0. `pre_shaping` — set each CJK glyph in the font family recorded on it
+   (`\g_@@_font_attr`), then in the punctuation family or a sub-block font
+   if one applies, then in a fallback font when the target lacks the glyph
+   (the chain is `target_font`); and let a character that attaches to the one
+   in front of it — a joiner or a variation selector — follow that font,
+   marked with the `attached` attribute.  It runs before shaping because
+   shaping is what attaches a combining mark to its base and what a joiner
+   and a selector act on: a glyph copied into another font afterwards keeps
+   the form of the font it was shaped in, which is why `か` + U+3099 used to
+   come out as two glyphs while the precomposed `が` was one (`shaping01`).
+   The price is that the CJK font's own features now apply: its ligatures
+   (Noto Serif CJK joins `——` into one two-em dash), `locl`, and variation
+   sequences.
    The fallback list is resolved on the TeX side at each font selection, in
    the series, shape, and size in force, and is keyed by the identifier of
    the main font: a bold or a scaled main font has an identifier of its own,
@@ -41,12 +52,27 @@ The character-level passes run in `pre_linebreak_filter` and in
    `\g_@@_fallback_pushed_prop` records, per identifier, the family whose
    list is installed, so a selection that resolves to a known identifier
    costs one property lookup rather than another `\lua_now:e`.
-   A glyph that changes font takes that font's `Baseline` with it:
-   `copy_glyph` adds `M.yoffset[fid]` (scaled points) to the `yoffset` it
-   copies.  Applying it only where the font changes is also what makes it
-   idempotent, since the passes run twice and a glyph already in its font is
-   not copied again.  The offset is recorded per font identifier, so two
-   families that supply the same font share the last value they declared.
+   A glyph that changes font takes that font's `Baseline` with it: the pass
+   adds `M.yoffset[fid]` (scaled points) to the glyph's `yoffset`.  Applying
+   it only where the font changes is what makes the pass idempotent, since it
+   runs on the paragraph and again on each line packed from it; the offset is
+   recorded per font identifier, so two families that supply the same font
+   share the last value they declared.
+   A luaotfload without `pre_shaping_filter` keeps the package's previous
+   behavior: `rewrite_fonts` copies each shaped glyph into its font in
+   `process` instead, `copy_glyph` adds the `Baseline` there, and every
+   zero-width character is removed at the input.  No test reaches that path,
+   because the callback type cannot be taken out of a live callback list; a
+   probe that edits the flag in an unpacked copy is how it is checked by hand.
+1. `drop_orphans` — remove what shaping left of the characters that must not
+   reach the spacing pass: a glyph carrying the `attached` attribute, with the
+   kern that cancels the advance of its placeholder, and the box a CJK font
+   draws for a character it does not have.  The second rule consults
+   `missing_chars`, filled by `pre_shaping`, so a document that declares no
+   CJK font at all still shows the box (`loadfandol03`) while a character the
+   CJK font lacks takes no advance (`shaping01`).  Dropping the joiner before
+   the walk is what keeps `中` + U+200D + `文` at `4E2D glue 6587`
+   (`zwchars01`).
 2. `spacing` — retime the source space between CJK characters to
    `CJKglue`, and insert `CJKglue`/`CJKecglue` at every boundary between two
    classes of character.  Dropping the space must not drop the boundary with
@@ -127,7 +153,7 @@ document's math font, because the CJK font has no `MathConstants` table.
 
 ### Attributes
 
-Ten attributes carry the per-node state; all are read through
+Eleven attributes carry the per-node state; all are read through
 `node.has_attribute`/`has_attribute`:
 
 | attribute | meaning |
@@ -141,6 +167,7 @@ Ten attributes carry the per-node state; all are read through
 | `disabled` | `\LuaCJKdisable` state |
 | `nobreak` | `\LuaCJKnobreak` and `\LuaCJKVerbAddon` state: a break at glue, kern, or discretionary that touches a node carrying it is forbidden |
 | `settings` | number of the option snapshot that applies to this node |
+| `attached` | the character is a joiner or a variation selector, so `drop_orphans` removes what shaping left of it |
 | `LuaCJKfntef/settings` | number of the decoration settings entry |
 
 ### The settings snapshot
@@ -484,17 +511,23 @@ punctuation hanging and bound width, `CheckSingle`, `CJLineBreak`, `CJKmath`,
 `LoadFandol`, eight decorations in `LuaCJKfntef` with fifteen options, tagged
 PDF output, and `LuaCJK-listings`.
 
-Two inputs are handled before the passes: the zero-width format characters and
-the variation selectors are given category code 9 at load time, so they neither
-take glue nor split a CJK run.
+The input characters are split in two at load time. U+180E, U+200B, U+2060, and
+U+FEFF carry nothing a font can use and are given category code 9, so they
+never reach the shaper. U+200C, U+200D, and the variation selectors keep their
+category codes, because a font shapes with them: `pre_shaping` marks them, lets
+them follow the font of the character in front of them, and `drop_orphans`
+removes the placeholder where the font had no use for them, so they still take
+no glue and do not split a CJK run (`zwchars01`).  The legacy path without
+`pre_shaping_filter` removes both kinds at the input, since it has no pass to
+tell them apart.
 
-Deliberately absent, with the reason recorded in the manual: `PoZheHaoLigature`
-(the CJK font is applied after the text was shaped with the Latin font, so its
-ligatures cannot be asked for), `RubberPunctSkip` (the advance is a fixed kern,
-which is not a break opportunity and takes no part in justification),
-`CheckFullRight` (the node list no longer shows the following control
-sequence — use `\LuaCJKnobreak`), and `ulem`'s option list (`LuaCJKfntef` builds
-on `lua-ul`). Picking a backend inside `ctex` is now a public option
+Deliberately absent, with the reason recorded in the manual: `RubberPunctSkip`
+(the advance is a fixed kern, which is not a break opportunity and takes no
+part in justification), `CheckFullRight` (the node list no longer shows the
+following control sequence — use `\LuaCJKnobreak`), and `ulem`'s option list
+(`LuaCJKfntef` builds on `lua-ul`). `PoZheHaoLigature` needs no option now that
+the font shapes the text: a font that joins two em dashes into one two-em dash
+does so on its own. Picking a backend inside `ctex` is now a public option
 (`engine`), so nothing here depends on the `ctex` maintainers' choice.
 
 ## Conventions
@@ -529,7 +562,7 @@ The commands are in `AGENTS.md`. For this skill the points that matter are:
 ```bash
 l3build check <name>                # the local loop; must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
-l3build check                       # 60 tests, CI on every push
+l3build check                       # 62 tests, CI on every push
 bash scripts/ctex-subset.sh         # 21/21, CI; no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
 ```
