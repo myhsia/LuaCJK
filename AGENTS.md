@@ -58,7 +58,7 @@ Entry points:
 | `scripts/check-charclass.lua` | compares the `CJK_RANGES` table of the `dtx` with `Scripts.txt`: it reports every code point whose script is Han, Hiragana, Katakana, Bopomofo, or Hangul that the table does not list, merging the code points into ranges.  The combining Bopomofo tone marks U+02EA and U+02EB are allowed to stay outside the table.  Exit 0 covered, 1 missing (the ranges are printed), 2 cannot run |
 | `scripts/check-bilingual.lua` | compares the two `documentation` parts of the `dtx`: the ordered structure (environment nesting, the documented objects and their arguments, section levels, list items) and the multiset of interface references (`\cs`, `\keys`, `\pkg`, `\file`, `\env`, `\tn`, `\val`, `\texttt`, `\meta`, `\oarg`, `\marg`, `\parg` and the `|…|` spans), and refuses a part in the wrong order.  Prose and section titles are not compared.  Exit 0 agree, 1 differ (the differences are printed), 2 cannot run |
 | `scripts/check-docs.sh` | compares the facts in the two guides with their sources: the layout table against `git ls-files` (both directions), version, test count, DocStrip blocks, installed file types, attribute and decoration counts, `\RequirePackage` against `DEPENDS.txt` (a package loaded from the listings guard must be `soft`), `DEPENDS.txt` against `.github/tl_packages`, the subset count, the changelog facts (the newest `\changes` version and date against `build.lua`, the first line of `CHANGELOG.md` against the released version), and the two languages of the user part through `scripts/check-bilingual.lua`.  A `\RequirePackage` name is resolved to its TeX Live package with `tlmgr search --global --file`, falling back to `expl3 -> l3kernel` and `l3draw -> l3experimental` when `tlmgr` is absent |
-| `scripts/triage-issues.sh` | lists the open issues that carry no subsystem label.  The type of an issue is GitHub's native issue type (`Bug`, `Feature`, `Task`), which is not a label, so an issue is reported when none of its labels is one of the twenty-one subsystems.  Exit 0 none left, 1 some reported, 2 cannot ask GitHub (no `gh`, no `jq`, not authenticated, no remote, no network).  `--explain` prints the label an ordered keyword table suggests for every open issue, labelled or not, and exits 0; `--apply` adds the suggestion to each issue that has no subsystem label yet; `--number <n>` restricts the run to one issue, which is what the workflow uses so that two runs cannot race.  An issue that matches no rule is printed as `unclassified` and keeps no label |
+| `scripts/triage-issues.sh` | lists the open issues that carry no subsystem label.  The type of an issue is GitHub's native issue type (`Bug`, `Feature`, `Task`), which is not a label, so an issue is reported when none of its labels is one of the twenty-one subsystems.  Exit 0 none left, 1 some reported, 2 cannot ask GitHub (no `gh`, no `jq`, not authenticated, no remote, no network).  `--explain` prints the label an ordered keyword table suggests for every open issue, labelled or not, and exits 0; `--apply` adds the suggestion to each issue that has no subsystem label yet and exits 0, or 2 when GitHub refuses an edit; `--number <n>` restricts the run to one issue, which is what the workflow uses so that two runs cannot race.  The table reads the title only, and an issue that matches no rule is printed as `unclassified` and keeps no label |
 | `scripts/session-check.sh` | the declared session check, a wrapper because a repository may declare one: it runs `check-extract-changes.sh --quiet` and `triage-issues.sh` and prints one summary line for each that needs attention, so the `upkeep` plugin reports both.  Exit 0 silent, 1 with those lines, 2 only when neither part can run |
 | `.github/font-urls.txt` | the Noto CJK release URLs the `l3build` job downloads for the manual; the hash of the file is the cache key, so changing a URL invalidates the cache |
 | `.github/workflows/test.yaml` | the CI workflow |
@@ -725,11 +725,21 @@ GitHub's side, so nothing here repeats it.
   start of a day.
 - Most issues never reach that point.  `triage.yaml` runs the same script with
   `--apply` when an issue is opened or reopened, and the script's ordered
-  keyword table decides the label: first match wins, so an issue that mentions
+  keyword table decides the label: first match wins, so an issue that names
   both `\CJKunderline` and `CJKglue` lands in `fntef`, where the fix belongs.
   An issue that matches no rule is left unlabelled on purpose rather than given
   a guess, which is why the session check still has a job: it is the net for the
   reports the table cannot place, and for issues that arrive any other way.
+- **The table reads the title, never the body.**  A body is the reporter's
+  apparatus, and it is nearly identical across the reports of one reporter —
+  every issue here opens with `\usepackage[LoadFandol]{LuaCJK}` and
+  `\setCJKmainfont{…}` — so a body scan labelled a question about `lstlisting`
+  with `load` (#32) and a question about Japanese combining marks with `fonts`
+  (#34).  The title is the part the reporter chose to name the defect with, and
+  an option name is a rule only when it is the subject of the report, which
+  reading the title enforces.  A consequence worth keeping: a report whose
+  title names no subsystem (#33, #34) is unclassified, and a session labels it
+  from the body, which is the reading the table is not allowed to do.
 - A keyword rule names the *file* the fix touches, never the topic the report
   mentions.  `PunctWidth` is `punct` although the reporter passes it as an
   option, and `LoadFandol` is `load` although it loads fonts, because that is
