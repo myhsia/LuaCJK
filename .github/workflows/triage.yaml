@@ -1,0 +1,31 @@
+name: Issue triage
+
+# A new issue is labelled when it is opened, so that the label names the
+# subsystem the fix will land in before anyone works on it.  The classifier is
+# `scripts/triage-issues.sh`, the same script a session runs; an issue whose
+# text matches no rule is left alone on purpose, and the session check of the
+# next session reports it so that a person decides.
+
+on:
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the classifier
+        uses: actions/checkout@v4
+
+      - name: Label the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          set -eu
+          bash scripts/triage-issues.sh --apply --number "$NUMBER"
