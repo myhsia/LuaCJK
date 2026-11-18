@@ -48,16 +48,19 @@ jobs:
           l3build install
       - name: Cache CJK fonts
         id: font-cache
+        if: runner.os == 'Linux'
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/.font-cache
           key: luacjk-fonts-${{ runner.os }}-${{ hashFiles('.github/font-urls.txt') }}-v1
       - name: Install Noto fonts
+        if: runner.os == 'Linux'
         run: |
           # The *.ttc collections the manual's Noto faces live in are not in
           # TeX Live, so they are downloaded, unpacked, kept in a cache keyed
           # by .github/font-urls.txt, and copied into the system font
           # directory; `lxgw-fonts` itself comes from .github/tl_packages.
+          # Only the manual reads them, and only this leg builds it.
           FONT_CACHE="${{ github.workspace }}/.font-cache"
           mkdir -p "$FONT_CACHE"
           if [ ! -f "$FONT_CACHE/.done" ]; then
@@ -99,9 +102,12 @@ jobs:
       - name: Fail when a test log carries an error
         run: bash scripts/check-test-logs.sh
       - name: Run l3build doc
-        if: ${{ !cancelled() && steps.test-luacjk.outcome == 'success' }}
+        if: ${{ runner.os == 'Linux' && !cancelled() && steps.test-luacjk.outcome == 'success' }}
         shell: bash
         run: |
+          # The manual is one artifact, judged once, so this step runs on the
+          # Linux leg only; what the other platforms add is the behaviour of
+          # `l3build check`, not the appearance of the manual.
           # latexmk counts LuaTeX's "unreferenced destination" warning as a
           # broken reference, and it gave up on Windows before converging.
           # latex-lab-testphase-l3doc creates those destinations for the name

@@ -25,7 +25,7 @@ punctuation model, the decoration mechanism, or the `ctex` adapter.
 TeX Live 2026 with LuaLaTeX; no conda. Every command runs from the
 repository root, where `build.lua` lives. The maintenance scripts are bash;
 Python 3 is available when a task needs it. The manual sets its CJK text in
-Noto Serif/Sans CJK SC (a system font, also installed by CI from
+Noto Serif/Sans CJK SC (a system font, installed by CI's Linux leg from
 `.github/font-urls.txt`), with LXGW WenKai GB Lite for the italic and the kai
 family and Zhuque Fangsong for the monospaced text and the fangsong family;
 both come from the `lxgw-fonts` TeX Live package. The tests keep Fandol.
@@ -61,7 +61,7 @@ Entry points:
 | `scripts/check-test-logs.sh` | reports every TeX error the last `l3build check` left in `build/check/*.log`, one `file:line:text` record per line; exit 0 when every log is clean, 1 when something is printed, 2 when there is no log to read.  The `.tlg` comparison cannot see an error: `nonstopmode` skips the undefined token and the run continues, so a test passes with `! Undefined control sequence` in its log.  Three headlines are expected and allowed, because a test provokes each on purpose: `! OK.` from `\showbox`, the unknown `luaul` key of `fntefopts01`, and the preamble paragraph of `verb02` and `boundary03` |
 | `scripts/triage-issues.sh` | lists the open issues that carry no subsystem label.  The type of an issue is GitHub's native issue type (`Bug`, `Feature`, `Task`), which is not a label, so an issue is reported when none of its labels is one of the twenty-one subsystems.  Exit 0 none left, 1 some reported, 2 cannot ask GitHub (no `gh`, no `jq`, not authenticated, no remote, no network).  `--explain` prints the label an ordered keyword table suggests for every open issue, labelled or not, and exits 0; `--apply` adds the suggestion to each issue that has no subsystem label yet and exits 0, or 2 when GitHub refuses an edit; `--number <n>` restricts the run to one issue, which is what the workflow uses so that two runs cannot race.  The table reads the title only, and an issue that matches no rule is printed as `unclassified` and keeps no label |
 | `scripts/session-check.sh` | the declared session check, a wrapper because a repository may declare one: it runs `check-extract-changes.sh --quiet` and `triage-issues.sh` and prints one summary line for each that needs attention, so the `upkeep` plugin reports both.  Exit 0 silent, 1 with those lines, 2 only when neither part can run |
-| `.github/font-urls.txt` | the Noto CJK release URLs the `l3build` job downloads for the manual; the hash of the file is the cache key, so changing a URL invalidates the cache |
+| `.github/font-urls.txt` | the Noto CJK release URLs the Linux leg of the `l3build` job downloads for the manual; the hash of the file is the cache key, so changing a URL invalidates the cache |
 | `.github/workflows/test.yaml` | the CI workflow |
 | `.github/workflows/ctan.yaml` | publishes a release to CTAN: on a published release it checks out the tag, refuses to run unless `build.lua`'s version is the tag's, downloads that release's own `luacjk-ctan.zip` so that the archive CTAN receives is the published one, and runs `l3build upload`; a manual run takes the latest release with the current branch's form |
 | `.github/workflows/triage.yaml` | labels a new issue with the subsystem of the fix: on `issues: opened` and `reopened` it runs `scripts/triage-issues.sh --apply --number <n>` with the default token, `issues: write`; an issue the keyword table cannot place keeps no label, and the session check reports it |
@@ -617,7 +617,7 @@ opinion.
   and `bash scripts/check-docs.sh` checks the changelog facts: the newest
   `\changes` version and date against `build.lua`, and the first line of
   `CHANGELOG.md` against the released version.
-- The manual is held to CI's `doc` step: no `^!` error, no
+- The manual is held to CI's `doc` step, on the Linux leg: no `^!` error, no
   `Reference ... undefined`, no `Missing character`, and no `multiply defined`
   label or `duplicate destination` warning in `build/doc/LuaCJK.log`: the two
   language parts restart the section numbering, so the `\LuaCJKdoclang` tags are
@@ -666,16 +666,20 @@ requests. Two jobs, each on `ubuntu-latest`, `macos-latest`, and
 
 - `l3build`: install TeX Live (with `wintools.windows` on Windows, for
   `unzip`), install the ctex-kit branch with the `engine` option (see below),
-  and the Noto CJK collections listed in `.github/font-urls.txt`
-  (cached under the file's hash, copied into the system font directory, then
-  `fc-cache -f`), then `bash scripts/check-docs.sh` (it calls
+  then `bash scripts/check-docs.sh` (it calls
   `texlua` for the bilingual check, so it cannot run before the install),
   then `texlua scripts/check-charclass.lua`, then `l3build changelog` and a
   `git diff --exit-code CHANGELOG.md` that fails when the generated file is
   stale, then `l3build check`, then `bash scripts/check-test-logs.sh`, which
   fails on a TeX error in a test log other than the three a test provokes on
-  purpose (`.tlg` comparison cannot see them: `nonstopmode` skips the token),
-  then `l3build doc` (only if the check passed).
+  purpose (`.tlg` comparison cannot see them: `nonstopmode` skips the token).
+  The manual is built on the Linux leg only, and only if the check passed:
+  it is one artifact judged once, while what the other platforms add is the
+  behaviour of the package, not the appearance of its documentation.
+  That leg alone downloads the Noto CJK collections listed in
+  `.github/font-urls.txt` (cached under the file's hash, copied into the
+  system font directory, then `fc-cache -f`), because the manual is their only
+  consumer and the tests keep Fandol.
   The doc step does not trust latexmk's exit code: latexmk counts LuaTeX's
   `unreferenced destination` warning as a broken reference, and
   `latex-lab-testphase-l3doc` creates four such destinations for the name
