@@ -86,6 +86,45 @@
   \probe
 }
 
+\TEST{no line starts with an ellipsis}{
+  \begingroup
+    \parindent=0pt \raggedright
+    \setbox0=\vbox{\hsize=4em 未完待续……\par}
+    \linefirsts{0}
+  \endgroup
+}
+
+\TEST{no line starts with a dash}{
+  \begingroup
+    \parindent=0pt \raggedright
+    \setbox0=\vbox{\hsize=4em 字字字字——\par}
+    \linefirsts{0}
+  \endgroup
+}
+
+\TEST{the break in front of a long run is forbidden}{
+  \setbox0=\hbox{字——字}
+  \probe
+  \setbox0=\hbox{字……字}
+  \probe
+}
+
+\TEST{AllowBreakBetweenPuncts does not start a line with an ellipsis}{
+  \begingroup
+    \LuaCJKsetup{AllowBreakBetweenPuncts=true}
+    \setbox0=\hbox{字，……字}
+    \probe
+  \endgroup
+}
+
+\TEST{PunctKinsoku=false lets an ellipsis start a line}{
+  \begingroup
+    \LuaCJKsetup{PunctKinsoku=false}
+    \setbox0=\hbox{字……字}
+    \probe
+  \endgroup
+}
+
 \TEST{single comma boundary}{
   \setbox0=\hbox{字，字}
   \probe

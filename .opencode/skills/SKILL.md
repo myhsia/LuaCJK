@@ -271,9 +271,13 @@ Every style but `plain` sets `hang`, which is what `hangmobanjiao` used to
 mean on its own: the mark keeps its full advance and the line ends flush.
 
 The prohibitions in `forbids_break` are the ones that matter for correctness:
-a closing or middle mark may not start a line, an opening mark may not end one,
-a run of `nobreak` long marks is one unit, and two adjacent marks are not
-separated. `PunctKinsoku` gates all four; `AllowBreakBetweenPuncts` lifts the
+a closing, middle, dash, or ellipsis mark may not start a line — a dash or an
+ellipsis only as the first mark of a run, so the break between the marks of a
+run stays the business of the `nobreak` set, and the group rule is clreq's
+*strict* level and xeCJK's `FullRight`, though the groups are whole and U+2015
+and U+FF0D take it too — an opening mark may not end one, a run of `nobreak`
+long marks is one unit, and two adjacent marks are not separated.
+`PunctKinsoku` gates all four; `AllowBreakBetweenPuncts` lifts the
 last alone, because the other three are rules of the script, and the adjacent
 rule leaves a dash or an ellipsis out, since a run of them is governed by the
 `nobreak` set. An explicit `nobreak` attribute bypasses both keys. The pass

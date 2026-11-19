@@ -910,11 +910,13 @@ $ 天地玄黄 $ and 天地玄黄
 %   被断行分开。
 %   破折号与省略号不在此列，一串连续的破折号或省略号由
 %   \texttt{NoBreakLongPunct} 控制。
-%   收尾的或中间的标点不能出现在行首、开头的标点不能出现在行尾，
+%   收尾的、中间的标点与破折号、省略号不能出现在行首，
+%   开头的标点不能出现在行尾，
 %   这两条禁则不由本选项放开，所以一个收尾的引号不会被单独排在行首。
 %   标点仍然会被压缩。
 %   \item[\keys{PunctKinsoku}]\val{\TTF}: 是否对标点施加断行禁则。
-%   收尾的或中间的标点不能出现在行首，开头的标点不能出现在行尾，
+%   收尾的、中间的标点与破折号、省略号不能出现在行首，
+%   开头的标点不能出现在行尾，
 %   两个相邻的标点不会被分开，一串连续的破折号或省略号保持在一起。
 %   盒子边缘的标点同样参与判断。
 %   这些禁则与 \texttt{PunctStyle} 无关，
@@ -1124,6 +1126,7 @@ a’a\quad 不亦说乎！
 % 一串破折号或省略号（U+2013、U+2014、U+2015、U+FF0D、U+2026
 % 与 U+22EF）是一个整体：这些标点之间不加胶，所以两端对齐不会把一个
 % 两字宽的破折号拆开，它们之间也不提供断行机会。
+% 这一串标点之前也不提供断行机会，所以一行不会以破折号或省略号开头。
 % 键 \keys{LongPunct} 替换这个集合。
 %
 % 两个字符之间显式的 \tn{nobreak} 仍是断行禁止，它们之间的胶也照常插入：
@@ -2242,15 +2245,15 @@ $ 天地玄黄 $ and 天地玄黄
 %   punctuation marks may be separated by a line break.
 %   A dash or an ellipsis is not affected: a run of them is governed by
 %   \texttt{NoBreakLongPunct}.
-%   The prohibitions that keep a closing or middle mark out of the line start
-%   and an opening mark out of the line end are not lifted, so a closing
-%   quotation mark is never set at the start of a line.
+%   The prohibitions that keep a closing, middle, dash, or ellipsis mark out
+%   of the line start, and an opening mark out of the line end, are not
+%   lifted, so a closing quotation mark is never set at the start of a line.
 %   The marks are still compressed.
 %   \item[\keys{PunctKinsoku}]\val{\TTF}: Whether to apply line-breaking
 %   prohibitions for punctuation.
-%   A closing or middle punctuation cannot start a line, an opening punctuation
-%   cannot end a line, two adjacent marks are not separated, and a run of long
-%   punctuation is kept together.
+%   A closing, middle, dash, or ellipsis punctuation cannot start a line,
+%   an opening punctuation cannot end a line, two adjacent marks are not
+%   separated, and a run of long punctuation is kept together.
 %   A mark at the edge of a box takes part as well.
 %   The prohibitions are independent of \texttt{PunctStyle},
 %   so they stay active with |PunctStyle = plain|.
@@ -2467,7 +2470,9 @@ a’a\quad 不亦说乎！
 % A run of dashes or ellipses (U+2013, U+2014, U+2015, U+FF0D, U+2026,
 % and U+22EF) is one unit: the marks are joined without glue, so
 % justification cannot pull a two-em dash apart, and no break is offered
-% between them. The key \keys{LongPunct} replaces the set.
+% between them. No break is offered in front of the run either, so a line
+% does not begin with a dash or an ellipsis. The key \keys{LongPunct}
+% replaces the set.
 %
 % An explicit \tn{nobreak} between two characters stays a prohibition, and
 % the glue between them is still inserted: the glue follows the penalty, so
@@ -7372,6 +7377,10 @@ end
 % \changes{v0.0.2}{2026/11/13}{\keys{AllowBreakBetweenPuncts} no longer lets a
 %   closing mark start a line or an opening mark end one, and a mark inside a
 %   box takes part in the prohibitions.}
+% \changes{v0.0.3}{2026/11/20}{A dash or an ellipsis cannot start a line either:
+%   a break in front of a run of them is forbidden, so the run travels to the
+%   next line whole, while the break between the marks of a run stays the
+%   business of the \texttt{NoBreakLongPunct} set.}
 % Add the prohibitions where the settings of the text ask for them.
 % A node marked by \cs{LuaCJKnobreak} or by the verbatim addon
 % is prohibited regardless, because the mark itself is the prohibition.
@@ -7440,11 +7449,24 @@ end
 
 %    \end{macrocode}
 % \end{macro}
+% \begin{macro}[int]{run_mark}
+% Whether a punctuation mark is one of the two a run is built from.
+%    \begin{macrocode}
+local function run_mark (mark)
+  return mark == "dash" or mark == "ellipsis"
+end
+
+%    \end{macrocode}
+% \end{macro}
 % \begin{macro}[int]{forbids_break}
-% The rules: closing and middle punctuation must not start a line,
+% The rules: closing, middle, dash, and ellipsis punctuation must not start a
+% line,
 % opening punctuation must not end one,
 % a run of dashes or ellipses stays together,
 % and two adjacent marks are not separated.
+% A dash or an ellipsis is read as the run it begins, so the rule applies to
+% the first mark of a run alone; between the marks of a run the
+% \texttt{NoBreakLongPunct} set decides.
 % \keys{AllowBreakBetweenPuncts} lifts the last rule alone: a mark that may
 % not begin or end a line is a rule of the script, so the option cannot
 % permit one.
@@ -7452,6 +7474,9 @@ end
 local function forbids_break (prev_mark, prev_char, next_mark, next_char,
                               settings)
   if next_mark == "close" or next_mark == "middle" then
+    return true
+  end
+  if run_mark(next_mark) and not run_mark(prev_mark) then
     return true
   end
   if prev_mark == "open" then
