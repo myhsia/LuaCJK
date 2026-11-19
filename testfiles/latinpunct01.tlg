@@ -26,3 +26,17 @@ TEST 5: a class declaration overrides LatinPunct
 ============================================================
 width: 26.66595pt
 ============================================================
+============================================================
+TEST 6: the middle dot and the midline ellipsis belong to CJK
+============================================================
+width: 20.0pt
+PROBE 97:LMRoman10-Regular 183:FandolSong 97:LMRoman10-Regular
+width: 20.0pt
+PROBE 97:LMRoman10-Regular 8943:FandolSong 97:LMRoman10-Regular
+============================================================
+============================================================
+TEST 7: LatinPunct keeps the middle dot in the Latin font
+============================================================
+width: 17.78pt
+PROBE 97:LMRoman10-Regular 183:LMRoman10-Regular 97:LMRoman10-Regular
+============================================================

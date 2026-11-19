@@ -60,6 +60,23 @@
   \LuaCJKResetCharClass
 }
 
+\TEST{the middle dot and the midline ellipsis belong to CJK}{
+  \LuaCJKsetup{LatinPunct = false}
+  \setbox0=\hbox{a·a}
+  \TYPE{width: \the\wd0}
+  \probe
+  \setbox0=\hbox{a⋯a}
+  \TYPE{width: \the\wd0}
+  \probe
+}
+
+\TEST{LatinPunct keeps the middle dot in the Latin font}{
+  \LuaCJKsetup{LatinPunct}
+  \setbox0=\hbox{a·a}
+  \TYPE{width: \the\wd0}
+  \probe
+}
+
 \END
 
 \end{document}
