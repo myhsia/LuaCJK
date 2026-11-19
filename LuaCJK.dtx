@@ -617,6 +617,7 @@ English 中文字体\\
 %   四款 Fandol 字体：宋体作为主字体，
 %   黑体作为无衬线字体，仿宋作为等宽字体，
 %   并且把宋、黑、楷、仿宋全部注册为具名字族。
+%   宋体一族以楷体作为斜体，所以 \tn{emph} 与 \tn{itshape} 会把汉字改成楷体。
 %   已经声明了字体的文档保留自己的字体，所以 Fandol 不会混进来；
 %   但若它恰好没有声明 \cs{CJKfamilydefault} 所用的那一族，
 %   正文就会用 \cs{CJKrmdefault} 那一族，若也没有则用最先声明的一族，
@@ -631,6 +632,8 @@ English 中文字体\\
 % 它们作用于此后注册的字族，并且在字族自己设置了 \texttt{BoldFont} 或
 % \texttt{ItalicFont} 时不生效。它们是全局的：
 % 分组不会改变一个已经注册的字族所用的设置。
+% 一个既没有设置 \texttt{ItalicFont} 也没有打开 \keys{AutoFakeSlant} 的字族
+% 没有斜体形状：强调的文字保持正体，\pkg{fontspec} 会报告缺少这个形状。
 %
 % \begin{keyval}
 %   \item[\keys{AutoFakeBold}]\val{\TFF, number}
@@ -1906,6 +1909,8 @@ English 中文字体\\
 %   Fandol faces at |\begin{document}|: Song as the main font,
 %   Hei as the sans serif font, Fang as the monospaced font,
 %   and all of Song, Hei, Kai, and Fang as the named families.
+%   The Song family takes Kai as its italic face, so \tn{emph} and
+%   \tn{itshape} set the text in Kai.
 %   A document that declares fonts keeps its own, so Fandol does not mix into
 %   it; when it does not declare the family \cs{CJKfamilydefault} names, its
 %   text takes the family \cs{CJKrmdefault} names, or the first declared family
@@ -1921,6 +1926,9 @@ English 中文字体\\
 % They apply to families registered afterwards, and are not used when the
 % family itself sets \texttt{BoldFont} or \texttt{ItalicFont}. They are
 % global: a group does not change what an already registered family uses.
+% A family that names neither \texttt{ItalicFont} nor \keys{AutoFakeSlant} has
+% no italic shape: emphasized text keeps its upright face, and
+% \pkg{fontspec} reports the shape as missing.
 %
 % \begin{keyval}
 %   \item[\keys{AutoFakeBold}]\val{\TFF, number}
@@ -5341,21 +5349,31 @@ abc汉字abc
 % \changes{v0.0.3}{2026/11/18}{\keys{LoadFandol} is on by default, so a
 %   document that declares no CJK font is set in the four Fandol faces without
 %   asking for them.}
+% \changes{v0.0.3}{2026/11/18}{\keys{LoadFandol} gives the roman family
+%   \texttt{FandolKai-Regular.otf} as its italic face, so \cs{emph} and
+%   \cs{itshape} set the text in Kai instead of leaving it upright.}
 % When the \keys{LoadFandol} option is on and the document
 % did not declare any CJK font, fall back to the four Fandol faces.
 % This runs at |\begin{document}| so that a family declared anywhere
 % in the preamble still wins, and a document that declares some families but
 % not the default one is reported by \cs{@@_ensure_family_default:} instead.
+% The roman family is declared twice, once as the main family and once under
+% the name \texttt{zhsong}, and both declarations carry the same options,
+% because a family name holds one set of features and the later declaration
+% would otherwise drop what the earlier one gave.
+% Fandol Song has no italic face, and emphasis in Chinese is set in Kai, so
+% the italic shape of the roman family is Fandol Kai; the other three families
+% have no italic face of their own.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_load_fandol:
   {
     \setCJKmainfont{FandolSong-Regular.otf}
-      [ BoldFont = FandolSong-Bold.otf ]
+      [ BoldFont = FandolSong-Bold.otf, ItalicFont = FandolKai-Regular.otf ]
     \setCJKsansfont{FandolHei-Regular.otf}
       [ BoldFont = FandolHei-Bold.otf ]
     \setCJKmonofont{FandolFang-Regular.otf}
     \setCJKfamilyfont{zhsong}{FandolSong-Regular.otf}
-      [ BoldFont = FandolSong-Bold.otf ]
+      [ BoldFont = FandolSong-Bold.otf, ItalicFont = FandolKai-Regular.otf ]
     \setCJKfamilyfont{zhhei}{FandolHei-Regular.otf}
       [ BoldFont = FandolHei-Bold.otf ]
     \setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}

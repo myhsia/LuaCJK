@@ -12,6 +12,7 @@
 - `\CJKfamily` expands its argument, so a family can be given as `\CJKrmdefault` and friends.
 - The joiners (U+200C, U+200D) and the variation selectors are no longer removed at the input: they reach the font, so an emoji sequence is not split and a CJK variation sequence selects its glyph, and what the font leaves of them is dropped before the spacing pass, so two CJK characters still take no glue around them.
 - `LoadFandol` is on by default, so a document that declares no CJK font is set in the four Fandol faces without asking for them.
+- `LoadFandol` gives the roman family `FandolKai-Regular.otf` as its italic face, so `\emph` and `\itshape` set the text in Kai instead of leaving it upright.
 - The CJK font is applied to the characters before the text is shaped instead of to the glyph nodes after it: a combining mark attaches to its base, a variation sequence selects its glyph, and the font's own ligatures and `locl` forms appear. An older `luaotfload` keeps the previous behavior.
 - A joiner or a variation selector that the font cannot use leaves nothing behind, and neither does a CJK character the CJK font does not have.
 - A penalty that prohibits the break no longer removes the glue: the CJK--CJK and CJK--Latin spacing survives `\nobreak`, because the glue goes after the penalty, where the prohibition still covers it. A source space in front of the penalty is converted and the penalty moves in front of it.
