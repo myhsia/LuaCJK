@@ -101,10 +101,11 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    glue and taking the fill of the line with it (`boundary01`).
    A box is an atom, and the class at its edge is the class of the node *at*
    that edge: filling glue (`\numberline`'s `\hfil`), a kern, or a rule means
-   the box has no text there, so no glue is added beside it, while a box of no
-   size is passed over (`boundary01`).  Taking the class from the last
-   character *inside* the box instead is what pushed every Chinese TOC title
-   one `CJKecglue` to the right of its English counterpart.
+   the box has no text there, so no glue is added beside it, while a box that
+   occupies no advance is passed over, so `\rlap`, `\llap` and `\clap` overlay
+   the run instead of splitting it (`boundary01`).  Taking the class from the
+   last character *inside* the box instead is what pushed every Chinese TOC
+   title one `CJKecglue` to the right of its English counterpart.
    A box whose own baseline TeX has shifted is attached to the character in
    front of it: the run ends at it, so it takes no glue on either side and
    offers no break.  That is the box `\textsuperscript` and `\textsubscript`
