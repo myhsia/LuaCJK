@@ -319,6 +319,23 @@ which is what `Verb = env+` does anyway; `verbaddon01` pins the mechanism and
 where `\FancyVerbFormatLine` formats it, because the line box itself is
 `\hbox to \linewidth`.
 
+The same hook is why fancyvrb's *inline* commands are now wired to `Verb` at
+all.  `\Verb` and `\UseVerb` never select `\verbatim@font` and are not
+environments, so neither the font hook nor the environment list saw them, and
+`\Verb` behaved as if `Verb = false` whatever the option said.  Its
+`\FV@FormattingPrep` is shared by the inline commands and by every block, so
+`\@@_fv_prep_hook:` is prepended to it and decides by
+`\l_@@_verbatim_block_bool`: a block follows the environments (`true` only),
+anything else follows `\verb` (`true` and `env`).  The flag is set by the block
+side — the environment begin hooks and a group around `\FV@UseVerbatim`, which
+serves `\UseVerbatim` and `\VerbatimInput` — because the inline side cannot mark
+itself: a token written after `\Verb` is scanned into its text, since the
+scanner reads to the end of the line, and wrapping `\FVC@Verb` closes the wrong
+group, because it ends its own group from inside the `\mbox` it sets.  Both
+attempts were measured and fail with a runaway argument and a brace imbalance
+respectively.  The patch waits for `package/fancyvrb/after` and is also called
+at load time, so either loading order works (`fancyvrb01`, `fancyvrb02`).
+
 ### Rule decorations adjust `lua-ul`
 
 `LuaCJKfntef` builds on `lua-ul`, which represents a decoration as a leaders
@@ -625,7 +642,7 @@ The commands are in `AGENTS.md`. For this skill the points that matter are:
 ```bash
 l3build check <name>                # the local loop; must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
-l3build check                       # 65 tests, CI on every push
+l3build check                       # 67 tests, CI on every push
 bash scripts/ctex-subset.sh         # 21/21, CI; no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
 ```

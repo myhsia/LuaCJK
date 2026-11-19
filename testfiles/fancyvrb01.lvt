@@ -1,0 +1,124 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\usepackage{fancyvrb}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKglue = 10pt, CJKecglue = 5pt}
+
+% fancyvrb sets every line into \hbox to \linewidth, so the natural width of a
+% block line is taken where the line is formatted.  Verb-like material cannot
+% sit in a macro argument, so every box is built at the top level and the tests
+% only report it.  The boxes are global, because a report outside the mode's
+% group would otherwise read the value that group restored.
+\newbox\verbline
+\newbox\inlineline
+\newbox\envline
+\newdimen\envwd
+\newdimen\savedwd
+
+\def\measureline#1{%
+  \setbox\envline=\hbox{#1}%
+  \global\envwd=\wd\envline
+  \box\envline
+}
+
+\def\report#1{%
+  \TYPE{#1 verb: \the\wd\verbline, UseVerb: \the\wd\inlineline,
+    Verbatim: \the\envwd, UseVerbatim: \the\savedwd}%
+}
+
+\begin{document}
+
+\START
+
+\SaveVerb{inline}|中中|
+\begin{SaveVerbatim}{saved}
+中中
+\end{SaveVerbatim}
+
+% \verb is the reference for the inline commands and the environments are the
+% reference for the block commands, so each mode reports all four.
+\global\setbox\verbline=\hbox{\Verb|中中|}
+\global\setbox\inlineline=\hbox{\UseVerb{inline}}
+\begingroup
+  \def\FancyVerbFormatLine#1{\measureline{#1}}
+  \begin{Verbatim}
+中中
+\end{Verbatim}
+\endgroup
+\global\savedwd=\envwd
+\begingroup
+  \def\FancyVerbFormatLine#1{\measureline{#1}}
+  \UseVerbatim{saved}
+\endgroup
+
+\TEST{Verb=true suspends the inline commands as it suspends verb}{
+  \report{suspended}
+}
+\begingroup
+  \LuaCJKsetup{Verb=false}
+  \global\setbox\verbline=\hbox{\Verb|中中|}
+  \global\setbox\inlineline=\hbox{\UseVerb{inline}}
+  \begingroup
+    \def\FancyVerbFormatLine#1{\measureline{#1}}
+    \begin{Verbatim}
+中中
+\end{Verbatim}
+  \endgroup
+  \global\savedwd=\envwd
+  \begingroup
+    \def\FancyVerbFormatLine#1{\measureline{#1}}
+    \UseVerbatim{saved}
+  \endgroup
+\endgroup
+
+\TEST{Verb=false keeps the adjustments everywhere}{
+  \report{kept}
+}
+
+\begingroup
+  \LuaCJKsetup{Verb=env}
+  \global\setbox\verbline=\hbox{\Verb|中中|}
+  \global\setbox\inlineline=\hbox{\UseVerb{inline}}
+  \begingroup
+    \def\FancyVerbFormatLine#1{\measureline{#1}}
+    \begin{Verbatim}
+中中
+\end{Verbatim}
+  \endgroup
+  \global\savedwd=\envwd
+  \begingroup
+    \def\FancyVerbFormatLine#1{\measureline{#1}}
+    \UseVerbatim{saved}
+  \endgroup
+\endgroup
+
+\TEST{Verb=env suspends the inline commands only}{
+  \report{inline}
+}
+
+\begingroup
+  \LuaCJKsetup{Verb=env+}
+  \global\setbox\verbline=\hbox{\Verb|中中|}
+  \global\setbox\inlineline=\hbox{\UseVerb{inline}}
+  \begingroup
+    \def\FancyVerbFormatLine#1{\measureline{#1}}
+    \begin{Verbatim}
+中中
+\end{Verbatim}
+  \endgroup
+  \global\savedwd=\envwd
+  \begingroup
+    \def\FancyVerbFormatLine#1{\measureline{#1}}
+    \UseVerbatim{saved}
+  \endgroup
+\endgroup
+
+\TEST{Verb=env+ keeps the adjustments everywhere}{
+  \report{kept}
+}
+
+\END
+
+\end{document}

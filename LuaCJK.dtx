@@ -1254,6 +1254,8 @@ abc汉字abc
 %   仍然保留它后面的断行机会。
 %   无论这个设置取什么值，\cs{LuaCJKVerbAddon} 都会在它所在的分组里
 %   把调整重新打开。
+%   \pkg{fancyvrb} 的行内命令 \tn{Verb} 与 \tn{UseVerb} 按 \tn{verb} 的规则处理；
+%   块命令 \tn{VerbatimInput} 与 \tn{UseVerbatim} 则与抄录环境一致。
 % \end{keyval}
 %
 % \pkg{listings} 一次处理一个字符，并且在读到字符的那一刻就把
@@ -2591,6 +2593,9 @@ abc汉字abc
 %   material still keeps the break opportunity that follows it.
 %   Whatever the setting is, \cs{LuaCJKVerbAddon} turns the adjustments
 %   back on inside the group it is used in.
+%   The inline \tn{Verb} and \tn{UseVerb} of \pkg{fancyvrb} are treated as
+%   \tn{verb} is, and its block commands \tn{VerbatimInput} and \tn{UseVerbatim}
+%   as the environments are.
 % \end{keyval}
 %
 % \pkg{listings} processes one character at a time and typesets a character
@@ -3691,6 +3696,7 @@ abc汉字abc
 %     \l_@@_punct_kinsoku_tl,   \l_@@_cjk_math_tl,
 %     \l_@@_cj_strict_tl,
 %     \l_@@_verb_mode_tl,       \l_@@_local_config_tl,
+%     \l_@@_verbatim_block_bool,
 %     \l_@@_check_single_tl,    \l_@@_widow_penalty_int,
 %     \l_@@_punct_width_dim,    \l_@@_punct_bound_width_dim,
 %     \l_@@_punct_width_given_bool,
@@ -3707,6 +3713,7 @@ abc汉字abc
 %     \l_@@_shift_family_tl
 %   }
 % The switches read by the Lua side, the \keys{Verb} setting,
+% whether a block of verbatim material is being set,
 % the configuration file name, the fake bold and slant parameters,
 % and the fallback fonts.
 %    \begin{macrocode}
@@ -3720,6 +3727,7 @@ abc汉字abc
 \tl_set:Nn \l_@@_latin_punct_tl { 0 }
 \tl_new:N  \l_@@_verb_mode_tl
 \tl_set:Nn \l_@@_verb_mode_tl { true }
+\bool_new:N \l_@@_verbatim_block_bool
 \bool_new:N \l_@@_break_between_puncts_bool
 \dim_new:N  \l_@@_punct_width_dim
 \dim_set:Nn \l_@@_punct_width_dim { 0pt }
@@ -4207,6 +4215,63 @@ abc汉字abc
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{\@@_verbatim_block_disable:, \@@_fv_prep_hook:, \@@_fv_patch:}
+% \changes{v0.0.3}{2026/11/18}{The \keys{Verb} option also reaches the inline
+%   \tn{Verb} and \tn{UseVerb} of \pkg{fancyvrb}, which never select
+%   \tn{verbatim@font} and are set as \tn{verb} sets them; the block commands
+%   \tn{VerbatimInput} and \tn{UseVerbatim} follow the environments instead.}
+% \pkg{fancyvrb} never selects \tn{verbatim@font}, and its formatting hook
+% serves the inline commands and every block at once, so the hook waits for
+% the package to be loaded and then applies the rule of the call it serves:
+% the rule of \tn{verb} while no block is open, and the rule of the
+% environments, which only \texttt{true} suspends, when one is.
+% A block is an environment of the list below, or a command that sets saved
+% verbatim material, and both mark themselves in their own group.
+% The inline commands cannot mark themselves: a token placed after \tn{Verb}
+% is scanned as part of its text, because the scanner reads to the end of the
+% line, and \tn{FVC@Verb} closes its group from inside the box it sets, so
+% neither can be wrapped.  The bool is therefore false by default and set by
+% the block side.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_verbatim_block_disable:
+  {
+    \tl_if_eq:VnT \l_@@_verb_mode_tl { true }
+      { \LuaCJKdisable }
+  }
+\cs_new_protected:Npn \@@_fv_prep_hook:
+  {
+    \bool_if:NTF \l_@@_verbatim_block_bool
+      { \@@_verbatim_block_disable: }
+      { \@@_verbatim@font_hook: }
+  }
+\cs_new_protected:Npn \@@_fv_patch:
+  {
+    \cs_if_exist:NT \FV@FormattingPrep
+      {
+        \cs_gset_protected:Npx \FV@FormattingPrep
+          {
+            \exp_not:N \@@_fv_prep_hook:
+            \exp_not:o { \FV@FormattingPrep }
+          }
+      }
+    \cs_if_exist:NT \FV@UseVerbatim
+      {
+        \cs_gset_eq:NN \@@_fv_use_verbatim: \FV@UseVerbatim
+        \cs_gset_protected:Npn \FV@UseVerbatim ##1
+          {
+            \group_begin:
+              \bool_set_true:N \l_@@_verbatim_block_bool
+              \@@_fv_use_verbatim: {##1}
+            \group_end:
+          }
+      }
+  }
+\hook_gput_code:nnn { package / fancyvrb / after } { LuaCJK }
+  { \@@_fv_patch: }
+\@@_fv_patch:
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{\@@_verbatim_env_begin:, \@@_verbatim_env_end:}
 % \changes{v0.0.1}{2026/11/11}{Suspend the adjustments inside \cs{verb} and
 %   the verbatim-like environments (\env{verbatim}, \pkg{fancyvrb},
@@ -4216,11 +4281,14 @@ abc汉字abc
 % hooks. Only the \texttt{true} setting suspends the adjustments here:
 % \texttt{env} and \texttt{env+} keep them, which is what keeps code
 % columns aligned when CJK text is used inside the code.
+% The begin hook marks the block for \cs{@@_fv_prep_hook:} as well, so that
+% the formatting hook of \pkg{fancyvrb} applies the rule of the environment
+% rather than the rule of \tn{verb} inside it.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_verbatim_env_begin:
   {
-    \tl_if_eq:VnT \l_@@_verb_mode_tl { true }
-      { \LuaCJKdisable }
+    \bool_set_true:N \l_@@_verbatim_block_bool
+    \@@_verbatim_block_disable:
   }
 \cs_new_protected:Npn \@@_verbatim_env_end:
   {
