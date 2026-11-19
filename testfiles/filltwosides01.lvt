@@ -20,32 +20,37 @@
   \TYPE{width: \the\wd0}
 }
 
-\TEST{the default position centres the box}{
+\TEST{the default position centres the box like a parbox}{
   \setbox0=\vbox{
     \begin{CJKfilltwosides}{5em}
       中\\文
     \end{CJKfilltwosides}
   }
-  \TYPE{height: \the\ht0}
-  \TYPE{depth: \the\dp0}
+  \setbox2=\vbox{\parbox[c]{5em}{中\\文}}
+  \TYPE{height: \the\ht0, parbox: \the\ht2}
+  \TYPE{depth: \the\dp0, parbox: \the\dp2}
 }
 
-\TEST{the t position keeps no height}{
+\TEST{the t position puts the first line on the surrounding baseline}{
   \setbox0=\vbox{
     \begin{CJKfilltwosides}[t]{5em}
       中\\文
     \end{CJKfilltwosides}
   }
-  \TYPE{height: \the\ht0}
+  \setbox2=\vbox{\parbox[t]{5em}{中\\文}}
+  \TYPE{height: \the\ht0, parbox: \the\ht2}
+  \TYPE{depth: \the\dp0, parbox: \the\dp2}
 }
 
-\TEST{the b position keeps no depth apart from the last line}{
+\TEST{the b position puts the last line on the surrounding baseline}{
   \setbox0=\vbox{
     \begin{CJKfilltwosides}[b]{5em}
       中\\文
     \end{CJKfilltwosides}
   }
-  \TYPE{depth: \the\dp0}
+  \setbox2=\vbox{\parbox[b]{5em}{中\\文}}
+  \TYPE{height: \the\ht0, parbox: \the\ht2}
+  \TYPE{depth: \the\dp0, parbox: \the\dp2}
 }
 
 \TEST{a zero width keeps the surrounding line width}{

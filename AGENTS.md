@@ -342,11 +342,17 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   for `\tag_*` and `\tagpdfpara*` with `\cs_if_exist:NT` and does nothing when
   tagging is off.  The manual driver declares
   `\DocumentMetadata{tagging=on}` and loads `latex-lab-testphase-l3doc`.
-- **`CJKfilltwosides` tags by mode.**  In vertical mode it opens a
-  `text-block` structure; in horizontal mode it emits an MC attached to the
-  surrounding paragraph.  A `text-block` inside a paragraph is invalid
-  (`P --> P`), so the branch is required.  The automatic paragraph hooks are
-  off around the vbox and on again after it.
+- **`CJKfilltwosides` tags by mode, and its positions are those of
+  `\parbox`.**  In vertical mode it opens a `text-block` structure; in
+  horizontal mode it emits an MC attached to the surrounding paragraph.  A
+  `text-block` inside a paragraph is invalid (`P --> P`), so the branch is
+  required.  The automatic paragraph hooks are off around the vbox and on
+  again after it.  `t` rebuilds the vlist as a `\vtop`, `b` keeps the natural
+  box, and `c` centres it on `\Umathaxis\textstyle` after
+  `\check@mathfonts`, the axis the kernel's text `\vcenter` reads.  A `\vtop`
+  takes the height of the first item of its list, so the MC whatsit opens
+  after `\noindent`, inside the first line, and never in the vlist in front of
+  it: there it would leave a `t` box with no height at all.
 - **The selection rectangle is not ours.**  A PDF reader derives its height
   from the font's `hhea` ascent and descent.  For Noto Serif CJK SC that is
   1.437em, so the reader's box is taller than the 1em square even though the
