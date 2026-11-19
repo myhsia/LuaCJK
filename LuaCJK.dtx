@@ -1123,6 +1123,10 @@ a’a\quad 不亦说乎！
 % 若惩罚之前有一个源文件里的空格，这个空格也换成字符之间的胶，
 % 惩罚随之移到胶的前面。
 %
+% 基线被移动的盒子依附于它前面的字符：\cs{textsuperscript} 与
+% \cs{textsubscript} 就是这样排的。
+% 这种盒子两侧都不加胶，它前面也不提供断行机会，所以它的内容不会另起一行。
+%
 % \begin{keyval}
 %   \item[\keys{CheckSingle}]\val{\TFF}
 %   打开时，末字符是 CJK 的段落的最后两个断行点被设为不可断开，
@@ -2452,6 +2456,11 @@ a’a\quad 不亦说乎！
 % the break it offers is still forbidden.
 % A source space in front of the penalty becomes that glue as well, and the
 % penalty moves in front of it.
+%
+% A box whose baseline has been moved belongs to the character in front of it:
+% \cs{textsuperscript} and \cs{textsubscript} set their content in one.
+% No glue is inserted beside such a box, and it offers no break before it,
+% so its content never starts a line of its own.
 %
 % \begin{keyval}
 %   \item[\keys{CheckSingle}]\val{\TFF}
@@ -6601,6 +6610,18 @@ end
 
 %    \end{macrocode}
 % \end{macro}
+% \begin{macro}[int]{attached_box}
+% Whether a box belongs to the character in front of it. \TeX\ writes the
+% shift of a raised or lowered box into the box node, and
+% \cs{textsuperscript} and \cs{textsubscript} build one, so the baseline of
+% such a box is not the baseline of the text around it.
+%    \begin{macrocode}
+local function attached_box (n)
+  return (n.id == HLIST or n.id == VLIST) and n.shift ~= 0
+end
+
+%    \end{macrocode}
+% \end{macro}
 % \begin{macro}[int]{first_visible_class}
 % The class of the text at the start of a list: a glyph, a formula, or a box
 % inspected at its own edge. Glue, a kern, a rule, and a discretionary are not
@@ -6833,6 +6854,10 @@ end
 %   CJK characters becomes the inter-character glue, so the boundary keeps its
 %   break opportunity and its stretch, and no glue is inserted between two
 %   long punctuation marks.}
+% \changes{v0.0.3}{2026/11/19}{A superscript or subscript set with
+%   \cs{textsuperscript} or \cs{textsubscript} stays with the character in
+%   front of it: the shifted box takes no glue on either side, so no break is
+%   offered before it.}
 % Walk a list and insert the glue between CJK and Latin material.
 % The walk tracks the last visible node and the class at its end,
 % so that a formula acts as one Latin atom at its left edge;
@@ -6841,6 +6866,11 @@ end
 % node at that edge: filling glue or a kern means the box has no text there,
 % so no glue is added beside it. A box of no size is passed over, so an
 % empty box inside CJK text does not break the run.
+% A box whose own baseline \TeX\ has shifted is attached to the character in
+% front of it: the run ends at it, so it takes no glue on either side and
+% offers no break. That is the box \cs{textsuperscript} and
+% \cs{textsubscript} build; the shift is the box's own field, so the outer box
+% of a \cs{raisebox} or of a footnote mark keeps its boundary.
 % A penalty that prohibits the break is passed over the same way, because the
 % glue of that boundary belongs after it; a smaller penalty, and a
 % discretionary, end the run.
@@ -7188,7 +7218,10 @@ local function spacing (head)
       else
         visible = start_class ~= nil
       end
-      if visible then
+      if visible and attached_box(cur) then
+        prev_visible = nil
+        prev_end     = nil
+      elseif visible then
         head = handle_boundary(
           head, prev, prev_visible, prev_end, cur, start_class,
           settings_of(prev_visible))
