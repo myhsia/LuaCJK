@@ -645,7 +645,7 @@ l3build upload --dry-run           # the form, without publishing it
   new release edits that table and nothing else.
   `pkg` is `string.lower(module)`, the id the archive's top directory must
   carry, and `version` is the tag's version as written followed by the release
-  date, `v0.0.3 2026-11-18`: CTAN drops the leading `v` when it displays the
+  date, `v0.0.3 2026-11-20`: CTAN drops the leading `v` when it displays the
   record, and its maintainers ask that the date found in the package files be
   repeated there.  `date` is the one source of it, so `scripts/check-docs.sh`
   keeps the record and the `\changes` history in step.
