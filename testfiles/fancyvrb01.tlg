@@ -1,0 +1,23 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+Package LuaCJK Warning: Unknown CJK family `zhfs' is being ignored.
+============================================================
+TEST 1: Verb=true suspends the inline commands as it suspends verb
+============================================================
+suspended verb: 20.0pt, UseVerb: 20.0pt, Verbatim: 20.0pt, UseVerbatim: 20.0pt
+============================================================
+============================================================
+TEST 2: Verb=false keeps the adjustments everywhere
+============================================================
+kept verb: 30.0pt, UseVerb: 30.0pt, Verbatim: 30.0pt, UseVerbatim: 30.0pt
+============================================================
+============================================================
+TEST 3: Verb=env suspends the inline commands only
+============================================================
+inline verb: 20.0pt, UseVerb: 20.0pt, Verbatim: 30.0pt, UseVerbatim: 30.0pt
+============================================================
+============================================================
+TEST 4: Verb=env+ keeps the adjustments everywhere
+============================================================
+kept verb: 30.0pt, UseVerb: 30.0pt, Verbatim: 30.0pt, UseVerbatim: 30.0pt
+============================================================

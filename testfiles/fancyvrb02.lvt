@@ -1,0 +1,34 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{fancyvrb}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKglue = 10pt, CJKecglue = 5pt}
+
+\newbox\verbline
+
+\begin{document}
+
+\START
+
+% fancyvrb is loaded before LuaCJK here, so its formatting hook has to be
+% patched when LuaCJK is read rather than by the package hook.
+\global\setbox\verbline=\hbox{\Verb|中中|}
+
+\TEST{an earlier fancyvrb is patched all the same}{
+  \TYPE{width: \the\wd\verbline}
+}
+
+\begingroup
+  \LuaCJKsetup{Verb=false}
+  \global\setbox\verbline=\hbox{\Verb|中中|}
+\endgroup
+
+\TEST{and the option still reaches its inline command}{
+  \TYPE{width: \the\wd\verbline}
+}
+
+\END
+
+\end{document}
