@@ -1396,9 +1396,10 @@ abc汉字abc
 %   \end{syntax}
 %   在 \meta{text} 下面画一条波浪线。
 %   波浪线用 \pkg{l3draw} 画出，并用 \tn{leaders} 重复，
-%   所以在一行的各部分之间相位相同。一个周期是半字宽，
-%   整个图案随字号缩放；与其他画出的图案一样，
-%   它不改变行的高度与深度。
+%   各个周期首尾相接：一个周期宽 \texttt{1em}，上下各 \texttt{.25em}。
+%   一段整字的文字由整数个周期组成，波浪线从第一个字的边缘画到最后一个字的边缘；
+%   被对齐拉伸时，整段按最终宽度分成整数个周期，周期跟着整行的拉伸变长或变短。
+%   整个图案随字号缩放；与其他画出的图案一样，它不改变行的高度与深度。
 %   \keys{symbol} 用来把波浪线换成别的符号：
 %   每字宽一个符号，居中，符号顶部在基线之下半字宽处。
 % \end{function}
@@ -2760,9 +2761,13 @@ abc汉字abc
 %   \end{syntax}
 %   Put a wave under \meta{text}.
 %   The wave is drawn with \pkg{l3draw} and repeated with \tn{leaders},
-%   so it has the same phase across the parts of one line. One period
-%   is half an em and the whole pattern scales with the font size; like the
-%   other drawn patterns it leaves the height and depth of the line alone.
+%   which keeps the periods joined: one period is \texttt{1em} wide and reaches
+%   \texttt{.25em} above and below. A span of whole characters is an exact
+%   number of periods, so the wave runs from the first character's edge to the
+%   last one's; when justification stretches the span, the span is divided into
+%   whole periods at its final width, so the period follows the stretch of the
+%   line. Like the other drawn patterns it leaves the height and depth of the
+%   line alone.
 %   \keys{symbol} replaces the wave with another symbol:
 %   one symbol per em, centered, its top half an em below the baseline.
 % \end{function}
@@ -8947,8 +8952,9 @@ luatexbase.add_to_callback("hyphenate", M.hyphenate, "LuaCJK.hyphenate")
 % so the text does not move. Changing those numbers is enough to inset
 % the decoration and to leave out the punctuation, which is why \pkg{LuaCJK}
 % adjusts the box instead of drawing the decoration itself.
-% \TeX\ numbers the glue subtypes, and 100 is \tn{leaders},
-% the one both \pkg{lua-ul} and this package use.
+% \TeX\ numbers the glue subtypes, and 100 is \tn{leaders}, 101 \tn{cleaders},
+% and 102 \tn{xleaders}; \pkg{lua-ul} uses the first and this package adds the
+% third where a grid cell may be spread, so the pass takes all three.
 %
 % The emphasis dots are the exception: a pattern repeated along the span
 % cannot follow the characters when the inter-character glue stretches, and
@@ -8971,13 +8977,16 @@ luatexbase.add_to_callback("hyphenate", M.hyphenate, "LuaCJK.hyphenate")
 %<*lua-fntef>
 LuaCJKfntef = LuaCJKfntef or {}
 
-local M       = LuaCJKfntef
-local GLYPH   = node.id("glyph")
-local GLUE    = node.id("glue")
-local LEADERS = 100
-local KERN    = node.id("kern")
-local HLIST   = node.id("hlist")
-local RULE    = node.id("rule")
+local M        = LuaCJKfntef
+local GLYPH    = node.id("glyph")
+local GLUE     = node.id("glue")
+local LEADERS  = 100
+local CLEADERS = 101
+local XLEADERS = 102
+local KERN     = node.id("kern")
+local HLIST    = node.id("hlist")
+local RULE     = node.id("rule")
+local WHATSIT  = node.id("whatsit")
 
 M.attr       = M.attr     or nil
 M.settings   = M.settings or {}
@@ -9478,7 +9487,10 @@ local function adjust (head)
   local n    = head
   while n do
     local nxt = n.next
-    if n.id == GLUE and n.subtype == LEADERS and n.next
+    if n.id == GLUE
+       and (n.subtype == LEADERS or n.subtype == CLEADERS
+            or n.subtype == XLEADERS)
+       and n.next
        and n.next.id == GLUE and n.next.width == -n.width then
       local neg      = n.next
       local settings = settings_at(neg.next)
@@ -9504,9 +9516,157 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{glue_width}
+% The width a glue node actually has in a packed box.
+% The node keeps its natural width, and the box records how much of the glue's
+% stretch or shrink was used: \texttt{glue\_set} is the fraction, and
+% \texttt{glue\_sign} says whether it is applied to the stretch (1) or to the
+% shrink (2), against the glue whose order is \texttt{glue\_order}. This is the
+% only place where the final width of a decoration is available, since it is
+% fixed when the line is packed.
+%    \begin{macrocode}
+local function glue_width (box, g)
+  local w    = g.width or 0
+  local set  = box.glue_set or 0
+  local sign = box.glue_sign or 0
+  local order = box.glue_order or 0
+  if sign == 1 and (g.stretch_order or 0) == order then
+    w = w + math.floor(set * (g.stretch or 0) + 0.5)
+  elseif sign == 2 and (g.shrink_order or 0) == order then
+    w = w - math.floor(set * (g.shrink or 0) + 0.5)
+  end
+  return w
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{drawn}
+% Whether a leader box holds a drawing rather than ink of its own.
+% A drawing reaches the page as PDF literals, so the box holds whatsits and no
+% glyph and no rule; the dots and the symbols hold a rule or a glyph, and a
+% symbol wrapped in an \texttt{ActualText} sequence holds both.
+%    \begin{macrocode}
+local function drawn (box)
+  if not box or box.id ~= HLIST then
+    return false
+  end
+  local literal, ink = false, false
+  local n = box.head
+  while n do
+    if n.id == GLYPH or n.id == RULE then
+      ink = true
+    elseif n.id == WHATSIT then
+      literal = true
+    elseif n.id == HLIST then
+      local l, i = drawn(n)
+      literal = literal or l
+      ink     = ink or i
+    end
+    n = n.next
+  end
+  return literal, ink
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{literal}
+% One PDF literal, placed at the current point: the mode \texttt{0} the backend
+% wraps in a translation, which is the mode \pkg{l3draw} uses for its own
+% operations.
+%    \begin{macrocode}
+local function literal (data)
+  local n = node.new("whatsit", node.subtype("pdf_literal"))
+  n.data  = data
+  n.mode  = 0
+  return n
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{scale_ink}
+% Make the period of a copy equal to the width of its slot.
+% A leader box is one period wide, and the slot the append callback divides the
+% piece into is almost never the same width: the two differ by the remainder
+% divided by the number of copies, which is a hundredth of a point or less, but
+% it is still a phase shift between two copies and shows as a hairline gap or a
+% thin doubling in the drawing. The ink of the copy is therefore painted inside
+% a scope that scales it horizontally by \meta{width} divided by the period: the
+% path then ends exactly where the next copy's begins, and its period is the
+% slot's. The stroke keeps its thickness, because only the horizontal axis is
+% scaled; the pen's horizontal extent changes by the same fraction.
+%    \begin{macrocode}
+local function scale_ink (box, scale, advance)
+  if not box or box.id ~= HLIST or not box.head then
+    return
+  end
+  if math.abs(scale - 1) < 0.0000005 then
+    return
+  end
+  local q = literal("q " .. string.format("%.6f", scale) .. " 0 0 1 0 0 cm")
+  local z = literal("Q 1 0 0 1 " .. string.format("%.6f", advance) .. " 0 cm")
+  q.next = box.head
+  local last = q
+  while last.next do
+    last = last.next
+  end
+  last.next  = z
+  box.head   = q
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{tile}
+% Divide one decoration into whole leader boxes.
+% A stroke cannot span the glue that \tn{xleaders} puts between two copies: the
+% butt cap of a copy ends at the end of its path, so the gap shows as a hole in
+% the wave. \tn{leaders} keeps the copies adjacent, but places only whole boxes
+% and leaves the rest of the width empty, which is a hole at the end of the
+% span. The append callback is the one place where the width of the piece is
+% final, so there it is divided into the nearest whole number of patterns and
+% the piece gets its own copy of the leader box with that width: the copies stay
+% adjacent, the pattern reaches the end of the span, and its period follows the
+% stretch of the line. The width is rounded down, so that \meta{k} copies always
+% fit and the last remainder is a few scaled points at most, and the ink of the
+% copy is scaled to that width, so that one copy's path ends exactly where the
+% next one's begins: the period of the drawing is one em, and the width the
+% piece is divided into is almost never the same.
+%    \begin{macrocode}
+local function tile (box)
+  local n = box.head
+  while n do
+    if n.id == GLUE and n.subtype == LEADERS and n.leader then
+      local literal, ink = drawn(n.leader)
+      if literal and not ink then
+        local w      = glue_width(box, n)
+        local period = n.leader.width
+        if period > 0 and w >= period then
+          local k = math.floor(w / period + 0.5)
+          if k >= 1 then
+            local width = math.floor(w / k)
+            local copy  = node.copy(n.leader)
+            copy.head   = node.copy_list(n.leader.head)
+            copy.width  = width
+            scale_ink(copy, width / period, period / 65536 * 72 / 72.27)
+            n.leader    = copy
+          end
+        end
+      end
+    end
+    n = n.next
+  end
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{LuaCJKfntef.hpack}
 % The box-packing callback. The pass also runs before a box is appended
-% to a vertical list, because a box built earlier is not packed again.
+% to a vertical list, because a box built earlier is not packed again;
+% that is where a decoration is divided into whole patterns.
 %    \begin{macrocode}
 function M.hpack (head)
   return adjust(head)
@@ -9517,6 +9677,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   function (box)
     if box.id == node.id("hlist") then
       box.head = adjust(box.head)
+      tile(box)
     end
     return box
   end, "LuaCJKfntef.adjust")
@@ -10079,7 +10240,12 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \changes{v0.0.3}{2026/11/18}{The wave takes \keys{format} like the other
 %   decorations: the pattern is stroked in that color, in the color of its text
 %   when the key is absent, and neither color reaches the text outside it.}
-% A wave drawn with \pkg{l3draw}, one period per half em, repeated
+% \changes{v0.0.3}{2026/11/18}{The wave is a smooth arch of one period per em,
+%   a quarter em above and below the underline; a decoration is divided into
+%   whole patterns once its final width is known and the pattern is drawn at
+%   that width, so the periods meet without a gap, the wave reaches the last
+%   character, and its period follows the stretch of the line.}
+% A wave drawn with \pkg{l3draw}, one period per em, repeated
 % by \tn{leaders}. The drawing is kept as code rather than as a box,
 % so the |em| units are resolved when the decoration is used
 % and the pattern follows the current font size.
@@ -10089,14 +10255,55 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % that \pkg{luacolor} could color by attribute; the color travels into the
 % drawing itself, so the pattern is built once per font size and color.
 %
-% The period is forced to exactly half an em by \tn{hbox}| to .5em|.
+% The pattern is a pair of arches, each of them the quadratic that runs from
+% one zero crossing to the next one through its apex, written as the cubic that
+% is the same curve: its control points sit at a third and two thirds of the
+% half period, two thirds of the amplitude high, so the curve leaves and meets
+% the zero line at the same slope on both sides of a crossing and the wave has
+% no cusp. The amplitude is a quarter em, so the wave is half an em high from
+% crest to trough, half as high as its period is wide, which is the proportion
+% the reference implementation gives it.
+%
+% The period is forced to exactly one em by \tn{hbox}| to 1em|.
 % \pkg{l3draw} sizes its box by the bounding box of the stroked path,
 % which is a full stroke width wider than the path; repeating that box would
-% leave a gap of one stroke width between two periods.
-% The two \tn{hss} absorb the excess symmetrically, so the ink fills
-% the period exactly and no overfull box is reported. The stroke
+% leave a gap of one stroke width between two periods. The two \tn{hss}
+% absorb the excess symmetrically, so no overfull box is reported. The stroke
 % is set to |.04em|, which is \texttt{0.4pt} at 10pt, so the pattern keeps
 % its look from the previous release while it scales with the font size.
+%
+% The period is the width of a CJK character, so a span of whole characters
+% that justification has not stretched, which is the last line of a paragraph,
+% is an exact number of periods: its wave starts at the first character's edge,
+% ends at the last one's, and puts a crest at the same place in every character.
+%
+% A span that justification has stretched is another matter: \TeX\ repeats only
+% whole copies of a leader box, so the remainder of such a span is the stretch
+% the piece carries, which at one em is up to a character. \tn{leaders} would
+% leave all of it empty at the right end and \tn{cleaders} half of it at each
+% end, where the wave stops before the last character. \tn{xleaders} divides it
+% between the copies, but that glue separates two butt caps: a cap ends where
+% its path ends, so every gap is a hole in the stroke, and at a tenth of a
+% point it is already visible at the crossings. The piece is therefore divided
+% into whole patterns instead, by \texttt{tile} (see the decoration pass): it
+% has the final width, the nearest whole number of periods, and the piece's own
+% copy of the leader box set to that width, so \tn{leaders} places exactly that
+% many adjacent copies. The wave then reaches the last character, no glue falls
+% between two periods, and the period follows the line: on a paragraph set ten
+% centimetres wide it is \texttt{9.92pt} on a line that was shrunk by a per
+% cent and \texttt{10pt} on the last line, which was not stretched at all.
+%
+% The width the piece is divided into is not the period of the drawing, so the
+% ink of the copy is painted inside a scope that scales it horizontally to that
+% width. Without it the drawing keeps its own period and two copies are a
+% hundredth of a point out of phase, which is a hairline gap or a thin doubling
+% at every crossing; with it one copy's path ends exactly where the next one's
+% begins. The glue the piece is made of has no shrink of its own, so its final
+% width is read from the line's own 	exttt{glue\_set} and 	exttt{glue\_sign},
+% the latter saying whether the line was stretched or shrunk.
+% A box that never reaches a vertical list, such as \tn{hbox}| to|, keeps the
+% plain \tn{leaders} behaviour: it stops after its last whole pattern, without
+% breaking the stroke.
 % \begin{variable}[int]{\l_@@_fntef_pattern_box}
 % A scratch box for the drawn patterns.
 % Each pattern is built here and then has its height and depth set to zero:
@@ -10114,7 +10321,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   {
     \tl_set:Nn \l_@@_fntef_any_code_tl
       {
-        \tex_leaders:D \hbox_to_wd:nn { .5em }
+        \tex_leaders:D \hbox_to_wd:nn { 1em }
           {
             \tex_hss:D
             \hbox_set:Nn \l_@@_fntef_pattern_box
@@ -10127,10 +10334,10 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
                           \@@_fntef_pattern_color:
                           \draw_set_linewidth:n { .04em }
                           \draw_path_moveto:n { 0em , 0em }
-                          \draw_path_curveto:nnn { .0625em , .16em }
-                            { .1875em , .16em } { .25em , 0em }
-                          \draw_path_curveto:nnn { .3125em , -.16em }
-                            { .4375em , -.16em } { .5em , 0em }
+                          \draw_path_curveto:nnn { .1667em , .1667em }
+                            { .3333em , .1667em } { .5em , 0em }
+                          \draw_path_curveto:nnn { .6667em , -.1667em }
+                            { .8333em , -.1667em } { 1em , 0em }
                           \draw_path_use_clear:n { stroke }
                         \draw_end:
                       }
@@ -10235,6 +10442,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \begin{macro}{\CJKxout}
 % \changes{v0.0.3}{2026/11/18}{The slash takes \keys{format} like the wave, and
 %   follows the color of its text when the key is absent.}
+% \changes{v0.0.3}{2026/11/18}{The slash is divided into whole cells once its
+%   width is final, so the slashes cover the span evenly and the last one reaches
+%   its end.}
 % A repeated slash, as in \pkg{ulem}'s \tn{xout}.
 % The drawing is kept as code so that it scales with the font size,
 % and the stroke width is |.04em| like the wave.
@@ -10248,7 +10458,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % so the ink lands where the path says.
 %
 % Like the wave, the slash goes through \cs{@@_fntef_use_drawn_type:nn},
-% so it is stroked in the color of \keys{format} or of its text.
+% so it is stroked in the color of \keys{format} or of its text, and it is
+% repeated with \tn{leaders} and divided into whole cells for the reason given
+% there.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_slash:
   {

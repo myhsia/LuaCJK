@@ -54,13 +54,13 @@ rules: black
 > \box...=
 \hbox(7.78+1.62)x10.0, direction TLT
 .\leaders 10.0
-..\hbox(0.0+0.0)x5.0, glue set - 0.2fil, direction TLT
+..\hbox(0.0+0.0)x10.0, glue set - 0.2fil, direction TLT
 ...\glue 0.0 plus 1.0fil minus 1.0fil
-...\hbox(0.0+0.0)x5.4, direction TLT
-....\hbox(3.6+0.0)x5.4, shifted 4.19998, direction TLT
-.....\hbox(3.6+0.0)x5.4, direction TLT
+...\hbox(0.0+0.0)x10.4, direction TLT
+....\hbox(3.73401+0.0)x10.4, shifted 4.19998, direction TLT
+.....\hbox(3.73401+0.0)x10.4, direction TLT
 ......\glue 0.2
-......\hbox(0.0+0.0)x0.0, shifted -1.8, direction TLT
+......\hbox(0.0+0.0)x0.0, shifted -1.867, direction TLT
 .......\pdfsave
 .......\pdfliteral origin{0.39851 w}
 .......\pdfliteral origin{0 J}
@@ -75,8 +75,8 @@ rules: black
 ........\pdfliteral direct{1 0 0 rg 1 0 0 RG}
 ........\pdfliteral origin{0.39851 w}
 ........\pdfliteral origin{0 0 m}
-........\pdfliteral origin{0.62267 1.59404 1.868 1.59404 2.49066 0 c}
-........\pdfliteral origin{3.11333 -1.59404 4.35866 -1.59404 4.98132 0 c}
+........\pdfliteral origin{1.66078 1.66078 3.32054 1.66078 4.98132 0 c}
+........\pdfliteral origin{6.6421 -1.66078 8.30186 -1.66078 9.96265 0 c}
 ........\pdfliteral origin{S}
 .......\pdfrestore
 ...\glue 0.0 plus 1.0fil minus 1.0fil
@@ -131,13 +131,13 @@ rules: blue
 > \box...=
 \hbox(7.78+1.62)x10.0, direction TLT
 .\leaders 10.0
-..\hbox(0.0+0.0)x5.0, glue set - 0.2fil, direction TLT
+..\hbox(0.0+0.0)x10.0, glue set - 0.2fil, direction TLT
 ...\glue 0.0 plus 1.0fil minus 1.0fil
-...\hbox(0.0+0.0)x5.4, direction TLT
-....\hbox(3.6+0.0)x5.4, shifted 4.19998, direction TLT
-.....\hbox(3.6+0.0)x5.4, direction TLT
+...\hbox(0.0+0.0)x10.4, direction TLT
+....\hbox(3.73401+0.0)x10.4, shifted 4.19998, direction TLT
+.....\hbox(3.73401+0.0)x10.4, direction TLT
 ......\glue 0.2
-......\hbox(0.0+0.0)x0.0, shifted -1.8, direction TLT
+......\hbox(0.0+0.0)x0.0, shifted -1.867, direction TLT
 .......\pdfsave
 .......\pdfliteral origin{0.39851 w}
 .......\pdfliteral origin{0 J}
@@ -152,8 +152,8 @@ rules: blue
 ........\pdfliteral direct{0 0 1 rg 0 0 1 RG}
 ........\pdfliteral origin{0.39851 w}
 ........\pdfliteral origin{0 0 m}
-........\pdfliteral origin{0.62267 1.59404 1.868 1.59404 2.49066 0 c}
-........\pdfliteral origin{3.11333 -1.59404 4.35866 -1.59404 4.98132 0 c}
+........\pdfliteral origin{1.66078 1.66078 3.32054 1.66078 4.98132 0 c}
+........\pdfliteral origin{6.6421 -1.66078 8.30186 -1.66078 9.96265 0 c}
 ........\pdfliteral origin{S}
 .......\pdfrestore
 ...\glue 0.0 plus 1.0fil minus 1.0fil

@@ -30,7 +30,9 @@
 - A decoration keeps the width, the stretch, and the shrink of the text it covers, so a rule no longer changes the spacing of the line it sits in, `skip` no longer tightens a justified line, and a `\kern` inside the text no longer moves the gap `skip` leaves at a punctuation mark.
 - `hidden` takes the ink out of the text instead of putting it in a `\phantom`: the text keeps its line breaks, so a hidden paragraph breaks like the visible one instead of overflowing in one line.
 - The wave takes `format` like the other decorations: the pattern is stroked in that color, in the color of its text when the key is absent, and neither color reaches the text outside it.
+- The wave is a smooth arch of one period per em, a quarter em above and below the underline; a decoration is divided into whole patterns once its final width is known and the pattern is drawn at that width, so the periods meet without a gap, the wave reaches the last character, and its period follows the stretch of the line.
 - The slash takes `format` like the wave, and follows the color of its text when the key is absent.
+- The slash is divided into whole cells once its width is final, so the slashes cover the span evenly and the last one reaches its end.
 - The emphasis dots sit under each CJK character, centred in the one-em cell of the character; Latin letters, digits, and spaces carry none, and the dots follow the characters when the inter-character glue stretches.
 - The `t` and `c` positions of `CJKfilltwosides` place the box as `\parbox` does: `t` puts the baseline of its first line on the surrounding baseline, and `c` centres the box on the text axis instead of on the baseline.
 
