@@ -48,10 +48,15 @@
   \cjkof{0x0041, 0x1B170, 0x2060, 0x1F600, 0x02EA, 0x02EB}
 }
 
+\TEST{the punctuation the two scripts share is CJK}{
+  \cjkof{0x00B7, 0x2015, 0x2025, 0x2027, 0x22EF}
+}
+
 \TEST{LatinPunct turns the shared punctuation into Latin}{
   \directlua{
     local out = ""
-    for _, c in ipairs({0x2026, 0x2014}) do
+    for _, c in ipairs({0x2014, 0x2015, 0x22EF,
+                        0x00B7, 0x2018, 0x2025, 0x2026, 0x2027}) do
       out = out .. " " .. tostring(c) .. "="
         .. tostring(LuaCJK.is_cjk(c, { latin_punct = true }))
     end
