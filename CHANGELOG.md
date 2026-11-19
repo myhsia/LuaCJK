@@ -4,6 +4,7 @@
 - Process the package options after the helpers their key codes call, so that `AutoFallBack`, `CJKmath`, `PunctFamily`, and `CJLineBreak` act as package options as well.
 - `PunctWidth` and `PunctBoundWidth` take `0pt` as a length: the former gives every mark no advance and the latter hangs the whole of it, where a zero length used to act as `false` and return the mark to its style.
 - A document whose default CJK family is not declared is reported, and its text takes a family it did declare instead of none at all.
+- `PunctFamily` shifts its marks by the `Baseline` of the family it names.
 - The three sizes of a CJK math family come from the text size of the formula, so a `\text` inside it no longer sets the other characters of the formula in a script size.
 - A CJK character in math mode takes a fallback font when the CJK font of the formula does not have it.
 - `\setCJKfamilyfont` expands the name of the family it declares, so a family can be given as `\CJKrmdefault` and friends.
