@@ -862,7 +862,19 @@ GitHub's side, so nothing here repeats it.
 - A keyword rule names the *file* the fix touches, never the topic the report
   mentions.  `PunctWidth` is `punct` although the reporter passes it as an
   option, and `LoadFandol` is `load` although it loads fonts, because that is
-  where the change goes.
+  where the change goes.  A font feature, and the interface that sets one
+  (`\addCJKfontfeatures`, `CharacterWidth`, `hwid`), is `fonts` for the same
+  reason, and `\hfill` names the glue whose subtype the spacing pass decides,
+  so it is `spacing`.
+- **A code point is `chars`, and that rule comes last.**  A title whose only
+  hook is a code point (`U+2027 的排版`) is about the character table, which is
+  where a code point becomes CJK.  First match wins, so the code-point rule is
+  the final line of the table: an issue that also names a subsystem
+  (`U+0027 的间距`) takes that subsystem, which is where its fix lands.
+- **A green triage run does not mean a label was applied.**  `--apply` prints
+  `#N unclassified` and exits 0 when no rule matches, which is the designed
+  outcome; the run's own log is the only place that says so.  Read it before
+  concluding that the workflow labelled an issue.
 
 **Fixing an issue** follows the global rule in `repo-rules` ("Fixing an
 issue"); what is local to this repository is the shape of the work.  The branch
