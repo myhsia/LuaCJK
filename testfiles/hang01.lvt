@@ -92,6 +92,11 @@
   \showlines
 }
 
+\TEST{a double opening mark measures its own blank, not its neighbour's}{
+  \setbox0=\vbox{\hsize=3em “字字\par}
+  \showlines
+}
+
 \TEST{the indentation of a paragraph carries that blank}{
   \begingroup
     \parindent=1em
