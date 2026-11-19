@@ -19,6 +19,9 @@
   }%
 }
 
+% One of those penalties is always the one that keeps the run out of the line
+% start; the difference between the tests is the penalty between the marks.
+
 % Count the glue nodes between the two em dashes. A run that is joined
 % without glue offers no break between its marks, whatever the penalties do.
 \def\countglue{%
@@ -69,7 +72,7 @@
   \endgroup
 }
 
-\TEST{without NoBreakLongPunct those breaks are free}{
+\TEST{an empty NoBreakLongPunct frees the break inside the run}{
   \begingroup
     \LuaCJKsetup{LongPunct = {}, NoBreakLongPunct = {}}
     \setbox0=\hbox{字——字}
