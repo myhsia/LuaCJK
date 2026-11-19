@@ -126,7 +126,7 @@ The Current Maintainer of this work is **Mingyu Xia**.
 %<*package|fntef|listings|ctex>
 \NeedsTeXFormat{LaTeX2e}[2026/06/01]
 \RequirePackage { expl3 }
-\GetIdInfo $Id: LuaCJK.dtx v0.0.3 2026-11-18 myhsia<myhsia@outlook.com>$
+\GetIdInfo $Id: LuaCJK.dtx v0.0.3 2026-11-20 myhsia<myhsia@outlook.com>$
 %<package>  {A LuaTeX CJK typesetting package}
 %<package>\ProvidesExplPackage {\ExplFileName}
 %<fntef>  {Font effects for LuaCJK (CTEX)}
@@ -253,12 +253,12 @@ The Current Maintainer of this work is **Mingyu Xia**.
 % \changes{v0.0.1}{2026/11/11}{Provide \pkg{LuaCJK-listings}, which keeps CJK
 %   characters in place inside a \pkg{listings} block and counts each of them
 %   as two columns; \pkg{LuaCJK} loads it automatically with \pkg{listings}.}
-% \changes{v0.0.3}{2026/11/18}{A mark that the CJK class shares with Latin,
+% \changes{v0.0.3}{2026/11/20}{A mark that the CJK class shares with Latin,
 %   such as a curly quotation mark or the em dash, keeps its place inside an
 %   \env{lstlisting} block and counts as two columns: the character table
 %   covers the CJK ranges of the Basic Multilingual Plane, both ends of each
 %   included.}
-% \changes{v0.0.3}{2026/11/18}{The punctuation the two scripts share is a CJK
+% \changes{v0.0.3}{2026/11/20}{The punctuation the two scripts share is a CJK
 %   character: the middle dot (U+00B7), the horizontal bar (U+2015), the two
 %   dot leader (U+2025), the hyphenation point (U+2027), and the midline
 %   ellipsis (U+22EF) are set in the CJK font, and \keys{LatinPunct} keeps the
@@ -3118,7 +3118,7 @@ abc汉字abc
 %
 % \begin{macro}[int]
 %   {\@@_explicit_space:, \@@_explicit_nobreak_space:, \@@_nobreak_space:}
-% \changes{v0.0.3}{2026/11/18}{An explicit |\ | or \tn{nobreakspace} between
+% \changes{v0.0.3}{2026/11/20}{An explicit |\ | or \tn{nobreakspace} between
 %   two CJK characters keeps its advance: a space from the source is retimed
 %   to the inter-character glue, and one the document wrote itself is not.}
 % The space the document asked for is marked.
@@ -3718,10 +3718,10 @@ abc汉字abc
 % \changes{v0.0.1}{2026/11/11}{Provide \cs{LuaCJKsetup}, and accept the same
 %   keys as package options, for example \cs{usepackage}|[PunctStyle =
 %   banjiao]{LuaCJK}|; an unknown key warns.}
-% \changes{v0.0.3}{2026/11/18}{Process the package options after the helpers
+% \changes{v0.0.3}{2026/11/20}{Process the package options after the helpers
 %   their key codes call, so that \keys{AutoFallBack}, \keys{CJKmath},
 %   \keys{PunctFamily}, and \keys{CJLineBreak} act as package options as well.}
-% \changes{v0.0.3}{2026/11/18}{\keys{PunctWidth} and \keys{PunctBoundWidth}
+% \changes{v0.0.3}{2026/11/20}{\keys{PunctWidth} and \keys{PunctBoundWidth}
 %   take \texttt{0pt} as a length: the former gives every mark no advance and
 %   the latter hangs the whole of it, where a zero length used to act as
 %   \texttt{false} and return the mark to its style.}
@@ -4097,7 +4097,7 @@ abc汉字abc
 %   \cs{LuaCJKOffVerbAddon}, which make one CJK character as wide as two
 %   spaces of the current monospaced font and forbid breaks between CJK
 %   characters, so columns in code listings stay aligned.}
-% \changes{v0.0.3}{2026/11/18}{The addon turns the adjustments back on in its
+% \changes{v0.0.3}{2026/11/20}{The addon turns the adjustments back on in its
 %   group, so the columns of a verbatim-like environment stay aligned under
 %   \keys{Verb} = \texttt{true} and \texttt{env} as well;
 %   \cs{LuaCJKOffVerbAddon} restores the suspension that was in force.}
@@ -4257,7 +4257,7 @@ abc汉字abc
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_verbatim_block_disable:, \@@_fv_prep_hook:, \@@_fv_patch:}
-% \changes{v0.0.3}{2026/11/18}{The \keys{Verb} option also reaches the inline
+% \changes{v0.0.3}{2026/11/20}{The \keys{Verb} option also reaches the inline
 %   \tn{Verb} and \tn{UseVerb} of \pkg{fancyvrb}, which never select
 %   \tn{verbatim@font} and are set as \tn{verb} sets them; the block commands
 %   \tn{VerbatimInput} and \tn{UseVerbatim} follow the environments instead.}
@@ -4664,7 +4664,7 @@ abc汉字abc
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_ensure_family_default:}
-% \changes{v0.0.3}{2026/11/18}{A document whose default CJK family is not
+% \changes{v0.0.3}{2026/11/20}{A document whose default CJK family is not
 %   declared is reported, and its text takes a family it did declare instead of
 %   none at all.}
 % Check that the family \cs{CJKfamilydefault} names was declared.
@@ -4739,7 +4739,7 @@ abc汉字abc
 % \begin{macro}[int]{\@@_update_font:}
 % \changes{v0.0.1}{2026/11/11}{Provide \keys{PunctFamily}, which sets a
 %   separate CJK family for the punctuation marks.}
-% \changes{v0.0.3}{2026/11/18}{\keys{PunctFamily} shifts its marks by the
+% \changes{v0.0.3}{2026/11/20}{\keys{PunctFamily} shifts its marks by the
 %   \keys{Baseline} of the family it names.}
 % On every \tn{selectfont}, resolve the current family, its fallback
 % families, the math family, and the \keys{PunctFamily} family to font
@@ -4942,7 +4942,7 @@ abc汉字abc
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_register_math_family:n}
-% \changes{v0.0.3}{2026/11/18}{The three sizes of a CJK math family come from
+% \changes{v0.0.3}{2026/11/20}{The three sizes of a CJK math family come from
 %   the text size of the formula, so a \tn{text} inside it no longer sets the
 %   other characters of the formula in a script size.}
 % Register a CJK family as a math family and point the math font attribute at
@@ -4964,7 +4964,7 @@ abc汉字abc
 % \end{macro}
 %
 % \begin{macro}[int]{\@@_math_fallbacks_push:n}
-% \changes{v0.0.3}{2026/11/18}{A CJK character in math mode takes a fallback
+% \changes{v0.0.3}{2026/11/20}{A CJK character in math mode takes a fallback
 %   font when the CJK font of the formula does not have it.}
 % Register the fallback fonts of a CJK family as math families and hand the
 % chain to Lua, which sets the character in the first font that has it.
@@ -5191,7 +5191,7 @@ abc汉字abc
 %
 % \begin{macro}
 %   {\setCJKmainfont, \setCJKsansfont, \setCJKmonofont, \setCJKfamilyfont}
-% \changes{v0.0.3}{2026/11/18}{\cs{setCJKfamilyfont} expands the name of the
+% \changes{v0.0.3}{2026/11/20}{\cs{setCJKfamilyfont} expands the name of the
 %   family it declares, so a family can be given as \cs{CJKrmdefault} and
 %   friends.}
 % The public font commands, all built on
@@ -5291,7 +5291,7 @@ abc汉字abc
 % \end{macro}
 %
 % \begin{macro}{\CJKfamily}
-% \changes{v0.0.3}{2026/11/18}{\cs{CJKfamily} expands its argument, so a
+% \changes{v0.0.3}{2026/11/20}{\cs{CJKfamily} expands its argument, so a
 %   family can be given as \cs{CJKrmdefault} and friends.}
 % Switch to a registered family and gobble the following spaces.
 % The name is expanded first, so that a family is named by the macro that
@@ -5427,7 +5427,7 @@ abc汉字abc
 % \changes{v0.0.1}{2026/11/11}{Ignore the zero-width format characters
 %   (U+200B, U+200C, U+200D, U+2060, U+180E) and the variation selectors at
 %   the input, so that they neither take glue nor separate two CJK characters.}
-% \changes{v0.0.3}{2026/11/18}{The joiners (U+200C, U+200D) and the variation
+% \changes{v0.0.3}{2026/11/20}{The joiners (U+200C, U+200D) and the variation
 %   selectors are no longer removed at the input: they reach the font, so an
 %   emoji sequence is not split and a CJK variation sequence selects its
 %   glyph, and what the font leaves of them is dropped before the spacing
@@ -5511,10 +5511,10 @@ abc汉字abc
 % \begin{macro}[int]{\@@_load_fandol:}
 % \changes{v0.0.1}{2026/11/11}{Provide the \keys{LoadFandol} option, which
 %   supplies Fandol fonts when the document declares none.}
-% \changes{v0.0.3}{2026/11/18}{\keys{LoadFandol} is on by default, so a
+% \changes{v0.0.3}{2026/11/20}{\keys{LoadFandol} is on by default, so a
 %   document that declares no CJK font is set in the four Fandol faces without
 %   asking for them.}
-% \changes{v0.0.3}{2026/11/18}{\keys{LoadFandol} gives the roman family
+% \changes{v0.0.3}{2026/11/20}{\keys{LoadFandol} gives the roman family
 %   \texttt{FandolKai-Regular.otf} as its italic face, so \cs{emph} and
 %   \cs{itshape} set the text in Kai instead of leaving it upright.}
 % When the \keys{LoadFandol} option is on and the document
@@ -6488,7 +6488,7 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{pre_shaping}
-% \changes{v0.0.3}{2026/11/18}{The CJK font is applied to the characters before
+% \changes{v0.0.3}{2026/11/20}{The CJK font is applied to the characters before
 %   the text is shaped instead of to the glyph nodes after it: a combining mark
 %   attaches to its base, a variation sequence selects its glyph, and the
 %   font's own ligatures and \texttt{locl} forms appear. An older
@@ -6550,7 +6550,7 @@ M.pre_shaping = pre_shaping
 % \end{macro}
 %
 % \begin{macro}[int]{drop_orphans}
-% \changes{v0.0.3}{2026/11/18}{A joiner or a variation selector that the font
+% \changes{v0.0.3}{2026/11/20}{A joiner or a variation selector that the font
 %   cannot use leaves nothing behind, and neither does a CJK character the CJK
 %   font does not have.}
 % Remove what shaping left of the two kinds of character that must not reach
@@ -6709,7 +6709,7 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{box_visible}
-% \changes{v0.0.3}{2026/11/18}{A box that occupies no advance is passed over:
+% \changes{v0.0.3}{2026/11/20}{A box that occupies no advance is passed over:
 %   \cs{rlap}, \cs{llap} and \cs{clap} overlay ink on the text around them, so
 %   they no longer take a \keys{CJKecglue} on either side.}
 % Whether a box occupies an advance of its own. A box that occupies none is
@@ -6967,7 +6967,7 @@ end
 %   CJK characters becomes the inter-character glue, so the boundary keeps its
 %   break opportunity and its stretch, and no glue is inserted between two
 %   long punctuation marks.}
-% \changes{v0.0.3}{2026/11/18}{A superscript or subscript set with
+% \changes{v0.0.3}{2026/11/20}{A superscript or subscript set with
 %   \cs{textsuperscript} or \cs{textsubscript} stays with the character in
 %   front of it: the shifted box takes no glue on either side, so no break is
 %   offered before it.}
@@ -6991,7 +6991,7 @@ end
 % \begin{macro}[int]{handle_boundary}
 % \changes{v0.0.1}{2026/11/11}{A mark keeps its break opportunity beside
 %   suspended text: the boundary glue at a mark has no width.}
-% \changes{v0.0.3}{2026/11/18}{A penalty that prohibits the break no longer
+% \changes{v0.0.3}{2026/11/20}{A penalty that prohibits the break no longer
 %   removes the glue: the CJK--CJK and CJK--Latin spacing survives
 %   \cs{nobreak}, because the glue goes after the penalty, where the
 %   prohibition still covers it. A source space in front of the penalty is
@@ -7145,7 +7145,7 @@ end
 %   siblings is still the inter-character glue: \LaTeX\ moves a space across
 %   the italic correction of a text font command, and the move leaves the glue
 %   with the subtype of a skip the document wrote.}
-% \changes{v0.0.3}{2026/11/18}{\cs{hfill} after \cs{textbf} keeps its fill:
+% \changes{v0.0.3}{2026/11/20}{\cs{hfill} after \cs{textbf} keeps its fill:
 %   only a glue of normal order counts as a source space, so the fill of the
 %   line is no longer turned into the inter-character glue.}
 % Give a source space that a text font command moved across the italic
@@ -7382,7 +7382,7 @@ end
 % \changes{v0.0.2}{2026/11/15}{\keys{AllowBreakBetweenPuncts} no longer lets a
 %   closing mark start a line or an opening mark end one, and a mark inside a
 %   box takes part in the prohibitions.}
-% \changes{v0.0.3}{2026/11/18}{A dash or an ellipsis cannot start a line either:
+% \changes{v0.0.3}{2026/11/20}{A dash or an ellipsis cannot start a line either:
 %   a break in front of a run of them is forbidden, so the run travels to the
 %   next line whole, while the break between the marks of a run stays the
 %   business of the \texttt{NoBreakLongPunct} set.}
@@ -8289,11 +8289,11 @@ end
 % \end{macro}
 
 % \begin{macro}[int]{cff_box}
-% \changes{v0.0.3}{2026/11/18}{The blank of a mark is measured from the
+% \changes{v0.0.3}{2026/11/20}{The blank of a mark is measured from the
 %   charstring the glyph uses, so a glyph whose charstring calls a subroutine
 %   is measured in the subroutine rather than in the charstring the
 %   measurement began with.}
-% \changes{v0.0.3}{2026/11/18}{A curve of four operands is read as one curve
+% \changes{v0.0.3}{2026/11/20}{A curve of four operands is read as one curve
 %   in both axes, so the blank of a mark whose charstring draws it with the
 %   alternating or the vertical curve operator is the blank the glyph has: a
 %   double opening quotation mark no longer stands in the margin by more
@@ -8661,7 +8661,7 @@ end
 %   mark holds the mark the margin allows; the ink of that mark stands outside
 %   the line, and \keys{PunctBoundWidth} decides how much of the advance stays
 %   inside.}
-% \changes{v0.0.3}{2026/11/18}{An opening mark that begins a paragraph, or a
+% \changes{v0.0.3}{2026/11/20}{An opening mark that begins a paragraph, or a
 %   line the document forces a break at, hangs as well: its blank stands in
 %   the indentation or in the margin, and \keys{PunctBoundWidth} decides how
 %   much of the advance stays inside the line there too.}
@@ -8761,7 +8761,7 @@ end
 % \changes{v0.0.1}{2026/11/11}{Provide \keys{CheckSingle} and
 %   \keys{WidowPenalty}, which stop a single CJK character from ending up
 %   alone on the last line of a paragraph.}
-% \changes{v0.0.3}{2026/11/18}{A whatsit between two CJK characters no longer
+% \changes{v0.0.3}{2026/11/20}{A whatsit between two CJK characters no longer
 %   hides the break point from \keys{CheckSingle}: a color change, a mark, and
 %   the other nodes that carry no text are passed over, so they no longer
 %   leave a single character on the last line.}
@@ -9723,16 +9723,16 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   \pkg{lua-ul}; the geometry defaults to \texttt{depth = 0.2em} and
 %   \texttt{thickness = 0.4pt}, and \keys{top} and \keys{bottom} override the
 %   computed values.}
-% \changes{v0.0.3}{2026/11/18}{\keys{top} and \keys{bottom} are keys of the
+% \changes{v0.0.3}{2026/11/20}{\keys{top} and \keys{bottom} are keys of the
 %   decoration, so they reach a rule that \keys{format} colors as well, and
 %   an underline type is built per font size, so a rule built from |em| units
 %   keeps its thickness when the size changes.}
-% \changes{v0.0.3}{2026/11/18}{A decoration keeps the width, the stretch, and
+% \changes{v0.0.3}{2026/11/20}{A decoration keeps the width, the stretch, and
 %   the shrink of the text it covers, so a rule no longer changes the spacing
 %   of the line it sits in, \keys{skip} no longer tightens a justified line,
 %   and a \tn{kern} inside the text no longer moves the gap \keys{skip} leaves
 %   at a punctuation mark.}
-% \changes{v0.0.3}{2026/11/18}{\keys{hidden} takes the ink out of the text
+% \changes{v0.0.3}{2026/11/20}{\keys{hidden} takes the ink out of the text
 %   instead of putting it in a \tn{phantom}: the text keeps its line breaks, so
 %   a hidden paragraph breaks like the visible one instead of overflowing in
 %   one line.}
@@ -10246,10 +10246,10 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKunderwave}
-% \changes{v0.0.3}{2026/11/18}{The wave takes \keys{format} like the other
+% \changes{v0.0.3}{2026/11/20}{The wave takes \keys{format} like the other
 %   decorations: the pattern is stroked in that color, in the color of its text
 %   when the key is absent, and neither color reaches the text outside it.}
-% \changes{v0.0.3}{2026/11/18}{The wave is a smooth arch of one period per em,
+% \changes{v0.0.3}{2026/11/20}{The wave is a smooth arch of one period per em,
 %   a quarter em above and below the underline; a decoration is divided into
 %   whole patterns once its final width is known and the pattern is drawn at
 %   that width, so the periods meet without a gap, the wave reaches the last
@@ -10449,9 +10449,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKxout}
-% \changes{v0.0.3}{2026/11/18}{The slash takes \keys{format} like the wave, and
+% \changes{v0.0.3}{2026/11/20}{The slash takes \keys{format} like the wave, and
 %   follows the color of its text when the key is absent.}
-% \changes{v0.0.3}{2026/11/18}{The slash is divided into whole cells once its
+% \changes{v0.0.3}{2026/11/20}{The slash is divided into whole cells once its
 %   width is final, so the slashes cover the span evenly and the last one reaches
 %   its end.}
 % A repeated slash, as in \pkg{ulem}'s \tn{xout}.
@@ -10721,7 +10721,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKunderdot}
-% \changes{v0.0.3}{2026/11/18}{The emphasis dots sit under each CJK character,
+% \changes{v0.0.3}{2026/11/20}{The emphasis dots sit under each CJK character,
 %   centred in the one-em cell of the character; Latin letters, digits, and
 %   spaces carry none, and the dots follow the characters when the
 %   inter-character glue stretches.}
@@ -10777,7 +10777,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   which justifies every line to a given width and places the box on the
 %   baseline as requested. It is tagged: a text block in vertical mode, part
 %   of the surrounding paragraph in horizontal mode.}
-% \changes{v0.0.3}{2026/11/18}{The \texttt{t} and \texttt{c} positions of
+% \changes{v0.0.3}{2026/11/20}{The \texttt{t} and \texttt{c} positions of
 %   \env{CJKfilltwosides} place the box as \cs{parbox} does: \texttt{t} puts
 %   the baseline of its first line on the surrounding baseline, and \texttt{c}
 %   centres the box on the text axis instead of on the baseline.}
