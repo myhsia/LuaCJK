@@ -908,6 +908,11 @@ the full suite, the manual and the `ctex` subset are CI's.  The before/after
 image is rendered here from the merge base — `lualatex` on the report's MWE,
 `pdfcrop`, then `mutool draw -r 300` — because the MWE in the report is what
 the reader compares with.
+An issue whose fix is already on the default branch — the report was filed
+against the released version, which the default branch has moved past — takes
+its before image from that release and says so in the reply; the pull request
+is then a regression test, `chore(scope)` with no `\changes` entry, because
+the behaviour is already recorded by the change that shipped it.
 The image reaches the issue through a `<scope>-shots` branch of this
 repository, one per subsystem: it holds
 `docs/screenshots/<scope>/<number>-before.png` and `-after.png`, and the reply
