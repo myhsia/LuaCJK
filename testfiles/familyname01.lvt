@@ -1,0 +1,59 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKsansfont{FandolHei-Regular.otf}
+\setCJKmonofont{FandolFang-Regular.otf}
+
+\def\psname{%
+  \directlua{
+    local head = tex.box[0].head
+    local out = {}
+    while head do
+      if head.id == node.id("glyph") then
+        local f = font.getfont(head.font)
+        table.insert(out, tostring(f and f.psname))
+      end
+      head = head.next
+    end
+    texio.write_nl("term and log", "PS " .. table.concat(out, " "))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{the family named by CJKrmdefault}{
+  \setbox0=\hbox{\CJKfamily{\CJKrmdefault}中}
+  \psname
+}
+
+\TEST{the family named by CJKsfdefault}{
+  \setbox0=\hbox{\CJKfamily{\CJKsfdefault}中}
+  \psname
+}
+
+\TEST{the family named by CJKttdefault}{
+  \setbox0=\hbox{\CJKfamily{\CJKttdefault}中}
+  \psname
+}
+
+% The name is expanded before it is looked up, so the report names the family
+% the document asked for and not the macro that holds it.
+\TEST{a family that is not declared is reported by its expansion}{
+  \def\undeclared{zhnonexistent}
+  \setbox0=\hbox{\CJKfamily{\undeclared}中}
+  \psname
+}
+
+\TEST{a family declared under the name of a font command}{
+  \setCJKfamilyfont{\CJKsfdefault}{FandolKai-Regular.otf}
+  \setbox0=\hbox{\sffamily 中}
+  \psname
+}
+
+\END
+
+\end{document}

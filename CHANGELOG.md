@@ -6,6 +6,8 @@
 - A document whose default CJK family is not declared is reported, and its text takes a family it did declare instead of none at all.
 - The three sizes of a CJK math family come from the text size of the formula, so a `\text` inside it no longer sets the other characters of the formula in a script size.
 - A CJK character in math mode takes a fallback font when the CJK font of the formula does not have it.
+- `\setCJKfamilyfont` expands the name of the family it declares, so a family can be given as `\CJKrmdefault` and friends.
+- `\CJKfamily` expands its argument, so a family can be given as `\CJKrmdefault` and friends.
 - The joiners (U+200C, U+200D) and the variation selectors are no longer removed at the input: they reach the font, so an emoji sequence is not split and a CJK variation sequence selects its glyph, and what the font leaves of them is dropped before the spacing pass, so two CJK characters still take no glue around them.
 - `LoadFandol` is on by default, so a document that declares no CJK font is set in the four Fandol faces without asking for them.
 - The CJK font is applied to the characters before the text is shaped instead of to the glyph nodes after it: a combining mark attaches to its base, a variation sequence selects its glyph, and the font's own ligatures and `locl` forms appear. An older `luaotfload` keeps the previous behavior.
