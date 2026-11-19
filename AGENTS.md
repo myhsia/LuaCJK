@@ -865,6 +865,11 @@ the full suite, the manual and the `ctex` subset are CI's.  The before/after
 image is rendered here from the merge base — `lualatex` on the report's MWE,
 `pdfcrop`, then `mutool draw -r 300` — because the MWE in the report is what
 the reader compares with.
+The image reaches the issue through a `<scope>-shots` branch of this
+repository, one per subsystem: it holds
+`docs/screenshots/<scope>/<number>-before.png` and `-after.png`, and the reply
+embeds them by their `raw.githubusercontent.com` URL.  A screenshot never goes
+on the branch under test.
 
 ## Git style
 
