@@ -79,3 +79,15 @@ LaTeX Font Info:    Font shape `TU/FandolSong-Regular.otf(3)/m/n' will be
 inside: 20.0pt
 outside: 10.0pt
 ============================================================
+============================================================
+TEST 7: a shaping feature reaches the glyph of the CJK font
+============================================================
+plain: 10.0pt
+Package fontspec Info: 
+(fontspec)             Font family 'FandolSong-Regular.otf(4)' created for font 'FandolSong-Regular.otf' with options [Script=CJK,CharacterWidth = AlternateHalf].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->"[FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;+halt;"
+halt: 5.0pt
+============================================================
