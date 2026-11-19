@@ -70,7 +70,17 @@
   \global\setbox8=\hbox{中 中}
 \endgroup
 
-\setbox10=\hbox{中 \textbf{中}}
+% Allocated rather than numbered: box 10 is \tn{voidb@x}, and \tn{nobreakspace}
+% expands to \tn{leavevmode}, which unpacks that register into the list.
+\newbox\movedspacebox
+\setbox\movedspacebox=\hbox{中 \textbf{中}}
+
+\newbox\explicitspacebox
+\newbox\nobreakspacebox
+\newbox\latinspacebox
+\setbox\explicitspacebox=\hbox{中\ 中}
+\setbox\nobreakspacebox=\hbox{中~中}
+\setbox\latinspacebox=\hbox{a\ b}
 
 \begin{document}
 
@@ -96,8 +106,20 @@
 }
 
 \TEST{a moved space is still the inter-character glue}{
-  \report{10}
-  \TYPE{with space: \the\wd10}
+  \report{\number\movedspacebox}
+  \TYPE{with space: \the\wd\movedspacebox}
+}
+
+\TEST{an explicit space between CJK characters keeps its advance}{
+  \report{\number\explicitspacebox}
+  \TYPE{explicit: \the\wd\explicitspacebox}
+  \report{\number\nobreakspacebox}
+  \TYPE{nobreakspace: \the\wd\nobreakspacebox}
+}
+
+\TEST{an explicit space between Latin characters is unchanged}{
+  \report{\number\latinspacebox}
+  \TYPE{latin: \the\wd\latinspacebox}
 }
 
 \END
