@@ -3,6 +3,7 @@
 - A mark that the CJK class shares with Latin, such as a curly quotation mark or the em dash, keeps its place inside an `lstlisting` block and counts as two columns: the character table covers the CJK ranges of the Basic Multilingual Plane, both ends of each included.
 - Process the package options after the helpers their key codes call, so that `AutoFallBack`, `CJKmath`, `PunctFamily`, and `CJLineBreak` act as package options as well.
 - `PunctWidth` and `PunctBoundWidth` take `0pt` as a length: the former gives every mark no advance and the latter hangs the whole of it, where a zero length used to act as `false` and return the mark to its style.
+- The addon turns the adjustments back on in its group, so the columns of a verbatim-like environment stay aligned under `Verb` = `true` and `env` as well; `\LuaCJKOffVerbAddon` restores the suspension that was in force.
 - A document whose default CJK family is not declared is reported, and its text takes a family it did declare instead of none at all.
 - `PunctFamily` shifts its marks by the `Baseline` of the family it names.
 - The three sizes of a CJK math family come from the text size of the formula, so a `\text` inside it no longer sets the other characters of the formula in a script size.

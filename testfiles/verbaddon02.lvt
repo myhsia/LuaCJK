@@ -1,0 +1,66 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\usepackage{fancyvrb}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+% fancyvrb sets every line into \hbox to \linewidth, so the natural width of
+% a line is taken where fancyvrb formats it.  A Verbatim environment cannot sit
+% inside the argument of \TEST, so the widths are collected first and the tests
+% only report them.
+\def\widths{}
+\def\measureline#1{%
+  \setbox0=\hbox{#1}%
+  \xdef\widths{\widths\space\the\wd0}%
+  \box0
+}
+
+\begin{document}
+
+\START
+
+\begingroup
+  \def\FancyVerbFormatLine#1{\measureline{#1}}
+  \begin{Verbatim}[formatcom=\LuaCJKVerbAddon]
+|12345678|
+|中文测试|
+\end{Verbatim}
+\endgroup
+
+\TEST{the addon aligns the columns under Verb=true}{
+  \TYPE{widths:\widths}
+}
+
+\def\widths{}
+
+\begingroup
+  \def\FancyVerbFormatLine#1{\measureline{#1}}
+  \begin{Verbatim}
+|12345678|
+|中文测试|
+\end{Verbatim}
+\endgroup
+
+\TEST{Verb=true without the addon leaves the columns alone}{
+  \TYPE{widths:\widths}
+}
+
+\def\widths{}
+
+\begingroup
+  \LuaCJKsetup{Verb=env+}
+  \def\FancyVerbFormatLine#1{\measureline{#1}}
+  \begin{Verbatim}[formatcom=\LuaCJKVerbAddon]
+|12345678|
+|中文测试|
+\end{Verbatim}
+\endgroup
+
+\TEST{the addon agrees with Verb=env+}{
+  \TYPE{widths:\widths}
+}
+
+\END
+
+\end{document}
