@@ -127,6 +127,11 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    a penalty in front of it.
 6. `apply_check_single` — raise the penalty at the last two break points of a
    paragraph, so a single character cannot end up alone on the last line.
+   The scan back to the previous character passes over `transparent_node` —
+   whatsit, mark, insertion, adjustment, penalty — and the kerns the package
+   inserted, so a `\textcolor` between two characters no longer hides the
+   break point; the penalty is spliced in front of the glue and left out when
+   a penalty already stands there (`checksingle01`).
 
 `post_linebreak_filter` is not used: the hang of a line-final mark is part of
 the measure (see "The punctuation model"), so nothing has to be adjusted after

@@ -8348,8 +8348,19 @@ end
 % \changes{v0.0.1}{2026/11/11}{Provide \keys{CheckSingle} and
 %   \keys{WidowPenalty}, which stop a single CJK character from ending up
 %   alone on the last line of a paragraph.}
+% \changes{v0.0.3}{2026/11/18}{A whatsit between two CJK characters no longer
+%   hides the break point from \keys{CheckSingle}: a color change, a mark, and
+%   the other nodes that carry no text are passed over, so they no longer
+%   leave a single character on the last line.}
 % Insert the widow penalties. Only a paragraph whose last visible node
 % is a CJK glyph is examined, and only when its settings ask for it.
+% The scan back to the previous character passes over what carries no text —
+% a whatsit such as a color change, a mark, an insertion, the adjustment of a
+% box, a penalty, and a kern this package inserted — so such a node does not
+% end the run.
+% The penalty goes in front of the glue that the break is taken at, and it is
+% left out when a penalty already stands in front of that glue, so a second
+% run over the same list adds nothing.
 %    \begin{macrocode}
 local function apply_check_single (head)
   local trail = {}
@@ -8382,7 +8393,8 @@ local function apply_check_single (head)
   local i        = last
   while i > 1 and inserted < 2 do
     local j = i - 1
-    while j >= 1 and (trail[j].id == GLUE or trail[j].id == PENALTY) do
+    while j >= 1 and (trail[j].id == GLUE or transparent_node(trail[j])
+                      or (trail[j].id == KERN and is_inserted(trail[j]))) do
       j = j - 1
     end
     if j < 1 then
@@ -8392,13 +8404,23 @@ local function apply_check_single (head)
     if glyph.id ~= GLYPH or not is_cjk(glyph.char, settings_of(glyph)) then
       break
     end
-    local target = trail[j + 1]
-    if target and target.id == GLUE then
+    local at    = nil
+    local taken = false
+    for k = j + 1, i - 1 do
+      local item = trail[k]
+      if item.id == GLUE then
+        at = k
+        break
+      elseif item.id == PENALTY then
+        taken = true
+      end
+    end
+    if at and not taken then
       local p = new_node("penalty")
       inherit_attributes(p, glyph)
-      p.penalty  = penalty
-      p.next     = target
-      glyph.next = p
+      p.penalty          = penalty
+      p.next             = trail[at]
+      trail[at - 1].next = p
     end
     inserted = inserted + 1
     i        = j
