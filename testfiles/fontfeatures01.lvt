@@ -50,6 +50,18 @@
   \TYPE{outside: \the\wd2}
 }
 
+\TEST{a shaping feature reaches the glyph of the CJK font}{
+  \begingroup
+    \setCJKfamilyfont{zhhalf}{FandolSong-Regular.otf}
+    \CJKfamily{zhhalf}
+    \setbox0=\hbox{。}
+    \TYPE{plain: \the\wd0}
+    \addCJKfontfeatures{CharacterWidth = AlternateHalf}
+    \setbox0=\hbox{。}
+    \TYPE{halt:  \the\wd0}
+  \endgroup
+}
+
 \END
 
 \end{document}
