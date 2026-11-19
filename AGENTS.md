@@ -260,7 +260,11 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   families but not `\CJKfamilydefault` would set its main text in no CJK font
   at all, so `\@@_ensure_family_default:` warns and uses `\CJKrmdefault` or the
   first declared family, and a document that declared nothing with the option
-  off is warned about as well.
+  off is warned about as well.  Its roman family carries
+  `FandolKai-Regular.otf` as the italic face, which is what gives `\emph` and
+  `\itshape` an effect on CJK text, and the family is declared twice — as the
+  main family and as `zhsong` — so both declarations carry the option; the
+  other three families have no italic face.
 - **A command that takes a family name expands it.**  `\CJKfamily`,
   `\setCJKfamilyfont`, and `\setCJKfallbackfamilyfont` pass the name through
   `\tl_set:Ne`, so a family is named by `\CJKrmdefault` and friends; the

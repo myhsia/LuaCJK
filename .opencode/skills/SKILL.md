@@ -591,6 +591,13 @@ does so on its own. Picking a backend inside `ctex` is now a public option
   `M.punct_override` always wins over `LatinPunct` and the built-in tables.
 - `\LuaCJKsetwidth`, `\LuaCJKsetkern`, the four punctuation-set keys, and the
   `Declare*` commands are global by design; the manual says so at each of them.
+- Emphasis reaches CJK text through the family's italic face, never through the
+  Latin italic: a family that names no `ItalicFont` stays upright under
+  `\emph` and `\itshape` unless `AutoFakeSlant` is on.  The Fandol base set
+  gives its roman family `FandolKai-Regular.otf` — emphasis in Chinese is Kai,
+  which is what ctex's own fandol fontset does — and both the main declaration
+  and `zhsong` carry it, because one family name holds one feature set and the
+  later declaration would otherwise drop it.
 - The user-facing prose keeps the terminology of the code (`CJKglue`,
   `PunctStyle`, `subtract`) rather than inventing translations, in both
   languages of the manual (see "The manual's two languages").
