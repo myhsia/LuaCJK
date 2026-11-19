@@ -768,6 +768,8 @@ $ 天地玄黄 $ and 天地玄黄
 %   它同样跟随字号。
 %   \item[\keys{CJKspace}]\val{\TFF}: 是否保留源文件中 CJK 字符之间的空格。
 %   不保留时，空格换成字符之间的胶，断行与伸缩都随之保留。
+%   用 |\ | 或 \tn{nobreakspace} 写出的空格不是源文件中的空格，
+%   它的宽度就是一个空格的宽度。
 %   \item[\keys{xCJKecglue}]\val{\TFF}: 是否把源文件中 CJK 与拉丁字符之间的
 %   空格替换为 \texttt{CJKecglue}。
 % \end{keyval}
@@ -2076,6 +2078,8 @@ $ 天地玄黄 $ and 天地玄黄
 %   \item[\keys{CJKspace}]\val{\TFF}: Whether to keep source spaces between
 %   CJK characters. When they are not kept, the space becomes the
 %   inter-character glue, so the break opportunity and the stretch survive.
+%   A space written with |\ | or \tn{nobreakspace} is not a source space,
+%   and its advance is that of a space.
 %   \item[\keys{xCJKecglue}]\val{\TFF}: Whether to replace source spaces
 %   between CJK and Latin characters with \texttt{CJKecglue}.
 % \end{keyval}
@@ -2993,18 +2997,22 @@ abc汉字abc
 %     \g_@@_punct_font_attr, \c_@@_punct_font_attr_int,
 %     \g_@@_settings_attr,   \c_@@_settings_attr_int,
 %     \g_@@_nobreak_attr,    \c_@@_nobreak_attr_int,
-%     \g_@@_attached_attr,   \c_@@_attached_attr_int
+%     \g_@@_attached_attr,   \c_@@_attached_attr_int,
+%     \g_@@_explicit_space_attr,
+%                            \c_@@_explicit_space_attr_int
 %   }
 % The attributes record, per node, the CJK font, the space and glue
 % policies, whether the node was inserted by \pkg{LuaCJK}, the CJK math font,
-% whether the adjustments are suspended, and whether the character is one
-% that attaches to the character in front of it. The integer constants hold
-% the allocated attribute numbers for the Lua side.
+% whether the adjustments are suspended, whether the character is one
+% that attaches to the character in front of it, and whether a space is one
+% the document wrote with |\ | or \tn{nobreakspace}. The integer constants
+% hold the allocated attribute numbers for the Lua side.
 %    \begin{macrocode}
 \clist_map_inline:nn
   {
     font,     cjk_space,  xecglue,   inserted,   math_font,
-    disabled, punct_font, settings,  nobreak,    attached
+    disabled, punct_font, settings,  nobreak,    attached,
+    explicit_space
   }
   {
     \exp_args:Nc \newattribute { g_@@_#1_attr }
@@ -3059,6 +3067,54 @@ abc汉字abc
           { 0.3333em plus 0.1667em minus 0.1111em }
       }
   }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]
+%   {\@@_explicit_space:, \@@_explicit_nobreak_space:, \@@_nobreak_space:}
+% \changes{v0.0.3}{2026/11/18}{An explicit |\ | or \tn{nobreakspace} between
+%   two CJK characters keeps its advance: a space from the source is retimed
+%   to the inter-character glue, and one the document wrote itself is not.}
+% The space the document asked for is marked.
+% The node level cannot tell the two apart: a source space and |\ | reach
+% the spacing pass as the same \texttt{spaceskip} glue with the same
+% dimensions, so the mark is the only thing that separates them.
+% |\ | and \tn{nobreakspace} become a group around the space token, and
+% |~| reaches the second through \tn{nobreakspace}.
+% Both are protected, so an \tn{edef} or an \tn{write} carries them as one
+% token: the body of an \tn{edef} is still the space the document wrote, at
+% the price of a message printed with |\ | showing the control space instead
+% of a space.  \tn{space} stays a source space, because it is the form that
+% appears in messages and has to expand.
+% The definition of \tn{nobreakspace} is copied before it is replaced, because
+% a body that named \tn{nobreakspace} again would call the wrapper once the
+% wrapper is in its place.
+% \tn{scan_stop} ends the value of the attribute: a space token that came
+% straight after it would be taken for the blank that ends the number.
+% The group that sets the catcode of the space is what lets the two be
+% assigned at all: \pkg{expl3} ignores a space, so a control space cannot be
+% written in its syntax.
+%    \begin{macrocode}
+\cs_new_eq:NN \@@_nobreak_space: \nobreakspace
+\cs_new_protected:Npn \@@_explicit_space:
+  {
+    \group_begin:
+      \g_@@_explicit_space_attr = 1 \scan_stop:
+      \char_generate:nn { 32 } { 10 }
+    \group_end:
+  }
+\cs_new_protected:Npn \@@_explicit_nobreak_space:
+  {
+    \group_begin:
+      \g_@@_explicit_space_attr = 1 \scan_stop:
+      \@@_nobreak_space:
+    \group_end:
+  }
+\group_begin:
+  \char_set_catcode_space:n { 32 }
+  \cs_gset_eq:NN \ \@@_explicit_space:
+  \cs_gset_eq:NN \nobreakspace \@@_explicit_nobreak_space:
+\group_end:
 %    \end{macrocode}
 % \end{macro}
 %
@@ -5400,6 +5456,8 @@ abc汉字abc
     LuaCJK.attr_settings    =  \int_use:N   \c_@@_settings_attr_int ;
     LuaCJK.attr_disabled    =  \int_use:N   \c_@@_disabled_attr_int ;
     LuaCJK.attr_attached    =  \int_use:N   \c_@@_attached_attr_int ;
+    LuaCJK.attr_explicit_space
+                            =  \int_use:N   \c_@@_explicit_space_attr_int ;
     LuaCJK.name_ccglue      = "\cs_to_str:N \l_@@_ccglue_skip" ;
     LuaCJK.name_ecglue      = "\cs_to_str:N \l_@@_ecglue_skip" ;
   }
@@ -5542,7 +5600,8 @@ M.shaping = luatexbase.callbacktypes ~= nil
 % \begin{variable}[int]
 %   {
 %     LuaCJK.attr_font,     LuaCJK.attr_cjk_space, LuaCJK.attr_xecglue,
-%     LuaCJK.attr_inserted, LuaCJK.attr_math_font
+%     LuaCJK.attr_inserted, LuaCJK.attr_math_font,
+%     LuaCJK.attr_explicit_space
 %   }
 % The attribute numbers.
 % The \TeX\ side fills them in after loading the module.
@@ -5550,7 +5609,7 @@ M.shaping = luatexbase.callbacktypes ~= nil
 for _, field in ipairs {
   "font",      "cjk_space",  "xecglue", "inserted",
   "math_font", "punct_font", "nobreak", "settings",
-  "attached",
+  "attached",  "explicit_space",
 } do
   local key = "attr_" .. field
   M[key] = M[key] or nil
@@ -6980,10 +7039,20 @@ end
 % inter-character glue of \keys{CJKglue}. Freeing it instead would leave the
 % two characters adjacent with no glue, and the pass that would add the glue
 % runs after line breaking, so the break opportunity would be lost.
+% A space the document wrote with |\ | or \tn{nobreakspace} is not a source
+% space, and the attribute set around it is the only place that says so: the
+% two are the same \texttt{spaceskip} glue, with the same dimensions, until
+% that mark is read.  Such a space keeps its advance, on either side of the
+% boundary it stands at, because \pkg{xeCJK} sets it as a space too and
+% \keys{CJKspace} is about the source.
 %    \begin{macrocode}
 local function handle_source_space (head, glue, prev_end, cur,
                                     cur_start, settings)
   if glue.subtype ~= SPACESKIP then
+    return head
+  end
+  if M.attr_explicit_space
+     and (has_attribute(glue, M.attr_explicit_space) or 0) ~= 0 then
     return head
   end
   local prev_cjk = prev_end == "CJK"

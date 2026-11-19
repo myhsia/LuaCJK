@@ -84,6 +84,12 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    it: line breaking happens before the `hpack_filter` pass that would add the
    glue, so a freed space leaves two characters that can neither be broken
    between nor stretched apart (`boundary03`).
+   A space the document wrote with `\ ` or `~` is not a source space, and the
+   node list does not say so: the two reach the pass as the same `spaceskip`
+   glue with the same dimensions.  The TeX side therefore marks the one it
+   wrote itself with the `explicit_space` attribute, and the pass leaves a
+   marked glue alone, so the space keeps the advance of the font it came from
+   instead of becoming the inter-character glue (`boundary03`).
    A space that a text font command moved across the italic correction is put
    back into the source-space class before the walk: `\textbf` and its siblings
    save the skip in front of them, `\unskip` it, apply the italic correction and
@@ -172,7 +178,7 @@ document's math font, because the CJK font has no `MathConstants` table.
 
 ### Attributes
 
-Eleven attributes carry the per-node state; all are read through
+Twelve attributes carry the per-node state; all are read through
 `node.has_attribute`/`has_attribute`:
 
 | attribute | meaning |
@@ -181,6 +187,7 @@ Eleven attributes carry the per-node state; all are read through
 | `math_font` | the CJK math font identifier |
 | `punct_font` | font identifier for punctuation (`PunctFamily`) |
 | `cjk_space` | whether a source space inside CJK text is kept |
+| `explicit_space` | the space is one the document wrote with `\ ` or `~`, not a source space |
 | `xecglue` | whether the CJK/Latin glue is suppressed at this space |
 | `inserted` | marks the nodes LuaCJK created, so they are not examined twice |
 | `disabled` | `\LuaCJKdisable` state |
