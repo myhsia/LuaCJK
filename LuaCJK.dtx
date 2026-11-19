@@ -827,8 +827,10 @@ $ 天地玄黄 $ and 天地玄黄
 % \begin{environment}{CJKfilltwosides}
 %   把各行排进一个竖直盒子里，
 %   盒中的行两端对齐到 \meta{width}，各行之间用 |\\| 分开。
-%   它的 \meta{position} 参数决定盒子在基线上的位置：
-%   \texttt{t} 表示顶部，\texttt{c} 表示居中（默认），\texttt{b} 表示底部。
+%   它的 \meta{position} 参数像 \cs{parbox} 一样决定盒子落在基线上的方式：
+%   \texttt{t} 让第一行的基线与周围的行齐平，
+%   \texttt{c} 表示居中（默认），
+%   \texttt{b} 让最后一行的基线与周围的行齐平。
 %   宽度为零或为负时沿用周围的行宽。
 %   带星号的形式行为相同；它不与内容的自然宽度作比较。
 %   \begin{syntax}
@@ -2118,10 +2120,12 @@ $ 天地玄黄 $ and 天地玄黄
 %
 % \begin{environment}{CJKfilltwosides}
 %   Set the lines in a vertical box whose lines are justified
-%   to \meta{width}, separated by |\\|. Its \meta{position} argument puts
-%   the box on the baseline: \texttt{t} for top, \texttt{c} for centered
-%   (the default), or \texttt{b} for bottom. A width of zero or less keeps
-%   the surrounding line width. The starred form behaves the same;
+%   to \meta{width}, separated by |\\|. Its \meta{position} argument places
+%   the box as \cs{parbox} does: \texttt{t} puts the baseline of the first
+%   line on the surrounding baseline, \texttt{c} centres the box on the text
+%   axis (the default), and \texttt{b} puts the last line there.
+%   A width of zero or less keeps the surrounding line width.
+%   The starred form behaves the same;
 %   it does not compare against the natural width of the content.
 %   \begin{syntax}
 %   \tn{begin}\{CJKfilltwosides\}\oarg{position}\marg{width}
@@ -9871,26 +9875,43 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   which justifies every line to a given width and places the box on the
 %   baseline as requested. It is tagged: a text block in vertical mode, part
 %   of the surrounding paragraph in horizontal mode.}
+% \changes{v0.0.3}{2026/11/19}{The \texttt{t} and \texttt{c} positions of
+%   \env{CJKfilltwosides} place the box as \cs{parbox} does: \texttt{t} puts
+%   the baseline of its first line on the surrounding baseline, and \texttt{c}
+%   centres the box on the text axis instead of on the baseline.}
 %   Set the body in a vertical box whose lines are justified to the given
 %   width, with the lines separated by |\\|.
 %   The inter-character glue is given an infinite stretch inside the box,
 %   so a line of CJK characters reaches the width even when there is no
 %   Latin word space to stretch.
-%   The optional argument places the box on the baseline: \texttt{t} for
-%   top, \texttt{c} for centered (the default), and \texttt{b} for bottom.
+%   The optional argument places the box on the baseline like the same
+%   argument of \cs{parbox}: \texttt{t} for the first line, \texttt{c} for
+%   the text axis (the default), and \texttt{b} for the last line.
 %   A width of zero or less keeps the surrounding line width.
+%   A \texttt{t} box is rebuilt as a \tn{vtop}, so that its reference point is
+%   the baseline of its first line, and a \texttt{b} box keeps its natural
+%   height and depth, whose reference point is the baseline of the last line.
+%   A \texttt{c} box is centred on the axis of the text style,
+%   \tn{Umathaxis}, the axis \cs{parbox} centres on; \cs{check@mathfonts} runs
+%   first, as it does there, because the axis reads the largest dimension
+%   until the math fonts exist.
+%   A \tn{vtop} takes the height of the first item of its list, so the marked
+%   content opens inside the first line rather than in the list in front of
+%   it; in front of it, a \texttt{t} box would have no height at all.
 % \begin{variable}[int]
 %   {
-%     \l_@@_fntef_fill_box,      \l_@@_fntef_fill_width_dim,
-%     \l_@@_fntef_fill_half_dim, \l_@@_fntef_fill_position_tl,
-%     \l_@@_fntef_fill_tag_tl,   \l_@@_fntef_fill_struct_bool
+%     \l_@@_fntef_fill_box,       \l_@@_fntef_fill_width_dim,
+%     \l_@@_fntef_fill_total_dim, \l_@@_fntef_fill_axis_dim,
+%     \l_@@_fntef_fill_position_tl,
+%     \l_@@_fntef_fill_tag_tl,    \l_@@_fntef_fill_struct_bool
 %   }
-% The box being filled, its requested width, the half height used
-% for centring, and the requested baseline position.
+% The box being filled, its requested width, its total height and depth,
+% the axis of the text style, and the requested baseline position.
 %    \begin{macrocode}
 \box_new:N \l_@@_fntef_fill_box
 \dim_new:N \l_@@_fntef_fill_width_dim
-\dim_new:N \l_@@_fntef_fill_half_dim
+\dim_new:N \l_@@_fntef_fill_total_dim
+\dim_new:N \l_@@_fntef_fill_axis_dim
 \tl_new:N \l_@@_fntef_fill_position_tl
 \tl_new:N \l_@@_fntef_fill_tag_tl
 \bool_new:N \l_@@_fntef_fill_struct_bool
@@ -9918,13 +9939,14 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \vbox_set:Nw \l_@@_fntef_fill_box
       \dim_compare:nNnT { \l_@@_fntef_fill_width_dim } > { 0pt }
         { \dim_set:Nn \tex_hsize:D { \l_@@_fntef_fill_width_dim } }
+      \tex_noindent:D
       \cs_if_exist:NT \tag_mc_begin:n
         {
           \tl_if_empty:NTF \l_@@_fntef_fill_tag_tl
             { \tag_mc_begin:n { } }
             { \tag_mc_begin:n { tag = \l_@@_fntef_fill_tag_tl } }
         }
-      \tex_noindent:D \tex_ignorespaces:D
+      \tex_ignorespaces:D
   }
 \cs_new_protected:Npn \@@_fntef_fill_end:
   {
@@ -9935,20 +9957,20 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       {
         { t }
         {
-          \dim_set:Nn \l_@@_fntef_fill_half_dim
-            { \box_ht_plus_dp:N \l_@@_fntef_fill_box }
-          \box_set_ht:Nn \l_@@_fntef_fill_box { 0pt }
-          \box_set_dp:Nn \l_@@_fntef_fill_box
-            { \l_@@_fntef_fill_half_dim }
+          \vbox_set_top:Nn \l_@@_fntef_fill_box
+            { \vbox_unpack:N \l_@@_fntef_fill_box }
         }
         { c }
         {
-          \dim_set:Nn \l_@@_fntef_fill_half_dim
-            { \box_ht_plus_dp:N \l_@@_fntef_fill_box / 2 }
+          \use:c { check@mathfonts }
+          \dim_set:Nn \l_@@_fntef_fill_total_dim
+            { \box_ht_plus_dp:N \l_@@_fntef_fill_box }
+          \dim_set:Nn \l_@@_fntef_fill_axis_dim
+            { \tex_Umathaxis:D \textstyle }
           \box_set_ht:Nn \l_@@_fntef_fill_box
-            { \l_@@_fntef_fill_half_dim }
+            { \l_@@_fntef_fill_total_dim / 2 + \l_@@_fntef_fill_axis_dim }
           \box_set_dp:Nn \l_@@_fntef_fill_box
-            { \l_@@_fntef_fill_half_dim }
+            { \l_@@_fntef_fill_total_dim - \box_ht:N \l_@@_fntef_fill_box }
         }
       }
     \box_use_drop:N \l_@@_fntef_fill_box

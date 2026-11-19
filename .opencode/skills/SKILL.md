@@ -495,6 +495,13 @@ a `\leaders` box aborts LuaTeX at shipout.
 paragraph. A `text-block` inside a paragraph is invalid (`P --> P`), and the
 automatic paragraph hooks stay off around the vbox.
 
+Its positions are those of `\parbox`, because the report that asked for them
+compared the two: `t` rebuilds the vlist as a `\vtop`, `b` keeps the natural
+box, and `c` centres it on `\Umathaxis\textstyle` after `\check@mathfonts`,
+the axis the kernel's text `\vcenter` reads. A `\vtop` takes the height of the
+first item of its list, so the MC whatsit opens after `\noindent`, inside the
+first line; in the vlist in front of it, a `t` box would have no height.
+
 The reader's selection height comes from the font's `hhea` ascent and descent,
 not from the em box. For Noto Serif CJK SC that is 1.437em, so the selection
 is taller than the 1em square even when the highlight is right. Tagging does

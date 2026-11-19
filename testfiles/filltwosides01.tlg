@@ -3,23 +3,29 @@ Don't change this file in any respect.
 ============================================================
 TEST 1: the box takes the requested width
 ============================================================
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line ....
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line ....
 width: 50.0pt
 ============================================================
 ============================================================
-TEST 2: the default position centres the box
+TEST 2: the default position centres the box like a parbox
 ============================================================
-height: 10.65001pt
-depth: 10.65001pt
-============================================================
-============================================================
-TEST 3: the t position keeps no height
-============================================================
-height: 0.0pt
+height: 13.15001pt, parbox: 13.15001pt
+depth: 8.15pt, parbox: 8.15pt
 ============================================================
 ============================================================
-TEST 4: the b position keeps no depth apart from the last line
+TEST 3: the t position puts the first line on the surrounding baseline
 ============================================================
-depth: 1.52pt
+height: 7.78pt, parbox: 7.78pt
+depth: 13.52pt, parbox: 13.52pt
+============================================================
+============================================================
+TEST 4: the b position puts the last line on the surrounding baseline
+============================================================
+height: 19.78pt, parbox: 19.78pt
+depth: 1.52pt, parbox: 1.52pt
 ============================================================
 ============================================================
 TEST 5: a zero width keeps the surrounding line width
@@ -30,7 +36,7 @@ width: 345.0pt
 TEST 6: each line is filled to the width
 ============================================================
 width: 50.0pt
-depth: 10.765pt
+depth: 8.265pt
 line 1: glyph glue[4] glyph glue[2] glue[0]
 line 2: glyph glue[4] glyph glue[2] glue[0]
 ============================================================
