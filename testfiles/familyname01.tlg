@@ -1,0 +1,34 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: the family named by CJKrmdefault
+============================================================
+PS FandolSong-Regular
+============================================================
+============================================================
+TEST 2: the family named by CJKsfdefault
+============================================================
+PS FandolHei-Regular
+============================================================
+============================================================
+TEST 3: the family named by CJKttdefault
+============================================================
+PS FandolFang-Regular
+============================================================
+============================================================
+TEST 4: a family that is not declared is reported by its expansion
+============================================================
+Package LuaCJK Warning: Unknown CJK family `zhnonexistent' is being ignored.
+PS FandolSong-Regular
+============================================================
+============================================================
+TEST 5: a family declared under the name of a font command
+============================================================
+Package fontspec Info: 
+(fontspec)             Font family 'FandolKai-Regular.otf(0)' created for font 'FandolKai-Regular.otf' with options [Script=CJK].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->"[FandolKai-Regular.otf]:mode=node;script=hani;language=dflt;"
+PS FandolKai-Regular
+============================================================

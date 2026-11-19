@@ -423,14 +423,14 @@ English 中文字体\\
 %   \begin{syntax}
 %     \tn{setCJKfamilyfont}\marg{family}\oarg{options}\marg{font}\oarg{options}
 %   \end{syntax}
-%   定义一个具名的 CJK 字族。
+%   定义一个具名的 CJK 字族。字族可以用 \cs{CJKrmdefault} 之类的名字给出。
 % \end{function}
 %
 % \begin{function}{\CJKfamily}
 %   \begin{syntax}
 %     \tn{CJKfamily} \marg{family}
 %   \end{syntax}
-%   切换到具名的 CJK 字族。
+%   切换到具名的 CJK 字族。字族可以用 \cs{CJKrmdefault} 之类的名字给出。
 % \end{function}
 %
 % \iffalse
@@ -1698,14 +1698,16 @@ English 中文字体\\
 %   \begin{syntax}
 %     \tn{setCJKfamilyfont}\marg{family}\oarg{options}\marg{font}\oarg{options}
 %   \end{syntax}
-%   Define a named CJK family.
+%   Define a named CJK family. The family may be given as \cs{CJKrmdefault}
+%   and friends.
 % \end{function}
 %
 % \begin{function}{\CJKfamily}
 %   \begin{syntax}
 %     \tn{CJKfamily} \marg{family}
 %   \end{syntax}
-%   Switch to a named CJK family.
+%   Switch to a named CJK family. The family may be given as
+%   \cs{CJKrmdefault} and friends.
 % \end{function}
 %
 % \iffalse
@@ -4959,8 +4961,14 @@ abc汉字abc
 %
 % \begin{macro}
 %   {\setCJKmainfont, \setCJKsansfont, \setCJKmonofont, \setCJKfamilyfont}
+% \changes{v0.0.3}{2026/11/19}{\cs{setCJKfamilyfont} expands the name of the
+%   family it declares, so a family can be given as \cs{CJKrmdefault} and
+%   friends.}
 % The public font commands, all built on
 % \cs{@@_set_family_with_options:nnnn}.
+% The family of \cs{setCJKmainfont} and its siblings is already the value of
+% \cs{CJKrmdefault} and friends; \cs{setCJKfamilyfont} expands its argument so
+% that the same name reaches either command.
 %    \begin{macrocode}
 \NewDocumentCommand \setCJKmainfont { o m o }
   {
@@ -4978,7 +4986,11 @@ abc汉字abc
       \CJKttdefault {#1} {#2} {#3}
   }
 \NewDocumentCommand \setCJKfamilyfont { m o m o }
-  { \@@_set_family_with_options:nnnn {#1} {#2} {#3} {#4} }
+  {
+    \tl_set:Ne \l_@@_tmpa_tl {#1}
+    \exp_args:NV \@@_set_family_with_options:nnnn
+      \l_@@_tmpa_tl {#2} {#3} {#4}
+  }
 \NewDocumentCommand \setCJKfallbackfamilyfont { m o m o }
   {
     \tl_set:Ne \l_@@_fallback_key_tl {#1}
@@ -5049,10 +5061,20 @@ abc汉字abc
 % \end{macro}
 %
 % \begin{macro}{\CJKfamily}
+% \changes{v0.0.3}{2026/11/19}{\cs{CJKfamily} expands its argument, so a
+%   family can be given as \cs{CJKrmdefault} and friends.}
 % Switch to a registered family and gobble the following spaces.
+% The name is expanded first, so that a family is named by the macro that
+% holds it: \cs{CJKfamily} \marg{\cs{CJKsfdefault}} selects the family that
+% \tn{sffamily} selects, and the name an undeclared family is reported with is
+% the expanded one.
 %    \begin{macrocode}
 \NewDocumentCommand \CJKfamily { m }
-  { \@@_switch_family:n {#1} \tex_ignorespaces:D }
+  {
+    \tl_set:Ne \l_@@_tmpa_tl {#1}
+    \exp_args:NV \@@_switch_family:n \l_@@_tmpa_tl
+    \tex_ignorespaces:D
+  }
 %    \end{macrocode}
 % \end{macro}
 %
