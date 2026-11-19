@@ -330,6 +330,14 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   charstring, a glyph that calls a global subroutine runs off the end of the
   wrong string (Latin Modern's quotation marks did, and stopped the run).  The
   deprecated `255` form carries four bytes and is read in full.
+- **A Type 2 curve takes four operands.**  `cff_box` reads `hhcurveto`,
+  `vvcurveto`, `hvcurveto`, and `vhcurveto` the way the specification defines
+  them: four operands per curve, the alternating pair starting on the axis the
+  operator's name gives, and the single operand of a four-plus-one run closing
+  the last curve on the other axis.  Read three operands per curve, a mark
+  whose charstring is drawn that way measured its neighbour's blank: the
+  opening double quotation mark of FandolSong stood 1.8pt in the margin
+  while its font had 0.6em of blank.
 - **Suspension is the verbatim hook.**  `\LuaCJKdisable` and `\LuaCJKenable`
   set the `disabled` attribute, which every pass checks per node; `\verb`,
   `verbatim`, `fancyvrb`, and `lstlisting` are already wired to it. A new
