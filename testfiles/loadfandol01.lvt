@@ -46,6 +46,26 @@
   \psname{6}
 }
 
+\TEST{the italic shape is Fandol Kai}{
+  \setbox8=\hbox{\itshape 中}
+  \psname{8}
+}
+
+\TEST{emph sets the CJK text in Fandol Kai}{
+  \setbox10=\hbox{\emph{中}}
+  \psname{10}
+}
+
+\TEST{the songti shortcut keeps the italic face}{
+  \setbox12=\hbox{\songti\itshape 中}
+  \psname{12}
+}
+
+\TEST{the heiti family has no italic face}{
+  \setbox14=\hbox{\heiti\itshape 中}
+  \psname{14}
+}
+
 \END
 
 \end{document}
