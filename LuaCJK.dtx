@@ -1216,7 +1216,10 @@ a’a\quad 不亦说乎！
 %   这条命令在最外层的分组里不起作用，
 %   所以它应当在需要它的环境内部使用，
 %   例如 \pkg{fancyvrb} 的 \texttt{formatcom} 选项里。
-%   \tn{LuaCJKOffVerbAddon} 在同一个分组里再次取消它。
+%   它在自己的分组里重新打开排版调整：要补的间距只有经过调整才会加进去，
+%   所以在 \keys{Verb} 为 \texttt{true} 或 \texttt{env} 的抄录环境里它同样有效。
+%   \tn{LuaCJKOffVerbAddon} 在同一个分组里再次取消它，
+%   并恢复它打开调整之前暂停的状态。
 % \end{function}
 %
 % \iffalse
@@ -1244,6 +1247,8 @@ abc汉字abc
 %   它们在 \pkg{LuaCJK} 里行为相同。
 %   暂停只去掉间距：紧挨着被暂停材料的一个标点，
 %   仍然保留它后面的断行机会。
+%   无论这个设置取什么值，\cs{LuaCJKVerbAddon} 都会在它所在的分组里
+%   把调整重新打开。
 % \end{keyval}
 %
 % \pkg{listings} 一次处理一个字符，并且在读到字符的那一刻就把
@@ -2538,7 +2543,12 @@ a’a\quad 不亦说乎！
 %   The command does nothing at the outermost group level,
 %   so it is meant to be used inside the environment that needs it,
 %   for example in the \texttt{formatcom} option of \pkg{fancyvrb}.
-%   \tn{LuaCJKOffVerbAddon} cancels it again inside the same group.
+%   It turns the typographic adjustments back on inside its own group,
+%   because the gap it computes reaches the text only through them,
+%   so it works in a verbatim-like environment whose \keys{Verb} setting is
+%   \texttt{true} or \texttt{env} as well.
+%   \tn{LuaCJKOffVerbAddon} cancels it again inside the same group and restores
+%   the suspension that was in force before the addon turned it off.
 % \end{function}
 %
 % \iffalse
@@ -2567,6 +2577,8 @@ abc汉字abc
 %   leave the adjustments on, they behave the same in \pkg{LuaCJK}.
 %   Suspension removes the spacing only: a punctuation mark next to suspended
 %   material still keeps the break opportunity that follows it.
+%   Whatever the setting is, \cs{LuaCJKVerbAddon} turns the adjustments
+%   back on inside the group it is used in.
 % \end{keyval}
 %
 % \pkg{listings} processes one character at a time and typesets a character
@@ -3972,6 +3984,10 @@ abc汉字abc
 %   \cs{LuaCJKOffVerbAddon}, which make one CJK character as wide as two
 %   spaces of the current monospaced font and forbid breaks between CJK
 %   characters, so columns in code listings stay aligned.}
+% \changes{v0.0.3}{2026/11/19}{The addon turns the adjustments back on in its
+%   group, so the columns of a verbatim-like environment stay aligned under
+%   \keys{Verb} = \texttt{true} and \texttt{env} as well;
+%   \cs{LuaCJKOffVerbAddon} restores the suspension that was in force.}
 % Align CJK text in a monospaced context: one CJK character plus the glue
 % that follows it should take the width of two spaces.
 % The gap therefore is twice the space of the current font minus
@@ -3979,6 +3995,14 @@ abc汉字abc
 % is measured after switching to the CJK family in a group,
 % because the current font is the monospaced one. A proportional font
 % has no fixed space to align to, so the command adds nothing there.
+% The glue is inserted by the spacing pass, and that pass leaves a suspended
+% node alone, so the addon turns the adjustments back on inside its group.
+% Without that it computes a gap that nothing inserts, which is what used to
+% happen in a verbatim-like environment, whose begin hook suspends the material
+% before the \texttt{formatcom} option of \pkg{fancyvrb} runs.
+% The suspension the addon found is remembered, and \cs{LuaCJKOffVerbAddon}
+% puts it back, so the material is left alone again once the addon is
+% cancelled.
 % \begin{variable}[int]
 %   {
 %     \l_@@_verb_space_dim, \l_@@_verb_cjk_dim,
@@ -3986,10 +4010,12 @@ abc汉字abc
 %     \l_@@_verb_saved_ecglue_skip,
 %     \l_@@_verb_saved_ccglue_touched_bool,
 %     \l_@@_verb_saved_ecglue_touched_bool,
-%     \l_@@_verb_addon_bool, \l_@@_verb_box
+%     \l_@@_verb_addon_bool, \l_@@_verb_saved_disabled_int,
+%     \l_@@_verb_box
 %   }
 % The width of two spaces, the width of one CJK character,
 % the gap between them, the saved glues, whether the addon is on,
+% the suspension in force when it was switched on,
 % and the box used to measure the character.
 %    \begin{macrocode}
 \dim_new:N \l_@@_verb_space_dim
@@ -4000,6 +4026,7 @@ abc汉字abc
 \bool_new:N \l_@@_verb_saved_ccglue_touched_bool
 \bool_new:N \l_@@_verb_saved_ecglue_touched_bool
 \bool_new:N \l_@@_verb_addon_bool
+\int_new:N \l_@@_verb_saved_disabled_int
 \box_new:N \l_@@_verb_box
 %    \end{macrocode}
 % \end{variable}
@@ -4058,6 +4085,9 @@ abc汉字abc
           \l_@@_ccglue_touched_bool
         \bool_set_eq:NN \l_@@_verb_saved_ecglue_touched_bool
           \l_@@_ecglue_touched_bool
+        \int_set:Nn \l_@@_verb_saved_disabled_int
+          { \g_@@_disabled_attr }
+        \LuaCJKenable
         \@@_verb_addon_compute:
         \g_@@_nobreak_attr = 1
         \bool_set_true:N \l_@@_verb_addon_bool
@@ -4077,6 +4107,9 @@ abc汉字abc
           \l_@@_verb_saved_ecglue_touched_bool
         \@@_settings_push:
         \g_@@_nobreak_attr = 0
+        \int_compare:nNnTF { \l_@@_verb_saved_disabled_int } > { 0 }
+          { \LuaCJKdisable }
+          { \LuaCJKenable }
         \bool_set_false:N \l_@@_verb_addon_bool
       }
   }

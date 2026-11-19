@@ -1,0 +1,18 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+Package LuaCJK Warning: Unknown CJK family `zhfs' is being ignored.
+============================================================
+TEST 1: the addon aligns the columns under Verb=true
+============================================================
+widths: 52.5pt 52.5pt
+============================================================
+============================================================
+TEST 2: Verb=true without the addon leaves the columns alone
+============================================================
+widths: 52.5pt 50.5pt
+============================================================
+============================================================
+TEST 3: the addon agrees with Verb=env+
+============================================================
+widths: 52.5pt 52.5pt
+============================================================

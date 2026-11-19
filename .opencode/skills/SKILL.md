@@ -296,6 +296,22 @@ prohibited and the pass skips a break that involves suspended material, so the
 prohibition cannot be applied across it; `verb02` pins both cases, together with
 the line that ends at the mark.
 
+`\LuaCJKVerbAddon` is the exception, and it has to be: the gap that makes one
+CJK character two columns reaches the text only through the spacing pass, and
+that pass leaves a suspended node alone, so an addon that only set `CJKglue`
+would compute a gap nobody inserts.  The environment hooks suspend the material
+before `formatcom` runs (`\FV@FormattingPrep` selects the font first), which is
+why the default `Verb = true` silently undid the addon.  The command therefore
+clears the attribute in its own group after reading it into
+`\l_@@_verb_saved_disabled_int`, and `\LuaCJKOffVerbAddon` restores the value it
+read; the state is read from the attribute register rather than tracked in a
+second flag, so `\LuaCJKdisable` and the hooks stay the only writers.
+Re-enabling is all-or-nothing, so the punctuation rules return with the spacing,
+which is what `Verb = env+` does anyway; `verbaddon01` pins the mechanism and
+`verbaddon02` the environment, measuring each fancyvrb line's natural width
+where `\FancyVerbFormatLine` formats it, because the line box itself is
+`\hbox to \linewidth`.
+
 ### Rule decorations adjust `lua-ul`
 
 `LuaCJKfntef` builds on `lua-ul`, which represents a decoration as a leaders
@@ -595,7 +611,7 @@ The commands are in `AGENTS.md`. For this skill the points that matter are:
 ```bash
 l3build check <name>                # the local loop; must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
-l3build check                       # 64 tests, CI on every push
+l3build check                       # 65 tests, CI on every push
 bash scripts/ctex-subset.sh         # 21/21, CI; no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
 ```
