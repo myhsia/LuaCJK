@@ -828,6 +828,8 @@ $ 天地玄黄 $ and 天地玄黄
 % 字体用不到它们时留下的占位字形在断行之前就去掉，
 % 因此它们既不占进距，也不在两个 CJK 字符之间加上 \keys{CJKecglue}。
 % 用 \tn{char} 请求的字符不会被删除，因为 \tn{char} 要的就是字形本身。
+% 盒子同样按它占的进距计：不占进距的盒子不把两侧的文字分开，
+% 所以 |\rlap|、|\llap| 与 |\clap| 覆盖在文字上的内容仍属于同一串。
 %
 % \begin{environment}{CJKfilltwosides}
 %   把各行排进一个竖直盒子里，
@@ -2148,6 +2150,9 @@ $ 天地玄黄 $ and 天地玄黄
 % characters.
 % A character requested with \tn{char} is not removed, because \tn{char} asks
 % for the glyph itself.
+% A box is read by the advance it occupies in the same way: one that occupies
+% none does not separate the text around it, so what |\rlap|, |\llap| and
+% |\clap| set over the text stays in one run.
 %
 % \begin{environment}{CJKfilltwosides}
 %   Set the lines in a vertical box whose lines are justified
@@ -6669,11 +6674,16 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{box_visible}
-% Whether a box carries material of its own. A box of no size is passed over,
-% so the boundary rules read the text on both sides of it as one run.
+% \changes{v0.0.3}{2026/11/19}{A box that occupies no advance is passed over:
+%   \cs{rlap}, \cs{llap} and \cs{clap} overlay ink on the text around them, so
+%   they no longer take a \keys{CJKecglue} on either side.}
+% Whether a box occupies an advance of its own. A box that occupies none is
+% passed over, so the boundary rules read the text on both sides of it as one
+% run: an empty box does not break the run, and the ink of \cs{rlap}, \cs{llap}
+% and \cs{clap} lies on the text around it instead of separating it.
 %    \begin{macrocode}
 local function box_visible (n)
-  return n.width ~= 0 or n.height ~= 0 or n.depth ~= 0
+  return n.width ~= 0
 end
 
 %    \end{macrocode}
@@ -6932,8 +6942,9 @@ end
 % inside the formula the boundary rules are not applied.
 % A box is an atom as well, and the class at its edge is the class of the
 % node at that edge: filling glue or a kern means the box has no text there,
-% so no glue is added beside it. A box of no size is passed over, so an
-% empty box inside CJK text does not break the run.
+% so no glue is added beside it. A box that occupies no advance is passed over,
+% so an empty box inside CJK text does not break the run, and the ink of an
+% overlaid one does not split it.
 % A box whose own baseline \TeX\ has shifted is attached to the character in
 % front of it: the run ends at it, so it takes no glue on either side and
 % offers no break. That is the box \cs{textsuperscript} and
@@ -7460,8 +7471,9 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{next_visible}
-% The next node that carries text: a glyph, a formula, or a box.  A box of
-% no size is passed over, and an explicit break barrier ends the search.
+% The next node that carries text: a glyph, a formula, or a box.  A box that
+% occupies no advance is passed over, and an explicit break barrier ends the
+% search.
 %    \begin{macrocode}
 local function next_visible (n)
   while n do

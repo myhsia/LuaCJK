@@ -17,6 +17,7 @@
 - `LoadFandol` gives the roman family `FandolKai-Regular.otf` as its italic face, so `\emph` and `\itshape` set the text in Kai instead of leaving it upright.
 - The CJK font is applied to the characters before the text is shaped instead of to the glyph nodes after it: a combining mark attaches to its base, a variation sequence selects its glyph, and the font's own ligatures and `locl` forms appear. An older `luaotfload` keeps the previous behavior.
 - A joiner or a variation selector that the font cannot use leaves nothing behind, and neither does a CJK character the CJK font does not have.
+- A box that occupies no advance is passed over: `\rlap`, `\llap` and `\clap` overlay ink on the text around them, so they no longer take a `CJKecglue` on either side.
 - A superscript or subscript set with `\textsuperscript` or `\textsubscript` stays with the character in front of it: the shifted box takes no glue on either side, so no break is offered before it.
 - A penalty that prohibits the break no longer removes the glue: the CJK--CJK and CJK--Latin spacing survives `\nobreak`, because the glue goes after the penalty, where the prohibition still covers it. A source space in front of the penalty is converted and the penalty moves in front of it.
 - `\hfill` after `\textbf` keeps its fill: only a glue of normal order counts as a source space, so the fill of the line is no longer turned into the inter-character glue.
