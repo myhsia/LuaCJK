@@ -23,6 +23,10 @@
   }%
 }
 
+% Allocated rather than numbered: box 10 is \tn{voidb@x}, and \tn{leavevmode}
+% unpacks that register into the list.
+\newbox\hfillboldbox
+
 \begin{document}
 
 \START
@@ -93,6 +97,12 @@
   \setbox0=\hbox to 50pt{中\hfill 中}
   \countfill{0}
   \TYPE{width: \the\wd0}
+}
+
+\TEST{explicit hfill after a text font command}{
+  \setbox\hfillboldbox=\hbox to 50pt{\textbf{中}\hfill 中}
+  \countfill{\number\hfillboldbox}
+  \TYPE{width: \the\wd\hfillboldbox}
 }
 
 \TEST{box last edge without text}{
