@@ -101,6 +101,11 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    size is passed over (`boundary01`).  Taking the class from the last
    character *inside* the box instead is what pushed every Chinese TOC title
    one `CJKecglue` to the right of its English counterpart.
+   A box whose own baseline TeX has shifted is attached to the character in
+   front of it: the run ends at it, so it takes no glue on either side and
+   offers no break.  That is the box `\textsuperscript` and `\textsubscript`
+   build, and the shift is the box's own field, so the outer box of a
+   `\raisebox` or of a footnote mark keeps its boundary (`boundary04`).
    A run of dashes or ellipses is joined without glue, so justification cannot
    pull a two-em dash apart.  A punctuation mark takes no `CJKecglue` advance
    on either side: its own advance carries the spacing, and the extra third of
@@ -642,7 +647,7 @@ The commands are in `AGENTS.md`. For this skill the points that matter are:
 ```bash
 l3build check <name>                # the local loop; must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
-l3build check                       # 67 tests, CI on every push
+l3build check                       # 68 tests, CI on every push
 bash scripts/ctex-subset.sh         # 21/21, CI; no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
 ```
