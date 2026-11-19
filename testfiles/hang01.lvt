@@ -87,6 +87,37 @@
   \showlines
 }
 
+\TEST{a paragraph that begins with an opening mark leaves its blank}{
+  \setbox0=\vbox{\hsize=3em ‘字字\par}
+  \showlines
+}
+
+\TEST{the indentation of a paragraph carries that blank}{
+  \begingroup
+    \parindent=1em
+    \setbox0=\vbox{\hsize=4em ‘字字\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{a line a forced break starts leaves its blank}{
+  \setbox0=\vbox{\hsize=6em 字字字字\\‘字字\par}
+  \showlines
+}
+
+\TEST{a plain style leaves no blank at the paragraph start}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle=plain}
+    \setbox0=\vbox{\hsize=3em ‘字字\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{a mark the Latin font sets measures its own blank}{
+  \setbox0=\vbox{\hsize=4em '尤里卡'\par}
+  \showlines
+}
+
 \TEST{a bound width also decides what fits}{
   \begingroup
     \LuaCJKsetup{PunctBoundWidth = 0.3em, AllowBreakBetweenPuncts = true}

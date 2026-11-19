@@ -8248,10 +8248,17 @@ end
 % \end{macro}
 
 % \begin{macro}[int]{cff_box}
+% \changes{v0.0.3}{2026/11/18}{The blank of a mark is measured from the
+%   charstring the glyph uses, so a glyph whose charstring calls a subroutine
+%   is measured in the subroutine rather than in the charstring the
+%   measurement began with.}
 % The horizontal extent of a Type 2 charstring. Every point of the outline is
 % visited, the control points of a curve included, which is the box the font's
 % own readers report; hints are counted only so that their masks can be
 % skipped.
+% Each number is read from the charstring that holds it, since a subroutine
+% carries its own operands, and the four bytes of the deprecated fixed form
+% are read in full.
 %    \begin{macrocode}
 local function cff_box (f, cs)
   local x, xmin, xmax = 0, math.huge, -math.huge
@@ -8261,21 +8268,24 @@ local function cff_box (f, cs)
     if x < xmin then xmin = x end
     if x > xmax then xmax = x end
   end
-  local function number (b, i)
+  local function number (code, b, i)
     if b >= 32 and b <= 246 then return b - 139, i + 1 end
     if b >= 247 and b <= 250 then
-      return (b - 247) * 256 + cs:byte(i + 1) + 108, i + 2
+      return (b - 247) * 256 + code:byte(i + 1) + 108, i + 2
     end
     if b >= 251 and b <= 254 then
-      return -(b - 251) * 256 - cs:byte(i + 1) - 108, i + 2
+      return -(b - 251) * 256 - code:byte(i + 1) - 108, i + 2
     end
     if b == 28 then
-      local v = cs:byte(i + 1) * 256 + cs:byte(i + 2)
+      local v = code:byte(i + 1) * 256 + code:byte(i + 2)
       if v >= 32768 then v = v - 65536 end
       return v, i + 3
     end
     if b == 255 then
-      return (cs:byte(i + 1) * 256 + cs:byte(i + 2)) / 65536, i + 3
+      local v = code:byte(i + 1) * 16777216 + code:byte(i + 2) * 65536
+                + code:byte(i + 3) * 256 + code:byte(i + 4)
+      if v >= 2147483648 then v = v - 4294967296 end
+      return v / 65536, i + 5
     end
     return nil, i
   end
@@ -8285,7 +8295,7 @@ local function cff_box (f, cs)
     while i <= n do
       local b = code:byte(i)
       local v
-      v, i = number(b, i)
+      v, i = number(code, b, i)
       if v ~= nil then
         stack[#stack + 1] = v
       else
@@ -8519,18 +8529,111 @@ end
 
 %    \end{macrocode}
 % \end{macro}
+% \begin{macro}[int]{open_hang, head_lead, hang_rule}
+% The hang of an opening mark that a line begins with, as a length and the
+% glyph it belongs to, or zero when the mark does not open or its style does
+% not hang; the rule that carries that length into the line, of negative width
+% and with the attributes of the mark; and the head of a paragraph, found by
+% walking over what carries no ink: the local paragraph node, the whatsits, and
+% the indentation, which \LuaTeX\ puts in front of the text as an empty box of
+% the width of \tn{parindent}.
+%    \begin{macrocode}
+local function open_hang (n)
+  local lead, _, glyph = edge_mark(n, false)
+  if not (glyph and not disabled(glyph) and lead == "open"
+          and style_of(settings_of(glyph)).hang) then
+    return 0, nil
+  end
+  return hang_amount(glyph, "open", settings_of(glyph)) or 0, glyph
+end
+
+local function head_lead (head)
+  local indent = tex.parindent or 0
+  local prev   = nil
+  local cur    = head
+  while cur do
+    if cur.id == GLYPH then
+      return cur, prev
+    elseif cur.id == HLIST or cur.id == VLIST then
+      if cur.head then
+        return nil, nil
+      end
+    elseif cur.id == GLUE then
+      if cur.width ~= indent or cur.stretch ~= 0 or cur.shrink ~= 0 then
+        return nil, nil
+      end
+    elseif cur.id == KERN then
+      if cur.kern ~= 0 then
+        return nil, nil
+      end
+    elseif cur.id == MATH or cur.id == PENALTY or cur.id == DISC
+           or cur.id == RULE then
+      return nil, nil
+    end
+    prev = cur
+    cur  = cur.next
+  end
+  return nil, nil
+end
+
+local function hang_rule (width, glyph, prev, after)
+  local r  = new_node("rule")
+  r.width  = -width
+  r.height = 0
+  r.depth  = 0
+  inherit_attributes(r, glyph)
+  r.next = after
+  if prev then
+    prev.next = r
+  end
+  return r
+end
+
+local function hang_rule (width, glyph, prev, next_)
+  local r  = new_node("rule")
+  r.width  = -width
+  r.height = 0
+  r.depth  = 0
+  inherit_attributes(r, glyph)
+  r.next = next_
+  if prev then
+    prev.next = r
+  end
+  return r
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{hang_bounds}
 % \changes{v0.0.2}{2026/11/15}{The hanging of a mark takes part in line
 %   breaking, so a line that ends at a closing mark or begins with an opening
 %   mark holds the mark the margin allows; the ink of that mark stands outside
 %   the line, and \keys{PunctBoundWidth} decides how much of the advance stays
 %   inside.}
+% \changes{v0.0.3}{2026/11/18}{An opening mark that begins a paragraph, or a
+%   line the document forces a break at, hangs as well: its blank stands in
+%   the indentation or in the margin, and \keys{PunctBoundWidth} decides how
+%   much of the advance stays inside the line there too.}
 % Bracket every break point that a mark ends or starts, so the line measures
 % the hang and the text inside a line does not move. A break that a preceding
 % penalty already forbids is left alone, so a fixed width does not carry a rule
-% that can never be used.
+% that can never be used. The two boundaries that carry no glue of their own
+% are bracketed as well: the start of the paragraph, and the penalty that
+% holds a break the document forced, where the rule that shifts the line is
+% all there is to insert.
 %    \begin{macrocode}
 local function hang_bounds (head)
+  local first, before = head_lead(head)
+  if first then
+    local width, glyph = open_hang(first)
+    if width > 0 then
+      local r = hang_rule(width, glyph, before, first)
+      if not before then
+        head = r
+      end
+    end
+  end
   local prev = nil
   local last = nil
   local cur  = head
@@ -8538,24 +8641,29 @@ local function hang_bounds (head)
     if cur.id == GLYPH
        or ((cur.id == HLIST or cur.id == VLIST) and box_visible(cur)) then
       last = cur
+    elseif cur.id == PENALTY and cur.penalty <= -10000 then
+      local nxt = next_visible(cur.next)
+      local width, glyph = 0, nil
+      if nxt then
+        width, glyph = open_hang(nxt)
+      end
+      if width > 0 then
+        hang_rule(width, glyph, cur, cur.next)
+        cur = cur.next
+      end
     elseif is_break_point(cur) and last and cur.id == GLUE
            and not (prev and prev.id == PENALTY and prev.penalty >= 10000) then
       local nxt                       = next_visible(cur.next)
       local tail, _, tail_glyph       = edge_mark(last, true)
-      local lead, _, lead_glyph       = nil, nil, nil
+      local w_end                     = 0
+      local w_start, lead_glyph       = 0, nil
       if nxt then
-        lead, _, lead_glyph = edge_mark(nxt, false)
+        w_start, lead_glyph = open_hang(nxt)
       end
-      local w_end   = 0
-      local w_start = 0
       if tail_glyph and not disabled(tail_glyph)
          and (tail == "close" or tail == "middle")
          and style_of(settings_of(tail_glyph)).hang then
         w_end = hang_amount(tail_glyph, tail, settings_of(tail_glyph))
-      end
-      if lead_glyph and not disabled(lead_glyph) and lead == "open"
-         and style_of(settings_of(lead_glyph)).hang then
-        w_start = hang_amount(lead_glyph, "open", settings_of(lead_glyph))
       end
       if w_end > 0 or w_start > 0 then
         local delta = w_end + w_start

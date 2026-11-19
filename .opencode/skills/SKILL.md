@@ -132,9 +132,13 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    an opening mark by the whole amount, a middle mark by half, a closing mark
    not at all. A dash or an ellipsis keeps its advance.
 4. `hang_bounds` — insert the hang of a mark into the measure, as a zero-size
-   rule of negative width beside the break glue (`hang01`). Only the
-   `pre_linebreak_filter` path runs it: a box packed by `hpack_filter` cannot
-   break a line, and a line box that is packed again would take the pair twice.
+   rule of negative width beside the break glue (`hang01`), and at the two
+   boundaries that carry no glue: in front of the opening mark that begins a
+   paragraph, after its indentation (which arrives as an empty box of the width
+   of `\parindent`), and after the penalty that holds a break the document
+   forced. Only the `pre_linebreak_filter` path runs it: a box packed by
+   `hpack_filter` cannot break a line, and a line box that is packed again
+   would take the pair twice.
 5. `apply_kinsoku` — insert a `\penalty 10000` at a break point the
    line-breaking prohibitions forbid. It reads a box at the edge that faces the
    break (`first_punct`/`last_punct`), so a mark inside an `\mbox` takes part.
