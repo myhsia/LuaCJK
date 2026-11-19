@@ -1307,7 +1307,7 @@ abc汉字abc
 % \begin{keyval}
 %   \item[\keys{thickness}]\val{length}: 横线的粗细，初始 \texttt{0.4pt}。
 %   \item[\keys{depth}]\val{length}: 从基线到横线顶部的距离，
-%   初始 \texttt{0.2em}。
+%   初始 \texttt{0.2em}；着重号的点是它在 em 盒底部之下的深度。
 %   \item[\keys{textformat}]\val{code}: 作用于文字的代码，例如
 %   |textformat = \bfseries|。
 %   \item[\keys{format}]\val{color name}: 横线的颜色，例如
@@ -1482,6 +1482,11 @@ abc汉字abc
 %     \tn{CJKunderdot} \oarg{options} \marg{text}
 %   \end{syntax}
 %   在 \meta{text} 下面加着重号。
+%   每个 CJK 字符下面一个点，点在字符的一字宽方格内居中，
+%   顶部在 em 盒底部之下 \texttt{0.2em} 处；
+%   拉丁字母、数字和空格下面没有点，
+%   一段文字断行以后，每一行的字符各有自己的点，
+%   粘连伸长时点随字符移动。
 %   用 |symbol = |\meta{symbol} 时，一个符号取代着重号，
 %   放置方式与 \cs{CJKunderanysymbol} 的符号相同：
 %   每字宽一个，居中，符号顶部在 em 盒底部之下 \texttt{0.3em} 处。
@@ -2661,7 +2666,8 @@ abc汉字abc
 %   \item[\keys{thickness}]\val{length}: the thickness of the rule,
 %   initially \texttt{0.4pt}.
 %   \item[\keys{depth}]\val{length}: the distance from the baseline to the
-%   top of the rule, initially \texttt{0.2em}.
+%   top of the rule, initially \texttt{0.2em}; for the emphasis dots it is
+%   their depth below the bottom of the em box.
 %   \item[\keys{textformat}]\val{code}: code applied to the text, for
 %   example |textformat = \bfseries|.
 %   \item[\keys{format}]\val{color name}: the color of the rule, for
@@ -2838,6 +2844,11 @@ abc汉字abc
 %     \tn{CJKunderdot} \oarg{options} \marg{text}
 %   \end{syntax}
 %   Put emphasis dots under \meta{text}.
+%   Each CJK character gets one dot, centred in the one-em cell of the
+%   character, its top \texttt{0.2em} below the bottom of the em box;
+%   Latin letters, digits, and spaces get none, each line of a broken span
+%   carries its own dots, and the dots follow the characters when the
+%   inter-character glue stretches.
 %   With |symbol = |\meta{symbol} a symbol takes the place of the dots
 %   and is placed like the symbol of \cs{CJKunderanysymbol}: one per em,
 %   centered, its top \texttt{0.3em} under the bottom of the em box.
@@ -8806,11 +8817,23 @@ luatexbase.add_to_callback("hyphenate", M.hyphenate, "LuaCJK.hyphenate")
 % \TeX\ numbers the glue subtypes, and 100 is \tn{leaders},
 % the one both \pkg{lua-ul} and this package use.
 %
+% The emphasis dots are the exception: a pattern repeated along the span
+% cannot follow the characters when the inter-character glue stretches, and
+% it would dot Latin text as well, so the ink of \cs{CJKunderdot} goes into
+% the text itself.  Its leaders pair carries an empty box and keeps the
+% width, the stretch, and the shrink of the span, while the pass writes one
+% dot behind each CJK character, centred on the advance of that character.
+%
 % \begin{variable}[int]
-%   {LuaCJKfntef.attr, LuaCJKfntef.settings}
+%   {LuaCJKfntef.attr, LuaCJKfntef.settings, LuaCJKfntef.dot_attr,
+%   LuaCJKfntef.color_attr}
 % The attribute that carries the number of a settings entry, and the entry
-% itself: the inset at both ends and whether punctuation is skipped.
+% itself: the inset at both ends, whether punctuation is skipped, and the
+% geometry of the emphasis dots.
 % A separate entry per call keeps two decorations in one paragraph apart.
+% The dots carry an attribute of their own, so that a box the pass sees
+% twice is not dotted twice, and the number of \pkg{luacolor}'s attribute,
+% which is what colors a rule.
 %    \begin{macrocode}
 %<*lua-fntef>
 LuaCJKfntef = LuaCJKfntef or {}
@@ -8823,9 +8846,12 @@ local KERN    = node.id("kern")
 local HLIST   = node.id("hlist")
 local RULE    = node.id("rule")
 
-M.attr     = M.attr     or nil
-M.settings = M.settings or {}
-M.next_id  = M.next_id  or 1
+M.attr       = M.attr     or nil
+M.settings   = M.settings or {}
+M.next_id    = M.next_id  or 1
+M.dot_attr   = M.dot_attr or luatexbase.new_attribute("LuaCJKfntef.dot")
+M.color_attr = luatexbase.attributes
+  and luatexbase.attributes["LuaCol@Attribute"]
 
 %    \end{macrocode}
 % \end{variable}
@@ -8881,11 +8907,21 @@ end
 %
 % \begin{macro}[int]{LuaCJKfntef.new_settings}
 % Register one entry and select it.
+% The entry carries the dots of \cs{CJKunderdot} when the command gave no
+% symbol: the side of one dot, the distance from the baseline to its top,
+% and the color attribute of \keys{format}, zero when the dots follow the
+% color of their text.
 %    \begin{macrocode}
-function M.new_settings (subtract, skip, hidden)
+function M.new_settings (subtract, skip, hidden, dots, size, top, color)
   local id       = M.next_id
   M.next_id      = id + 1
-  M.settings[id] = { subtract = subtract, skip = skip, hidden = hidden }
+  if dots then
+    dots = { size = size or 0, top = top or 0, color = color or 0 }
+  else
+    dots = nil
+  end
+  M.settings[id] = { subtract = subtract, skip = skip, hidden = hidden,
+                     dots = dots }
   if M.attr then
     tex.setattribute(M.attr, id)
   end
@@ -9110,6 +9146,86 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{dot_box}
+% One emphasis dot, written into the text after the character it belongs to.
+% The box takes no space and adds neither height nor depth, so the decorated
+% text keeps its width and the line keeps its leading; the dot is centred on
+% the advance of the character by a kern of half of it, and the inner box
+% carries the ink at the depth of the call.  The attributes travel from the
+% character, so a dot takes the color of its text, and \keys{format} replaces
+% the color attribute with the value the \TeX{} side resolved.  The dot
+% itself is marked, so that a box the pass sees twice is not dotted twice.
+%    \begin{macrocode}
+local function dot_box (glyph, dots)
+  local outer = node.new("hlist")
+  outer.width, outer.height, outer.depth = 0, 0, 0
+  outer.dir = "TLT"
+  local kern = node.new("kern")
+  kern.kern  = -math.floor(((glyph.width or 0) + dots.size) / 2 + 0.5)
+  local box = node.new("hlist")
+  box.width, box.height, box.depth = dots.size, dots.size, 0
+  box.shift = dots.top
+  box.dir   = "TLT"
+  local rule = node.new("rule")
+  rule.width, rule.height, rule.depth = dots.size, dots.size, 0
+  copy_attributes(kern, glyph)
+  copy_attributes(box, glyph)
+  copy_attributes(outer, glyph)
+  copy_attributes(rule, glyph)
+  if dots.color > 0 and M.color_attr then
+    node.set_attribute(rule, M.color_attr, dots.color)
+  end
+  node.set_attribute(outer, M.dot_attr, 1)
+  box.head   = rule
+  kern.next  = box
+  outer.head = kern
+  return outer
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{insert_dots}
+% Write one dot under each CJK character of the span of a leaders pair.
+% The walk stops at the width of the pair, and an inner box of the text is
+% walked with the interval of its own, so a character inside a box is dotted
+% as well.  A dot goes where the centre of its character lies inside the
+% span that \keys{subtract} leaves, and \keys{skip} leaves the punctuation
+% marks undotted.  A character that already carries a dot behind it is passed
+% over, because the pass also runs when a box is packed a second time.
+%    \begin{macrocode}
+local function insert_dots (start, w, settings, dots, offset)
+  offset = offset or 0
+  local subtract = settings.subtract or 0
+  local low      = math.min(subtract, w)
+  local high     = math.max(w - subtract, low)
+  local x        = 0
+  local n        = start
+  while n and x < w do
+    local nxt   = n.next
+    local width = node_width(n)
+    if n.id == GLYPH and width > 0
+       and LuaCJK.is_cjk(n.char, LuaCJK.settings_of(n)) then
+      local centre = offset + x + width / 2
+      local dotted = nxt and nxt.id == HLIST
+                     and node.has_attribute(nxt, M.dot_attr) ~= nil
+      if centre >= low and centre <= high and not dotted
+         and not (settings.skip and kind(n.char)) then
+        local dot = dot_box(n, dots)
+        dot.next = nxt
+        n.next   = dot
+      end
+    elseif n.id == HLIST then
+      insert_dots(n.head, n.width or 0, settings, dots, offset + x)
+    end
+    x = x + width
+    n = nxt
+  end
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{replace_pair}
 % Replace the leaders glue of one decoration.
 % The replacement covers the same span, with the same natural width,
@@ -9217,6 +9333,9 @@ end
 % \begin{macro}[int]{adjust}
 % Walk a horizontal list and rewrite every leaders pair whose following node
 % carries a settings entry.
+% A pair of the emphasis dots keeps the nodes \pkg{lua-ul} made, because its
+% leader box is empty and there is no pattern to place; what the pass adds is
+% the ink, one dot behind each CJK character of the span.
 %    \begin{macrocode}
 local function adjust (head)
   if not M.attr then
@@ -9230,7 +9349,14 @@ local function adjust (head)
        and n.next.id == GLUE and n.next.width == -n.width then
       local neg      = n.next
       local settings = settings_at(neg.next)
-      if settings or box_rule(n.leader) then
+      if settings and settings.dots then
+        insert_dots(neg.next, n.width, settings, settings.dots, 0)
+        if settings.hidden then
+          neg.next = hide_text(neg.next, n.width)
+        end
+        n    = neg
+        nxt  = neg.next
+      elseif settings or box_rule(n.leader) then
         head = replace_pair(head, prev, n, settings)
         n    = neg
         nxt  = neg.next
@@ -9318,12 +9444,18 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %     \l_@@_fntef_top_dim,       \l_@@_fntef_bottom_dim,
 %     \l_@@_fntef_top_given_bool, \l_@@_fntef_bottom_given_bool,
 %     \l_@@_fntef_color_key_tl,  \l_@@_fntef_silent_bool,
-%     \l_@@_fntef_color_ops_tl,  \g_@@_fntef_color_ops_tl
+%     \l_@@_fntef_color_ops_tl,  \g_@@_fntef_color_ops_tl,
+%     \l_@@_fntef_dots_bool,     \l_@@_fntef_dots_js_tl,
+%     \l_@@_fntef_dots_size_dim, \l_@@_fntef_dots_top_dim,
+%     \g_@@_fntef_dots_color_int
 %   }
 % The requested geometry, the format of the text,
 % the color that an underline type is cached by,
 % the color operations of a drawn pattern,
 % and the keys that \pkg{lua-ul} receives.
+% The emphasis dots add whether the ink is a dot per CJK character rather
+% than a pattern, the side and the position of one dot, and the color
+% attribute of the dots when \keys{format} is given.
 %    \begin{macrocode}
 \dim_new:N \l_@@_fntef_depth_dim
 \dim_new:N \l_@@_fntef_thickness_dim
@@ -9352,6 +9484,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \dim_new:N \l_@@_fntef_gap_dim
 \dim_new:N \l_@@_fntef_height_dim
 \tl_new:N \l_@@_fntef_symbol_tl
+\bool_new:N \l_@@_fntef_dots_bool
+\tl_new:N \l_@@_fntef_dots_js_tl
+\dim_new:N \l_@@_fntef_dots_size_dim
+\dim_new:N \l_@@_fntef_dots_top_dim
+\int_new:N \g_@@_fntef_dots_color_int
 \dim_set:Nn \l_@@_fntef_depth_dim     { .2em }
 \dim_set:Nn \l_@@_fntef_thickness_dim { .4pt }
 \dim_set:Nn \l_@@_fntef_gap_dim       { 1.1pt }
@@ -9405,14 +9542,38 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \begin{macro}[int]{\@@_fntef_push_settings:}
 % Hand the decoration settings to Lua, or clear the attribute when they are
 % all at their defaults.
+% The dots are settings of their own: when \cs{CJKunderdot} gives no
+% \keys{symbol}, the pass puts one dot under each CJK character rather than
+% repeating a pattern, so the entry carries the side of a dot, the distance
+% from the baseline to its top, and the color attribute of \keys{format}.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_push_settings:
   {
+    \bool_lazy_and:nnTF
+      { \l_@@_fntef_dots_bool }
+      { \tl_if_empty_p:N \l_@@_fntef_symbol_tl }
+      {
+        \tl_set:Nn \l_@@_fntef_dots_js_tl { true }
+        \dim_set:Nn \l_@@_fntef_dots_size_dim { .06em }
+        \dim_set:Nn \l_@@_fntef_dots_top_dim
+          { \LuaCJKemdescent + \l_@@_fntef_depth_dim }
+        \tl_if_empty:NF \l_@@_fntef_format_tl
+          {
+            \group_begin:
+              \luaul_set_color:n { \l_@@_fntef_format_tl }
+              \luaul_apply_color:
+              \int_gset:Nn \g_@@_fntef_dots_color_int
+                { \tex_the:D \use:c { LuaCol@Attribute } }
+            \group_end:
+          }
+      }
+      { \tl_set:Nn \l_@@_fntef_dots_js_tl { false } }
     \bool_lazy_all:nTF
       {
         { \dim_compare_p:nNn { \l_@@_fntef_subtract_dim } = { 0pt } }
         { \str_if_eq_p:Vn \l_@@_fntef_skip_tl { 0 } }
         { \bool_not_p:n { \l_@@_fntef_hidden_bool } }
+        { \str_if_eq_p:Vn \l_@@_fntef_dots_js_tl { false } }
       }
       {
         \lua_now:e
@@ -9433,7 +9594,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
             LuaCJKfntef.new_settings
               ( \dim_to_decimal_in_sp:n { \l_@@_fntef_subtract_dim } ,
                 \l_@@_fntef_skip_js_tl ,
-                \l_@@_fntef_hidden_js_tl )
+                \l_@@_fntef_hidden_js_tl ,
+                \l_@@_fntef_dots_js_tl ,
+                \dim_to_decimal_in_sp:n { \l_@@_fntef_dots_size_dim } ,
+                \dim_to_decimal_in_sp:n { \l_@@_fntef_dots_top_dim } ,
+                \int_use:N \g_@@_fntef_dots_color_int )
           }
       }
   }
@@ -9722,6 +9887,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \bool_set_false:N \l_@@_fntef_hidden_bool
     \bool_set_false:N \l_@@_fntef_top_given_bool
     \bool_set_false:N \l_@@_fntef_bottom_given_bool
+    \bool_set_false:N \l_@@_fntef_dots_bool
+    \int_gzero:N \g_@@_fntef_dots_color_int
     \dim_set:Nn \l_@@_fntef_depth_dim     { .2em }
     \dim_set:Nn \l_@@_fntef_thickness_dim { .4pt }
     \dim_set:Nn \l_@@_fntef_gap_dim       { 1.1pt }
@@ -9733,6 +9900,21 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \cs_new_protected:Npn \@@_fntef_decoration_setup:n #1
   {
     \@@_fntef_options:n {#1}
+    \@@_fntef_push_settings:
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{\@@_fntef_dots_setup:n}
+% The same for the emphasis dots, which are a setting of their own:
+% the options are parsed first, because the reset clears the flag, and the
+% flag is set before the settings go to Lua, because the entry carries the
+% side, the position, and the color of a dot.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_fntef_dots_setup:n #1
+  {
+    \@@_fntef_options:n {#1}
+    \bool_set_true:N \l_@@_fntef_dots_bool
     \@@_fntef_push_settings:
   }
 %    \end{macrocode}
@@ -10185,13 +10367,21 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKunderdot}
+% \changes{v0.0.3}{2026/11/18}{The emphasis dots sit under each CJK character,
+%   centred in the one-em cell of the character; Latin letters, digits, and
+%   spaces carry none, and the dots follow the characters when the
+%   inter-character glue stretches.}
 % Emphasise with dots below the glyphs. The optional argument takes the key
 % set of \cs{CJKunderline}, like the other decorations.
+% A symbol given with \keys{symbol} is a pattern repeated along the span, as
+% \cs{CJKunderanysymbol} repeats its own; the default dot is a setting of the
+% decoration pass, which puts one under each CJK character, so the ink travels
+% with the character rather than with the beginning of the span.
 %    \begin{macrocode}
 \NewDocumentCommand \CJKunderdot { s t- o +m }
   {
     \group_begin:
-      \@@_fntef_decoration_setup:n {#3}
+      \@@_fntef_dots_setup:n {#3}
       \tl_if_empty:NTF \l_@@_fntef_symbol_tl
         { \@@_fntef_underdot:n { \@@_fntef_body:n {#4} } }
         {
@@ -10202,34 +10392,18 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   }
 %    \end{macrocode}
 % \begin{macro}[int]{\@@_fntef_underdot:n}
-% Apply the dot pattern inside a group. One repeating unit is a dot of
-% \texttt{.06em} with \texttt{.12em} on each side, lowered by \texttt{.4em}.
-% The unit is written with |em| units so that it scales with the font size.
+% Apply the dots inside a group.
+% The underline type of the dots carries no ink: it gives the decoration the
+% pair of nodes that \pkg{lua-ul} provides, and with them the width, the
+% stretch, and the shrink of the text.  The pass then writes the dots into the
+% text itself, which is also where \keys{subtract} and \keys{skip} act:
+% a character whose centre lies in the part that \keys{subtract} takes off
+% gets no dot, and \keys{skip} leaves the punctuation undotted.
 % \begin{macro}[int]{\@@_fntef_dots}
-% The underline type that repeats one dot of the pattern.
+% The underline type of the dots: a leader box of nothing, which leaves the
+% pair without a pattern to repeat.
 %    \begin{macrocode}
-\newunderlinetype \@@_fntef_dots
-  {
-    \tex_leaders:D \hbox:n
-      {
-        \hbox_set:Nn \l_@@_fntef_pattern_box
-          {
-            \skip_horizontal:n { .12em }
-            \box_move_up:nn { -.4em }
-              {
-                \hbox:n
-                  {
-                    \tex_vrule:D width .06em height .06em
-                      depth \c_zero_dim
-                  }
-              }
-            \skip_horizontal:n { .12em }
-          }
-        \box_set_ht:Nn  \l_@@_fntef_pattern_box { \c_zero_dim }
-        \box_set_dp:Nn  \l_@@_fntef_pattern_box { \c_zero_dim }
-        \box_use_drop:N \l_@@_fntef_pattern_box
-      }
-  }
+\newunderlinetype \@@_fntef_dots { \tex_leaders:D \hbox:n { } }
 %    \end{macrocode}
 % \end{macro}
 %    \begin{macrocode}

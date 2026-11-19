@@ -150,7 +150,7 @@ NODES kern:327680 leaders:655360 kern:327680 glue:-1310720 glyph glue:0 glyph
 TEST 11: underdot takes subtract
 ============================================================
 width: 20.0pt
-NODES kern:327680 leaders:655360 kern:327680 glue:-1310720 glyph glue:0 glyph
+NODES leaders:1310720 glue:-1310720 glyph glue:0 glyph
 ============================================================
 ============================================================
 TEST 12: underdot without options keeps the whole span
