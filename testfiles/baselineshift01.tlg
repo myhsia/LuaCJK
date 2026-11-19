@@ -48,3 +48,20 @@ LaTeX Font Info:    Font shape `TU/FandolSong-Regular.otf(1)/m/n' will be
 (Font)              scaled to size 11.99997pt on input line ....
 PS FandolSong-Regular size 786430 yoffset 157283
 ============================================================
+============================================================
+TEST 8: PunctFamily takes the Baseline of its family
+============================================================
+PS FandolFang-Regular size 655360 yoffset 163840
+============================================================
+============================================================
+TEST 9: the text and its punctuation take their own offsets
+============================================================
+PS FandolHei-Regular size 655360 yoffset -186467
+PS FandolFang-Regular size 655360 yoffset 163840
+============================================================
+============================================================
+TEST 10: the offset is applied once when both families are the same
+============================================================
+PS FandolFang-Regular size 655360 yoffset 163840
+PS FandolFang-Regular size 655360 yoffset 163840
+============================================================

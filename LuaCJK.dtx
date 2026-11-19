@@ -892,6 +892,7 @@ $ 天地玄黄 $ and 天地玄黄
 %   另一个 CJK 字族。
 %   该字族必须用 \cs{setCJKfamilyfont} 声明；\texttt{false}
 %   （初始值）让标点重新跟随文字。
+%   该字族的 \texttt{Baseline} 同样移动它排出的标点。
 %   \item[\keys{AllowBreakBetweenPuncts}]\val{\TFF}: 两个相邻的标点是否可以
 %   被断行分开。
 %   破折号与省略号不在此列，一串连续的破折号或省略号由
@@ -2192,6 +2193,7 @@ $ 天地玄黄 $ and 天地玄黄
 %   different CJK family for the punctuation marks.
 %   The family must be declared with \cs{setCJKfamilyfont}; \texttt{false}
 %   (the initial value) makes the marks follow the text again.
+%   The \texttt{Baseline} of that family moves the marks it sets as well.
 %   \item[\keys{AllowBreakBetweenPuncts}]\val{\TFF}: Whether two adjacent
 %   punctuation marks may be separated by a line break.
 %   A dash or an ellipsis is not affected: a run of them is governed by
@@ -4358,6 +4360,8 @@ abc汉字abc
 %
 % \begin{macro}[int]{\@@_push_shift:nn}
 % Hand the vertical offset of one font to Lua, once per font identifier.
+% It is called for the current family, for each of its fallback fonts, and
+% for the family \keys{PunctFamily} names.
 % \begin{variable}[int]
 %   {
 %     \g_@@_font_shift_prop, \g_@@_shift_pushed_prop,
@@ -4518,9 +4522,15 @@ abc汉字abc
 % \begin{macro}[int]{\@@_update_font:}
 % \changes{v0.0.1}{2026/11/11}{Provide \keys{PunctFamily}, which sets a
 %   separate CJK family for the punctuation marks.}
+% \changes{v0.0.3}{2026/11/18}{\keys{PunctFamily} shifts its marks by the
+%   \keys{Baseline} of the family it names.}
 % On every \tn{selectfont}, resolve the current family, its fallback
-% families, and the math family to font identifiers and store them in the
-% attributes.
+% families, the math family, and the \keys{PunctFamily} family to font
+% identifiers and store them in the attributes, and hand the \keys{Baseline}
+% offset of each to Lua.
+% The punctuation family takes a selection of its own, because nothing reaches
+% it through \cs{CJKfamily}; without the offset handed over here its marks
+% would stand on the baseline of a font they are not set in.
 % \begin{variable}[int]{\l_@@_selectfont_bool, \g_@@_fontid_int}
 % A guard against re-entering the update while \tn{selectfont} runs,
 % and the font identifier of the current CJK family.
@@ -4599,6 +4609,9 @@ abc汉字abc
                   \selectfont
                   \int_gset:Nn \g_@@_punct_fontid_int
                     { \tex_fontid:D \tex_font:D }
+                  \@@_push_shift:nn
+                    { \int_use:N \g_@@_punct_fontid_int }
+                    { \l_@@_tmpa_tl }
                 \group_end:
                 \g_@@_punct_font_attr = \g_@@_punct_fontid_int
               }
