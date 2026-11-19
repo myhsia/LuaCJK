@@ -7,6 +7,7 @@
 \setCJKfamilyfont{low}{FandolHei-Regular.otf}[Baseline = -1mm]
 \setCJKfamilyfont{fb}{TeX Gyre Pagella}
 \setCJKfallbackfamilyfont{fb}{FandolFang-Regular.otf}[Baseline = 0.1em]
+\setCJKfamilyfont{pm}{FandolFang-Regular.otf}[Baseline = 0.25em]
 
 \def\psname{%
   \directlua{
@@ -26,6 +27,25 @@
       end
     end
     walk(tex.box[0])
+  }%
+}
+
+\def\psall{%
+  \directlua{
+    local function walk (n)
+      while n do
+        if n.id == node.id("glyph") then
+          local f = font.getfont(n.font)
+          texio.write_nl("term and log", "PS " .. tostring(f and f.psname)
+            .. " size " .. tostring(f and f.size)
+            .. " yoffset " .. tostring(n.yoffset))
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          walk(n.head)
+        end
+        n = n.next
+      end
+    end
+    walk(tex.box[0].head)
   }%
 }
 
@@ -75,6 +95,30 @@
     \addCJKfontfeatures{Scale = 1.2}
     \setbox0=\hbox{中}
     \psname
+  \endgroup
+}
+
+\TEST{PunctFamily takes the Baseline of its family}{
+  \begingroup
+    \LuaCJKsetup{PunctFamily = pm}
+    \setbox0=\hbox{，}
+    \psname
+  \endgroup
+}
+
+\TEST{the text and its punctuation take their own offsets}{
+  \begingroup
+    \LuaCJKsetup{PunctFamily = pm}
+    \setbox0=\hbox{\CJKfamily{low}中，}
+    \psall
+  \endgroup
+}
+
+\TEST{the offset is applied once when both families are the same}{
+  \begingroup
+    \LuaCJKsetup{PunctFamily = pm}
+    \setbox0=\hbox{\CJKfamily{pm}中，}
+    \psall
   \endgroup
 }
 

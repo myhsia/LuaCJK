@@ -57,7 +57,12 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    it only where the font changes is what makes the pass idempotent, since it
    runs on the paragraph and again on each line packed from it; the offset is
    recorded per font identifier, so two families that supply the same font
-   share the last value they declared.
+   share the last value they declared.  The table is filled by
+   `\@@_push_shift:nn` at every font selection — for the current family, for
+   each fallback font, and for the family `PunctFamily` names.  That last one
+   takes its font without a `\CJKfamily` switch, so a font identifier handed
+   to Lua on its own carries no offset unless it is pushed beside it
+   (`baselineshift01`).
    A luaotfload without `pre_shaping_filter` keeps the package's previous
    behavior: `rewrite_fonts` copies each shaped glyph into its font in
    `process` instead, `copy_glyph` adds the `Baseline` there, and every
