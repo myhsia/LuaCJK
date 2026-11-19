@@ -1,0 +1,100 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKglue = 10pt, CJKecglue = 5pt}
+
+% The kinds of the nodes of a box, one letter each.
+\directlua{
+  function reportkinds (n)
+    local kinds = {}
+    kinds[node.id("glyph")]   = "g"
+    kinds[node.id("glue")]    = "u"
+    kinds[node.id("kern")]    = "k"
+    kinds[node.id("penalty")] = "p"
+    kinds[node.id("disc")]    = "d"
+    kinds[node.id("hlist")]   = "b"
+    kinds[node.id("vlist")]   = "b"
+    local cur, out, i = tex.box[n].head, {}, 0
+    while cur do
+      local kind = kinds[cur.id]
+      if kind then
+        i = i + 1
+        out[i] = kind
+      end
+      cur = cur.next
+    end
+    texio.write_nl("term and log", "LIST: " .. table.concat(out, " "))
+  end
+}
+
+% The number of lines of a vertical box.
+\directlua{
+  function reportlines (n)
+    local cur, count = tex.box[n].head, 0
+    while cur do
+      if cur.id == node.id("hlist") then
+        count = count + 1
+      end
+      cur = cur.next
+    end
+    texio.write_nl("term and log", "LINES: " .. count)
+  end
+}
+
+\def\report#1{\directlua{reportkinds(\number#1)}}
+\def\lines#1{\directlua{reportlines(\number#1)}}
+
+\newbox\scriptbox
+\newbox\subscriptbox
+\newbox\plainbox
+\newbox\scriptrunbox
+\newbox\scriptlinebox
+\newbox\plainlinebox
+
+\setbox\scriptbox=\hbox{中\textsuperscript{2}}
+\setbox\subscriptbox=\hbox{中\textsubscript{2}}
+\setbox\plainbox=\hbox{中\mbox{2}}
+\setbox\scriptrunbox=\hbox{中\textsuperscript{文}中}
+\begingroup
+  \LuaCJKsetup{CJKglue = 0pt}
+  \global\setbox\scriptlinebox=\vbox{\hsize=3em \noindent 中中中\textsuperscript{2}\par}
+  \global\setbox\plainlinebox=\vbox{\hsize=3em \noindent 中中中\mbox{2}\par}
+\endgroup
+
+\begin{document}
+
+\START
+
+\TEST{a superscript takes no glue}{
+  \report\scriptbox
+  \TYPE{width: \the\wd\scriptbox}
+}
+
+\TEST{a subscript takes no glue}{
+  \report\subscriptbox
+  \TYPE{width: \the\wd\subscriptbox}
+}
+
+\TEST{a box on the baseline keeps its boundary}{
+  \report\plainbox
+  \TYPE{width: \the\wd\plainbox}
+}
+
+\TEST{the run ends at the shifted box}{
+  \report\scriptrunbox
+  \TYPE{width: \the\wd\scriptrunbox}
+}
+
+\TEST{a superscript does not start a line}{
+  \lines\scriptlinebox
+}
+
+\TEST{a box on the baseline still breaks}{
+  \lines\plainlinebox
+}
+
+\END
+
+\end{document}
