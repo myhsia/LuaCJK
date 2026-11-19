@@ -94,7 +94,11 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    back into the source-space class before the walk: `\textbf` and its siblings
    save the skip in front of them, `\unskip` it, apply the italic correction and
    reinsert it with `\hskip`, so the glue keeps the dimensions of the space but
-   carries the subtype of a skip the document wrote (`boundary03`).
+   carries the subtype of a skip the document wrote (`boundary03`).  Only a glue
+   of normal order is read that way — a space never has a stretch or shrink
+   order — so an `\hfill` or `\hfil` that stands after the same italic
+   correction keeps its own subtype instead of becoming the inter-character
+   glue and taking the fill of the line with it (`boundary01`).
    A box is an atom, and the class at its edge is the class of the node *at*
    that edge: filling glue (`\numberline`'s `\hfil`), a kern, or a rule means
    the box has no text there, so no glue is added beside it, while a box of no

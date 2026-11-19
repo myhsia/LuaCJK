@@ -7099,6 +7099,9 @@ end
 %   siblings is still the inter-character glue: \LaTeX\ moves a space across
 %   the italic correction of a text font command, and the move leaves the glue
 %   with the subtype of a skip the document wrote.}
+% \changes{v0.0.3}{2026/11/19}{\cs{hfill} after \cs{textbf} keeps its fill:
+%   only a glue of normal order counts as a source space, so the fill of the
+%   line is no longer turned into the inter-character glue.}
 % Give a source space that a text font command moved across the italic
 % correction its subtype back.
 % \cs{textbf} and the other text font commands save the skip in front of them,
@@ -7109,12 +7112,17 @@ end
 % subtype back is enough; a typeface whose interword space is rigid therefore
 % needs no special case, at the price of retiming a skip that the document
 % wrote in that very place.
+% A space never has a stretch or shrink order, so a glue that has one was not
+% a space at all: \tn{hfill} and \tn{hfil} follow the italic correction of the
+% same command and keep their own subtype, or the fill of the line would become
+% the inter-character glue.
 %    \begin{macrocode}
 local function restore_source_spaces (head)
   local prev = nil
   local cur  = head
   while cur do
     if cur.id == GLUE and cur.subtype ~= SPACESKIP
+       and cur.stretch_order == 0 and cur.shrink_order == 0
        and prev and prev.id == KERN and prev.subtype == ITALICCORR then
       cur.subtype = SPACESKIP
     end

@@ -19,6 +19,7 @@
 - A joiner or a variation selector that the font cannot use leaves nothing behind, and neither does a CJK character the CJK font does not have.
 - A superscript or subscript set with `\textsuperscript` or `\textsubscript` stays with the character in front of it: the shifted box takes no glue on either side, so no break is offered before it.
 - A penalty that prohibits the break no longer removes the glue: the CJK--CJK and CJK--Latin spacing survives `\nobreak`, because the glue goes after the penalty, where the prohibition still covers it. A source space in front of the penalty is converted and the penalty moves in front of it.
+- `\hfill` after `\textbf` keeps its fill: only a glue of normal order counts as a source space, so the fill of the line is no longer turned into the inter-character glue.
 - A whatsit between two CJK characters no longer hides the break point from `CheckSingle`: a color change, a mark, and the other nodes that carry no text are passed over, so they no longer leave a single character on the last line.
 - `top` and `bottom` are keys of the decoration, so they reach a rule that `format` colors as well, and an underline type is built per font size, so a rule built from `em` units keeps its thickness when the size changes.
 - A decoration keeps the width, the stretch, and the shrink of the text it covers, so a rule no longer changes the spacing of the line it sits in, `skip` no longer tightens a justified line, and a `\kern` inside the text no longer moves the gap `skip` leaves at a punctuation mark.
