@@ -4,9 +4,36 @@
 \usepackage{LuaCJK}
 \setCJKmainfont{FandolSong-Regular.otf}
 
+% The characters of the box with the font each one is set in.
+\def\probe{%
+  \directlua{
+    local function walk(n, out)
+      while n do
+        if n.id == node.id("glyph") then
+          local f = font.getfont(n.font)
+          table.insert(out, tostring(n.char) .. ":" ..
+            tostring(f and (f.fullname or f.name) or "?"))
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          walk(n.head, out)
+        end
+        n = n.next
+      end
+    end
+    local out = {}
+    walk(tex.box[0], out)
+    texio.write_nl("term and log", "PROBE " .. table.concat(out, " "))
+  }%
+}
+
 \begin{document}
 
 \START
+
+\TEST{the apostrophe the Latin font makes stays in the Latin font}{
+  \setbox0=\hbox{It's}
+  \TYPE{width: \the\wd0}
+  \probe
+}
 
 \TEST{by default the apostrophe belongs to CJK}{
   \setbox0=\hbox{a’a}
