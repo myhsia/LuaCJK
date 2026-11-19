@@ -33,6 +33,16 @@
 # option pipeline (`options`) or in the font layer (`fonts`) depending on the
 # report, and no title says which, so it is not guessed: such an issue is left
 # unclassified for a session to read.
+#
+# A font feature, and the interface that sets one, is the font layer:
+# `\addCJKfontfeatures`, `CharacterWidth`, and the `hwid` tag are `fonts`,
+# although the reporter meets them as an option.  A title that names `\hfill`
+# is about the glue whose subtype the spacing pass decides, so it is `spacing`.
+#
+# A title whose only hook is a code point (`U+2027 的排版`) is about the
+# character table, which is `chars`, so the code-point rule is the last one:
+# first match wins, and an issue that also names a subsystem (`U+0027 的间距`)
+# takes that subsystem, which is where its fix lands.
 
 set -u
 
@@ -77,11 +87,12 @@ verbatim	verbatim|fancyvrb
 math	CJKmath|boldmath|amsmath|公式
 punct	PunctStyle|PunctWidth|setwidth|setkern|EditPunctStyle|标点|禁则
 load	LoadFandol
-fonts	CJKfontspec|newCJKfontfamily|fakebold|fakeslant|BoldFont|字体|加粗
+fonts	CJKfontspec|newCJKfontfamily|fakebold|fakeslant|BoldFont|字体|加粗|addCJKfontfeatures|CharacterWidth|hwid
 breaks	AllowBreakBetweenPuncts|kinsoku|nobreak|断行|换行
 chars	DeclareCharClass|DeclarePunctClass|SubCJKBlock|CharClass
-spacing	CJKglue|CJKecglue|normalspacedchars|间距|空格
+spacing	CJKglue|CJKecglue|normalspacedchars|间距|空格|hfill
 ctex	ctex-engine|engine = luacjk
+chars	U\+[0-9A-Fa-f]{4,6}
 RULES
 )
 
