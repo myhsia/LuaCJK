@@ -4,6 +4,7 @@
 \usepackage{LuaCJK}
 \usepackage{LuaCJKfntef}
 \setCJKmainfont{FandolSong-Regular.otf}
+\setCJKsansfont{FandolHei-Regular.otf}
 
 \begin{document}
 
@@ -101,7 +102,9 @@
       local n = tex.box[box].head
       local c = 0
       while n do
-        if n.id == node.id("glue") and n.subtype == 100 then
+        if n.id == node.id("glue")
+           and (n.subtype == 100 or n.subtype == 101
+               or n.subtype == 102) then
           c = c + 1
         end
         n = n.next
@@ -161,7 +164,9 @@
   \directlua{
     local n = tex.box[#1].head
     while n do
-      if n.id == node.id("glue") and n.subtype == 100 and n.leader then
+      if n.id == node.id("glue")
+         and (n.subtype == 100 or n.subtype == 101
+              or n.subtype == 102) and n.leader then
         local l = n.leader
         texio.write_nl("term and log",
           "LEADER width=" .. tostring(l.width) ..
@@ -173,9 +178,16 @@
   }
 }
 
-\TEST{wave period is half an em and closes the gap}{
+\TEST{the wave period is one em}{
   \setbox0=\hbox{\CJKunderwave{中文}}
   \reporule{0}
+}
+
+\TEST{the wave period follows the em, not the x-height}{
+  \setbox0=\hbox{\rmfamily\CJKunderwave{中文}}
+  \reporule{0}
+  \setbox2=\hbox{\sffamily\CJKunderwave{中文}}
+  \reporule{2}
 }
 
 \TEST{wave scales with the font size}{

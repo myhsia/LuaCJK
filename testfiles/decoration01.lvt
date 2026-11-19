@@ -15,7 +15,9 @@
     while n do
       if n.id == node.id("glue") then
         i = i + 1
-        out[i] = (n.subtype == 100 and "leaders:" or "glue:") .. n.width
+        local s = n.subtype
+        out[i] = (s == 100 and "leaders:" or s == 101 and "cleaders:"
+          or s == 102 and "xleaders:" or "glue:") .. n.width
       elseif n.id == node.id("kern") then
         i = i + 1
         out[i] = "kern:" .. n.kern
@@ -191,6 +193,19 @@
   \setbox0=\hbox{\CJKsout{中}}
   \showbox0
   \setbox0=\hbox{\Large\CJKsout{中}}
+  \showbox0
+}
+
+\TEST{a drawn pattern is repeated with leaders}{
+  \setbox0=\hbox{\CJKunderwave{中文测试}}
+  \showbox0
+  \setbox0=\hbox{\CJKxout{中文}}
+  \showbox0
+}
+
+\TEST{a decoration is divided into whole patterns when its width is final}{
+  \setbox0=\vbox{\hsize=41pt \parindent=0pt \parfillskip=0pt
+    \CJKunderwave{中文测试}\par}
   \showbox0
 }
 

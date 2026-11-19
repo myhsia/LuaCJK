@@ -253,3 +253,165 @@ l. ...}
 <argument> ... {\Large \CJKsout {中}} \showbox 0 
 l. ...}
 ============================================================
+============================================================
+TEST 21: a drawn pattern is repeated with leaders
+============================================================
+> \box...=
+\hbox(7.78+1.78)x40.0, direction TLT
+.\leaders 40.0 plus 2.88007
+..\hbox(0.0+0.0)x10.0, glue set - 0.2fil, direction TLT
+...\glue 0.0 plus 1.0fil minus 1.0fil
+...\hbox(0.0+0.0)x10.4, direction TLT
+....\hbox(3.73401+0.0)x10.4, shifted 4.19998, direction TLT
+.....\hbox(3.73401+0.0)x10.4, direction TLT
+......\glue 0.2
+......\hbox(0.0+0.0)x0.0, shifted -1.867, direction TLT
+.......\pdfsave
+.......\pdfliteral origin{0.39851 w}
+.......\pdfliteral origin{0 J}
+.......\pdfliteral origin{0 j}
+.......\pdfliteral origin{10 M}
+.......\pdfliteral origin{[] 0 d}
+.......\hbox(0.0+0.0)x0.0, direction TLT
+........\hbox(0.0+0.0)x0.0, direction TLT
+.........\savepos
+.........\write1{\new@label@record{draw.1}{{xpos}{\__property_code_xpos: }{ypos}{\__property_code_ypos: }{abspage}{\__property_code_abspage: }}}
+.........\savepos
+........\pdfliteral direct{0 g 0 G}
+........\pdfliteral origin{0.39851 w}
+........\pdfliteral origin{0 0 m}
+........\pdfliteral origin{1.66078 1.66078 3.32054 1.66078 4.98132 0 c}
+........\pdfliteral origin{6.6421 -1.66078 8.30186 -1.66078 9.96265 0 c}
+........\pdfliteral origin{S}
+.......\pdfrestore
+...\glue 0.0 plus 1.0fil minus 1.0fil
+.\glue -40.0 plus -2.88007
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 文
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 测
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 试
+! OK.
+<argument> ...nderwave {中文测试}} \showbox 0 
+                                                  \setbox 0=\hbox {\CJKxout ...
+l. ...}
+> \box...=
+\hbox(7.78+1.62)x20.0, direction TLT
+.\leaders 20.0 plus 0.96002
+..\hbox(0.0+0.0)x4.59999, direction TLT
+...\hbox(0.0+0.0)x4.59999, direction TLT
+....\hbox(9.9+0.0)x4.59999, shifted 1.69998, direction TLT
+.....\hbox(9.9+0.0)x4.59999, direction TLT
+......\glue 0.2
+......\hbox(0.0+0.0)x0.0, shifted -1.7, direction TLT
+.......\pdfsave
+.......\pdfliteral origin{0.39851 w}
+.......\pdfliteral origin{0 J}
+.......\pdfliteral origin{0 j}
+.......\pdfliteral origin{10 M}
+.......\pdfliteral origin{[] 0 d}
+.......\hbox(0.0+0.0)x0.0, direction TLT
+........\hbox(0.0+0.0)x0.0, direction TLT
+.........\savepos
+.........\write1{\new@label@record{draw.2}{{xpos}{\__property_code_xpos: }{ypos}{\__property_code_ypos: }{abspage}{\__property_code_abspage: }}}
+.........\savepos
+........\pdfliteral direct{0 g 0 G}
+........\pdfliteral origin{0.39851 w}
+........\pdfliteral origin{0 -1.4944 m}
+........\pdfliteral origin{4.18431 7.97012 l}
+........\pdfliteral origin{S}
+.......\pdfrestore
+.\glue -20.0 plus -0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 文
+! OK.
+<argument> ...hbox {\CJKxout {中文}} \showbox 0 
+l. ...}
+============================================================
+============================================================
+TEST 22: a decoration is divided into whole patterns when its width is final
+============================================================
+> \box...=
+\vbox(7.78+1.78)x41.0, direction TLT
+.\hbox(7.78+1.78)x41.0, glue set 0.34721, direction TLT
+..\leaders 0.0
+...\hbox(0.0+0.0)x10.0, glue set - 0.2fil, direction TLT
+....\glue 0.0 plus 1.0fil minus 1.0fil
+....\hbox(0.0+0.0)x10.4, direction TLT
+.....\hbox(3.73401+0.0)x10.4, shifted 4.19998, direction TLT
+......\hbox(3.73401+0.0)x10.4, direction TLT
+.......\glue 0.2
+.......\hbox(0.0+0.0)x0.0, shifted -1.867, direction TLT
+........\pdfsave
+........\pdfliteral origin{0.39851 w}
+........\pdfliteral origin{0 J}
+........\pdfliteral origin{0 j}
+........\pdfliteral origin{10 M}
+........\pdfliteral origin{[] 0 d}
+........\hbox(0.0+0.0)x0.0, direction TLT
+.........\hbox(0.0+0.0)x0.0, direction TLT
+..........\savepos
+..........\write1{\new@label@record{draw.1}{{xpos}{\__property_code_xpos: }{ypos}{\__property_code_ypos: }{abspage}{\__property_code_abspage: }}}
+..........\savepos
+.........\pdfliteral direct{0 g 0 G}
+.........\pdfliteral origin{0.39851 w}
+.........\pdfliteral origin{0 0 m}
+.........\pdfliteral origin{1.66078 1.66078 3.32054 1.66078 4.98132 0 c}
+.........\pdfliteral origin{6.6421 -1.66078 8.30186 -1.66078 9.96265 0 c}
+.........\pdfliteral origin{S}
+........\pdfrestore
+....\glue 0.0 plus 1.0fil minus 1.0fil
+..\glue 0.0
+..\localpar
+...\localinterlinepenalty=0
+...\localbrokenpenalty=0
+...\localleftbox=null
+...\localrightbox=null
+..\hbox(0.0+0.0)x0.0, direction TLT
+..\leaders 40.0 plus 2.88007
+...\hbox(0.0+0.0)x10.25, glue set - 0.2fil, direction TLT
+....\pdfliteral origin <lua data reference ...>
+....\glue 0.0 plus 1.0fil minus 1.0fil
+....\hbox(0.0+0.0)x10.4, direction TLT
+.....\hbox(3.73401+0.0)x10.4, shifted 4.19998, direction TLT
+......\hbox(3.73401+0.0)x10.4, direction TLT
+.......\glue 0.2
+.......\hbox(0.0+0.0)x0.0, shifted -1.867, direction TLT
+........\pdfsave
+........\pdfliteral origin{0.39851 w}
+........\pdfliteral origin{0 J}
+........\pdfliteral origin{0 j}
+........\pdfliteral origin{10 M}
+........\pdfliteral origin{[] 0 d}
+........\hbox(0.0+0.0)x0.0, direction TLT
+.........\hbox(0.0+0.0)x0.0, direction TLT
+..........\savepos
+..........\write1{\new@label@record{draw.1}{{xpos}{\__property_code_xpos: }{ypos}{\__property_code_ypos: }{abspage}{\__property_code_abspage: }}}
+..........\savepos
+.........\pdfliteral direct{0 g 0 G}
+.........\pdfliteral origin{0.39851 w}
+.........\pdfliteral origin{0 0 m}
+.........\pdfliteral origin{1.66078 1.66078 3.32054 1.66078 4.98132 0 c}
+.........\pdfliteral origin{6.6421 -1.66078 8.30186 -1.66078 9.96265 0 c}
+.........\pdfliteral origin{S}
+........\pdfrestore
+....\glue 0.0 plus 1.0fil minus 1.0fil
+....\pdfliteral origin <lua data reference ...>
+..\glue -40.0 plus -2.88007
+..\TU/FandolSong-Regular.otf(0)/m/n/10 中
+..\glue 0.0 plus 0.96002
+..\TU/FandolSong-Regular.otf(0)/m/n/10 文
+..\glue 0.0 plus 0.96002
+..\TU/FandolSong-Regular.otf(0)/m/n/10 测
+..\glue 0.0 plus 0.96002
+..\TU/FandolSong-Regular.otf(0)/m/n/10 试
+..\penalty 10000
+..\glue(\parfillskip) 0.0
+..\glue(\rightskip) 0.0
+! OK.
+<argument> ...ave {中文测试}\par } \showbox 0 
+l. ...}
+============================================================

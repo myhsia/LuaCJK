@@ -393,6 +393,28 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   its character, so the dots take the color of their text; `format` replaces
   `luacolor`'s attribute value with the one the TeX side resolved, because a
   rule is colored by attribute.
+- **A continuous drawn pattern is tiled by the pass, never spread by
+  `\xleaders`.**  The wave and the slash are a stroke, and `\TeX` repeats only
+  whole copies of a leader box: a span that is not a whole number of periods
+  leaves a remainder, which `\leaders` puts at the right end and `\cleaders` at
+  both, so the wave stops before the last character; `\xleaders` divides it
+  into glue between two copies, and since a butt cap ends where its path ends,
+  every gap is a hole in the stroke as wide as the stroke itself.  The
+  `pre_append_to_vlist_filter` pass therefore divides the piece into
+  `round(w / period)` whole patterns and gives that piece its own copy of the
+  leader box at `floor(w / k)`; `\leaders` then places exactly that many
+  adjacent copies.  Three details make that exact: the width is read from the
+  line's `glue_set` **and** `glue_sign`, because `glue_set` stays positive on a
+  shrunk line; the ink of the copy is painted inside a scope scaled
+  horizontally to the slot, because the drawing's period is one em and the slot
+  is not; and the closing literal carries `Q` plus `1 0 0 1 <period> 0 cm`,
+  because a `q … Q` around the content rewinds the point the backend advances
+  from TeX's own bookkeeping.  `tile` touches a leader box only when it holds a
+  whatsit and no glyph or rule, so the dots (whose ink is per character),
+  `\CJKunderanyline`, `\CJKunderanysymbol` and the `symbol` cells keep theirs,
+  and a box that never reaches a vertical list, such as `\hbox to`, keeps the
+  plain `\leaders` remainder.  The wave's period is one em and its amplitude a
+  quarter em.
 - **A decoration symbol is not text the reader should copy.**  The glyphs of
   `\CJKunderanysymbol` and of the `symbol` key are wrapped in an
   `ActualText` marked-content sequence whose replacement is `U+200B`; readers
