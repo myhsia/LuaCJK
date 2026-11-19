@@ -1,0 +1,236 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\usepackage{LuaCJKfntef}
+\setCJKmainfont{FandolSong-Regular.otf}
+\parindent = 0pt
+
+\def\dotcount#1{%
+  \directlua{
+    local attr = luatexbase.attributes["LuaCJKfntef.dot"]
+    local count = 0
+    local function walk (list)
+      while list do
+        if list.id == node.id("hlist") then
+          if node.has_attribute(list, attr) then
+            count = count + 1
+          else
+            walk(list.head)
+          end
+        end
+        list = list.next
+      end
+    end
+    walk(tex.box[#1].head)
+    texio.write_nl("term and log", "DOTS " .. tostring(count))
+  }%
+}
+
+\def\dotgeometry#1{%
+  \directlua{
+    local attr = luatexbase.attributes["LuaCJKfntef.dot"]
+    local n = tex.box[#1].head
+    while n do
+      if n.id == node.id("hlist") and node.has_attribute(n, attr) then
+        local kern = n.head
+        local box = kern.next
+        texio.write_nl("term and log",
+          "DOT size " .. tostring(box.width) ..
+          " top " .. tostring(box.shift) ..
+          " kern " .. tostring(kern.kern))
+        break
+      end
+      n = n.next
+    end
+  }%
+}
+
+\def\dotalignment#1{%
+  \directlua{
+    local attr = luatexbase.attributes["LuaCJKfntef.dot"]
+    local out = {}
+    local i = 0
+    local function walk (list)
+      local prev = nil
+      while list do
+        if list.id == node.id("hlist") then
+          if node.has_attribute(list, attr) then
+            local kern = list.head
+            local box = kern.next
+            i = i + 1
+            out[i] = tostring(kern.kern +
+              ((prev and prev.width or 0) + box.width) / 2)
+          else
+            walk(list.head)
+          end
+        elseif list.id == node.id("glyph") then
+          prev = list
+        end
+        list = list.next
+      end
+    end
+    walk(tex.box[#1].head)
+    texio.write_nl("term and log", "OFFSETS " .. table.concat(out, " "))
+  }%
+}
+
+\def\luaattr#1{%
+  \directlua{
+    local color = luatexbase.attributes["LuaCol@Attribute"]
+    local out = {}
+    local i = 0
+    local function add (name, value)
+      i = i + 1
+      out[i] = name .. " " .. tostring(value)
+    end
+    local function walk (list)
+      while list do
+        if list.id == node.id("glyph") then
+          add("text", node.has_attribute(list, color))
+        elseif list.id == node.id("rule") then
+          add("dot", node.has_attribute(list, color))
+        elseif list.id == node.id("hlist") then
+          walk(list.head)
+        end
+        list = list.next
+      end
+    end
+    walk(tex.box[#1].head)
+    texio.write_nl("term and log", "COLOR " .. table.concat(out, " "))
+  }%
+}
+
+\def\linecount#1{%
+  \directlua{
+    local lines = 0
+    local list = tex.box[#1].head
+    while list do
+      if list.id == node.id("hlist") then
+        lines = lines + 1
+      end
+      list = list.next
+    end
+    texio.write_nl("term and log", "LINES " .. tostring(lines))
+  }%
+}
+
+\def\glyphcount#1{%
+  \directlua{
+    local count = 0
+    local function walk (list)
+      while list do
+        if list.id == node.id("glyph") then
+          count = count + 1
+        elseif list.id == node.id("hlist") then
+          walk(list.head)
+        end
+        list = list.next
+      end
+    end
+    walk(tex.box[#1].head)
+    texio.write_nl("term and log", "GLYPHS " .. tostring(count))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{one dot per CJK character and none under Latin or a space}{
+  \setbox0=\hbox{\CJKunderdot{中文 ab 1 文}}
+  \dotcount{0}
+}
+
+\TEST{a dot is a square of 0.06em, its top 0.2em below the em box}{
+  \setbox0=\hbox{\CJKunderdot{中}}
+  \dotgeometry{0}
+  \setbox0=\hbox{\CJKunderdot[depth = 0.3em]{中}}
+  \dotgeometry{0}
+}
+
+\TEST{the dot is centred on the advance of its character}{
+  \setbox0=\hbox{\CJKunderdot{中文 test 文}}
+  \dotalignment{0}
+}
+
+\TEST{the dots follow the characters when the glue stretches}{
+  \setbox0=\vbox{\hsize = 13em \CJKunderdot{一二三四五六七八九十}\par}
+  \linecount{0}
+  \dotcount{0}
+  \dotalignment{0}
+}
+
+\TEST{a span across two lines has dots on both}{
+  \setbox0=\vbox{\hsize = 4em \CJKunderdot{一二三四五六七八}\par}
+  \linecount{0}
+  \dotcount{0}
+  \dotalignment{0}
+}
+
+\TEST{format colors the dot and not the text}{
+  \setbox0=\hbox{\CJKunderdot[format = red]{中文}}
+  \luaattr{0}
+}
+
+\TEST{a dot takes the color of its text without format}{
+  \setbox0=\hbox{\textcolor{red}{\CJKunderdot{中文}}}
+  \luaattr{0}
+}
+
+\TEST{hidden keeps the dots and drops the glyphs}{
+  \setbox0=\hbox{\CJKunderdot[hidden]{中文}}
+  \dotcount{0}
+  \glyphcount{0}
+}
+
+\TEST{subtract drops a character whose centre it cuts away}{
+  \setbox0=\hbox{\CJKunderdot{一二三}}
+  \dotcount{0}
+  \setbox0=\hbox{\CJKunderdot[subtract = 1em]{一二三}}
+  \dotcount{0}
+  \dotalignment{0}
+}
+
+\TEST{skip leaves the punctuation undotted}{
+  \setbox0=\hbox{\CJKunderdot{中，文}}
+  \dotcount{0}
+  \setbox0=\hbox{\CJKunderdot[skip]{中，文}}
+  \dotcount{0}
+}
+
+\TEST{a symbol keeps the leaders pattern and adds no dot}{
+  \setbox0=\hbox{\CJKunderdot[symbol = \textbullet]{中文}}
+  \dotcount{0}
+  \directlua{
+    local n = tex.box[0].head
+    while n do
+      if n.id == node.id("glue") and n.subtype == 100 then
+        texio.write_nl("term and log", "LEADER " .. tostring(n.leader.width))
+      end
+      n = n.next
+    end
+  }
+}
+
+\TEST{the dots keep the width of the text and nest in an underline}{
+  \setbox0=\hbox{\CJKunderline{\CJKunderdot{中文}}}
+  \setbox2=\hbox{中文}
+  \TYPE{nested: \the\wd0}
+  \TYPE{plain: \the\wd2}
+  \dotcount{0}
+}
+
+\TEST{the dots scale with the font size}{
+  \setbox0=\hbox{\CJKunderdot{中}}
+  \dotgeometry{0}
+  \begingroup
+    \fontsize{20}{24}\selectfont
+    \setbox0=\hbox{\CJKunderdot{中}}
+    \dotgeometry{0}
+  \endgroup
+}
+
+\END
+
+\end{document}

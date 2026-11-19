@@ -427,13 +427,40 @@ The `depth` key places the rule below the baseline. `boxdepth`, which used to
 cap how much a rule added to the box, is gone: it was a workaround for the
 drawn patterns growing the line, and on a rule it removed the rule itself.
 
+### The emphasis dots place their ink in the text
+
+`\CJKunderdot` is the one decoration whose ink is not a pattern in the leaders
+box. A pattern repeats on a fixed period, so it drifts against the characters
+when the inter-character glue stretches, it runs under Latin text, and it
+cannot give each character exactly one mark. The dots therefore go into the
+text: the underline type has an empty leader box — it exists only for the
+width, stretch, and shrink that `lua-ul` books — and the pass writes one dot
+behind each CJK character.
+
+A dot is a box of no width, height, or depth, so the line keeps its width and
+leading; inside it a kern of half the advance and half the dot puts the ink at
+the centre of the character, and an inner box shifted down by
+`em descent + depth` holds a `rule` of `0.06em`. The nodes copy the attributes of the character, which
+carries both the color of the text and the settings entry, and the dot box
+carries `LuaCJKfntef.dot`, so a list the pass sees twice is not dotted twice.
+`format` cannot travel by attribute from the TeX side — the attribute value is
+resolved by `luaul_apply_color:` — so the TeX side reads the value of
+`luacolor`'s attribute inside a group and hands it to Lua, which sets it on the
+`rule`.
+
+`subtract` keeps its meaning as a distance from each end: a character whose
+centre falls in the inset part gets no dot, so half an em removes nothing from
+a span of whole characters and a whole em removes its first and its last.
+`skip` leaves the punctuation undotted, and `hidden` still runs after the dots
+are written, so a hidden span keeps them while its glyphs become kerns.
+
 ### Drawn decorations stay out of the metrics
 
-The wave, the emphasis dots, and the xout slash are drawings rather than
-leaders of a rule. Each is built at use time inside
-`\l_@@_fntef_pattern_box`, and the box is then set to zero height and depth, so
-the pattern reaches the page as a PDF literal without entering the dimensions
-of the line. That is why a decorated line keeps the leading of a plain one.
+The wave and the xout slash are drawings rather than leaders of a rule. Each is
+built at use time inside `\l_@@_fntef_pattern_box`, and the box is then set to
+zero height and depth, so the pattern reaches the page as a PDF literal without
+entering the dimensions of the line. That is why a decorated line keeps the
+leading of a plain one.
 
 Two properties of `l3draw` shape the code. Its box is the bounding box of the
 *stroked* path, one stroke width wider than the path, so a tiled pattern is
@@ -656,7 +683,7 @@ The commands are in `AGENTS.md`. For this skill the points that matter are:
 ```bash
 l3build check <name>                # the local loop; must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
-l3build check                       # 68 tests, CI on every push
+l3build check                       # 69 tests, CI on every push
 bash scripts/ctex-subset.sh         # 21/21, CI; no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
 ```
