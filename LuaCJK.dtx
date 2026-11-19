@@ -8293,10 +8293,18 @@ end
 %   charstring the glyph uses, so a glyph whose charstring calls a subroutine
 %   is measured in the subroutine rather than in the charstring the
 %   measurement began with.}
+% \changes{v0.0.3}{2026/11/20}{A curve of four operands is read as one curve
+%   in both axes, so the blank of a mark whose charstring draws it with the
+%   alternating or the vertical curve operator is the blank the glyph has: a
+%   double opening quotation mark no longer stands in the margin by more
+%   than a tenth of a point.}
 % The horizontal extent of a Type 2 charstring. Every point of the outline is
 % visited, the control points of a curve included, which is the box the font's
 % own readers report; hints are counted only so that their masks can be
 % skipped.
+% A curve operator takes four operands, and the alternating ones start on the
+% axis their name gives; the one operand of a $4n+1$ run closes the last
+% curve on the other axis.
 % Each number is read from the charstring that holds it, since a subroutine
 % carries its own operands, and the four bytes of the deprecated fixed form
 % are read in full.
@@ -8385,25 +8393,20 @@ local function cff_box (f, cs)
           end
           point(stack[k], stack[k + 1])
           stack = {}
-        elseif b == 26 then
-          local k, dx = 1, 0
-          if #stack % 2 == 1 then dx, k = stack[1], 2 end
+        elseif b == 26 or b == 27 then
+          local k, first = 1, 0
+          if #stack % 4 == 1 then first, k = stack[1], 2 end
           while k <= #stack - 3 do
-            point(dx, stack[k])
-            point(stack[k + 1], stack[k + 2])
-            point(stack[k + 3], 0)
-            dx = 0
-            k = k + 4
-          end
-          stack = {}
-        elseif b == 27 then
-          local k, dy = 1, 0
-          if #stack % 2 == 1 then dy, k = stack[1], 2 end
-          while k <= #stack - 3 do
-            point(stack[k], dy)
-            point(stack[k + 1], stack[k + 2])
-            point(0, stack[k + 3])
-            dy = 0
+            if b == 26 then
+              point(first, stack[k])
+              point(stack[k + 1], stack[k + 2])
+              point(0, stack[k + 3])
+            else
+              point(stack[k], first)
+              point(stack[k + 1], stack[k + 2])
+              point(stack[k + 3], 0)
+            end
+            first = 0
             k = k + 4
           end
           stack = {}
@@ -8411,18 +8414,24 @@ local function cff_box (f, cs)
           local horiz = (b == 31)
           local k = 1
           while k <= #stack - 3 do
-            local last = (#stack - k == 3)
             if horiz then
-              point(stack[k], last and stack[k + 3] or 0)
+              point(stack[k], 0)
               point(stack[k + 1], stack[k + 2])
-              point(0, 0)
+              point(0, stack[k + 3])
             else
-              point(last and stack[k + 3] or 0, stack[k])
+              point(0, stack[k])
               point(stack[k + 1], stack[k + 2])
-              point(0, 0)
+              point(stack[k + 3], 0)
             end
             horiz = not horiz
-            k = k + 3
+            k = k + 4
+          end
+          if k == #stack then
+            if horiz then
+              point(stack[k], 0)
+            else
+              point(0, stack[k])
+            end
           end
           stack = {}
         elseif b == 1 or b == 3 or b == 18 or b == 23 then
