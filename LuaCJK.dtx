@@ -258,6 +258,12 @@ The Current Maintainer of this work is **Mingyu Xia**.
 %   \env{lstlisting} block and counts as two columns: the character table
 %   covers the CJK ranges of the Basic Multilingual Plane, both ends of each
 %   included.}
+% \changes{v0.0.3}{2026/11/18}{The punctuation the two scripts share is a CJK
+%   character: the middle dot (U+00B7), the horizontal bar (U+2015), the two
+%   dot leader (U+2025), the hyphenation point (U+2027), and the midline
+%   ellipsis (U+22EF) are set in the CJK font, and \keys{LatinPunct} keeps the
+%   ones it lists in the Latin font; the two dot leader joins a run of dashes
+%   and ellipses that may not be broken.}
 % \changes{v0.0.1}{2026/11/11}{Ship \file{ctex-engine-luacjk.def} as the
 %   \LuaTeX\ backend for \pkg{ctex}, selected with the option |engine =
 %   luacjk|; like \pkg{ctex}'s own backend it refuses \pkg{CJKfntef} and
@@ -5881,18 +5887,21 @@ end
 %    \end{macrocode}
 % \end{variable}
 %
-% The quotation marks, the middle dot, and the ellipses are shared with Latin
-% scripts. With \keys{LatinPunct} on, they use the Latin font and are not
-% compressed; the em dash is not in the table, because it stays CJK.
+% The middle dot, the quotation marks, the horizontal bar, the two dot leader,
+% the ellipses, and the hyphenation point are shared with Latin scripts.
+% With \keys{LatinPunct} on, the marks that key lists use the Latin font and
+% are not compressed; the em dash is not in the table, because it stays CJK.
 %
 % \begin{macro}[int]{LuaCJK.is_cjk}
 % Test whether a character is treated as CJK.
 % The table is the set of code points this package sets with the CJK class.
 % It is a policy rather than a Unicode property: the punctuation that CJK
-% text shares with Latin (U+2014, the quotation marks, U+2026) is listed
-% here even though its script is Common, and the combining Bopomofo tone
-% marks U+02EA and U+02EB are left out on purpose, because they attach to the
-% preceding letter and a glue between the two would break the attachment.
+% text shares with Latin (the middle dot U+00B7, the quotation marks, the
+% horizontal bar U+2015, the two dot leader U+2025, the ellipses U+2026 and
+% U+22EF, and the hyphenation point U+2027) is listed here even though its
+% script is Common, and the combining Bopomofo tone marks U+02EA and U+02EB
+% are left out on purpose, because they attach to the preceding letter and a
+% glue between the two would break the attachment.
 % The script \file{scripts/check-charclass.lua} compares the table with
 % \file{Scripts.txt} and reports a code point whose script is Han, Hiragana,
 % Katakana, Bopomofo, or Hangul but which the table does not list.
@@ -5901,11 +5910,16 @@ M.class_override = {}
 M.punct_override = {}
 
 local CJK_RANGES = {
+  { 0x00B7,  0x00B7 },  -- middle dot, shared with Latin
   { 0x1100,  0x11FF },  -- Hangul Jamo
   { 0x2014,  0x2014 },  -- em dash, shared with Latin
+  { 0x2015,  0x2015 },  -- horizontal bar, shared with Latin
   { 0x2018,  0x2019 },  -- single quotation marks
   { 0x201C,  0x201D },  -- double quotation marks
+  { 0x2025,  0x2025 },  -- two dot leader, shared with Latin
   { 0x2026,  0x2026 },  -- horizontal ellipsis, shared with Latin
+  { 0x2027,  0x2027 },  -- hyphenation point, shared with Latin
+  { 0x22EF,  0x22EF },  -- midline ellipsis, shared with Latin
   { 0x2E80,  0x9FFF },  -- radicals, punctuation, kana, ideographs
   { 0xA960,  0xA97C },  -- Hangul Jamo Extended-A
   { 0xAC00,  0xD7C6 },  -- Hangul syllables and Jamo Extended-B
@@ -6009,7 +6023,7 @@ local PUNCT_CLASS = {
   [0x30FB] = "middle",
   [0x2013] = "dash",     [0x2014] = "dash",
   [0x2015] = "dash",     [0xFF0D] = "dash",
-  [0x2026] = "ellipsis", [0x22EF] = "ellipsis",
+  [0x2025] = "ellipsis", [0x2026] = "ellipsis", [0x22EF] = "ellipsis",
 }
 
 %    \end{macrocode}
@@ -10413,11 +10427,16 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \advance\@tempcnta\@ne
   \repeat}
 \def\LuaCJK@listings@ranges#1{%
+  #1{"00B7}{"00B7}%
   #1{"1100}{"11FF}%
   #1{"2014}{"2014}%
+  #1{"2015}{"2015}%
   #1{"2018}{"2019}%
   #1{"201C}{"201D}%
+  #1{"2025}{"2025}%
   #1{"2026}{"2026}%
+  #1{"2027}{"2027}%
+  #1{"22EF}{"22EF}%
   #1{"2E80}{"9FFF}%
   #1{"A960}{"A97C}%
   #1{"AC00}{"D7C6}%
