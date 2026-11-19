@@ -138,3 +138,85 @@ Overfull \hbox (20.0pt too wide) in paragraph at lines ...
 .\glue(\rightskip) 0.0
 LINES 3,6
 ============================================================
+============================================================
+TEST 6: a color change does not hide the last character
+============================================================
+Overfull \hbox (5.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 字
+\hbox(7.69+1.75)x40.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue(\rightskip) 0.0
+Overfull \hbox (20.0pt too wide) in paragraph at lines ...
+\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 字 字 字[] 字[] 
+\hbox(7.69+1.75)x40.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\pdfcolorstack 0 push {1 0 0 rg 1 0 0 RG}
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\pdfcolorstack 0 pop
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0
+LINES 3,6
+============================================================
+============================================================
+TEST 7: a color change does not hide the one before it
+============================================================
+Overfull \hbox (5.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 字
+\hbox(7.69+1.75)x40.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x15.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue(\rightskip) 0.0
+Overfull \hbox (20.0pt too wide) in paragraph at lines ...
+\TU/FandolSong-Regular.otf(0)/m/n/10 字 字 字 字[] 字[] 字 
+\hbox(7.69+1.75)x40.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\pdfcolorstack 0 push {1 0 0 rg 1 0 0 RG}
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\pdfcolorstack 0 pop
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0
+LINES 3,6
+============================================================

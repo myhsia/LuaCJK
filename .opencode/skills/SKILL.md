@@ -102,6 +102,15 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    before the rule existed.  A zero-width glue stays at that boundary, so it
    is still a break opportunity and the kinsoku penalty can forbid it
    (`boundary01`).
+   A penalty that prohibits the break (`\penalty 10000`, `\nobreak`) does not
+   end the run: the glue goes *after* it, where the prohibition still covers
+   the break the glue offers, so `中文\nobreak ABC` keeps its `CJKecglue` and
+   a source space in front of the penalty is converted with the penalty moved
+   in front of it (`nobreak04`).  A lower penalty prices a break instead, and
+   the glue would give that place a second break at no cost, so a priced
+   penalty stays a barrier.  The character on each side is read from the
+   visible node, not from the glue's predecessor, so a whatsit or a penalty
+   between two marks does not hide them from the long-punct rule.
 3. `apply_fixed_widths` — give punctuation the advance the style asks for, by
    inserting a penalty and a kern after the mark. The ink is moved by class:
    an opening mark by the whole amount, a middle mark by half, a closing mark
@@ -118,6 +127,11 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    a penalty in front of it.
 6. `apply_check_single` — raise the penalty at the last two break points of a
    paragraph, so a single character cannot end up alone on the last line.
+   The scan back to the previous character passes over `transparent_node` —
+   whatsit, mark, insertion, adjustment, penalty — and the kerns the package
+   inserted, so a `\textcolor` between two characters no longer hides the
+   break point; the penalty is spliced in front of the glue and left out when
+   a penalty already stands there (`checksingle01`).
 
 `post_linebreak_filter` is not used: the hang of a line-final mark is part of
 the measure (see "The punctuation model"), so nothing has to be adjusted after
@@ -581,7 +595,7 @@ The commands are in `AGENTS.md`. For this skill the points that matter are:
 ```bash
 l3build check <name>                # the local loop; must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
-l3build check                       # 63 tests, CI on every push
+l3build check                       # 64 tests, CI on every push
 bash scripts/ctex-subset.sh         # 21/21, CI; no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
 ```
@@ -597,6 +611,7 @@ Existing examples are `decoration01` (the leaders pair), `selectable01` (the
 decorations and both branches of `CJKfilltwosides`), `settingsscope01`
 (a group that closes before `\par`), `nobreak01`/`nobreak02` (penalties),
 `nobreak03` (the penalty field of a discretionary),
+`nobreak04` (a prohibiting penalty and the boundary glue),
 `listings01` (glyph order inside a listing), `ctex01`, the class test that
 shows the engine file is reached through `engine = luacjk`, and `ctex02`,
 which traps the `CJKfntef` refusal by overriding `\msg_critical:nn`.

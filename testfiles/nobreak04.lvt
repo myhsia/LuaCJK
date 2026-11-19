@@ -1,0 +1,99 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\usepackage{xcolor}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+\def\countglue{%
+  \directlua{
+    local n = tex.box[0].head
+    local c = 0
+    while n do
+      if n.id == node.id("glue") then
+        c = c + 1
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "GLUE " .. tostring(c))
+  }%
+}
+\def\countpenalties{%
+  \directlua{
+    local n = tex.box[0].head
+    local c = 0
+    while n do
+      if n.id == node.id("penalty") and n.penalty >= 10000 then
+        c = c + 1
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "PENALTIES " .. tostring(c))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{a CJK and a Latin letter are separated by the glue}{
+  \setbox0=\hbox{中文ABC}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{a prohibiting penalty keeps it}{
+  \setbox0=\hbox{中文\nobreak ABC}
+  \TYPE{width: \the\wd0}
+  \countpenalties
+}
+
+\TEST{a priced penalty is still a barrier}{
+  \setbox0=\hbox{中文\penalty50 ABC}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{two CJK characters keep their glue}{
+  \setbox0=\hbox{中中中}
+  \TYPE{width: \the\wd0}
+  \countglue
+}
+
+\TEST{a prohibiting penalty between them keeps it}{
+  \setbox0=\hbox{中\nobreak 中中}
+  \TYPE{width: \the\wd0}
+  \countglue
+}
+
+\TEST{a run of dashes stays joined}{
+  \setbox0=\hbox{——}
+  \TYPE{width: \the\wd0}
+  \countglue
+}
+
+\TEST{a prohibiting penalty inside the run keeps it joined}{
+  \setbox0=\hbox{—\nobreak ——}
+  \TYPE{width: \the\wd0}
+  \countglue
+}
+
+\TEST{a color change inside the run keeps it joined}{
+  \setbox0=\hbox{—\textcolor{red}{——}}
+  \TYPE{width: \the\wd0}
+  \countglue
+}
+
+\TEST{a source space in front of the penalty becomes the glue}{
+  \setbox0=\hbox{中 \nobreak 文}
+  \TYPE{width: \the\wd0}
+  \countglue
+}
+
+\TEST{a source space behind the penalty is converted as usual}{
+  \setbox0=\hbox{中\nobreak  文}
+  \TYPE{width: \the\wd0}
+  \countglue
+}
+
+\END
+
+\end{document}
