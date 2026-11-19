@@ -58,6 +58,29 @@
   \endgroup
 }
 
+\TEST{the addon turns the adjustments back on when they are suspended}{
+  \begingroup
+    \ttfamily
+    \LuaCJKdisable
+    \setbox0=\hbox{中中}
+    \TYPE{suspended: \the\wd0}
+    \LuaCJKVerbAddon
+    \setbox2=\hbox{中中}
+    \TYPE{addon: \the\wd2}
+  \endgroup
+}
+
+\TEST{OffVerbAddon restores the suspension that was in force}{
+  \begingroup
+    \ttfamily
+    \LuaCJKdisable
+    \LuaCJKVerbAddon
+    \LuaCJKOffVerbAddon
+    \setbox4=\hbox{中中}
+    \TYPE{width: \the\wd4}
+  \endgroup
+}
+
 \END
 
 \end{document}
