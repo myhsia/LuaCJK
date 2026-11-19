@@ -1,22 +1,28 @@
 This is a generated file for the l3build validation system.
 Don't change this file in any respect.
 ============================================================
-TEST 1: by default the apostrophe belongs to CJK
+TEST 1: the apostrophe the Latin font makes stays in the Latin font
+============================================================
+width: 14.22pt
+PROBE 73:LMRoman10-Regular 116:LMRoman10-Regular 8217:LMRoman10-Regular 115:LMRoman10-Regular
+============================================================
+============================================================
+TEST 2: by default the apostrophe belongs to CJK
 ============================================================
 width: 20.0pt
 ============================================================
 ============================================================
-TEST 2: LatinPunct keeps it in the Latin font
+TEST 3: LatinPunct keeps it in the Latin font
 ============================================================
 width: 12.78pt
 ============================================================
 ============================================================
-TEST 3: the option can be turned off again
+TEST 4: the option can be turned off again
 ============================================================
 width: 20.0pt
 ============================================================
 ============================================================
-TEST 4: a class declaration overrides LatinPunct
+TEST 5: a class declaration overrides LatinPunct
 ============================================================
 width: 26.66595pt
 ============================================================
