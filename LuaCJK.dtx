@@ -1113,6 +1113,11 @@ a’a\quad 不亦说乎！
 % 两字宽的破折号拆开，它们之间也不提供断行机会。
 % 键 \keys{LongPunct} 替换这个集合。
 %
+% 两个字符之间显式的 \tn{nobreak} 仍是断行禁止，它们之间的胶也照常插入：
+% 胶紧跟在惩罚之后，它提供的断行机会因而仍被禁止。
+% 若惩罚之前有一个源文件里的空格，这个空格也换成字符之间的胶，
+% 惩罚随之移到胶的前面。
+%
 % \begin{keyval}
 %   \item[\keys{CheckSingle}]\val{\TFF}
 %   打开时，末字符是 CJK 的段落的最后两个断行点被设为不可断开，
@@ -2424,6 +2429,12 @@ a’a\quad 不亦说乎！
 % and U+22EF) is one unit: the marks are joined without glue, so
 % justification cannot pull a two-em dash apart, and no break is offered
 % between them. The key \keys{LongPunct} replaces the set.
+%
+% An explicit \tn{nobreak} between two characters stays a prohibition, and
+% the glue between them is still inserted: the glue follows the penalty, so
+% the break it offers is still forbidden.
+% A source space in front of the penalty becomes that glue as well, and the
+% penalty moves in front of it.
 %
 % \begin{keyval}
 %   \item[\keys{CheckSingle}]\val{\TFF}
@@ -6720,13 +6731,30 @@ end
 % node at that edge: filling glue or a kern means the box has no text there,
 % so no glue is added beside it. A box of no size is passed over, so an
 % empty box inside CJK text does not break the run.
+% A penalty that prohibits the break is passed over the same way, because the
+% glue of that boundary belongs after it; a smaller penalty, and a
+% discretionary, end the run.
 % \begin{macro}[int]{handle_boundary}
 % \changes{v0.0.1}{2026/11/11}{A mark keeps its break opportunity beside
 %   suspended text: the boundary glue at a mark has no width.}
+% \changes{v0.0.3}{2026/11/18}{A penalty that prohibits the break no longer
+%   removes the glue: the CJK--CJK and CJK--Latin spacing survives
+%   \cs{nobreak}, because the glue goes after the penalty, where the
+%   prohibition still covers it. A source space in front of the penalty is
+%   converted and the penalty moves in front of it.}
 % Decide what to do at the boundary between two visible nodes.
 % Only source-generated glue is a candidate for replacement;
-% other glue and penalties are left alone, a penalty being an explicit
-% barrier and a discretionary opaque, so neither is bridged.
+% other glue is left alone, and a discretionary is opaque, so neither is
+% bridged.
+% A penalty is read by its value. One that prohibits the break is not a
+% barrier: the glue goes after it, so the prohibition still holds at the
+% break the glue offers.
+% A smaller penalty prices the break instead of forbidding it, and the glue
+% would offer the same place a second break at no cost, so a priced break is
+% left alone.
+% A source space between the two characters is the boundary itself, so when
+% one stands in front of a prohibiting penalty it is converted, and the
+% penalty moves in front of it rather than letting the space offer the break.
 % A boundary that touches a suspended run is bridged by nothing, except that a
 % mark keeps its break opportunity: \keys{Verb} suspends the spacing, and the
 % glue at a mark has no width, so restoring it there moves no ink. An opening
@@ -6735,6 +6763,10 @@ end
 % \begin{macro}[int]{insert_boundary_glue}
 % Insert the CJK--CJK or CJK--Latin glue,
 % or the compression kern for two adjacent punctuation marks.
+% The character on each side is the one the list shows, so a whatsit or a
+% penalty between two characters does not hide them from these rules; the
+% glue itself follows the node that carries the break, which may be such a
+% whatsit or penalty.
 % A run of dashes or ellipses is one unit: the marks are joined without glue,
 % so that justification cannot pull a two-em dash apart, and the absence of a
 % break opportunity replaces the explicit prohibition.
@@ -6769,7 +6801,7 @@ local function insert_boundary_glue (head, prev, prev_visible, prev_end,
   if not prev_end or not cur_start then
     return head
   end
-  if long_punct(prev) and long_punct(cur) then
+  if long_punct(prev_visible) and long_punct(cur) then
     return head
   end
   local style = style_of(settings)
@@ -6795,7 +6827,7 @@ local function insert_boundary_glue (head, prev, prev_visible, prev_end,
   if prev_end == "CJK" and cur_start == "CJK" then
     spec = settings.ccglue
   elseif prev_end ~= cur_start
-     and not normal_spaced(prev) and not normal_spaced(cur) then
+     and not normal_spaced(prev_visible) and not normal_spaced(cur) then
     if prev_punct or cur_punct then
       spec = PUNCT_BOUNDARY_GLUE
     else
@@ -6960,6 +6992,34 @@ local function handle_boundary (head, prev, prev_visible, prev_end,
         head, prev, prev_end, cur, start_class, settings)
     end
   elseif prev and prev.id == PENALTY then
+    if prev.penalty >= 10000 then
+      local space, before = nil, nil
+      local n = prev_visible
+      while n and n ~= prev do
+        local nxt = n.next
+        if nxt and nxt.id == GLUE and nxt.subtype == SPACESKIP then
+          space, before = nxt, n
+          break
+        end
+        n = nxt
+      end
+      if space then
+        head = handle_source_space(
+          head, space, prev_end, cur, start_class, settings)
+        local pred = before
+        local m    = space
+        while m and m ~= prev do
+          pred = m
+          m    = m.next
+        end
+        pred.next   = prev.next
+        before.next = prev
+        prev.next   = space
+        return head
+      end
+      return insert_boundary_glue(
+        head, prev, prev_visible, prev_end, cur, start_class, settings)
+    end
   elseif prev and prev.id == DISC then
   else
     return insert_boundary_glue(
@@ -7015,8 +7075,10 @@ local function spacing (head)
         prev_visible = cur
         prev_end     = end_class
       elseif cur.id == PENALTY or cur.id == DISC then
-        prev_visible = nil
-        prev_end     = nil
+        if not (cur.id == PENALTY and cur.penalty >= 10000) then
+          prev_visible = nil
+          prev_end     = nil
+        end
       end
     end
     prev = cur
