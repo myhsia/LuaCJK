@@ -198,7 +198,10 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **Every behavior change needs a test.**  Add or extend a `.lvt`, run
   `l3build save <name>`, then read the `.tlg` diff and confirm the numbers are
   the values you designed, not merely "whatever came out". `save` takes bare
-  test names without the extension.
+  test names without the extension.  A test allocates its boxes with `\newbox`
+  instead of numbering them: box 10 is `\voidb@x`, so `\setbox10` is a box the
+  next `\leavevmode` unpacks, and `~` expands to `\leavevmode` through
+  `\nobreakspace` (`boundary03`).
 - **Every behavior change also needs a `\changes` entry.**  Put it next to the
   object it changes, inside that object's `macro`, `environment`, or
   `variable`, so `\PrintChanges` files it under the object and prints the page
@@ -233,6 +236,16 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   then tests the pushed value for truth instead of comparing it.  `PunctWidth`
   and `PunctBoundWidth` are the two that carry one, and `\LuaCJKsetwidth`
   already accepts `0pt` for a single mark.
+- **An explicit space is marked at the TeX level.**  A space the document
+  writes with `\ ` or `~` and a space from the source reach the spacing pass as
+  the same `spaceskip` glue with the same dimensions, so no node comparison can
+  tell them apart; `\ ` and `\nobreakspace` therefore set the
+  `explicit_space` attribute around the space token, and `handle_source_space`
+  leaves a marked glue as it stands.  Both are protected, which is what keeps
+  an `\edef` or a `\write` carrying one token, and `\space` is deliberately not
+  marked, because it is the form messages use and it has to expand.  The
+  aliasing restores the catcode of the space inside a group, since `expl3`
+  ignores a space and a control space cannot be written in its syntax.
 - **Options and `\LuaCJKsetup` share one key path.**  Every key is defined in
   `LuaCJK / options` and read by `\ProcessKeyOptions`, so a new key is a
   package option for free. Do not add a second path or a separate option

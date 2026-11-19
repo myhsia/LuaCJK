@@ -1,6 +1,7 @@
 ## [LuaCJK-v0.0.3](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.3)
 
 - A mark that the CJK class shares with Latin, such as a curly quotation mark or the em dash, keeps its place inside an `lstlisting` block and counts as two columns: the character table covers the CJK ranges of the Basic Multilingual Plane, both ends of each included.
+- An explicit `\ ` or `\nobreakspace` between two CJK characters keeps its advance: a space from the source is retimed to the inter-character glue, and one the document wrote itself is not.
 - Process the package options after the helpers their key codes call, so that `AutoFallBack`, `CJKmath`, `PunctFamily`, and `CJLineBreak` act as package options as well.
 - `PunctWidth` and `PunctBoundWidth` take `0pt` as a length: the former gives every mark no advance and the latter hangs the whole of it, where a zero length used to act as `false` and return the mark to its style.
 - The addon turns the adjustments back on in its group, so the columns of a verbatim-like environment stay aligned under `Verb` = `true` and `env` as well; `\LuaCJKOffVerbAddon` restores the suspension that was in force.
