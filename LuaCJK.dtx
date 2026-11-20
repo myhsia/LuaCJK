@@ -126,7 +126,7 @@ The Current Maintainer of this work is **Mingyu Xia**.
 %<*package|fntef|listings|ctex>
 \NeedsTeXFormat{LaTeX2e}[2026/06/01]
 \RequirePackage { expl3 }
-\GetIdInfo $Id: LuaCJK.dtx v0.0.3 2026-11-20 myhsia<myhsia@outlook.com>$
+\GetIdInfo $Id: LuaCJK.dtx v0.0.4 2026-11-20 myhsia<myhsia@outlook.com>$
 %<package>  {A LuaTeX CJK typesetting package}
 %<package>\ProvidesExplPackage {\ExplFileName}
 %<fntef>  {Font effects for LuaCJK (CTEX)}
@@ -1395,8 +1395,8 @@ abc汉字abc
 %     \tn{CJKunderwave} \oarg{options} \marg{text}
 %   \end{syntax}
 %   在 \meta{text} 下面画一条波浪线。
-%   波浪线用 \pkg{l3draw} 画出，并用 \tn{leaders} 重复，
-%   各个周期首尾相接：一个周期宽 \texttt{1em}，上下各 \texttt{.25em}。
+%   波浪线用 \pkg{l3draw} 画出，各个周期首尾相接：
+%   一个周期宽 \texttt{1em}，上下各 \texttt{.25em}。
 %   一段整字的文字由整数个周期组成，波浪线从第一个字的边缘画到最后一个字的边缘；
 %   被对齐拉伸时，整段按最终宽度分成整数个周期，周期跟着整行的拉伸变长或变短。
 %   整个图案随字号缩放；与其他画出的图案一样，它不改变行的高度与深度。
@@ -2760,8 +2760,8 @@ abc汉字abc
 %     \tn{CJKunderwave} \oarg{options} \marg{text}
 %   \end{syntax}
 %   Put a wave under \meta{text}.
-%   The wave is drawn with \pkg{l3draw} and repeated with \tn{leaders},
-%   which keeps the periods joined: one period is \texttt{1em} wide and reaches
+%   The wave is drawn with \pkg{l3draw}, and its periods stay joined:
+%   one period is \texttt{1em} wide and reaches
 %   \texttt{.25em} above and below. A span of whole characters is an exact
 %   number of periods, so the wave runs from the first character's edge to the
 %   last one's; when justification stretches the span, the span is divided into
@@ -9629,43 +9629,103 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{tile}
-% Divide one decoration into whole leader boxes.
-% A stroke cannot span the glue that \tn{xleaders} puts between two copies: the
-% butt cap of a copy ends at the end of its path, so the gap shows as a hole in
-% the wave. \tn{leaders} keeps the copies adjacent, but places only whole boxes
-% and leaves the rest of the width empty, which is a hole at the end of the
-% span. The append callback is the one place where the width of the piece is
+% Write the copies of a drawn decoration into the piece it covers.
+% The append callback is the one place where the width of the piece is
 % final, so there it is divided into the nearest whole number of patterns and
-% the piece gets its own copy of the leader box with that width: the copies stay
-% adjacent, the pattern reaches the end of the span, and its period follows the
-% stretch of the line. The width is rounded down, so that \meta{k} copies always
-% fit and the last remainder is a few scaled points at most, and the ink of the
-% copy is scaled to that width, so that one copy's path ends exactly where the
-% next one's begins: the period of the drawing is one em, and the width the
-% piece is divided into is almost never the same.
+% the piece is rebuilt from copies of the leader box, each as wide as that
+% division: the copies are adjacent, the pattern reaches both ends of the span,
+% and its period follows the stretch of the line. The width is rounded down, so
+% that the remainder is a few scaled points at most and is left as a kern, and
+% the ink of a copy is scaled to the width it is given, so that one copy's path
+% ends exactly where the next one's begins: the period of the drawing is one
+% em, and the width the piece is divided into is almost never the same.
+%
+% The copies are written here rather than repeated by \tn{leaders}, because the
+% copies of a leader glue are not laid out from its left edge: a span that is
+% not a whole number of patterns loses one at one end, which is what a
+% decoration showed whose span ended in the middle of a stretched line.
+% \tn{xleaders} cannot spread the pattern either, because the glue it puts
+% between two copies separates two butt caps.
+%
+% A copy also loses the record of the drawing's origin, which \pkg{l3draw} puts
+% in front of every drawing: it is a box of no width that holds nothing but
+% whatsits, and a label that every copy records is multiply defined.
 %    \begin{macrocode}
-local function tile (box)
-  local n = box.head
+local function only_whatsits (head)
+  local n = head
   while n do
+    if n.id ~= WHATSIT then
+      return false
+    end
+    n = n.next
+  end
+  return true
+end
+
+local function strip_record (head)
+  local n = head
+  while n do
+    local nxt = n.next
+    if n.id == HLIST then
+      if (n.width or 0) == 0 and n.head and n.head.id == WHATSIT
+         and only_whatsits(n.head) then
+        head = node.remove(head, n)
+      else
+        n.head = strip_record(n.head)
+      end
+    end
+    n = nxt
+  end
+  return head
+end
+
+local function tile (box)
+  local prev = nil
+  local n    = box.head
+  while n do
+    local nxt = n.next
     if n.id == GLUE and n.subtype == LEADERS and n.leader then
       local literal, ink = drawn(n.leader)
       if literal and not ink then
         local w      = glue_width(box, n)
         local period = n.leader.width
         if period > 0 and w >= period then
-          local k = math.floor(w / period + 0.5)
-          if k >= 1 then
-            local width = math.floor(w / k)
-            local copy  = node.copy(n.leader)
-            copy.head   = node.copy_list(n.leader.head)
-            copy.width  = width
+          local k     = math.floor(w / period + 0.5)
+          local width = math.floor(w / k)
+          local first, last
+          for _ = 1, k do
+            local copy = node.copy(n.leader)
+            copy.head  = strip_record(node.copy_list(n.leader.head))
+            copy.width = width
             scale_ink(copy, width / period, period / 65536 * 72 / 72.27)
-            n.leader    = copy
+            copy_attributes(copy, n)
+            copy.next = nil
+            if last then
+              last.next = copy
+            else
+              first = copy
+            end
+            last = copy
           end
+          local rest = w - k * width
+          if rest > 0 then
+            local tail = node.new("kern")
+            tail.kern  = rest
+            last.next  = tail
+            last       = tail
+          end
+          last.next = nxt
+          if prev then
+            prev.next = first
+          else
+            box.head  = first
+          end
+          n = last
         end
       end
     end
-    n = n.next
+    prev = n
+    n    = nxt
   end
 end
 
@@ -10254,8 +10314,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   whole patterns once its final width is known and the pattern is drawn at
 %   that width, so the periods meet without a gap, the wave reaches the last
 %   character, and its period follows the stretch of the line.}
-% A wave drawn with \pkg{l3draw}, one period per em, repeated
-% by \tn{leaders}. The drawing is kept as code rather than as a box,
+% \changes{v0.0.4}{2026/11/20}{The wave is written one period at a time, so it
+%   covers the start and the end of a span that is not a whole number of
+%   periods, on a stretched line as well as on the last line of a paragraph.}
+% A wave drawn with \pkg{l3draw}, one period per em. The drawing is kept as
+% code rather than as a box,
 % so the |em| units are resolved when the decoration is used
 % and the pattern follows the current font size.
 %
@@ -10295,12 +10358,12 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % its path ends, so every gap is a hole in the stroke, and at a tenth of a
 % point it is already visible at the crossings. The piece is therefore divided
 % into whole patterns instead, by \texttt{tile} (see the decoration pass): it
-% has the final width, the nearest whole number of periods, and the piece's own
-% copy of the leader box set to that width, so \tn{leaders} places exactly that
-% many adjacent copies. The wave then reaches the last character, no glue falls
-% between two periods, and the period follows the line: on a paragraph set ten
-% centimetres wide it is \texttt{9.92pt} on a line that was shrunk by a per
-% cent and \texttt{10pt} on the last line, which was not stretched at all.
+% has the final width and the nearest whole number of periods, and it writes one
+% copy of the leader box per period at that width. The wave then reaches the
+% last character, no glue falls between two periods, and the period follows the
+% line: on a paragraph set ten centimetres wide it is \texttt{9.92pt} on a line
+% that was shrunk by a per cent and \texttt{10pt} on the last line, which was
+% not stretched at all.
 %
 % The width the piece is divided into is not the period of the drawing, so the
 % ink of the copy is painted inside a scope that scales it horizontally to that
@@ -10308,7 +10371,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % hundredth of a point out of phase, which is a hairline gap or a thin doubling
 % at every crossing; with it one copy's path ends exactly where the next one's
 % begins. The glue the piece is made of has no shrink of its own, so its final
-% width is read from the line's own 	exttt{glue\_set} and 	exttt{glue\_sign},
+% width is read from the line's own \texttt{glue\_set} and \texttt{glue\_sign},
 % the latter saying whether the line was stretched or shrunk.
 % A box that never reaches a vertical list, such as \tn{hbox}| to|, keeps the
 % plain \tn{leaders} behaviour: it stops after its last whole pattern, without
@@ -10454,6 +10517,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \changes{v0.0.3}{2026/11/20}{The slash is divided into whole cells once its
 %   width is final, so the slashes cover the span evenly and the last one reaches
 %   its end.}
+% \changes{v0.0.4}{2026/11/20}{The slashes are written one cell at a time, so
+%   they cover the whole span.}
 % A repeated slash, as in \pkg{ulem}'s \tn{xout}.
 % The drawing is kept as code so that it scales with the font size,
 % and the stroke width is |.04em| like the wave.
@@ -10468,7 +10533,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %
 % Like the wave, the slash goes through \cs{@@_fntef_use_drawn_type:nn},
 % so it is stroked in the color of \keys{format} or of its text, and it is
-% repeated with \tn{leaders} and divided into whole cells for the reason given
+% divided into whole cells, each written by the pass, for the reason given
 % there.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_slash:

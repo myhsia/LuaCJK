@@ -1,3 +1,8 @@
+## [LuaCJK-v0.0.4](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.4)
+
+- The wave is written one period at a time, so it covers the start and the end of a span that is not a whole number of periods, on a stretched line as well as on the last line of a paragraph.
+- The slashes are written one cell at a time, so they cover the whole span.
+
 ## [LuaCJK-v0.0.3](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.3)
 
 - A mark that the CJK class shares with Latin, such as a curly quotation mark or the em dash, keeps its place inside an `lstlisting` block and counts as two columns: the character table covers the CJK ranges of the Basic Multilingual Plane, both ends of each included.

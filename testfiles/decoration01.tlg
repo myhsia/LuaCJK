@@ -371,35 +371,102 @@ TEST 22: a decoration is divided into whole patterns when its width is final
 ...\localleftbox=null
 ...\localrightbox=null
 ..\hbox(0.0+0.0)x0.0, direction TLT
-..\leaders 40.0 plus 2.88007
-...\hbox(0.0+0.0)x10.25, glue set - 0.2fil, direction TLT
-....\pdfliteral origin <lua data reference ...>
-....\glue 0.0 plus 1.0fil minus 1.0fil
-....\hbox(0.0+0.0)x10.4, direction TLT
-.....\hbox(3.73401+0.0)x10.4, shifted 4.19998, direction TLT
-......\hbox(3.73401+0.0)x10.4, direction TLT
-.......\glue 0.2
-.......\hbox(0.0+0.0)x0.0, shifted -1.867, direction TLT
-........\pdfsave
+..\hbox(0.0+0.0)x10.25, glue set - 0.2fil, direction TLT
+...\pdfliteral origin <lua data reference ...>
+...\glue 0.0 plus 1.0fil minus 1.0fil
+...\hbox(0.0+0.0)x10.4, direction TLT
+....\hbox(3.73401+0.0)x10.4, shifted 4.19998, direction TLT
+.....\hbox(3.73401+0.0)x10.4, direction TLT
+......\glue 0.2
+......\hbox(0.0+0.0)x0.0, shifted -1.867, direction TLT
+.......\pdfsave
+.......\pdfliteral origin{0.39851 w}
+.......\pdfliteral origin{0 J}
+.......\pdfliteral origin{0 j}
+.......\pdfliteral origin{10 M}
+.......\pdfliteral origin{[] 0 d}
+.......\hbox(0.0+0.0)x0.0, direction TLT
+........\pdfliteral direct{0 g 0 G}
 ........\pdfliteral origin{0.39851 w}
-........\pdfliteral origin{0 J}
-........\pdfliteral origin{0 j}
-........\pdfliteral origin{10 M}
-........\pdfliteral origin{[] 0 d}
-........\hbox(0.0+0.0)x0.0, direction TLT
-.........\hbox(0.0+0.0)x0.0, direction TLT
-..........\savepos
-..........\write1{\new@label@record{draw.1}{{xpos}{\__property_code_xpos: }{ypos}{\__property_code_ypos: }{abspage}{\__property_code_abspage: }}}
-..........\savepos
-.........\pdfliteral direct{0 g 0 G}
-.........\pdfliteral origin{0.39851 w}
-.........\pdfliteral origin{0 0 m}
-.........\pdfliteral origin{1.66078 1.66078 3.32054 1.66078 4.98132 0 c}
-.........\pdfliteral origin{6.6421 -1.66078 8.30186 -1.66078 9.96265 0 c}
-.........\pdfliteral origin{S}
-........\pdfrestore
-....\glue 0.0 plus 1.0fil minus 1.0fil
-....\pdfliteral origin <lua data reference ...>
+........\pdfliteral origin{0 0 m}
+........\pdfliteral origin{1.66078 1.66078 3.32054 1.66078 4.98132 0 c}
+........\pdfliteral origin{6.6421 -1.66078 8.30186 -1.66078 9.96265 0 c}
+........\pdfliteral origin{S}
+.......\pdfrestore
+...\glue 0.0 plus 1.0fil minus 1.0fil
+...\pdfliteral origin <lua data reference ...>
+..\hbox(0.0+0.0)x10.25, glue set - 0.2fil, direction TLT
+...\pdfliteral origin <lua data reference ...>
+...\glue 0.0 plus 1.0fil minus 1.0fil
+...\hbox(0.0+0.0)x10.4, direction TLT
+....\hbox(3.73401+0.0)x10.4, shifted 4.19998, direction TLT
+.....\hbox(3.73401+0.0)x10.4, direction TLT
+......\glue 0.2
+......\hbox(0.0+0.0)x0.0, shifted -1.867, direction TLT
+.......\pdfsave
+.......\pdfliteral origin{0.39851 w}
+.......\pdfliteral origin{0 J}
+.......\pdfliteral origin{0 j}
+.......\pdfliteral origin{10 M}
+.......\pdfliteral origin{[] 0 d}
+.......\hbox(0.0+0.0)x0.0, direction TLT
+........\pdfliteral direct{0 g 0 G}
+........\pdfliteral origin{0.39851 w}
+........\pdfliteral origin{0 0 m}
+........\pdfliteral origin{1.66078 1.66078 3.32054 1.66078 4.98132 0 c}
+........\pdfliteral origin{6.6421 -1.66078 8.30186 -1.66078 9.96265 0 c}
+........\pdfliteral origin{S}
+.......\pdfrestore
+...\glue 0.0 plus 1.0fil minus 1.0fil
+...\pdfliteral origin <lua data reference ...>
+..\hbox(0.0+0.0)x10.25, glue set - 0.2fil, direction TLT
+...\pdfliteral origin <lua data reference ...>
+...\glue 0.0 plus 1.0fil minus 1.0fil
+...\hbox(0.0+0.0)x10.4, direction TLT
+....\hbox(3.73401+0.0)x10.4, shifted 4.19998, direction TLT
+.....\hbox(3.73401+0.0)x10.4, direction TLT
+......\glue 0.2
+......\hbox(0.0+0.0)x0.0, shifted -1.867, direction TLT
+.......\pdfsave
+.......\pdfliteral origin{0.39851 w}
+.......\pdfliteral origin{0 J}
+.......\pdfliteral origin{0 j}
+.......\pdfliteral origin{10 M}
+.......\pdfliteral origin{[] 0 d}
+.......\hbox(0.0+0.0)x0.0, direction TLT
+........\pdfliteral direct{0 g 0 G}
+........\pdfliteral origin{0.39851 w}
+........\pdfliteral origin{0 0 m}
+........\pdfliteral origin{1.66078 1.66078 3.32054 1.66078 4.98132 0 c}
+........\pdfliteral origin{6.6421 -1.66078 8.30186 -1.66078 9.96265 0 c}
+........\pdfliteral origin{S}
+.......\pdfrestore
+...\glue 0.0 plus 1.0fil minus 1.0fil
+...\pdfliteral origin <lua data reference ...>
+..\hbox(0.0+0.0)x10.25, glue set - 0.2fil, direction TLT
+...\pdfliteral origin <lua data reference ...>
+...\glue 0.0 plus 1.0fil minus 1.0fil
+...\hbox(0.0+0.0)x10.4, direction TLT
+....\hbox(3.73401+0.0)x10.4, shifted 4.19998, direction TLT
+.....\hbox(3.73401+0.0)x10.4, direction TLT
+......\glue 0.2
+......\hbox(0.0+0.0)x0.0, shifted -1.867, direction TLT
+.......\pdfsave
+.......\pdfliteral origin{0.39851 w}
+.......\pdfliteral origin{0 J}
+.......\pdfliteral origin{0 j}
+.......\pdfliteral origin{10 M}
+.......\pdfliteral origin{[] 0 d}
+.......\hbox(0.0+0.0)x0.0, direction TLT
+........\pdfliteral direct{0 g 0 G}
+........\pdfliteral origin{0.39851 w}
+........\pdfliteral origin{0 0 m}
+........\pdfliteral origin{1.66078 1.66078 3.32054 1.66078 4.98132 0 c}
+........\pdfliteral origin{6.6421 -1.66078 8.30186 -1.66078 9.96265 0 c}
+........\pdfliteral origin{S}
+.......\pdfrestore
+...\glue 0.0 plus 1.0fil minus 1.0fil
+...\pdfliteral origin <lua data reference ...>
 ..\glue -40.0 plus -2.88007
 ..\TU/FandolSong-Regular.otf(0)/m/n/10 中
 ..\glue 0.0 plus 0.96002
@@ -414,4 +481,10 @@ TEST 22: a decoration is divided into whole patterns when its width is final
 ! OK.
 <argument> ...ave {中文测试}\par } \showbox 0 
 l. ...}
+============================================================
+============================================================
+TEST 23: the copies of a drawn pattern start where its span starts
+============================================================
+copies 8, width 674474
+the span starts -1 sp from the first copy
 ============================================================

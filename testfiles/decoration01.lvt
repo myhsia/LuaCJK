@@ -209,6 +209,37 @@
   \showbox0
 }
 
+\TEST{the copies of a drawn pattern start where its span starts}{
+  \setbox0=\vbox{\hsize=103pt \parindent=0pt
+    中中\CJKunderwave{中中中中中中中中}%
+    中中中中中中中中中中中中中中中中中中\par}
+  \directlua{
+    local line = tex.box[0].head
+    local function x (n)
+      return node.dimensions(line.glue_set, line.glue_sign,
+        line.glue_order, line.head, n)
+    end
+    local copies, width, first, last, n = 0, 0, nil, nil, line.head
+    while n do
+      if n.id == node.id("hlist") and n.head
+         and n.head.id == node.id("whatsit") then
+        copies = copies + 1
+        width  = n.width
+        first  = first or x(n)
+        last   = n
+      end
+      n = n.next
+    end
+    local text = last.next
+    while text and text.id ~= node.id("glyph") do text = text.next end
+    texio.write_nl("term and log",
+      "copies " .. copies .. ", width " .. tostring(width))
+    texio.write_nl("term and log",
+      "the span starts " .. tostring(x(text) - first)
+      .. " sp from the first copy")
+  }
+}
+
 \END
 
 \end{document}
