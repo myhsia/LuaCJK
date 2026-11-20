@@ -49,7 +49,7 @@ Entry points:
 | --- | --- |
 | `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
-| `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.3`, `packtdszip = false` with `tdslocations` kept for `l3build install`, `ctanpkg`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
+| `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.4`, `packtdszip = false` with `tdslocations` kept for `l3build install`, `ctanpkg`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
 | `testfiles/NN.lvt` + `.tlg` | 69 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree |
@@ -401,17 +401,21 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   its character, so the dots take the color of their text; `format` replaces
   `luacolor`'s attribute value with the one the TeX side resolved, because a
   rule is colored by attribute.
-- **A continuous drawn pattern is tiled by the pass, never spread by
-  `\xleaders`.**  The wave and the slash are a stroke, and `\TeX` repeats only
-  whole copies of a leader box: a span that is not a whole number of periods
-  leaves a remainder, which `\leaders` puts at the right end and `\cleaders` at
-  both, so the wave stops before the last character; `\xleaders` divides it
-  into glue between two copies, and since a butt cap ends where its path ends,
-  every gap is a hole in the stroke as wide as the stroke itself.  The
+- **A continuous drawn pattern is written copy by copy by the pass, never
+  repeated by `\leaders` and never spread by `\xleaders`.**  The wave and the
+  slash are a stroke, and `\TeX` repeats only whole copies of a leader box: a
+  span that is not a whole number of periods leaves a remainder, which stops
+  the wave before the last character; `\xleaders` divides it into glue between
+  two copies, and since a butt cap ends where its path ends, every gap is a
+  hole in the stroke as wide as the stroke itself.  `\leaders` is no help
+  either, because the copies of a leader glue are not laid out from its left
+  edge, so a span that is not a whole number of periods loses one at one end —
+  which is what a wave showed whose span ended in the middle of a stretched
+  line, on every line but the ones it filled.  The
   `pre_append_to_vlist_filter` pass therefore divides the piece into
-  `round(w / period)` whole patterns and gives that piece its own copy of the
-  leader box at `floor(w / k)`; `\leaders` then places exactly that many
-  adjacent copies.  Three details make that exact: the width is read from the
+  `round(w / period)` whole patterns and writes one copy of the leader box per
+  pattern at `floor(w / k)`, then a kern of the remainder, in place of the
+  leaders glue.  Three details make that exact: the width is read from the
   line's `glue_set` **and** `glue_sign`, because `glue_set` stays positive on a
   shrunk line; the ink of the copy is painted inside a scope scaled
   horizontally to the slot, because the drawing's period is one em and the slot

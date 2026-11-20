@@ -430,17 +430,21 @@ translation. A box that holds a pattern (the symbols) keeps the leaders.
 The remainder cannot be spread at all. `\xleaders` divides it between the
 copies, but that glue separates two butt caps, and a cap ends where its path
 ends: every gap shows as a hole in the stroke, one stroke width wide at the
-stretch of an ordinary justified line. `\leaders` keeps the copies adjacent and
-leaves the remainder at the end, `\cleaders` splits it between the two ends.
-Neither reaches the last character.
+stretch of an ordinary justified line. `\leaders` keeps the copies adjacent but
+is no help either, because the copies of a leader glue are not laid out from its
+left edge: a span that is not a whole number of patterns loses one at one end,
+which is what a wave showed whose span ended in the middle of a stretched
+line. `\cleaders` splits the remainder between the two ends. Neither reaches the
+last character.
 
-So the append callback divides the piece instead. It is the one place where the
+So the append callback writes the copies instead. It is the one place where the
 width of the piece is final — the packed box carries `glue_set`, and a glue's
 actual width is its natural width plus its share of the box's stretch or shrink
 — and there `tile` divides that width into `round(w / period)` whole patterns
-and gives this piece its own copy of the leader box at `floor(w / k)`. `\leaders`
-then places exactly that many adjacent copies: no glue between them, nothing
-left at the end, and the period follows the stretch of the line. That width comes
+and replaces the leaders glue with one copy of the leader box per pattern at
+`floor(w / k)` followed by a kern of the remainder: no glue between the copies,
+nothing left at either end, and the period follows the stretch of the line.
+That width comes
 from `glue_set` together with `glue_sign`, since `glue_set` stays positive on a
 shrunk line; and the ink of the copy is painted inside a scope scaled
 horizontally to the slot, because the drawing's own period is one em and the slot
@@ -449,7 +453,7 @@ so the closing literal carries the `Q` and a translation of one period. A leader
 tiled only when it holds a whatsit and no glyph or rule, so the dots,
 `\CJKunderanyline`, `\CJKunderanysymbol` and the `symbol` cells keep their own
 box, and a box that never reaches a vertical list keeps the plain `\leaders`
-remainder. The wave and the slash therefore use `\leaders`, the wave with a
+remainder. The wave and the slash are written this way, the wave with a
 period of one em and an amplitude of a quarter em.
 
 The `depth` key places the rule below the baseline. `boxdepth`, which used to
