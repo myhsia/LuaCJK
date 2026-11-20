@@ -449,7 +449,10 @@ from `glue_set` together with `glue_sign`, since `glue_set` stays positive on a
 shrunk line; and the ink of the copy is painted inside a scope scaled
 horizontally to the slot, because the drawing's own period is one em and the slot
 is not. The scale must be undone without losing the advance the backend expects,
-so the closing literal carries the `Q` and a translation of one period. A leader box is
+so the closing literal carries the `Q` and a translation of one period. A copy
+drops l3draw's record of the drawing's origin (a box of no width holding only
+whatsits), because every copy would record the same label and the manual then
+reports `multiply defined`. A leader box is
 tiled only when it holds a whatsit and no glyph or rule, so the dots,
 `\CJKunderanyline`, `\CJKunderanysymbol` and the `symbol` cells keep their own
 box, and a box that never reaches a vertical list keeps the plain `\leaders`

@@ -421,7 +421,10 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   horizontally to the slot, because the drawing's period is one em and the slot
   is not; and the closing literal carries `Q` plus `1 0 0 1 <period> 0 cm`,
   because a `q … Q` around the content rewinds the point the backend advances
-  from TeX's own bookkeeping.  `tile` touches a leader box only when it holds a
+  from TeX's own bookkeeping.  A copy also drops l3draw's record of the
+  drawing's origin, a box of no width that holds nothing but whatsits: every
+  copy would record the same label, and the manual then reports `multiply
+  defined`.  `tile` touches a leader box only when it holds a
   whatsit and no glyph or rule, so the dots (whose ink is per character),
   `\CJKunderanyline`, `\CJKunderanysymbol` and the `symbol` cells keep theirs,
   and a box that never reaches a vertical list, such as `\hbox to`, keeps the
