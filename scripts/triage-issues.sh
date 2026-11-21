@@ -44,6 +44,12 @@
 # first match wins, and an issue that also names a subsystem (`U+0027 的间距`)
 # takes that subsystem, which is where its fix lands.
 #
+# `CJKfilltwosides` is the layout environment, so its name is `layout`.  The
+# body of a report is never read, and the `\usepackage` lines in it are the
+# reason: `LuaCJKfntef` is loaded by almost every MWE here, so an issue that
+# looked at the body was labelled `fntef` twice (#124, #129) while its title
+# named the layout environment.
+#
 # The type has its own table, because Bug, Feature, and Task are set by GitHub
 # and no label can stand in for them.  A title cannot always tell them apart --
 # `不支持` in one report means "this capability fails" and in another "this
@@ -90,7 +96,7 @@ subsystems='["core","fonts","chars","punct","spacing","breaks","verbatim",
 # and an option name is a rule only when it is the subject of the report, which
 # is what reading the title guarantees.
 rules=$(cat <<'RULES'
-fntef	LuaCJKfntef|CJKunderline|CJKunderwave|CJKunderdot|CJKunderanyline|CJKunderanysymbol|CJKsout|下划线|波浪线|删除线|着重号|format=
+fntef	LuaCJKfntef|CJKunderline|CJKunderwave|CJKunderdot|CJKunderanyline|CJKunderanysymbol|CJKsout|下划线|波浪线|删除线|着重号|双线|单线|format=
 listings	listing|lstlisting|LuaCJK-listings
 verbatim	verbatim|fancyvrb
 math	CJKmath|boldmath|amsmath|公式
@@ -100,6 +106,7 @@ fonts	CJKfontspec|newCJKfontfamily|fakebold|fakeslant|BoldFont|字体|加粗|add
 breaks	AllowBreakBetweenPuncts|kinsoku|nobreak|断行|换行|连字符|hyphen
 chars	DeclareCharClass|DeclarePunctClass|SubCJKBlock|CharClass|pifont|\bding\b
 spacing	CJKglue|CJKecglue|normalspacedchars|间距|空格|hfill|带子|~
+layout	CJKfilltwosides
 ctex	ctex-engine|engine = luacjk
 chars	U\+[0-9A-Fa-f]{4,6}
 RULES
