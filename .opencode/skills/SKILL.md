@@ -162,6 +162,11 @@ The `hyphenate` callback is the one that runs *inside* the line breaker:
 already placed the prohibitions, so `M.hyphenate` hyphenates through
 `lang.hyphenate` and then sets the penalty of each discretionary it created to
 10000 when the letters on either side of it carry the `nobreak` attribute.
+A CJK character is a letter to `\TeX`, so it is also a word boundary here: the
+callback hyphenates each run of non-CJK text between two CJK characters on its
+own, which keeps a hyphenation point from standing between a CJK character and
+the Latin word beside it and leaves the `CJKecglue` at that boundary in place
+(`hyphen01`).
 `disc.penalty` is the break value the line breaker reads, which is why the
 prohibition is a field rather than a node: a penalty in front of a
 discretionary forbids only an empty pre-break, and a `\-` would survive it.
@@ -730,7 +735,7 @@ The commands are in `AGENTS.md`. For this skill the points that matter are:
 ```bash
 l3build check <name>                # the local loop; must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
-l3build check                       # 70 tests, CI on every push
+l3build check                       # 71 tests, CI on every push
 bash scripts/ctex-subset.sh         # 21/21, CI; no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
 ```

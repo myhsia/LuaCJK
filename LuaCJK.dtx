@@ -8935,17 +8935,58 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{hyphenate_runs}
+% Hyphenate the runs of a word that lie between its CJK characters.
+% \TeX\ counts a CJK character as a letter, so the patterns see a CJK
+% character and the Latin word beside it as one word, and a point they find
+% there puts a hyphen right next to the character.
+% A CJK character ends a word here instead: the run of text on each side of
+% it is hyphenated on its own, so no point the patterns find can stand
+% between a CJK character and the letters that follow, and the boundary keeps
+% the glue that \keys{CJKecglue} gives it.
+%    \begin{macrocode}
+local function hyphenate_runs (head, tail)
+  local run  = nil
+  local prev = nil
+  local cur  = head
+  while cur do
+    if cur.id == GLYPH and is_cjk(cur.char, settings_of(cur)) then
+      if run then
+        lang.hyphenate(run, prev)
+      end
+      run = nil
+    elseif not run then
+      run = cur
+    end
+    prev = cur
+    if cur == tail then
+      break
+    end
+    cur = cur.next
+  end
+  if run then
+    lang.hyphenate(run, prev)
+  end
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{LuaCJK.hyphenate}
+% \changes{v0.0.4}{2026/11/20}{A CJK character ends a word for hyphenation, so
+%   the line breaker no longer puts a hyphen beside a CJK character, and the
+%   boundary keeps the \keys{CJKecglue} that the two sides give it.}
 % The hyphenation callback.
 % \TeX\ hyphenates a word while it breaks the lines, after the
 % pre-linebreaking pass has already built the list, so the discretionaries of
 % a word appear after the prohibitions have been placed and nothing forbids
 % them yet.
-% The callback hyphenates exactly as \TeX\ does and then reads the
-% discretionaries it has just created, one word at a time.
+% The callback hyphenates exactly as \TeX\ does, a run of non-CJK text at a
+% time, and then reads the discretionaries it has just created, one word at a
+% time.
 %    \begin{macrocode}
 function M.hyphenate (head, tail)
-  lang.hyphenate(head, tail)
+  hyphenate_runs(head, tail)
   local left = nil
   local cur  = head
   while cur do

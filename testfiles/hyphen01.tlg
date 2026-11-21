@@ -1,0 +1,95 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: the boundary carries its ecglue and no discretionary
+============================================================
+LINES 13107200 B 4E2D g0/62916/0 6587 g218430/109250/72810 0063 006F 006D d 0070 0075 0074 0065 0072 p10000 g0/65536/0 g0/0/0
+============================================================
+============================================================
+TEST 2: a narrow line breaks at the boundary, not with a hyphen
+============================================================
+Overfull \hbox (18.32199pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 中 文 \TU/lmr/m/n/10 com-
+\hbox(7.78+1.62)x25.0, glue set - 1.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x0.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 文
+.\glue 3.33298 plus 1.66702 minus 1.111
+.\TU/lmr/m/n/10 c
+.\TU/lmr/m/n/10 o
+.\TU/lmr/m/n/10 m
+.\TU/lmr/m/n/10 -
+.\discretionary (penalty 50)
+.\glue(\rightskip) 0.0
+LINES 1638400 B 4E2D g0/62916/0 6587 g218430/109250/72810 0063 006F 006D 002D d g0/0/0 | 1638400 0070 0075 0074 0065 0072 p10000 g0/65536/0 g0/0/0
+============================================================
+============================================================
+TEST 3: a CJK character ends a word of longer Latin text
+============================================================
+Overfull \hbox (4.72198pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 中 文 \TU/lmr/m/n/10 type-
+\hbox(7.78+2.05)x40.0, glue set - 1.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x0.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 文
+.\glue 3.33298 plus 1.66702 minus 1.111
+.\TU/lmr/m/n/10 t
+.\kern-0.28 (font)
+.\TU/lmr/m/n/10 y
+.\TU/lmr/m/n/10 p
+.\kern0.28 (font)
+.\TU/lmr/m/n/10 e
+.\TU/lmr/m/n/10 -
+.\discretionary (penalty 50)
+.\glue(\rightskip) 0.0
+LINES 2621440 B 4E2D g0/62916/0 6587 g218430/109250/72810 0074 k-18350 0079 0070 k18350 0065 002D d g0/0/0 | 2621440 0073 0065 0074 d 0074 0069 006E 0067 p10000 g0/65536/0 g0/0/0
+============================================================
+============================================================
+TEST 4: a Latin word before a CJK character hyphenates inside itself
+============================================================
+Overfull \hbox (8.67pt too wide) in paragraph at lines ...
+[]\TU/lmr/m/n/10 type-set-ting
+\hbox(6.57+2.06)x40.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x0.0, direction TLT
+.\TU/lmr/m/n/10 t
+.\kern-0.28 (font)
+.\TU/lmr/m/n/10 y
+.\TU/lmr/m/n/10 p
+.\kern0.28 (font)
+.\TU/lmr/m/n/10 e
+.\discretionary (penalty 50)
+..< \TU/lmr/m/n/10 -
+.\TU/lmr/m/n/10 s
+.\TU/lmr/m/n/10 e
+.\TU/lmr/m/n/10 t
+.\discretionary (penalty 50)
+..< \TU/lmr/m/n/10 -
+.\TU/lmr/m/n/10 t
+.\TU/lmr/m/n/10 i
+.\TU/lmr/m/n/10 n
+.\TU/lmr/m/n/10 g
+.\glue(\rightskip) 0.0
+LINES 2621440 B 0074 k-18350 0079 0070 k18350 0065 d 0073 0065 0074 d 0074 0069 006E 0067 g0/0/0 | 2621440 4E2D g0/62916/0 6587 p10000 g0/65536/0 g0/0/0
+============================================================
+============================================================
+TEST 5: a run of CJK characters takes no discretionary
+============================================================
+LINES 1310720 B 4E2D g0/62916/0 6587 g0/0/0 | 1310720 4E2D g0/62916/0 6587 p10000 g0/65536/0 g0/0/0
+============================================================
