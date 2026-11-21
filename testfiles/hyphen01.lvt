@@ -1,0 +1,99 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\parindent=0pt
+
+% Report every line of box 0 as its nodes: a glyph by code point, a
+% discretionary (d), a glue (g) by width/stretch/shrink, a penalty (p), and a
+% box (B) with its content, every length in scaled points.
+\def\showlines{%
+  \directlua{
+    local digits = "0123456789ABCDEF"
+    local function hex (n)
+      local out, count = {}, 0
+      repeat
+        count = count + 1
+        local d = math.fmod(n, 16) + 1
+        out[count] = digits:sub(d, d)
+        n = math.floor(n / 16)
+      until n == 0
+      local s = ""
+      for i = count, 1, -1 do s = s .. out[i] end
+      while string.len(s) < 4 do s = "0" .. s end
+      return s
+    end
+    local function nodes (head)
+      local parts, count = {}, 0
+      local n = head
+      while n do
+        local item = nil
+        if n.id == node.id("glyph") then
+          item = hex(n.char)
+        elseif n.id == node.id("disc") then
+          item = "d"
+        elseif n.id == node.id("kern") then
+          item = "k" .. tostring(n.kern)
+        elseif n.id == node.id("glue") then
+          item = "g" .. tostring(n.width) .. "/"
+            .. tostring(n.stretch) .. "/" .. tostring(n.shrink)
+        elseif n.id == node.id("penalty") then
+          item = "p" .. tostring(n.penalty)
+        elseif n.id == node.id("hlist") then
+          item = "B" .. nodes(n.head)
+        end
+        if item then
+          count = count + 1
+          parts[count] = item
+        end
+        n = n.next
+      end
+      return table.concat(parts, " ", 1, count)
+    end
+    local lines, nlines = {}, 0
+    local line = tex.box[0].head
+    while line do
+      if line.id == node.id("hlist") then
+        nlines = nlines + 1
+        lines[nlines] = tostring(line.width) .. " " .. nodes(line.head)
+      end
+      line = line.next
+    end
+    texio.write_nl("term and log",
+      "LINES " .. table.concat(lines, " | ", 1, nlines))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{the boundary carries its ecglue and no discretionary}{
+  \setbox0=\vbox{\hsize=20em 中文computer\par}
+  \showlines
+}
+
+\TEST{a narrow line breaks at the boundary, not with a hyphen}{
+  \setbox0=\vbox{\hsize=2.5em 中文computer\par}
+  \showlines
+}
+
+\TEST{a CJK character ends a word of longer Latin text}{
+  \setbox0=\vbox{\hsize=4em 中文typesetting\par}
+  \showlines
+}
+
+\TEST{a Latin word before a CJK character hyphenates inside itself}{
+  \setbox0=\vbox{\hsize=4em typesetting中文\par}
+  \showlines
+}
+
+\TEST{a run of CJK characters takes no discretionary}{
+  \setbox0=\vbox{\hsize=2em 中文中文\par}
+  \showlines
+}
+
+\END
+
+\end{document}
