@@ -892,7 +892,7 @@ $ 天地玄黄 $ and 天地玄黄
 %   用 \cs{LuaCJKsetwidth} 为某个标点设置的宽度仍然优先。
 %   \item[\keys{PunctBoundWidth}]\val{length, false}: 标点出现在行尾或行首时，
 %   它的进距中有多少留在行内；
-%   其余的墨迹悬挂到页边，或者悬挂到段落开头的缩进里。
+%   其余的墨迹悬挂到页边，或者悬挂到段落开头或列表项开头的缩进里。
 %   默认悬挂标点自带的空白，所以它的墨迹正好落在版心边上；
 %   断行时这一份悬挂已经算进去，行尾的标点因此能随它所在的行一起放下。
 %   \texttt{0pt} 把整个进距都悬挂出去，\texttt{false} 恢复这个默认值。
@@ -2225,7 +2225,7 @@ $ 天地玄黄 $ and 天地玄黄
 %   \item[\keys{PunctBoundWidth}]\val{length, false}: How much of a mark's
 %   advance stays inside the line when the mark ends or starts the line;
 %   the rest of the ink stands in the margin, or in the indentation at the
-%   start of a paragraph.
+%   start of a paragraph or of a list item.
 %   The default leaves the mark's own blank out, so its ink stands on the
 %   measure, and line breaking counts that hang, so a mark can end the line the
 %   natural width would refuse.
@@ -8609,14 +8609,22 @@ end
 
 %    \end{macrocode}
 % \end{macro}
-% \begin{macro}[int]{open_hang, head_lead, hang_rule}
+% \begin{macro}[int]{open_hang, item_label, head_lead, hang_rule}
 % The hang of an opening mark that a line begins with, as a length and the
 % glyph it belongs to, or zero when the mark does not open or its style does
 % not hang; the rule that carries that length into the line, of negative width
 % and with the attributes of the mark; and the head of a paragraph, found by
-% walking over what carries no ink: the local paragraph node, the whatsits, and
-% the indentation, which \LuaTeX\ puts in front of the text as an empty box of
-% the width of \tn{parindent}.
+% walking over what carries no text of the paragraph: the local paragraph
+% node, the whatsits, the indentation, which \LuaTeX\ puts in front of the
+% text as an empty box of the width of \tn{parindent}, and the label box of a
+% list item, which the list writes in front of the item's text.
+% A box is passed over when it carries no content, when it occupies no
+% advance, or when a penalty of zero follows it, and a penalty is passed over
+% unless it forces a break.
+% The penalty of zero is the one the list writes after the label box of an
+% item, so the label takes an advance in the line without being part of the
+% paragraph, and a mark that begins the item hangs into it the way it hangs
+% into the indentation of a paragraph.
 %    \begin{macrocode}
 local function open_hang (n)
   local lead, _, glyph = edge_mark(n, false)
@@ -8627,6 +8635,11 @@ local function open_hang (n)
   return hang_amount(glyph, "open", settings_of(glyph)) or 0, glyph
 end
 
+local function item_label (b)
+  local n = b.next
+  return n ~= nil and n.id == PENALTY and n.penalty == 0
+end
+
 local function head_lead (head)
   local indent = tex.parindent or 0
   local prev   = nil
@@ -8635,7 +8648,7 @@ local function head_lead (head)
     if cur.id == GLYPH then
       return cur, prev
     elseif cur.id == HLIST or cur.id == VLIST then
-      if cur.head then
+      if cur.head and cur.width ~= 0 and not item_label(cur) then
         return nil, nil
       end
     elseif cur.id == GLUE then
@@ -8646,8 +8659,11 @@ local function head_lead (head)
       if cur.kern ~= 0 then
         return nil, nil
       end
-    elseif cur.id == MATH or cur.id == PENALTY or cur.id == DISC
-           or cur.id == RULE then
+    elseif cur.id == PENALTY then
+      if cur.penalty < 0 then
+        return nil, nil
+      end
+    elseif cur.id == MATH or cur.id == DISC or cur.id == RULE then
       return nil, nil
     end
     prev = cur
@@ -8695,6 +8711,10 @@ end
 %   line the document forces a break at, hangs as well: its blank stands in
 %   the indentation or in the margin, and \keys{PunctBoundWidth} decides how
 %   much of the advance stays inside the line there too.}
+% \changes{v0.0.4}{2026/11/20}{The first line of a list item hangs as well:
+%   the label box that the list writes in front of the item's text is passed
+%   over, so a mark that begins the item leaves its blank in the label's
+%   advance.}
 % Bracket every break point that a mark ends or starts, so the line measures
 % the hang and the text inside a line does not move. A break that a preceding
 % penalty already forbids is left alone, so a fixed width does not carry a rule

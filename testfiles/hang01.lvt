@@ -2,7 +2,7 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont[BoldFont = FandolSong-Bold.otf]{FandolSong-Regular.otf}
 \parindent=0pt
 
 % Report every line of box 0 as its nodes: a glyph by code point, a rule (R),
@@ -107,6 +107,16 @@
 
 \TEST{a line a forced break starts leaves its blank}{
   \setbox0=\vbox{\hsize=6em 字字字字\\‘字字\par}
+  \showlines
+}
+
+\TEST{the label of a list item leaves that blank as well}{
+  \setbox0=\vbox{\begin{itemize}\item ‘字字\end{itemize}}
+  \showlines
+}
+
+\TEST{a description label with an advance of its own does too}{
+  \setbox0=\vbox{\begin{description}\item[Description label] ‘字字\end{description}}
   \showlines
 }
 

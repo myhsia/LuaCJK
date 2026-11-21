@@ -315,15 +315,17 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **Inserted nodes must inherit attributes.**  Glue, kern, and penalty nodes
   created after TeX attached the attributes need `inherit_attributes(...)`, or
   attribute-driven packages such as `lua-ul` see the span end there.
-- **A hang is bracketed at a glue break, and the two boundaries without a
+- **A hang is bracketed at a glue break, and the three boundaries without a
   glue are bracketed by hand.**  `hang_bounds` adds the hang to the glue a
   line breaks at, which covers every wrapped line; the first line of a
   paragraph and a line that `\\` forces begin with no glue, so the rule that
   shifts the line goes in front of the opening mark itself, or after the
   `-10000` penalty of the forced break.  The indentation in front of a
-  paragraph is an empty box of the width of `\parindent`, not a glue, so
-  `head_lead` walks over it with the whatsit and local-paragraph nodes and
-  stops at anything that has ink or is an indent of another width.
+  paragraph is an empty box of the width of `\parindent`, not a glue, and the
+  first line of a list item begins with the label box, which the list follows
+  with a penalty of zero, so `head_lead` walks over both with the whatsit and
+  local-paragraph nodes and over a penalty that does not force a break, and
+  stops at any other box that has ink and an advance of its own.
 - **A Type 2 charstring number belongs to the charstring that holds it.**
   `cff_box` hands the charstring being interpreted to the number reader,
   because a subroutine carries its own operands; read from the outer
