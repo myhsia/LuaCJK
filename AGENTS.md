@@ -64,7 +64,7 @@ Entry points:
 | `.github/font-urls.txt` | the Noto CJK release URLs the Linux leg of the `l3build` job downloads for the manual; the hash of the file is the cache key, so changing a URL invalidates the cache |
 | `.github/workflows/test.yaml` | the CI workflow |
 | `.github/workflows/ctan.yaml` | publishes a release to CTAN: on a published release it checks out the tag, refuses to run unless `build.lua`'s version is the tag's, downloads that release's own `luacjk-ctan.zip` so that the archive CTAN receives is the published one, and runs `l3build upload`; a manual run takes the latest release with the current branch's form |
-| `.github/workflows/triage.yaml` | labels a new issue with the subsystem of the fix: on `issues: opened` and `reopened` it runs `scripts/triage-issues.sh --apply --number <n>` with the default token, `issues: write`; an issue the keyword table cannot place keeps no label, and the session check reports it |
+| `.github/workflows/triage.yaml` | labels and types a new issue: on `issues: opened` and `reopened` it runs `scripts/triage-issues.sh --apply --number <n>`, and once a day (`schedule`) it runs `--apply` over every open issue, filling only what is missing; it needs the default token, `issues: write`; an issue the label table cannot place keeps no label, and the session check reports it |
 | `.github/tl_packages` | the package list CI installs; a dependency must be added **or removed** here or the Ubuntu job fails first; the tagged manual and `tagging01` need `latex-lab` and `tagpdf`, and `emoji01` renders `NotoColorEmoji.ttf`, which is `noto-emoji` |
 | `CHANGELOG.md` | user-visible changes, newest first, generated from the `\changes` entries by `l3build changelog` |
 | `CTAN-NOTE.md` | the internal note of the next CTAN upload, read by `l3build upload` and sent verbatim; empty it once that upload is through |
@@ -860,11 +860,14 @@ session instead of waiting for a pull request.  The same wrapper is the only
 place a session is told that open issues are still uncategorised, because a
 repository may declare one check and not two.
 
-A third workflow, `triage.yaml`, is not a test either: it labels an issue when
-it is opened or reopened.  It needs nothing but the checkout and the default
-token (`permissions: issues: write`), and it runs the committed script rather
-than a copy, so the rule that decides a label in the absence of a session is the
-same rule the session check reports against.
+A third workflow, `triage.yaml`, is not a test either: it labels and types an
+issue when it is opened or reopened, and once a day it applies the same tables
+to every open issue, so one that was missed while the workflow was down — or
+that a later rule change places — is completed without a session.  It needs
+nothing but the checkout and the default token (`permissions: issues: write`),
+and it runs the committed script rather than a copy, so the rule that decides a
+label in the absence of a session is the same rule the session check reports
+against.
 
 ## Superseded decisions
 
@@ -921,18 +924,21 @@ GitHub's side, so nothing here repeats it.
   place the fix lands, so it predicts the scope of the commit that closes the
   issue; `fntef` is therefore right for a report about `LuaCJKfntef`, even when
   the example also mentions a font.
-- An open issue that the session finds without a subsystem label is labelled in
-  that session, before the task it was doing: read the report and pick the
-  subsystem from where the fix belongs.  `scripts/triage-issues.sh` lists
-  exactly those issues and `scripts/session-check.sh` reports their count at the
-  start of a day.
+- An open issue that the session finds without a subsystem label or a type is
+  completed in that session, before the task it was doing: read the report and
+  pick the subsystem from where the fix belongs.  `scripts/triage-issues.sh`
+  lists exactly those issues and `scripts/session-check.sh` reports their count
+  at the start of a day.
 - Most issues never reach that point.  `triage.yaml` runs the same script with
-  `--apply` when an issue is opened or reopened, and the script's ordered
-  keyword table decides the label: first match wins, so an issue that names
-  both `\CJKunderline` and `CJKglue` lands in `fntef`, where the fix belongs.
-  An issue that matches no rule is left unlabelled on purpose rather than given
-  a guess, which is why the session check still has a job: it is the net for the
-  reports the table cannot place, and for issues that arrive any other way.
+  `--apply` when an issue is opened or reopened **and once a day**, and the
+  script's ordered keyword table decides the label: first match wins, so an
+  issue that names both `\CJKunderline` and `CJKglue` lands in `fntef`, where
+  the fix belongs.  An issue whose title matches no rule is left unlabelled on
+  purpose rather than given a guess, which is why the session check still has a
+  job: it is the net for the reports the table cannot place.  The daily run is
+  the net for the other way an issue misses its label — it was opened while the
+  workflow was down, or a later rule change places it — because it applies to
+  every open issue and only fills what is missing.
 - **The table reads the title, never the body.**  A body is the reporter's
   apparatus, and it is nearly identical across the reports of one reporter —
   every issue here opens with `\usepackage[LoadFandol]{LuaCJK}` and
@@ -955,10 +961,22 @@ GitHub's side, so nothing here repeats it.
   where a code point becomes CJK.  First match wins, so the code-point rule is
   the final line of the table: an issue that also names a subsystem
   (`U+0027 的间距`) takes that subsystem, which is where its fix lands.
+- **The type comes from its own table, and its default is `Bug`.**  `Bug`,
+  `Feature`, and `Task` are set by GitHub and no label stands in for them, so
+  `--apply` fills whichever of the two an issue lacks.  A title cannot always
+  tell a defect from a request — `不支持` means "this fails" in #29 and "this
+  does not exist" in #67 — so only `Task` (`讨论`, `优化`, `是否有可能`) and
+  `Feature` (`希望`, `建议`, `新增`, `增加`, `添加`, `新功能`, `feature`) are
+  recognised, and everything else is a defect report.  Measured against the 48
+  issues a person had already typed, that table is right for 42; the six misses
+  are #67, #64, #5 (`Feature` read as `Bug`), #24 (`Bug` read as `Feature`),
+  #86 (`Bug` read as `Task`), and #1 (`Feature` read as `Task`).  A wrong type
+  is invisible, since nothing reports it, so a session corrects one it reads as
+  wrong while it is in the thread.
 - **A green triage run does not mean a label was applied.**  `--apply` prints
-  `#N unclassified` and exits 0 when no rule matches, which is the designed
-  outcome; the run's own log is the only place that says so.  Read it before
-  concluding that the workflow labelled an issue.
+  `#N unclassified` and exits 0 when no label rule matches, which is the
+  designed outcome; the run's own log is the only place that says so.  Read it
+  before concluding that the workflow labelled an issue.
 
 **Fixing an issue** follows the global rule in `repo-rules` ("Fixing an
 issue"); what is local to this repository is the shape of the work.  The branch
