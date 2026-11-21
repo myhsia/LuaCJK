@@ -130,7 +130,9 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
 3. `apply_fixed_widths` — give punctuation the advance the style asks for, by
    inserting a penalty and a kern after the mark. The ink is moved by class:
    an opening mark by the whole amount, a middle mark by half, a closing mark
-   not at all. A dash or an ellipsis keeps its advance.
+   not at all. A dash or an ellipsis keeps its advance. A mark that already
+   carries the pair the pass inserted is passed over, because `hpack_filter`
+   walks the same list again for every box that holds it (`punct01`).
 4. `hang_bounds` — insert the hang of a mark into the measure, as a zero-size
    rule of negative width beside the break glue (`hang01`), and at the two
    boundaries that carry no glue: in front of the opening mark that begins a

@@ -7720,6 +7720,10 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{apply_fixed_widths}
+% \changes{v0.0.4}{2026/11/20}{A punctuation mark is given its fixed advance
+%   once: a box that holds the list is packed again, and the mark no longer
+%   takes a second compensating kern, so a fixed-width style no longer
+%   squeezes a table cell or a parbox.}
 % Styles such as \texttt{banjiao} give every punctuation mark a fixed
 % advance. The glyph advance cannot be changed, so a compensating kern
 % goes right after the glyph. A penalty in front of that kern keeps \TeX\
@@ -7730,6 +7734,10 @@ end
 % centered, so it moves by half. A dash or an ellipsis is not shortened by the
 % style: its advance is the length of the stroke, and halving it would let the
 % two halves of a two-em dash overlap.
+% A mark keeps the kern it was given. \TeX\ runs the box-packing callback again
+% for every box that holds the list, so a mark whose advance was corrected
+% would be corrected a second time: the penalty and the kern the pass inserted
+% are the record, and a mark that already carries them is passed over.
 %    \begin{macrocode}
 local function ink_shift (class, delta)
   if class == "open" then
@@ -7764,13 +7772,22 @@ local function fixed_width (cur, settings, style)
   return nil
 end
 
+local function fixed_done (n)
+  local p = n.next
+  if p and p.id == PENALTY and p.penalty == 10000 and is_inserted(p) then
+    local k = p.next
+    return k ~= nil and k.id == KERN and is_inserted(k)
+  end
+  return false
+end
+
 local function apply_fixed_widths (head)
   local cur = head
   while cur do
     local settings = settings_of(cur)
     local style    = style_of(settings)
     if cur.id == GLYPH and punct_class(cur.char, settings, cur.font)
-       and not disabled(cur) then
+       and not disabled(cur) and not fixed_done(cur) then
       local target = fixed_width(cur, settings, style)
       if target then
         local delta = target - cur.width
@@ -7779,6 +7796,9 @@ local function apply_fixed_widths (head)
           local p = new_node("penalty")
           inherit_attributes(p, cur)
           p.penalty = 10000
+          if M.attr_inserted then
+            set_attribute(p, M.attr_inserted, 1)
+          end
           local k   = make_kern(delta, cur)
           p.next    = k
           k.next    = cur.next
