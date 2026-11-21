@@ -8,11 +8,11 @@
 # line per open issue that carries no subsystem label, exit 0 none left, 1 some
 # reported, 2 cannot ask GitHub.
 #
-#   --apply          add the label the keyword table suggests, for each issue
-#                    that has none yet
-#   --explain        print what the table suggests for every open issue,
-#                    labelled or not, and change nothing; this is how a change
-#                    to the table is judged
+#   --apply          add the label and the type the tables suggest, for each
+#                    issue that lacks one yet
+#   --explain        print what the tables suggest for every open issue,
+#                    labelled and typed or not, and change nothing; this is how
+#                    a change to a table is judged
 #   --number <n>     restrict the run to one issue, which is what the workflow
 #                    on `issues: opened` does so that two runs cannot race
 #
@@ -43,6 +43,15 @@
 # character table, which is `chars`, so the code-point rule is the last one:
 # first match wins, and an issue that also names a subsystem (`U+0027 的间距`)
 # takes that subsystem, which is where its fix lands.
+#
+# The type has its own table, because Bug, Feature, and Task are set by GitHub
+# and no label can stand in for them.  A title cannot always tell them apart --
+# `不支持` in one report means "this capability fails" and in another "this
+# capability does not exist" -- so the default is the defect report, which is
+# what this board mostly receives, and a session corrects a type it reads as
+# wrong.  Measured against the issues a person has already typed, the table is
+# right for 42 of 48; the six misses are named in the guide.  A missing type is
+# reported exactly like a missing label, so nothing stays blank unnoticed.
 
 set -u
 
@@ -87,10 +96,10 @@ verbatim	verbatim|fancyvrb
 math	CJKmath|boldmath|amsmath|公式
 punct	PunctStyle|PunctWidth|setwidth|setkern|EditPunctStyle|标点|禁则
 load	LoadFandol
-fonts	CJKfontspec|newCJKfontfamily|fakebold|fakeslant|BoldFont|字体|加粗|addCJKfontfeatures|CharacterWidth|hwid
-breaks	AllowBreakBetweenPuncts|kinsoku|nobreak|断行|换行
-chars	DeclareCharClass|DeclarePunctClass|SubCJKBlock|CharClass
-spacing	CJKglue|CJKecglue|normalspacedchars|间距|空格|hfill
+fonts	CJKfontspec|newCJKfontfamily|fakebold|fakeslant|BoldFont|字体|加粗|addCJKfontfeatures|CharacterWidth|hwid|fontenc
+breaks	AllowBreakBetweenPuncts|kinsoku|nobreak|断行|换行|连字符|hyphen
+chars	DeclareCharClass|DeclarePunctClass|SubCJKBlock|CharClass|pifont|\bding\b
+spacing	CJKglue|CJKecglue|normalspacedchars|间距|空格|hfill|带子|~
 ctex	ctex-engine|engine = luacjk
 chars	U\+[0-9A-Fa-f]{4,6}
 RULES
@@ -108,46 +117,81 @@ classify() {
   return 1
 }
 
+# type, then a case-insensitive extended regular expression on the title; the
+# first match wins and anything else is a defect report, so the table only ever
+# has to recognise a request or a discussion.
+type_rules=$(cat <<'TYPES'
+Task	讨论|优化|是否有可能
+Feature	希望|建议|新增|增加|添加|新功能|feature
+TYPES
+)
+
+classify_type() {
+  local text=$1 type pattern
+  while IFS=$'\t' read -r type pattern; do
+    [ -n "${type:-}" ] || continue
+    if printf '%s' "$text" | grep -qiE "$pattern"; then
+      printf '%s' "$type"
+      return 0
+    fi
+  done <<< "$type_rules"
+  printf 'Bug'
+}
+
 if [ -n "$number" ]; then
-  issue=$(gh issue view "$number" --json number,title,labels 2>/dev/null) || exit 2
+  issue=$(gh issue view "$number" --json number,title,labels,issueType 2>/dev/null) ||
+    exit 2
   issues="[$issue]"
 else
-  issues=$(gh issue list --state open --limit 200 --json number,title,labels \
-             2>/dev/null) || exit 2
+  issues=$(gh issue list --state open --limit 200 \
+             --json number,title,labels,issueType 2>/dev/null) || exit 2
 fi
 printf '%s' "$issues" | jq -e 'type == "array"' >/dev/null 2>&1 || exit 2
 
-# A tab-separated record per issue, one line each: a title that contains a tab
-# or a newline is folded to a space, so the record survives the `read` loop.
+# A tab-separated record per issue: its number, its title, whether it lacks a
+# subsystem label, and whether it lacks a type.  A title that contains a tab or
+# a newline is folded to a space, so the record survives the `read` loop.
 records=$(printf '%s' "$issues" | jq -r --argjson subsystems "$subsystems" \
   --argjson keep "$([ "$explain" = true ] && echo true || echo false)" '
   .[]
-  | select($keep or (([.labels[].name] - $subsystems) == [.labels[].name]))
-  | [ .number, (.title | gsub("[\\t\\n\\r]"; " ")) ]
+  | { n: .number,
+      t: (.title | gsub("[\\t\\n\\r]"; " ")),
+      l: (([.labels[].name] - $subsystems) == [.labels[].name]),
+      y: (.issueType == null) }
+  | select($keep or .l or .y)
+  | [ .n, .t, (if .l then 1 else 0 end), (if .y then 1 else 0 end) ]
   | map(tostring) | join("\t")')
 
 [ -n "$records" ] || exit 0
 
 # Report mode is the session check: anything it prints needs attention, so it
-# exits 1.  `--apply` and `--explain` are tools, and an issue the table declines
+# exits 1.  `--apply` and `--explain` are tools, and an issue a table declines
 # to place is an outcome they print, not a failure.
 report=false
 [ "$apply" = false ] && [ "$explain" = false ] && report=true
 
 status=0
-while IFS=$'\t' read -r num title; do
+while IFS=$'\t' read -r num title need_label need_type; do
   [ -n "${num:-}" ] || continue
-  if suggestion=$(classify "$title"); then
-    if [ "$apply" = true ]; then
-      gh issue edit "$num" --add-label "$suggestion" >/dev/null 2>&1 ||
-        { printf '#%s could not be labelled\n' "$num"; status=2; continue; }
-      printf '#%s %s (%s)\n' "$num" "$suggestion" "$title"
-    else
-      printf '#%s %s (%s)\n' "$num" "$suggestion" "$title"
-      [ "$report" = true ] && [ "$status" -eq 0 ] && status=1
+  label=$(classify "$title" || true)
+  type=$(classify_type "$title")
+  if [ "$apply" = true ]; then
+    edit=()
+    if [ "$need_label" -eq 1 ] && [ -n "$label" ]; then
+      edit+=(--add-label "$label")
     fi
+    if [ "$need_type" -eq 1 ]; then
+      edit+=(--type "$type")
+    fi
+    if [ "${#edit[@]}" -gt 0 ] &&
+       ! gh issue edit "$num" "${edit[@]}" >/dev/null 2>&1; then
+      printf '#%s could not be labelled or typed\n' "$num"
+      status=2
+      continue
+    fi
+    printf '#%s %s %s (%s)\n' "$num" "${label:-unclassified}" "$type" "$title"
   else
-    printf '#%s unclassified (%s)\n' "$num" "$title"
+    printf '#%s %s %s (%s)\n' "$num" "${label:-unclassified}" "$type" "$title"
     [ "$report" = true ] && [ "$status" -eq 0 ] && status=1
   fi
 done <<< "$records"

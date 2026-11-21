@@ -6,7 +6,7 @@
 #
 #   - the changelog extractor against ctex-kit's committed changelogs
 #     (`scripts/check-extract-changes.sh`), and
-#   - the open issues that still carry no subsystem label
+#   - the open issues that still carry no subsystem label or no type
 #     (`scripts/triage-issues.sh`).
 #
 # Exit 0 silent, 2 when neither part can run here, and 1 with one summary line
@@ -29,7 +29,7 @@ fi
 if [ "$issues_status" -ne 0 ] && [ "$issues_status" -ne 2 ]; then
   numbers=$(printf '%s\n' "$issues" | awk '{ printf "%s%s", sep, $1; sep = ", " }')
   count=$(printf '%s\n' "$issues" | wc -l | tr -d ' ')
-  printf '%s open issue(s) without a subsystem label: %s (run scripts/triage-issues.sh)\n' \
+  printf '%s open issue(s) without a label or type: %s (run scripts/triage-issues.sh)\n' \
     "$count" "$numbers"
   status=1
 fi
