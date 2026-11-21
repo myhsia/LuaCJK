@@ -1,0 +1,14 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: a dingbat keeps its own font
+============================================================
+GLYPHS pzdr/182 pzdr/183 pzdr/184
+width: 23.63997pt
+============================================================
+============================================================
+TEST 2: a dingbat beside CJK text takes the inter-script glue
+============================================================
+GLYPHS FandolSong-Regular/32534 FandolSong-Regular/21495 pzdr/183
+width: 31.21297pt
+============================================================

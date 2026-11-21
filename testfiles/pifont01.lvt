@@ -1,0 +1,42 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage[LoadFandol]{LuaCJK}
+\usepackage{pifont}
+
+% Print the font and the code point of every glyph in a box, in order, so that
+% the baseline names the font each character was set in.
+\def\glyphs#1{%
+  \directlua{
+    local n = tex.box[#1].head
+    local t = {}
+    while n do
+      if n.id == node.id("glyph") then
+        local f = font.getfont(n.font)
+        table.insert(t, tostring(f and (f.psname or f.name)) .. "/" .. n.char)
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "GLYPHS " .. table.concat(t, " "))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{a dingbat keeps its own font}{
+  \setbox0=\hbox{\ding{182}\ding{183}\ding{184}}
+  \glyphs{0}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{a dingbat beside CJK text takes the inter-script glue}{
+  \setbox0=\hbox{编号\ding{183}}
+  \glyphs{0}
+  \TYPE{width: \the\wd0}
+}
+
+\END
+
+\end{document}
