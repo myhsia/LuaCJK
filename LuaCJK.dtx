@@ -1278,8 +1278,9 @@ abc汉字abc
 %   \texttt{env+} 在所有地方都保留调整；\texttt{false} 完全不碰抄录材料。
 %   既然 \texttt{env+} 与 \texttt{false} 都保留调整，
 %   它们在 \pkg{LuaCJK} 里行为相同。
-%   暂停只去掉间距：紧挨着被暂停材料的一个标点，
-%   仍然保留它后面的断行机会。
+%   暂停只去掉间距，不取折断行机会：被暂停材料两边的零宽胶仍在，
+%   所以紧挨着一个 CJK 字符的 \tn{verb} 可以断行，
+%   紧挨着被暂停材料的一个标点也保留它后面的断行机会。
 %   无论这个设置取什么值，\cs{LuaCJKVerbAddon} 都会在它所在的分组里
 %   把调整重新打开。
 %   \pkg{fancyvrb} 的行内命令 \tn{Verb} 与 \tn{UseVerb} 按 \tn{verb} 的规则处理；
@@ -2649,7 +2650,9 @@ abc汉字abc
 %   \texttt{env+} keeps them everywhere; \texttt{false} leaves verbatim
 %   material entirely alone. Since \texttt{env+} and \texttt{false} both
 %   leave the adjustments on, they behave the same in \pkg{LuaCJK}.
-%   Suspension removes the spacing only: a punctuation mark next to suspended
+%   Suspension removes the spacing only, not the break: the zero-width glue at
+%   either edge of suspended material stays, so a \tn{verb} beside a CJK
+%   character can end a line, and a punctuation mark next to suspended
 %   material still keeps the break opportunity that follows it.
 %   Whatever the setting is, \cs{LuaCJKVerbAddon} turns the adjustments
 %   back on inside the group it is used in.
@@ -7153,6 +7156,9 @@ end
 %   advance: the whatsit a \cs{textcolor} inserts no longer hides the space
 %   from the boundary rules, so no \keys{CJKecglue} or second \keys{CJKglue}
 %   joins it.}
+% \changes{v0.0.4}{2026/11/20}{A suspended run keeps the break opportunity
+%   beside it: the zero-width glue at its edge lets \cs{verb} end a line next
+%   to a CJK character while the spacing stays removed.}
 % Decide what to do at the boundary between two visible nodes.
 % Only source-generated glue is a candidate for replacement;
 % other glue is left alone, and a discretionary is opaque, so neither is
@@ -7170,11 +7176,13 @@ end
 % character is passed over: a color change in front of the character does not
 % hide the space, which stays the boundary and is never joined by a second
 % glue.  A penalty ends that search, because it has a boundary rule of its own.
-% A boundary that touches a suspended run is bridged by nothing, except that a
-% mark keeps its break opportunity: \keys{Verb} suspends the spacing, and the
-% glue at a mark has no width, so restoring it there moves no ink. An opening
-% mark is excluded, because a break after it is prohibited and the kinsoku pass
-% cannot see the prohibition across a suspended node.
+% A boundary that touches a suspended run is bridged by nothing, because
+% \keys{Verb} removes the spacing; the break opportunity stays, as a glue of
+% zero width in the place the spacing would have taken.  The mark rules are
+% applied by hand there, because the kinsoku pass cannot see a prohibition
+% across a suspended node: no break follows an opening mark, none precedes a
+% closing, middle, or long mark that begins a run, and two Latin words are
+% never parted.
 % \begin{macro}[int]{insert_boundary_glue}
 % Insert the CJK--CJK or CJK--Latin glue,
 % or the compression kern for two adjacent punctuation marks.
@@ -7404,6 +7412,43 @@ end
 
 %    \end{macrocode}
 % \end{macro}
+% \begin{macro}[int]{suspended_break}
+% Whether the break beside a suspended run is allowed: the mark rules of
+% \texttt{forbids_break} are read at the edge of the run, and two Latin words
+% are left whole.
+%    \begin{macrocode}
+local function suspended_break (prev_visible, cur, prev_end, start_class,
+                                settings)
+  if not prev_end or not start_class then
+    return false
+  end
+  if normal_spaced(prev_visible) or normal_spaced(cur) then
+    return false
+  end
+  local prev_mark = prev_visible.id == GLYPH
+    and punct_class(prev_visible.char, settings, prev_visible.font)
+  local cur_mark = cur.id == GLYPH
+    and punct_class(cur.char, settings, cur.font)
+  if prev_mark == "open" or prev_mark == "half-open" then
+    return false
+  end
+  if cur_mark == "close" or cur_mark == "middle"
+     or cur_mark == "half-close" then
+    return false
+  end
+  if (cur_mark == "dash" or cur_mark == "ellipsis")
+     and not (prev_mark == "dash" or prev_mark == "ellipsis") then
+    return false
+  end
+  if prev_end == "LATIN" and start_class == "LATIN"
+     and not prev_mark and not cur_mark then
+    return false
+  end
+  return true
+end
+
+%    \end{macrocode}
+% \end{macro}
 %    \begin{macrocode}
 local function handle_boundary (head, prev, prev_visible, prev_end,
                                 cur, start_class, settings)
@@ -7414,19 +7459,17 @@ local function handle_boundary (head, prev, prev_visible, prev_end,
     local occupied = prev
       and (prev.id == GLUE or prev.id == KERN
            or prev.id == PENALTY or prev.id == DISC)
-    if disabled(cur) and not disabled(prev_visible)
-       and not occupied then
-      local mark = prev_visible.id == GLYPH
-        and punct_class(prev_visible.char, settings, prev_visible.font)
-      if mark and mark ~= "open" and mark ~= "half-open" then
-        local g = make_glue(PUNCT_BOUNDARY_GLUE, prev_visible)
-        if g then
-          g.next = cur
-          if prev then
-            prev.next = g
-          else
-            head = g
-          end
+    if not occupied and disabled(prev_visible) ~= disabled(cur)
+       and suspended_break(prev_visible, cur, prev_end, start_class, settings)
+    then
+      local source = disabled(cur) and prev_visible or cur
+      local g = make_glue(PUNCT_BOUNDARY_GLUE, source)
+      if g then
+        g.next = cur
+        if prev then
+          prev.next = g
+        else
+          head = g
         end
       end
     end
