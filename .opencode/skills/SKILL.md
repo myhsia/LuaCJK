@@ -585,6 +585,20 @@ curly quote in a range of its own) would otherwise stay outside the table:
 wide, which is the bug that a mark of `CJK_RANGES` outside the four ranges the
 patch used to carry produced.
 
+A run of CJK characters is one token, so `emph` and `keywords` can name a CJK
+word: the run stays in `\lst@token` until `listings` ends a letter run, which
+is why `\lst@AppendLetter` and `\lst@AppendOther` are wrapped. The wrapper must
+*end* with the macro it calls, not merely call it and close a conditional
+afterwards: `\lst@Append` takes the character that follows the active character
+in the input as its argument, so a closing `\fi` or brace would be taken
+instead. A CJK mark is its own token, because `listings`
+treats a word in front of the mark as part of the mark's token otherwise; the
+marks are `LuaCJK.punct_codes`, which filters the punctuation groups to the
+character table, so the policy lives in one place. That list reaches TeX
+through `tex.sprint(-2, …)`, the catcode table of other characters: the
+listing has made printable ASCII active by then, and a list printed with the
+current table would give active digits (`listings02`).
+
 ### The ctex adapter
 
 `ctex` inputs an engine file named `ctex-engine-<name>.def`, where `<name>` is
@@ -759,7 +773,7 @@ The commands are in `AGENTS.md`. For this skill the points that matter are:
 ```bash
 l3build check <name>                # the local loop; must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
-l3build check                       # 75 tests, CI on every push
+l3build check                       # 76 tests, CI on every push
 bash scripts/ctex-subset.sh         # 21/21, CI; no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
 ```
@@ -776,6 +790,7 @@ decorations and both branches of `CJKfilltwosides`), `settingsscope01`
 (a group that closes before `\par`), `nobreak01`/`nobreak02` (penalties),
 `nobreak03` (the penalty field of a discretionary),
 `nobreak04` (a prohibiting penalty and the boundary glue),
-`listings01` (glyph order inside a listing), `ctex01`, the class test that
+`listings01` (glyph order and columns inside a listing), `listings02`
+(the colour of every character around a token boundary), `ctex01`, the class test that
 shows the engine file is reached through `engine = luacjk`, and `ctex02`,
 which traps the `CJKfntef` refusal by overriding `\msg_critical:nn`.
