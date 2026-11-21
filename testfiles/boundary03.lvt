@@ -2,6 +2,7 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
+\usepackage{xcolor}
 \setCJKmainfont[BoldFont = FandolSong-Bold.otf]{FandolSong-Regular.otf}
 \LuaCJKsetup{CJKglue = 10pt, CJKecglue = 5pt, CJKspace = false}
 
@@ -82,6 +83,14 @@
 \setbox\nobreakspacebox=\hbox{中~中}
 \setbox\latinspacebox=\hbox{a\ b}
 
+% The color change puts a whatsit between the space and the character.
+\newbox\tildelatinbox
+\newbox\colortildelatinbox
+\newbox\colorsourcebox
+\setbox\tildelatinbox=\hbox{中~A}
+\setbox\colortildelatinbox=\hbox{中~\textcolor{red}{A}}
+\setbox\colorsourcebox=\hbox{中 \textcolor{red}{中}}
+
 \begin{document}
 
 \START
@@ -120,6 +129,18 @@
 \TEST{an explicit space between Latin characters is unchanged}{
   \report{\number\latinspacebox}
   \TYPE{latin: \the\wd\latinspacebox}
+}
+
+\TEST{a color change does not hide an explicit space}{
+  \report{\number\colortildelatinbox}
+  \TYPE{plain:   \the\wd\tildelatinbox}
+  \TYPE{colored: \the\wd\colortildelatinbox}
+}
+
+\TEST{a color change does not hide a source space}{
+  \report{\number\colorsourcebox}
+  \TYPE{plain:   \the\wd0}
+  \TYPE{colored: \the\wd\colorsourcebox}
 }
 
 \END
