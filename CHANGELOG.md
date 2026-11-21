@@ -7,6 +7,7 @@
 - The punctuation table covers the marks `xeCJK` classes as opening or closing, so the percent sign U+FF05 no longer starts a line and the currency symbols no longer end one; the halfwidth and compatibility forms and the three hyphen-like marks follow the same class.
 - The ASCII brackets are punctuation marks of their own: a half-width opening bracket no longer ends a line and a half-width closing bracket no longer starts one, the pair hugs the text between it, and a compression style leaves the bracket's own advance alone.
 - A space in front of a color change keeps its advance: the whatsit a `\textcolor` inserts no longer hides the space from the boundary rules, so no `CJKecglue` or second `CJKglue` joins it.
+- A suspended run keeps the break opportunity beside it: the zero-width glue at its edge lets `\verb` end a line next to a CJK character while the spacing stays removed.
 - A punctuation mark is given its fixed advance once: a box that holds the list is packed again, and the mark no longer takes a second compensating kern, so a fixed-width style no longer squeezes a table cell or a parbox.
 - The first line of a list item hangs as well: the label box that the list writes in front of the item's text is passed over, so a mark that begins the item leaves its blank in the label's advance.
 - A centered or flush-right paragraph does not hang the mark it begins with: the line does not start at the edge of the measure, so the shift would move the whole line instead of leaving the blank in a margin that is not there.

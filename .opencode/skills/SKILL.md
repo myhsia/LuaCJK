@@ -349,12 +349,14 @@ small font reader here. `hang01` pins the pair and the fit, `boundw01` the
 amount, and `punct01` the compressed style.
 
 Suspension does not take that break opportunity away.  `Verb` stops the spacing
-on both sides of a suspended run, but a mark next to it keeps its zero-width
-glue: the glue moves no ink, and the mark belongs to the running text rather
-than to the run.  An opening mark is the exception, because a break after it is
-prohibited and the pass skips a break that involves suspended material, so the
-prohibition cannot be applied across it; `verb02` pins both cases, together with
-the line that ends at the mark.
+on both sides of a suspended run, but the zero-width glue stays at either edge:
+it moves no ink, and a `\verb` beside a CJK character can end a line where the
+`CJKecglue` would have been.  The mark prohibitions are applied when the glue is
+inserted (`suspended_break`), because the kinsoku pass skips a break that
+involves suspended material: no break follows an opening mark or precedes a
+closing, middle, or long mark that begins a run, and two Latin words stay whole.
+`verb02` pins the right and left edges, the closing mark, and the line that ends
+at the mark.
 
 `\LuaCJKVerbAddon` is the exception, and it has to be: the gap that makes one
 CJK character two columns reaches the text only through the spacing pass, and
