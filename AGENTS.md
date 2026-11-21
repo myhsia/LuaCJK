@@ -400,11 +400,12 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   set the `disabled` attribute, which every pass checks per node; `\verb`,
   `verbatim`, `fancyvrb`, and `lstlisting` are already wired to it. A new
   verbatim-like environment joins that list, or its content is adjusted.
-  Suspension suppresses the spacing, not the break: a punctuation mark next to
-  suspended text keeps its zero-width boundary glue, so a line may still end at
-  the mark (`verb02`), while an opening mark gets none, because a break after it
-  is prohibited and the kinsoku pass skips a break that involves suspended
-  material.
+  Suspension suppresses the spacing, not the break: the zero-width boundary
+  glue stays at either edge of a suspended run, so `\verb|…|` beside a CJK
+  character can end a line and a punctuation mark next to suspended text keeps
+  its break opportunity (`verb02`).  A mark that may not begin or end a line
+  gets none, because the kinsoku pass skips a break that involves suspended
+  material, so the prohibition is applied when the glue is inserted.
   `\LuaCJKVerbAddon` is the one command that clears the attribute inside its own
   group, because the gap it computes is inserted by the spacing pass and a
   suspended node is skipped; it reads the value it found into
