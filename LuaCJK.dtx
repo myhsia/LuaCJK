@@ -7149,6 +7149,10 @@ end
 %   \cs{nobreak}, because the glue goes after the penalty, where the
 %   prohibition still covers it. A source space in front of the penalty is
 %   converted and the penalty moves in front of it.}
+% \changes{v0.0.4}{2026/11/20}{A space in front of a color change keeps its
+%   advance: the whatsit a \cs{textcolor} inserts no longer hides the space
+%   from the boundary rules, so no \keys{CJKecglue} or second \keys{CJKglue}
+%   joins it.}
 % Decide what to do at the boundary between two visible nodes.
 % Only source-generated glue is a candidate for replacement;
 % other glue is left alone, and a discretionary is opaque, so neither is
@@ -7162,6 +7166,10 @@ end
 % A source space between the two characters is the boundary itself, so when
 % one stands in front of a prohibiting penalty it is converted, and the
 % penalty moves in front of it rather than letting the space offer the break.
+% A whatsit, a mark, an insertion, or an adjustment between that space and the
+% character is passed over: a color change in front of the character does not
+% hide the space, which stays the boundary and is never joined by a second
+% glue.  A penalty ends that search, because it has a boundary rule of its own.
 % A boundary that touches a suspended run is bridged by nothing, except that a
 % mark keeps its break opportunity: \keys{Verb} suspends the spacing, and the
 % glue at a mark has no width, so restoring it there moves no ink. An opening
@@ -7459,6 +7467,20 @@ local function handle_boundary (head, prev, prev_visible, prev_end,
         head, prev, prev_visible, prev_end, cur, start_class, settings)
     end
   elseif prev and prev.id == DISC then
+  elseif prev and transparent_node(prev) then
+    local n = prev
+    while n and n.id ~= PENALTY and transparent_node(n) do
+      n = n.prev
+    end
+    if n and n.id == GLUE then
+      if not is_inserted(n) then
+        return handle_source_space(
+          head, n, prev_end, cur, start_class, settings)
+      end
+      return head
+    end
+    return insert_boundary_glue(
+      head, prev, prev_visible, prev_end, cur, start_class, settings)
   else
     return insert_boundary_glue(
       head, prev, prev_visible, prev_end, cur, start_class, settings)

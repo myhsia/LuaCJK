@@ -266,6 +266,10 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   marked, because it is the form messages use and it has to expand.  The
   aliasing restores the catcode of the space inside a group, since `expl3`
   ignores a space and a control space cannot be written in its syntax.
+  A whatsit, a mark, an insertion, or an adjustment between the space and the
+  next character is passed over, so the color change `\textcolor` inserts does
+  not hide the space: it stays the boundary, and no second glue joins it
+  (`boundary03`).  A penalty ends that search, because it has its own rule.
 - **Options and `\LuaCJKsetup` share one key path.**  Every key is defined in
   `LuaCJK / options` and read by `\ProcessKeyOptions`, so a new key is a
   package option for free. Do not add a second path or a separate option
