@@ -1,0 +1,126 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKglue=0pt, CJKecglue=3pt}
+\parindent=0pt
+
+% The nodes of box 0: a glyph by code point, a glue by its width, a kern by
+% its width, a penalty by its value, and a box as one atom.
+\def\shownodes{%
+  \directlua{
+    local parts, count = {}, 0
+    local n = tex.box[0].head
+    while n do
+      local item
+      if n.id == node.id("glyph") then
+        item = tostring(n.char)
+      elseif n.id == node.id("glue") then
+        item = "g" .. tostring(n.width)
+      elseif n.id == node.id("kern") then
+        item = "k" .. tostring(n.kern)
+      elseif n.id == node.id("penalty") then
+        item = "p" .. tostring(n.penalty)
+      elseif n.id == node.id("hlist") then
+        item = "B"
+      end
+      if item then
+        count = count + 1
+        parts[count] = item
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "NODES " .. table.concat(parts, " ", 1, count))
+  }%
+}
+
+% Every line of box 0 as the first and the last glyph it holds, with the hang
+% of a rule of negative width.
+\def\lineedge{%
+  \directlua{
+    local out, count = {}, 0
+    local n = tex.box[0].head
+    while n do
+      if n.id == node.id("hlist") then
+        local m, first, last, hang = n.head, nil, nil, 0
+        while m do
+          if m.id == node.id("glyph") then
+            first = first or m.char
+            last = m.char
+          elseif m.id == node.id("rule") and m.width < 0 then
+            hang = hang - m.width
+          end
+          m = m.next
+        end
+        local line = tostring(first or 0) .. "-" .. tostring(last or 0)
+        if hang > 0 then
+          line = line .. " H" .. tostring(hang)
+        end
+        count = count + 1
+        out[count] = line
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "EDGES " .. table.concat(out, " ", 1, count))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{a half-width opening bracket keeps the glue in front of it}{
+  \setbox0=\hbox{中(文)}
+  \shownodes
+}
+
+\TEST{the inside of a pair of half-width brackets takes no glue}{
+  \setbox0=\hbox{中(文)文}
+  \shownodes
+}
+
+\TEST{a fixed-width style leaves a half-width bracket alone}{
+  \begingroup
+    \setbox0=\hbox{中(文)}
+    \LuaCJKsetup{PunctStyle=banjiao}
+    \setbox2=\hbox{中(文)}
+    \TYPE{quanjiao: \the\wd0}
+    \TYPE{banjiao: \the\wd2}
+  \endgroup
+}
+
+\TEST{a half-width opening bracket does not end a line}{
+  \setbox0=\vbox{\raggedright\hsize=30pt 前言(中文版)后记\par}
+  \lineedge
+}
+
+\TEST{a half-width closing bracket does not start a line}{
+  \setbox0=\vbox{\raggedright\hsize=37pt 前言(中)后记\par}
+  \lineedge
+}
+
+\TEST{the plain style keeps the prohibitions of a half-width bracket}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle=plain}
+    \setbox0=\vbox{\raggedright\hsize=30pt 前言( 中文版)后记\par}
+    \lineedge
+  \endgroup
+}
+
+\TEST{PunctKinsoku=false lets a half-width bracket end a line}{
+  \begingroup
+    \LuaCJKsetup{PunctKinsoku=false}
+    \setbox0=\vbox{\raggedright\hsize=30pt 前言( 中文版)后记\par}
+    \lineedge
+  \endgroup
+}
+
+\TEST{a half-width bracket does not hang}{
+  \setbox0=\vbox{\raggedright\hsize=3em (中文\par}
+  \lineedge
+}
+
+\END
+
+\end{document}

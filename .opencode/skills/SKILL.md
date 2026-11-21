@@ -264,7 +264,8 @@ value is used as written. That is what the `ccglue_touched` flags are for.
 ### The punctuation model
 
 Every mark gets a group from `PUNCT_CLASS`: `open`, `close`, `middle`, `dash`,
-`ellipsis`. Four character sets are editable at run time
+`ellipsis`, and `half-open`/`half-close` for the ASCII brackets. Four character
+sets are editable at run time
 (`M.charsets`): `kaiming` (marks that stay full width in the `kaiming` style),
 `middle`, `long` (never compressed against each other), and `nobreak` (never
 separated by a line break).
@@ -275,7 +276,14 @@ is read as `close` (`FF1A`, `FF1B`) or `middle` (`30FB`, `FF65`), because
 A mark is listed only when `CJK_RANGES` holds it as well, so the small-form and
 vertical variants outside that table (`FE10`–`FE19`, `FE50`–`FE6A`, `2E3A`,
 `16FE0`) keep no class; classing one is a `chars` change to both the range table
-and the listings table.
+and the listings table.  The ASCII brackets are the one exception: `(`, `[`, and
+`{` are `half-open` and `)`, `]`, and `}` are `half-close`, although they are
+Latin glyphs outside `CJK_RANGES`.  They keep their own advance (a compression
+style leaves them alone), do not hang, and take the CJK–Latin glue only in front
+of an opening one, so a pair hugs the text between it; neither side of a pair
+offers a break at all, because no glue stands there, and `PunctKinsoku` keeps a
+half-width opening bracket out of the line end and a closing one out of the line
+start wherever a break does exist (`punct02`).
 A style (`M.punct_styles`) is a table of six optional fields:
 
 | field | effect |
@@ -740,7 +748,7 @@ The commands are in `AGENTS.md`. For this skill the points that matter are:
 ```bash
 l3build check <name>                # the local loop; must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
-l3build check                       # 74 tests, CI on every push
+l3build check                       # 75 tests, CI on every push
 bash scripts/ctex-subset.sh         # 21/21, CI; no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
 ```

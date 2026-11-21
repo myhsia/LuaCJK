@@ -773,6 +773,8 @@ $ 天地玄黄 $ and 天地玄黄
 %   连同它的伸缩阶（例如 |plus 1filll|）一起保留。
 %   \item[\keys{CJKecglue}]\val{glue}: 插入 CJK 与拉丁字符之间的胶。
 %   标点两侧的胶没有宽度：标点的进距本身就带有间距。
+%   半角的 ASCII 括号只留下开头括号之前的这一份胶，
+%   括号内侧不加，于是成对的括号贴住它括起来的文字。
 %   初始值是 \texttt{0.3333em plus 0.1667em minus 0.1111em}，
 %   它同样跟随字号。
 %   \item[\keys{CJKspace}]\val{\TFF}: 是否保留源文件中 CJK 字符之间的空格。
@@ -920,6 +922,8 @@ $ 天地玄黄 $ and 天地玄黄
 %   \item[\keys{PunctKinsoku}]\val{\TTF}: 是否对标点施加断行禁则。
 %   收尾的、中间的标点与破折号、省略号不能出现在行首，
 %   开头的标点不能出现在行尾，
+%   半角的 ASCII 括号同样如此：开头的不能出现在行尾，
+%   收尾的不能出现在行首；
 %   两个相邻的标点不会被分开，一串连续的破折号或省略号保持在一起。
 %   盒子边缘的标点同样参与判断。
 %   这些禁则与 \texttt{PunctStyle} 无关，
@@ -1013,6 +1017,8 @@ a’a\quad 不亦说乎！
 %   \texttt{FullLeft} 与 \texttt{HalfLeft} 把它当作开头的标点，
 %   \texttt{FullRight} 与 \texttt{HalfRight} 把它当作收尾的标点，
 %   于是断行禁则适用；
+%   前者是全角标点，照样压缩与悬挂，后者只能是 ASCII 括号：
+%   它不压缩、不悬挂，只在成对时贴住括号内的文字。
 %   \texttt{NormalSpace} 把这段范围移出 CJK/拉丁胶，
 %   就像 \cs{normalspacedchars} 那样；
 %   \texttt{CJStarter}、\texttt{CM} 与 \texttt{Boundary} 当作 \texttt{CJK} 处理，
@@ -1024,7 +1030,8 @@ a’a\quad 不亦说乎！
 %     \tn{LuaCJKDeclarePunctClass} \marg{group} \marg{range list}
 %   \end{syntax}
 %   改写一段范围的标点组。组有 \texttt{open}、\texttt{close}、
-%   \texttt{middle}、\texttt{dash} 与 \texttt{ellipsis}；
+%   \texttt{middle}、\texttt{dash} 与 \texttt{ellipsis}，
+%   以及半角括号的两组 \texttt{half-open} 与 \texttt{half-close}；
 %   \texttt{none} 去掉标点处理，于是这些字符不再被压缩或悬挂。
 % \end{function}
 %
@@ -2103,6 +2110,9 @@ $ 天地玄黄 $ and 天地玄黄
 %   characters.
 %   Beside a punctuation mark the glue has no advance: the mark's own advance
 %   already carries the spacing.
+%   A half-width ASCII bracket keeps that glue only in front of an opening
+%   one; the inside of the pair takes none, so the brackets hug the text they
+%   enclose.
 %   The initial value is \texttt{0.3333em plus 0.1667em minus 0.1111em},
 %   which follows the size in the same way.
 %   \item[\keys{CJKspace}]\val{\TFF}: Whether to keep source spaces between
@@ -2260,7 +2270,9 @@ $ 天地玄黄 $ and 天地玄黄
 %   \item[\keys{PunctKinsoku}]\val{\TTF}: Whether to apply line-breaking
 %   prohibitions for punctuation.
 %   A closing, middle, dash, or ellipsis punctuation cannot start a line,
-%   an opening punctuation cannot end a line, two adjacent marks are not
+%   an opening punctuation cannot end a line, and the same holds for a
+%   half-width ASCII bracket: an opening one cannot end a line and a closing
+%   one cannot start one; two adjacent marks are not
 %   separated, and a run of long punctuation is kept together.
 %   A mark at the edge of a box takes part as well.
 %   The prohibitions are independent of \texttt{PunctStyle},
@@ -2359,6 +2371,9 @@ a’a\quad 不亦说乎！
 %   \texttt{FullLeft} and \texttt{HalfLeft} treat it as an opening mark,
 %   \texttt{FullRight} and \texttt{HalfRight} as a closing mark,
 %   so the line-breaking prohibitions apply;
+%   the first of each pair is a full-width mark and is compressed and hung as
+%   well, while the second is an ASCII bracket: it keeps its own advance, does
+%   not hang, and hugs the text between the two of a pair.
 %   \texttt{NormalSpace} takes the range out of the CJK/Latin glue,
 %   like \cs{normalspacedchars}; \texttt{CJStarter}, \texttt{CM},
 %   and \texttt{Boundary} are treated as \texttt{CJK},
@@ -2371,7 +2386,8 @@ a’a\quad 不亦说乎！
 %   \end{syntax}
 %   Override the punctuation group of a range. The groups
 %   are \texttt{open}, \texttt{close}, \texttt{middle}, \texttt{dash},
-%   and \texttt{ellipsis}; \texttt{none} removes the punctuation
+%   and \texttt{ellipsis}, and \texttt{half-open} and \texttt{half-close} for
+%   the half-width brackets; \texttt{none} removes the punctuation
 %   treatment, so the characters are no longer compressed or hung.
 % \end{function}
 %
@@ -3496,6 +3512,10 @@ abc汉字abc
 %   \texttt{HalfRight}, \texttt{NormalSpace}, \texttt{CJStarter}, \texttt{CM},
 %   \texttt{Boundary}), the reset also restores the normal-spaced set, and the
 %   built-in table covers the CJK blocks of Unicode 15 and 16.}
+% \changes{v0.0.4}{2026/11/21}{\texttt{HalfLeft} and \texttt{HalfRight}
+%   declare a half-width ASCII bracket: it keeps its advance, does not hang,
+%   and hugs the text inside the pair, where they used to declare a full-width
+%   opening or closing mark.}
 % Override the class of a code-point range.
 % The range list uses the \pkg{xeCJK} spelling: hexadecimal numbers
 % with a leading |"|, and |"START -> "END| for a range.
@@ -3553,9 +3573,9 @@ abc汉字abc
         { CJK         } { \@@_push_class:nn { true    } {#2} }
         { Default     } { \@@_push_class:nn { false   } {#2} }
         { FullLeft    } { \@@_push_punct:nn { "open"  } {#2} }
-        { HalfLeft    } { \@@_push_punct:nn { "open"  } {#2} }
+        { HalfLeft    } { \@@_push_punct:nn { "half-open" } {#2} }
         { FullRight   } { \@@_push_punct:nn { "close" } {#2} }
-        { HalfRight   } { \@@_push_punct:nn { "close" } {#2} }
+        { HalfRight   } { \@@_push_punct:nn { "half-close" } {#2} }
         { NormalSpace } { \@@_push_normal_space:n       {#2} }
         { CJStarter   } { \@@_push_class:nn { true    } {#2} }
         { CM          } { \@@_push_class:nn { true    } {#2} }
@@ -3590,6 +3610,8 @@ abc汉字abc
         { middle   } { \@@_push_punct:nn { "middle" } {#2}   }
         { dash     } { \@@_push_punct:nn { "dash" } {#2}     }
         { ellipsis } { \@@_push_punct:nn { "ellipsis" } {#2} }
+        { half-open  } { \@@_push_punct:nn { "half-open" } {#2} }
+        { half-close } { \@@_push_punct:nn { "half-close" } {#2} }
         { none     } { \@@_push_punct:nn { false } {#2}      }
       } { \msg_warning:nnn { LuaCJK } { unknown-punct-class } {#1} }
   }
@@ -6088,6 +6110,11 @@ M.is_attached = is_attached
 %   longer starts a line and the currency symbols no longer end one; the
 %   halfwidth and compatibility forms and the three hyphen-like marks follow
 %   the same class.}
+% \changes{v0.0.4}{2026/11/21}{The ASCII brackets are punctuation marks of
+%   their own: a half-width opening bracket no longer ends a line and a
+%   half-width closing bracket no longer starts one, the pair hugs the text
+%   between it, and a compression style leaves the bracket's own advance
+%   alone.}
 % The punctuation \pkg{LuaCJK} knows about, grouped as opening, closing,
 % middle, dash, and ellipsis.
 % The group decides compression, line-breaking prohibitions, and hanging.
@@ -6097,8 +6124,15 @@ M.is_attached = is_attached
 % middle.
 % A mark is listed here only when the CJK table holds it as well, so the
 % small-form and vertical variants outside that table keep no class.
+% The ASCII brackets are the exception, because they are set in the Latin font
+% and cannot be compressed or hung: \texttt{half-open} and \texttt{half-close}
+% are their own groups, which only the prohibitions and the spacing read.
 %    \begin{macrocode}
 local PUNCT_CLASS = {
+  [0x0028] = "half-open",  [0x005B] = "half-open",
+  [0x007B] = "half-open",
+  [0x0029] = "half-close", [0x005D] = "half-close",
+  [0x007D] = "half-close",
   [0x2018] = "open",     [0x201C] = "open",
   [0x3008] = "open",     [0x300A] = "open",
   [0x300C] = "open",     [0x300E] = "open",
@@ -6145,6 +6179,16 @@ local PUNCT_CLASS = {
 
 %    \end{macrocode}
 % \end{variable}
+%
+% \begin{macro}[int]{half_mark}
+% Whether a group belongs to the half-width brackets.
+%    \begin{macrocode}
+local function half_mark (mark)
+  return mark == "half-open" or mark == "half-close"
+end
+
+%    \end{macrocode}
+% \end{macro}
 %
 % \begin{macro}[int]{punct_class}
 % Look up the group of a character.
@@ -7132,6 +7176,11 @@ end
 % an em that the typography does not ask for.
 % The boundary keeps a glue of zero width, so that it stays a break
 % opportunity and the kinsoku penalty can forbid the break.
+% A half-width bracket is the exception: the boundary in front of an opening
+% one keeps the spacing that the two classes give it, and the other three
+% sides of the pair take no glue at all.  The pair therefore hugs the text it
+% encloses and offers no break inside, which is how \pkg{xeCJK} sets its
+% half-width marks.
 %    \begin{macrocode}
 M.normal_spaced = {}
 
@@ -7179,13 +7228,21 @@ local function insert_boundary_glue (head, prev, prev_visible, prev_end,
     end
   end
   local prev_mark = prev_punct and prev.id == GLYPH
+      and not half_mark(prev_punct)
   local cur_mark  = cur_punct and cur.id == GLYPH
+      and not half_mark(cur_punct)
   local spec = nil
   if prev_end == "CJK" and cur_start == "CJK" then
     spec = settings.ccglue
   elseif prev_end ~= cur_start
      and not normal_spaced(prev_visible) and not normal_spaced(cur) then
-    if prev_punct or cur_punct then
+    if half_mark(prev_punct) then
+      return head
+    elseif cur_punct == "half-open" then
+      spec = prev_punct and PUNCT_BOUNDARY_GLUE or settings.ecglue
+    elseif half_mark(cur_punct) then
+      return head
+    elseif prev_punct or cur_punct then
       spec = PUNCT_BOUNDARY_GLUE
     else
       spec = settings.ecglue
@@ -7347,7 +7404,7 @@ local function handle_boundary (head, prev, prev_visible, prev_end,
        and not occupied then
       local mark = prev_visible.id == GLYPH
         and punct_class(prev_visible.char, settings, prev_visible.font)
-      if mark and mark ~= "open" then
+      if mark and mark ~= "open" and mark ~= "half-open" then
         local g = make_glue(PUNCT_BOUNDARY_GLUE, prev_visible)
         if g then
           g.next = cur
@@ -7570,6 +7627,7 @@ end
 % The rules: closing, middle, dash, and ellipsis punctuation must not start a
 % line,
 % opening punctuation must not end one,
+% a half-width bracket follows the rule of the side it closes,
 % a run of dashes or ellipses stays together,
 % and two adjacent marks are not separated.
 % A dash or an ellipsis is read as the run it begins, so the rule applies to
@@ -7581,13 +7639,14 @@ end
 %    \begin{macrocode}
 local function forbids_break (prev_mark, prev_char, next_mark, next_char,
                               settings)
-  if next_mark == "close" or next_mark == "middle" then
+  if next_mark == "close" or next_mark == "middle"
+     or next_mark == "half-close" then
     return true
   end
   if run_mark(next_mark) and not run_mark(prev_mark) then
     return true
   end
-  if prev_mark == "open" then
+  if prev_mark == "open" or prev_mark == "half-open" then
     return true
   end
   if M.charsets.nobreak[prev_char] and M.charsets.nobreak[next_char] then
@@ -7734,13 +7793,15 @@ end
 % centered, so it moves by half. A dash or an ellipsis is not shortened by the
 % style: its advance is the length of the stroke, and halving it would let the
 % two halves of a two-em dash overlap.
+% A half-width bracket is already narrow, so the ratio of a style leaves it
+% alone; a width the document sets applies to it like any other.
 % A mark keeps the kern it was given. \TeX\ runs the box-packing callback again
 % for every box that holds the list, so a mark whose advance was corrected
 % would be corrected a second time: the penalty and the kern the pass inserted
 % are the record, and a mark that already carries them is passed over.
 %    \begin{macrocode}
 local function ink_shift (class, delta)
-  if class == "open" then
+  if class == "open" or class == "half-open" then
     return delta
   elseif class == "middle" then
     return math.floor(delta / 2 + 0.5)
@@ -7755,6 +7816,9 @@ local function fixed_width (cur, settings, style)
   end
   if target then
     return target
+  end
+  if half_mark(punct_class(cur.char, settings, cur.font)) then
+    return nil
   end
   local ratio = style.fixed_ratio
   if not ratio or M.charsets.long[cur.char] then
