@@ -110,6 +110,30 @@
   \showlines
 }
 
+\TEST{a centered paragraph does not hang the mark it begins with}{
+  \begingroup
+    \leftskip=0pt plus 1fil \rightskip=0pt plus 1fil
+    \setbox0=\vbox{\hsize=3em ‘字字\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{a forced break in a centered paragraph does not hang either}{
+  \begingroup
+    \leftskip=0pt plus 1fil \rightskip=0pt plus 1fil
+    \setbox0=\vbox{\hsize=6em 字字字字\\‘字字\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{a leftskip of a fixed size still hangs the first mark}{
+  \begingroup
+    \leftskip=2em
+    \setbox0=\vbox{\hsize=6em ‘字字\par}
+    \showlines
+  \endgroup
+}
+
 \TEST{the label of a list item leaves that blank as well}{
   \setbox0=\vbox{\begin{itemize}\item ‘字字\end{itemize}}
   \showlines

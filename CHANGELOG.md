@@ -8,6 +8,7 @@
 - The ASCII brackets are punctuation marks of their own: a half-width opening bracket no longer ends a line and a half-width closing bracket no longer starts one, the pair hugs the text between it, and a compression style leaves the bracket's own advance alone.
 - A punctuation mark is given its fixed advance once: a box that holds the list is packed again, and the mark no longer takes a second compensating kern, so a fixed-width style no longer squeezes a table cell or a parbox.
 - The first line of a list item hangs as well: the label box that the list writes in front of the item's text is passed over, so a mark that begins the item leaves its blank in the label's advance.
+- A centered or flush-right paragraph does not hang the mark it begins with: the line does not start at the edge of the measure, so the shift would move the whole line instead of leaving the blank in a margin that is not there.
 - A CJK character ends a word for hyphenation, so the line breaker no longer puts a hyphen beside a CJK character, and the boundary keeps the `CJKecglue` that the two sides give it.
 - The wave is written one period at a time, so it covers the start and the end of a span that is not a whole number of periods, on a stretched line as well as on the last line of a paragraph.
 - The slashes are written one cell at a time, so they cover the whole span.

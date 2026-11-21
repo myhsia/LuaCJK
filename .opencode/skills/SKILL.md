@@ -143,7 +143,12 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    is how `head_lead` tells it from a box that carries text of the paragraph.
    Only the `pre_linebreak_filter` path runs it: a box packed by `hpack_filter`
    cannot break a line, and a line box that is packed again would take the pair
-   twice.
+   twice.  The two hand-bracketed boundaries are left out when `\leftskip`
+   carries a fill, which is how centered and flush-right text are set: the line
+   then begins at the centering position, not at the edge of the measure, and
+   the rule would shift the whole line instead of leaving the blank in a margin
+   that is not there.  The hang at a break stays in every case, because the
+   line breaker has already counted it when it decides that the mark fits.
 5. `apply_kinsoku` — insert a `\penalty 10000` at a break point the
    line-breaking prohibitions forbid. It reads a box at the edge that faces the
    break (`first_punct`/`last_punct`), so a mark inside an `\mbox` takes part.
