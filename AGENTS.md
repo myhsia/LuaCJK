@@ -347,6 +347,12 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **Inserted nodes must inherit attributes.**  Glue, kern, and penalty nodes
   created after TeX attached the attributes need `inherit_attributes(...)`, or
   attribute-driven packages such as `lua-ul` see the span end there.
+- **A pass runs again on every box that holds the list.**  `hpack_filter` walks
+  a list each time a box is packed from it, so a pass that inserts nodes must
+  recognise its own work and leave it alone; the `inserted` attribute is that
+  record, and `apply_kinsoku`, `apply_check_single`, and `apply_fixed_widths`
+  each read it.  Without the check a fixed-width style gives a mark a second
+  compensating kern in a table cell or a parbox, which squeezes the text.
 - **A hang is bracketed at a glue break, and the three boundaries without a
   glue are bracketed by hand.**  `hang_bounds` adds the hang to the glue a
   line breaks at, which covers every wrapped line; the first line of a
