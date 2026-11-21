@@ -1021,13 +1021,21 @@ GitHub's side, so nothing here repeats it.
   reading the title enforces.  A consequence worth keeping: a report whose
   title names no subsystem (#33, #34) is unclassified, and a session labels it
   from the body, which is the reading the table is not allowed to do.
+- **A session reads a body for the defect, never for the package list.**
+  `\usepackage{LuaCJKfntef}` sits in almost every MWE of this board, because
+  the reporters load it out of habit, so a label read from the `\usepackage`
+  lines is `fntef` for every report: that is how #124 and #129, whose titles
+  name the layout environment, were labelled `fntef` after the table had
+  correctly declined to place them.  The module a report *loads* is apparatus;
+  the command or environment it *fails on* is the subsystem.
 - A keyword rule names the *file* the fix touches, never the topic the report
   mentions.  `PunctWidth` is `punct` although the reporter passes it as an
   option, and `LoadFandol` is `load` although it loads fonts, because that is
   where the change goes.  A font feature, and the interface that sets one
   (`\addCJKfontfeatures`, `CharacterWidth`, `hwid`), is `fonts` for the same
-  reason, and `\hfill` names the glue whose subtype the spacing pass decides,
-  so it is `spacing`.
+  reason, `\hfill` names the glue whose subtype the spacing pass decides, so
+  it is `spacing`, and `CJKfilltwosides` is the layout environment, so its
+  name is `layout`.
 - **A code point is `chars`, and that rule comes last.**  A title whose only
   hook is a code point (`U+2027 的排版`) is about the character table, which is
   where a code point becomes CJK.  First match wins, so the code-point rule is
