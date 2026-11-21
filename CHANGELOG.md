@@ -1,5 +1,6 @@
 ## [LuaCJK-v0.0.4](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.4)
 
+- The font of a CJK family is resolved in the Unicode encoding: a document that sets its Latin text in an 8-bit encoding with `fontenc` keeps its CJK text.
 - The punctuation table covers the marks `xeCJK` classes as opening or closing, so the percent sign U+FF05 no longer starts a line and the currency symbols no longer end one; the halfwidth and compatibility forms and the three hyphen-like marks follow the same class.
 - The first line of a list item hangs as well: the label box that the list writes in front of the item's text is passed over, so a mark that begins the item leaves its blank in the label's advance.
 - A CJK character ends a word for hyphenation, so the line breaker no longer puts a hyphen beside a CJK character, and the boundary keeps the `CJKecglue` that the two sides give it.
