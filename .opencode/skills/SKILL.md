@@ -89,7 +89,11 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    glue with the same dimensions.  The TeX side therefore marks the one it
    wrote itself with the `explicit_space` attribute, and the pass leaves a
    marked glue alone, so the space keeps the advance of the font it came from
-   instead of becoming the inter-character glue (`boundary03`).
+   instead of becoming the inter-character glue (`boundary03`).  A whatsit,
+   mark, insertion, or adjustment between that glue and the next character is
+   passed over, so the color change `\textcolor` inserts does not hide the
+   space and no second glue joins it; a penalty ends the search because it has
+   its own rule.
    A space that a text font command moved across the italic correction is put
    back into the source-space class before the walk: `\textbf` and its siblings
    save the skip in front of them, `\unskip` it, apply the italic correction and
