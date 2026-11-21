@@ -26,12 +26,19 @@ TEST 5: FullRight forbids a break before the letter
 PENALTIES 1
 ============================================================
 ============================================================
-TEST 6: HalfLeft behaves like FullLeft
+TEST 6: HalfLeft declares a half-width opening bracket
 ============================================================
-PENALTIES 1
+width: 15.28pt
+PENALTIES 0
 ============================================================
 ============================================================
-TEST 7: CJStarter makes the letter behave like CJK
+TEST 7: HalfRight declares a half-width closing bracket
+============================================================
+width: 15.28pt
+PENALTIES 0
+============================================================
+============================================================
+TEST 8: CJStarter makes the letter behave like CJK
 ============================================================
 width: 25.27pt
 ============================================================
