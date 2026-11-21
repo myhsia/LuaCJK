@@ -5952,6 +5952,10 @@ end
 % are not compressed; the em dash is not in the table, because it stays CJK.
 %
 % \begin{macro}[int]{LuaCJK.is_cjk}
+% \changes{v0.0.4}{2026/11/20}{A code point below U+0100 in a font that is not
+%   Unicode-encoded is a position in that font's encoding, not a character, so
+%   a symbol font's slot is no longer read as a CJK character: \pkg{pifont}'s
+%   slot 0xB7, the circled 2, keeps its own font and prints.}
 % Test whether a character is treated as CJK.
 % The table is the set of code points this package sets with the CJK class.
 % It is a policy rather than a Unicode property: the punctuation that CJK
@@ -5961,6 +5965,15 @@ end
 % script is Common, and the combining Bopomofo tone marks U+02EA and U+02EB
 % are left out on purpose, because they attach to the preceding letter and a
 % glue between the two would break the attachment.
+% The third argument is the font of the glyph, and it decides the code points
+% below U+0100: a font that \pkg{luaotfload} did not load as Unicode holds an
+% encoding rather than characters, so the number that reaches the node is a
+% position in that encoding.  Slot 0xB7 of \pkg{pifont}'s dingbat font would
+% otherwise be read as the shared middle dot, and a CJK font that lacks it
+% would drop the character; the accent |\r{u}|, slot 0xB7 of a T1 text font,
+% would be read the same way.  A code point above U+00FF cannot be a slot of
+% an 8-bit font, so a CJK character typed in a legacy encoding still takes the
+% CJK font, and a Unicode font is read as characters throughout.
 % The script \file{scripts/check-charclass.lua} compares the table with
 % \file{Scripts.txt} and reports a code point whose script is Han, Hiragana,
 % Katakana, Bopomofo, or Hangul but which the table does not list.
@@ -6015,7 +6028,22 @@ local LATIN_PUNCT = {
   [0x2026] = true, [0x2027] = true,
 }
 
-local function is_cjk (c, s)
+local SLOT_FONT = { }
+
+local function is_slot (c, f)
+  if c > 0xFF or not f then
+    return false
+  end
+  local known = SLOT_FONT[f]
+  if known == nil then
+    local data = font.getfont(f)
+    known = not (data and data.encodingbytes == 2)
+    SLOT_FONT[f] = known
+  end
+  return known
+end
+
+local function is_cjk (c, s, f)
   local override = M.class_override[c]
   if override ~= nil then
     return override
@@ -6023,7 +6051,7 @@ local function is_cjk (c, s)
   if s and s.latin_punct and LATIN_PUNCT[c] then
     return false
   end
-  return in_ranges(c, CJK_RANGES)
+  return in_ranges(c, CJK_RANGES) and not is_slot(c, f)
 end
 
 M.is_cjk = is_cjk
@@ -6120,11 +6148,17 @@ local PUNCT_CLASS = {
 %
 % \begin{macro}[int]{punct_class}
 % Look up the group of a character.
+% The font is passed on to \cs{LuaCJK.is_cjk}'s rule, because a slot of a
+% legacy font is a punctuation mark no more than it is a CJK character: the
+% middle dot of \pkg{pifont}'s slot 0xB7 takes no compression and no hanging.
 %    \begin{macrocode}
-local function punct_class (c, s)
+local function punct_class (c, s, f)
   local override = M.punct_override[c]
   if override ~= nil then
     return override or nil
+  end
+  if is_slot(c, f) then
+    return nil
   end
   if s and s.latin_punct and LATIN_PUNCT[c] then
     return nil
@@ -6238,8 +6272,8 @@ end
 % the compression ratio, the opening and closing exemption,
 % whether the line-end hanging applies, and the optional fixed width.
 %    \begin{macrocode}
-M.punct_class = function (c, s)
-  return punct_class(c, s or M.settings[1])
+M.punct_class = function (c, s, f)
+  return punct_class(c, s or M.settings[1], f)
 end
 
 M.punct_styles = {
@@ -6529,7 +6563,7 @@ local function target_font (n)
   if block then
     target = block
   end
-  if M.attr_punct_font and punct_class(n.char) then
+  if M.attr_punct_font and punct_class(n.char, nil, n.font) then
     local punct = has_attribute(n, M.attr_punct_font)
     if punct and punct > 0 then
       target = punct
@@ -6592,7 +6626,7 @@ local function pre_shaping (head)
         if last then
           cur.font = last.font
         end
-      elseif is_cjk(cur.char, settings_of(cur)) then
+      elseif is_cjk(cur.char, settings_of(cur), cur.font) then
         local target = target_font(cur)
         if target and target > 0 and target ~= cur.font then
           if not has_char(target, cur.char) then
@@ -6718,7 +6752,7 @@ local function rewrite_fonts (head)
   local cur  = head
   while cur do
     local nxt = cur.next
-    if cur.id == GLYPH and is_cjk(cur.char, settings_of(cur)) then
+    if cur.id == GLYPH and is_cjk(cur.char, settings_of(cur), cur.font) then
       local target = target_font(cur)
       if target and target > 0 and target ~= cur.font then
         if nxt and nxt.id == GLYPH and nxt.font == cur.font
@@ -6748,10 +6782,11 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{class_of_char}
-% Map a character to \texttt{CJK} or \texttt{LATIN}.
+% Map a character to \texttt{CJK} or \texttt{LATIN}, with the font the glyph
+% was set in, which \cs{LuaCJK.is_cjk} needs for the code points below U+0100.
 %    \begin{macrocode}
-local function class_of_char (c, s)
-  if is_cjk(c, s) then
+local function class_of_char (c, s, f)
+  if is_cjk(c, s, f) then
     return "CJK"
   end
   return "LATIN"
@@ -6814,7 +6849,7 @@ local function first_visible_class (list)
   local n = list
   while n do
     if n.id == GLYPH then
-      return class_of_char(n.char, settings_of(n))
+      return class_of_char(n.char, settings_of(n), n.font)
     elseif n.id == HLIST or n.id == VLIST then
       return first_visible_class(n.head)
     elseif n.id == MATH then
@@ -6839,7 +6874,7 @@ local function last_visible_class (list)
   local last = nil
   while n do
     if n.id == GLYPH then
-      last = class_of_char(n.char, settings_of(n))
+      last = class_of_char(n.char, settings_of(n), n.font)
     elseif n.id == HLIST or n.id == VLIST then
       last = last_visible_class(n.head)
     elseif n.id == MATH then
@@ -6863,7 +6898,7 @@ local function first_punct (list)
   local n = list
   while n do
     if n.id == GLYPH then
-      return punct_class(n.char, settings_of(n)), n, true
+      return punct_class(n.char, settings_of(n), n.font), n, true
     elseif n.id == HLIST or n.id == VLIST then
       local p, g, found = first_punct(n.head)
       if found then
@@ -6889,7 +6924,7 @@ local function last_punct (list)
   local found = false
   while n do
     if n.id == GLYPH then
-      punct = punct_class(n.char, settings_of(n))
+      punct = punct_class(n.char, settings_of(n), n.font)
       glyph = n
       found = true
     elseif n.id == HLIST or n.id == VLIST then
@@ -6914,7 +6949,7 @@ end
 %    \begin{macrocode}
 local function class_of_node (n)
   if n.id == GLYPH then
-    local c = class_of_char(n.char, settings_of(n))
+    local c = class_of_char(n.char, settings_of(n), n.font)
     return c, c
   elseif n.id == HLIST or n.id == VLIST then
     return first_visible_class(n.head), last_visible_class(n.head)
@@ -7130,7 +7165,7 @@ local function insert_boundary_glue (head, prev, prev_visible, prev_end,
   local prev_punct = nil
   if prev_visible then
     if prev_visible.id == GLYPH then
-      prev_punct = punct_class(prev_visible.char, settings)
+      prev_punct = punct_class(prev_visible.char, settings, prev_visible.font)
     elseif prev_visible.id == HLIST or prev_visible.id == VLIST then
       prev_punct = last_punct(prev_visible.head)
     end
@@ -7138,7 +7173,7 @@ local function insert_boundary_glue (head, prev, prev_visible, prev_end,
   local cur_punct = nil
   if cur then
     if cur.id == GLYPH then
-      cur_punct = punct_class(cur.char, settings)
+      cur_punct = punct_class(cur.char, settings, cur.font)
     elseif cur.id == HLIST or cur.id == VLIST then
       cur_punct = first_punct(cur.head)
     end
@@ -7311,7 +7346,7 @@ local function handle_boundary (head, prev, prev_visible, prev_end,
     if disabled(cur) and not disabled(prev_visible)
        and not occupied then
       local mark = prev_visible.id == GLYPH
-        and punct_class(prev_visible.char, settings)
+        and punct_class(prev_visible.char, settings, prev_visible.font)
       if mark and mark ~= "open" then
         local g = make_glue(PUNCT_BOUNDARY_GLUE, prev_visible)
         if g then
@@ -7575,7 +7610,7 @@ end
 %    \begin{macrocode}
 local function edge_mark (n, at_end)
   if n.id == GLYPH then
-    return punct_class(n.char, settings_of(n)), n.char, n
+    return punct_class(n.char, settings_of(n), n.font), n.char, n
   elseif n.id == HLIST or n.id == VLIST then
     local mark, g = nil, nil
     if at_end then
@@ -7734,13 +7769,13 @@ local function apply_fixed_widths (head)
   while cur do
     local settings = settings_of(cur)
     local style    = style_of(settings)
-    if cur.id == GLYPH and punct_class(cur.char, settings)
+    if cur.id == GLYPH and punct_class(cur.char, settings, cur.font)
        and not disabled(cur) then
       local target = fixed_width(cur, settings, style)
       if target then
         local delta = target - cur.width
         if delta ~= 0 then
-          local shift = ink_shift(punct_class(cur.char, settings), delta)
+          local shift = ink_shift(punct_class(cur.char, settings, cur.font), delta)
           local p = new_node("penalty")
           inherit_attributes(p, cur)
           p.penalty = 10000
@@ -8874,7 +8909,7 @@ local function apply_check_single (head)
   for i = #trail, 1, -1 do
     local item = trail[i]
     if item.id == GLYPH then
-      if is_cjk(item.char, settings_of(item)) then
+      if is_cjk(item.char, settings_of(item), item.font) then
         last = i
       end
       break
@@ -8902,7 +8937,7 @@ local function apply_check_single (head)
       break
     end
     local glyph = trail[j]
-    if glyph.id ~= GLYPH or not is_cjk(glyph.char, settings_of(glyph)) then
+    if glyph.id ~= GLYPH or not is_cjk(glyph.char, settings_of(glyph), glyph.font) then
       break
     end
     local at    = nil
@@ -9008,7 +9043,7 @@ local function hyphenate_runs (head, tail)
   local prev = nil
   local cur  = head
   while cur do
-    if cur.id == GLYPH and is_cjk(cur.char, settings_of(cur)) then
+    if cur.id == GLYPH and is_cjk(cur.char, settings_of(cur), cur.font) then
       if run then
         lang.hyphenate(run, prev)
       end
@@ -9485,7 +9520,7 @@ local function insert_dots (start, w, settings, dots, offset)
     local nxt   = n.next
     local width = node_width(n)
     if n.id == GLYPH and width > 0
-       and LuaCJK.is_cjk(n.char, LuaCJK.settings_of(n)) then
+       and LuaCJK.is_cjk(n.char, LuaCJK.settings_of(n), n.font) then
       local centre = offset + x + width / 2
       local dotted = nxt and nxt.id == HLIST
                      and node.has_attribute(nxt, M.dot_attr) ~= nil
