@@ -1,0 +1,43 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage[LoadFandol]{LuaCJK}
+\renewcommand{\CJKfamilydefault}{\CJKsfdefault}
+
+\def\psname#1{%
+  \directlua{
+    local n = tex.box[#1].head
+    while n do
+      if n.id == node.id("glyph") then
+        local f = font.getfont(n.font)
+        texio.write_nl("term and log", "PSNAME " .. tostring(f and (f.psname or f.name)))
+        break
+      end
+      n = n.next
+    end
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{the main text takes the family the preamble chose}{
+  \setbox0=\hbox{中}
+  \psname{0}
+}
+
+\TEST{the family survives a normalfont}{
+  {\normalfont
+   \setbox0=\hbox{中}
+   \psname{0}}
+}
+
+\TEST{the sans serif family is the same one}{
+  \setbox0=\hbox{\textsf{中}}
+  \psname{0}
+}
+
+\END
+
+\end{document}
