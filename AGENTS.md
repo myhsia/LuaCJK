@@ -50,7 +50,7 @@ Entry points:
 | `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
 | `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.4`, `packtdszip = false` with `tdslocations` kept for `l3build install`, `ctanpkg`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
-| `testfiles/NN.lvt` + `.tlg` | 71 regression tests and their baselines, one pair per feature |
+| `testfiles/NN.lvt` + `.tlg` | 72 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree |
 | `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, collapses only ASCII whitespace, and names the forge repository of the release link with `--repo`.  It also exports `newest` and `announcement`, which `build.lua` calls to turn the newest section of that changelog into the CTAN announcement |
@@ -283,6 +283,16 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   `\tl_set:Ne`, so a family is named by `\CJKrmdefault` and friends; the
   property key is the expanded name, and a new entry point that skips the
   expansion silently keeps the previous family and warns about the macro.
+- **A CJK family is selected in the Unicode encoding.**  `\@@_family_font:n`
+  sets `\fontencoding{TU}` before `\fontfamily`, and every place that resolves a
+  family's font identifier goes through it: `\@@_update_font:` and its
+  punctuation family, the fallback chain, the block fonts, the CJK math family,
+  and the width the verbatim addon measures.  `fontspec` declares its families
+  under `TU`, so a selection made in whatever encoding the document chose finds
+  no such shape, warns `Font shape T1/… undefined`, and falls back to the Latin
+  text font: `\usepackage[T1]{fontenc}` then sets every CJK character in the T1
+  font and reports it missing, and `pifont`'s `U` encoding does the same inside
+  its own group.  Resolve a family in `TU`, never in `\f@encoding`.
 - **The CJK font is applied before the text is shaped.**  `M.pre_shaping` is
   installed on luaotfload's `pre_shaping_filter`, so the font is set on the
   glyph in place and the font's own features apply: a combining mark attaches
@@ -588,7 +598,7 @@ texlua scripts/check-charclass.lua     # ~1 s, the CJK range table against Scrip
 texlua scripts/check-bilingual.lua     # ~1 s, the two documentation languages
 
 # CI, on every push: the full suite and the manual
-l3build check           # ~3 min, 71 tests, both test runs
+l3build check           # ~3 min, 72 tests, both test runs
 l3build doc             # ~2 min, tagged manual, needs latex-lab and tagpdf
 bash scripts/ctex-subset.sh            # ~3 min, needs ../ctex-kit or network
 bash scripts/ctex-subset.sh --skip-unpack

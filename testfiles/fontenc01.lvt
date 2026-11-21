@@ -1,0 +1,45 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage[LoadFandol]{LuaCJK}
+\usepackage[T1]{fontenc}
+
+% Print the PostScript name of every glyph in a box, in order, so that the
+% baseline names the font each part of the line was set in.
+\def\psnames#1{%
+  \directlua{
+    local n = tex.box[#1].head
+    local t = {}
+    while n do
+      if n.id == node.id("glyph") then
+        local f = font.getfont(n.font)
+        table.insert(t, tostring(f and (f.psname or f.name)))
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "PSNAMES " .. table.concat(t, ","))
+  }%
+}
+
+\begin{document}
+
+\START
+
+\TEST{the Latin text is set in the T1 text font}{
+  \setbox0=\hbox{A}
+  \psnames{0}
+}
+
+\TEST{the CJK text keeps the CJK font}{
+  \setbox0=\hbox{中}
+  \psnames{0}
+}
+
+\TEST{a CJK character between two Latin ones keeps its font}{
+  \setbox0=\hbox{A中B}
+  \psnames{0}
+}
+
+\END
+
+\end{document}
