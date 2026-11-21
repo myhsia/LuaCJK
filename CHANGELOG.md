@@ -4,6 +4,7 @@
 - The family `\CJKfamilydefault` names is selected when the document starts, so a preamble that redefines it sets the main text in that family from the first line.
 - A code point below U+0100 in a font that is not Unicode-encoded is a position in that font's encoding, not a character, so a symbol font's slot is no longer read as a CJK character: `pifont`'s slot 0xB7, the circled 2, keeps its own font and prints.
 - The punctuation table covers the marks `xeCJK` classes as opening or closing, so the percent sign U+FF05 no longer starts a line and the currency symbols no longer end one; the halfwidth and compatibility forms and the three hyphen-like marks follow the same class.
+- A punctuation mark is given its fixed advance once: a box that holds the list is packed again, and the mark no longer takes a second compensating kern, so a fixed-width style no longer squeezes a table cell or a parbox.
 - The first line of a list item hangs as well: the label box that the list writes in front of the item's text is passed over, so a mark that begins the item leaves its blank in the label's advance.
 - A CJK character ends a word for hyphenation, so the line breaker no longer puts a hyphen beside a CJK character, and the boundary keeps the `CJKecglue` that the two sides give it.
 - The wave is written one period at a time, so it covers the start and the end of a span that is not a whole number of periods, on a stretched line as well as on the last line of a paragraph.

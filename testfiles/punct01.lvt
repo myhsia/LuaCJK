@@ -64,6 +64,24 @@
   \endgroup
 }
 
+\TEST{banjiao gives a mark its advance once in a nested box}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle=banjiao}
+    \setbox0=\hbox{\hbox{字，字}}
+    \setbox2=\hbox{字，字}
+    \TYPE{nested: \the\wd0}
+    \TYPE{flat: \the\wd2}
+    \directlua{
+      local n, kerns = tex.box[0].head.head, 0
+      while n do
+        if n.id == node.id("kern") then kerns = kerns + 1 end
+        n = n.next
+      end
+      texio.write_nl("term and log", "KERNS " .. tostring(kerns))
+    }
+  \endgroup
+}
+
 \TEST{kaiming keeps final punctuation full width}{
   \begingroup
     \LuaCJKsetup{PunctStyle=kaiming}
