@@ -264,6 +264,10 @@ The Current Maintainer of this work is **Mingyu Xia**.
 %   ellipsis (U+22EF) are set in the CJK font, and \keys{LatinPunct} keeps the
 %   ones it lists in the Latin font; the two dot leader joins a run of dashes
 %   and ellipses that may not be broken.}
+% \changes{v0.0.4}{2026/11/22}{A run of CJK characters inside an
+%   \env{lstlisting} block is one token of \pkg{listings}, so a
+%   \texttt{emph} or \texttt{keywords} entry that names a CJK word highlights
+%   it; a Latin character and a CJK mark both end the run.}
 % \changes{v0.0.1}{2026/11/05}{Ship \file{ctex-engine-luacjk.def} as the
 %   \LuaTeX\ backend for \pkg{ctex}, selected with the option |engine =
 %   luacjk|; like \pkg{ctex}'s own backend it refuses \pkg{CJKfntef} and
@@ -1292,6 +1296,9 @@ abc汉字abc
 % 于是会跑到周围拉丁文字的前面。配套的 \pkg{LuaCJK-listings} 修正了这一点：
 % 它把 CJK 字符加入 \pkg{listings} 的字符表，所以它们留在原处，
 % 把每个字符算作两列，并在列表内部关掉间距调整。
+% 一串 CJK 字符对 \texttt{emph} 与 \texttt{keywords} 选项来说是一个词，
+% 所以可以给一个 CJK 变量名着色；
+% 拉丁字母、数字和 CJK 标点都会结束这个词。
 % 使用 \pkg{listings} 时 \pkg{LuaCJK} 自动加载它，所以不需要额外的命令。
 %
 % \tn{lstinline} 以改变了的类别码读取参数；
@@ -2668,6 +2675,9 @@ abc汉字abc
 % this: it adds the CJK characters to the character table of \pkg{listings},
 % so they stay in place, counts each of them as two columns,
 % and turns the spacing adjustments off inside the listing.
+% A run of CJK characters is one word for the \texttt{emph} and
+% \texttt{keywords} options, so a CJK variable name can be highlighted;
+% a Latin character, a digit, or a CJK mark ends the word.
 % \pkg{LuaCJK} loads it automatically when \pkg{listings} is used,
 % so no extra command is needed.
 %
@@ -6346,6 +6356,37 @@ M.punct_styles = {
 
 %    \end{macrocode}
 % \end{variable}
+%
+% \begin{macro}[int]{LuaCJK.punct_codes}
+% The code points of the punctuation groups that lie inside the CJK ranges
+% and the Basic Multilingual Plane, sorted.
+% This is the list of marks that \pkg{LuaCJK-listings} gives a token of their
+% own.  The filter is the CJK range table rather than a range list of its own,
+% so a new Unicode release reaches the character table and this list together,
+% and the groups are the ones LuaCJK.punct_class reads.
+%    \begin{macrocode}
+function M.punct_codes ()
+  local codes = {}
+  for code in pairs(PUNCT_CLASS) do
+    codes[code] = true
+  end
+  for code in pairs(M.charsets.middle) do
+    codes[code] = true
+  end
+  for code, group in pairs(M.punct_override) do
+    codes[code] = group or nil
+  end
+  local list = {}
+  for code in pairs(codes) do
+    if code <= 0xFFFF and in_ranges(code, CJK_RANGES) then
+      list[#list + 1] = code
+    end
+  end
+  table.sort(list)
+  return list
+end
+%    \end{macrocode}
+% \end{macro}
 %
 % \begin{macro}[int]{LuaCJK.define_punct_style}
 % \changes{v0.0.1}{2026/11/05}{Provide \keys{KaiMingPunct},
@@ -11298,6 +11339,26 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % A character outside the table is typeset the moment \pkg{listings} reads it,
 % which puts it next to the wrong text and counts it as one column.
 %
+% A run of CJK characters is one token. It is appended to the token list
+% character by character, and the run is output only where \pkg{listings} ends
+% a letter run: at a Latin letter, a digit, another character, or a space.
+% The \texttt{emph} and \texttt{keywords} options match an entry against that
+% token, so a CJK word is highlighted the way \pkg{xeCJK} highlights it.
+% A CJK mark is a token of its own, because the word in front of it would
+% otherwise enter the token with it; the marks are the ones
+% LuaCJK.punct_codes lists inside the character table.
+%
+% The two appending macros of \pkg{listings} are wrapped to end the run, and
+% the saved macro has to be the last token of the wrapper:
+% \tn{lst@Append} takes the character that follows the active character in the
+% input as its argument, so a brace or the \tn{fi} of a conditional behind it
+% would be taken instead.
+%
+% The marks arrive from Lua as a comma-separated list of code points, printed
+% with the catcode table of other characters: by the time the character table
+% is built, \pkg{listings} has made every printable ASCII character active, so
+% a digit printed with the current table would not be a number.
+%
 % The ranges are those of \cs{LuaCJK.is_cjk}, limited to the Basic
 % Multilingual Plane: each definition costs an entry of the string pool, and
 % the supplementary planes would triple it for ideographs a listing almost
@@ -11316,14 +11377,34 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   \LuaCJK@listings@setcjkflag
   \advance\lst@length\@ne
   \lst@Append#1}
+\def\LuaCJK@listings@processpunct#1{%
+  \lst@whitespacefalse
+  \LuaCJK@listings@cjkrunfalse
+  \LuaCJK@listings@setcjkflag
+  \advance\lst@length\@ne
+  \lst@Append#1%
+  \lst@Output
+  \lst@letterfalse
+  \LuaCJK@listings@cjkrunfalse}
 \def\LuaCJK@listings@setcjkflag{%
-  \lst@ifletter
-    \lst@Output
-  \else
-    \ifLuaCJK@listings@cjkrun\else\lst@OutputOther\fi
+  \ifLuaCJK@listings@cjkrun
     \lst@lettertrue
+  \else
+    \lst@ifletter \lst@Output \else \lst@OutputOther \lst@lettertrue \fi
+    \LuaCJK@listings@cjkruntrue
+  \fi}
+\let\LuaCJK@listings@letter\lst@AppendLetter
+\let\LuaCJK@listings@other\lst@AppendOther
+\def\lst@AppendLetter{%
+  \ifLuaCJK@listings@cjkrun
+    \lst@Output \lst@lettertrue \LuaCJK@listings@cjkrunfalse
   \fi
-  \LuaCJK@listings@cjkruntrue}
+  \LuaCJK@listings@letter}
+\def\lst@AppendOther{%
+  \ifLuaCJK@listings@cjkrun
+    \lst@Output \lst@letterfalse \LuaCJK@listings@cjkrunfalse
+  \fi
+  \LuaCJK@listings@other}
 \def\LuaCJK@listings@define#1#2{%
   \@tempcnta=#1\relax
   \loop
@@ -11333,6 +11414,10 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \ifnum\@tempcnta<#2\relax
     \advance\@tempcnta\@ne
   \repeat}
+\def\LuaCJK@listings@definepunct#1{%
+  \lccode`\~=#1\relax
+  \lccode`\/=#1\relax
+  \lowercase{\gdef~{\LuaCJK@listings@processpunct/}}}
 \def\LuaCJK@listings@catcodes#1#2{%
   \@tempcnta=#1\relax
   \loop
@@ -11358,12 +11443,22 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   #1{"F900}{"FAFF}%
   #1{"FE30}{"FE4F}%
   #1{"FF00}{"FFEF}}
+\def\LuaCJK@listings@punctuate#1,{%
+  \ifx\relax#1\relax\else
+    \LuaCJK@listings@definepunct{#1}%
+    \expandafter\LuaCJK@listings@punctuate
+  \fi}
+\def\LuaCJK@listings@punctuation{%
+  \edef\LuaCJK@listings@codes{%
+    \directlua{tex.sprint(-2,table.concat(LuaCJK.punct_codes(),","))}}%
+  \expandafter\LuaCJK@listings@punctuate\LuaCJK@listings@codes,\relax,}
 \def\LuaCJK@listings@activate{%
   \ifLuaCJK@listings@defined\else
     \LuaCJK@listings@ranges\LuaCJK@listings@define
     \global\LuaCJK@listings@definedtrue
   \fi
-  \LuaCJK@listings@ranges\LuaCJK@listings@catcodes}
+  \LuaCJK@listings@ranges\LuaCJK@listings@catcodes
+  \LuaCJK@listings@punctuation}
 %    \end{macrocode}
 %
 % \tn{lstinline} reads its argument with changed category codes,
