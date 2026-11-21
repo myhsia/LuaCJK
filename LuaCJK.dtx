@@ -497,6 +497,7 @@ English 中文字体\\
 %   \CJKfamilydefault} 由 \tn{rmfamily}、\tn{sffamily} 与 \tn{ttfamily}
 %   选择的 CJK 字族，以及由 \tn{normalfont} 选择的字族。
 %   \cs{CJKfamilydefault} 默认跟随 \cs{CJKrmdefault}。
+%   它在文档开始时选取，所以在导言区重定义它，正文第一行就用新的字族。
 % \end{variable}
 %
 % \subsection{子区块}
@@ -1810,7 +1811,8 @@ English 中文字体\\
 %   \CJKfamilydefault} The CJK families selected by \tn{rmfamily},
 %   \tn{sffamily}, and \tn{ttfamily}, and the family selected by
 %   \tn{normalfont}. \cs{CJKfamilydefault} follows \cs{CJKrmdefault}
-%   by default.
+%   by default. It is selected when the document starts, so redefining it in
+%   the preamble sets the main text in that family from the first line.
 % \end{variable}
 
 % \subsection{Sub-blocks}
@@ -4675,8 +4677,9 @@ abc汉字abc
 % The name is expanded first, because the default is written as
 % \cs{CJKrmdefault} until the document chooses a family of its own.
 % A name that no family carries is passed over in silence:
-% \tn{normalfont} also runs when the document starts, and a document that
-% has declared no font yet has nothing to switch to.
+% \tn{normalfont} also runs when the document starts, and the hook at
+% |\begin{document}| runs the same reset once the default has been settled,
+% so a document that declared no font at all has nothing to switch to.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_reset_family:
   {
@@ -5130,6 +5133,9 @@ abc汉字abc
 %
 % \begin{variable}[int]
 %   {\CJKrmdefault, \CJKsfdefault, \CJKttdefault, \CJKfamilydefault}
+% \changes{v0.0.4}{2026/11/21}{The family \cs{CJKfamilydefault} names is
+%   selected when the document starts, so a preamble that redefines it sets
+%   the main text in that family from the first line.}
 % The CJK families used by the standard font commands.
 % The family hooks below re-select the CJK family whenever
 % \tn{rmfamily} and its siblings run, and \tn{normalfont} selects
@@ -5627,6 +5633,13 @@ abc汉字abc
 %
 % Read the package options now that every helper a key code calls exists and
 % the Lua module is loaded, which \keys{CJLineBreak} needs.
+% The hook at |\begin{document}| then settles the family the document starts
+% in: \cs{CJKfamilydefault} follows \cs{CJKrmdefault} when the preamble did
+% not choose it, \keys{LoadFandol} supplies the four Fandol faces when the
+% preamble declared no family at all, a chosen default that no family carries
+% is replaced by one that does, and the family that survives is selected, so a
+% preamble that redefines \cs{CJKfamilydefault} sets the main text in that
+% family from the first line instead of waiting for a \tn{normalfont}.
 %    \begin{macrocode}
 \ProcessKeyOptions [ LuaCJK / options ]
 \@@_settings_push:
@@ -5643,6 +5656,7 @@ abc汉字abc
           { \@@_load_fandol: }
       }
     \@@_ensure_family_default:
+    \@@_reset_family:
     \@@_update_font:
     \g_@@_font_attr = \g_@@_fontid_int
   }
