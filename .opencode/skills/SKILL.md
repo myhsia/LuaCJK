@@ -135,10 +135,13 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    rule of negative width beside the break glue (`hang01`), and at the two
    boundaries that carry no glue: in front of the opening mark that begins a
    paragraph, after its indentation (which arrives as an empty box of the width
-   of `\parindent`), and after the penalty that holds a break the document
-   forced. Only the `pre_linebreak_filter` path runs it: a box packed by
-   `hpack_filter` cannot break a line, and a line box that is packed again
-   would take the pair twice.
+   of `\parindent`) or after the label box of a list item, and after the penalty
+   that holds a break the document forced. The label box is the box the list
+   writes in front of the item's text and follows with a penalty of zero, which
+   is how `head_lead` tells it from a box that carries text of the paragraph.
+   Only the `pre_linebreak_filter` path runs it: a box packed by `hpack_filter`
+   cannot break a line, and a line box that is packed again would take the pair
+   twice.
 5. `apply_kinsoku` — insert a `\penalty 10000` at a break point the
    line-breaking prohibitions forbid. It reads a box at the edge that faces the
    break (`first_punct`/`last_punct`), so a mark inside an `\mbox` takes part.
