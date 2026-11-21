@@ -1,14 +1,22 @@
 name: Issue triage
 
-# A new issue is labelled when it is opened, so that the label names the
-# subsystem the fix will land in before anyone works on it.  The classifier is
-# `scripts/triage-issues.sh`, the same script a session runs; an issue whose
-# text matches no rule is left alone on purpose, and the session check of the
-# next session reports it so that a person decides.
+# An issue is labelled and typed when it is opened, so that the label names the
+# subsystem the fix will land in and the type says whether it is a defect
+# before anyone works on it.  The classifier is `scripts/triage-issues.sh`, the
+# same script a session runs; an issue whose title matches no rule is left
+# alone on purpose, and the session check of the next session reports it so
+# that a person decides.
+#
+# The daily run is the net for what the event trigger cannot reach: an issue
+# the table missed, one opened while the workflow was down, and one whose title
+# a rule change now places.  It applies to every open issue and only fills what
+# is missing, so it is safe to run as often as one likes.
 
 on:
   issues:
     types: [opened, reopened]
+  schedule:
+    - cron: '17 22 * * *' # 06:17 Asia/Shanghai
 
 permissions:
   contents: read
@@ -22,10 +30,14 @@ jobs:
       - name: Check out the classifier
         uses: actions/checkout@v4
 
-      - name: Label the issue
+      - name: Label and type the issue
         env:
           GH_TOKEN: ${{ github.token }}
           NUMBER: ${{ github.event.issue.number }}
         run: |
           set -eu
-          bash scripts/triage-issues.sh --apply --number "$NUMBER"
+          if [ -n "$NUMBER" ]; then
+            bash scripts/triage-issues.sh --apply --number "$NUMBER"
+          else
+            bash scripts/triage-issues.sh --apply
+          fi
