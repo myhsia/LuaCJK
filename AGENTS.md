@@ -50,7 +50,7 @@ Entry points:
 | `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
 | `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.4`, `packtdszip = false` with `tdslocations` kept for `l3build install`, `ctanpkg`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
-| `testfiles/NN.lvt` + `.tlg` | 73 regression tests and their baselines, one pair per feature |
+| `testfiles/NN.lvt` + `.tlg` | 74 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree |
 | `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, collapses only ASCII whitespace, and names the forge repository of the release link with `--repo`.  It also exports `newest` and `announcement`, which `build.lua` calls to turn the newest section of that changelog into the CTAN announcement |
@@ -184,6 +184,18 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   their block names, and let `cjkrange01` fix the result.  The table is a
   policy (shared punctuation is CJK, the combining Bopomofo marks are not),
   so the script reports only what a script-based classification would add.
+- **A code point below U+0100 in a legacy font is a slot, not a character.**
+  `LuaCJK.is_cjk` and `punct_class` take the glyph's font as a third argument
+  and ask `is_slot`, which caches one answer per font id: `encodingbytes == 2`
+  means `luaotfload` loaded a Unicode font, anything else is an encoding, where
+  the number that reaches the node is a position in it.  `pifont`'s
+  `\ding{183}` is slot 0xB7 of the dingbat font, which would otherwise be read
+  as the middle dot and set in the CJK font (or dropped), and slot 0xB7 of a
+  T1 text font is `\r{u}`.  A code point above U+00FF cannot be a slot, so a
+  CJK character typed in a legacy encoding still takes the CJK font, and a
+  Unicode font is read as characters throughout.  Every caller that has a
+  glyph passes `.font`; the two math passes and `LuaCJK.punct_class` leave it
+  out, because a math noad carries no font.
 - **The listings character table is the BMP of `CJK_RANGES`.**
   `\LuaCJK@listings@ranges` repeats the ranges a second time, limited to the
   Basic Multilingual Plane, and `scripts/check-docs.sh` compares the two, so a
@@ -608,7 +620,7 @@ texlua scripts/check-charclass.lua     # ~1 s, the CJK range table against Scrip
 texlua scripts/check-bilingual.lua     # ~1 s, the two documentation languages
 
 # CI, on every push: the full suite and the manual
-l3build check           # ~3 min, 73 tests, both test runs
+l3build check           # ~3 min, 74 tests, both test runs
 l3build doc             # ~2 min, tagged manual, needs latex-lab and tagpdf
 bash scripts/ctex-subset.sh            # ~3 min, needs ../ctex-kit or network
 bash scripts/ctex-subset.sh --skip-unpack
