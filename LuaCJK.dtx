@@ -900,6 +900,9 @@ $ 天地玄黄 $ and 天地玄黄
 %   其余的墨迹悬挂到页边，或者悬挂到段落开头或列表项开头的缩进里。
 %   默认悬挂标点自带的空白，所以它的墨迹正好落在版心边上；
 %   断行时这一份悬挂已经算进去，行尾的标点因此能随它所在的行一起放下。
+%   居中的段落与右对齐的段落没有页边可悬挂，
+%   所以它的开头与 |\\| 强制换行之后的一行都不悬挂，
+%   断行处的悬挂照旧，因为断行时它已经算进了这一行。
 %   \texttt{0pt} 把整个进距都悬挂出去，\texttt{false} 恢复这个默认值。
 %   \item[\keys{LatinPunct}]\val{\TFF}: 把引号
 %   （U+2018、U+2019、U+201C、U+201D）、间隔号（U+00B7）
@@ -2246,6 +2249,9 @@ $ 天地玄黄 $ and 天地玄黄
 %   The default leaves the mark's own blank out, so its ink stands on the
 %   measure, and line breaking counts that hang, so a mark can end the line the
 %   natural width would refuse.
+%   A centered or a flush-right paragraph has no margin to hang into, so the
+%   paragraph start and a line after |\\| do not hang there; the hang at a
+%   break stays, because line breaking has already counted it.
 %   \texttt{0pt} hangs the whole advance;
 %   \texttt{false} returns to that default.
 %   \item[\keys{LatinPunct}]\val{\TFF}: Treat the quotation marks
@@ -8829,19 +8835,6 @@ local function head_lead (head)
   return nil, nil
 end
 
-local function hang_rule (width, glyph, prev, after)
-  local r  = new_node("rule")
-  r.width  = -width
-  r.height = 0
-  r.depth  = 0
-  inherit_attributes(r, glyph)
-  r.next = after
-  if prev then
-    prev.next = r
-  end
-  return r
-end
-
 local function hang_rule (width, glyph, prev, next_)
   local r  = new_node("rule")
   r.width  = -width
@@ -8872,6 +8865,10 @@ end
 %   the label box that the list writes in front of the item's text is passed
 %   over, so a mark that begins the item leaves its blank in the label's
 %   advance.}
+% \changes{v0.0.4}{2026/11/22}{A centered or flush-right paragraph does not
+%   hang the mark it begins with: the line does not start at the edge of the
+%   measure, so the shift would move the whole line instead of leaving the
+%   blank in a margin that is not there.}
 % Bracket every break point that a mark ends or starts, so the line measures
 % the hang and the text inside a line does not move. A break that a preceding
 % penalty already forbids is left alone, so a fixed width does not carry a rule
@@ -8879,10 +8876,21 @@ end
 % are bracketed as well: the start of the paragraph, and the penalty that
 % holds a break the document forced, where the rule that shifts the line is
 % all there is to insert.
+% Those two are left out when \tn{leftskip} reaches the line with a fill, which
+% is how a centered or a flush-right paragraph is set: the line then begins at
+% the centering position rather than at the edge of the measure, and the rule
+% would move it instead of leaving the mark's blank in the margin.  The hang at
+% a break stays in every case, because the line breaker has already counted it
+% when it decided that the mark fits.
 %    \begin{macrocode}
+local function finite_skip (s)
+  return not s or (s.stretch_order == 0 and s.shrink_order == 0)
+end
+
 local function hang_bounds (head)
+  local left  = finite_skip(tex.leftskip)
   local first, before = head_lead(head)
-  if first then
+  if first and left then
     local width, glyph = open_hang(first)
     if width > 0 then
       local r = hang_rule(width, glyph, before, first)
@@ -8901,7 +8909,7 @@ local function hang_bounds (head)
     elseif cur.id == PENALTY and cur.penalty <= -10000 then
       local nxt = next_visible(cur.next)
       local width, glyph = 0, nil
-      if nxt then
+      if nxt and left then
         width, glyph = open_hang(nxt)
       end
       if width > 0 then

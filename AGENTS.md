@@ -371,7 +371,13 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   first line of a list item begins with the label box, which the list follows
   with a penalty of zero, so `head_lead` walks over both with the whatsit and
   local-paragraph nodes and over a penalty that does not force a break, and
-  stops at any other box that has ink and an advance of its own.
+  stops at any other box that has ink and an advance of its own.  The two
+  hand-bracketed boundaries are skipped when `\leftskip` carries a fill: a
+  centered or flush-right paragraph starts its lines at the centering position
+  rather than at the edge of the measure, so the rule would move the whole line
+  instead of leaving the blank in a margin that is not there.  The hang at a
+  break stays in every case, because the line breaker has already counted it
+  when it decides that the mark fits (`hang01`).
 - **A Type 2 charstring number belongs to the charstring that holds it.**
   `cff_box` hands the charstring being interpreted to the number reader,
   because a subroutine carries its own operands; read from the outer
