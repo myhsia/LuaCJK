@@ -52,9 +52,17 @@
   \countpenalties
 }
 
-\TEST{HalfLeft behaves like FullLeft}{
+\TEST{HalfLeft declares a half-width opening bracket}{
   \LuaCJKDeclareCharClass{HalfLeft}{"0071}
   \setbox0=\hbox{q字}
+  \TYPE{width: \the\wd0}
+  \countpenalties
+}
+
+\TEST{HalfRight declares a half-width closing bracket}{
+  \LuaCJKDeclareCharClass{HalfRight}{"0071}
+  \setbox0=\hbox{字q}
+  \TYPE{width: \the\wd0}
   \countpenalties
 }
 
