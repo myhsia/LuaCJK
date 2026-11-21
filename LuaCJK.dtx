@@ -402,6 +402,8 @@ The Current Maintainer of this work is **Mingyu Xia**.
 %
 % 主要的字体命令接受一个可选的 \pkg{fontspec} 选项列表。
 % 选项既可以写在字体名之前，也可以写在字体名之后。
+% 无论西文使用哪一种编码，CJK 字体都在 Unicode 编码下选取，
+% 所以用 \pkg{fontenc} 把西文设为 \texttt{T1} 之类的旧编码不会影响中文。
 %
 % \begin{function}{\setCJKmainfont,\setCJKsansfont,\setCJKmonofont}
 %   \begin{syntax}
@@ -1710,6 +1712,9 @@ abc汉字abc
 %
 % The main font commands take an optional list of \pkg{fontspec} options.
 % Options may be written before or after the font name.
+% A CJK font is always selected in the Unicode encoding, whatever encoding
+% the Latin text uses, so \pkg{fontenc}'s \texttt{T1} option leaves the CJK
+% text alone.
 %
 % \begin{function}{\setCJKmainfont,\setCJKsansfont,\setCJKmonofont}
 %   \begin{syntax}
@@ -4162,7 +4167,7 @@ abc汉字abc
         \group_begin:
           \prop_get:NVNT \g_@@_family_prop \l_@@_family_tl \l_@@_tmpa_tl
             {
-              \exp_args:NV \fontfamily \l_@@_tmpa_tl
+              \exp_args:NV \@@_family_font:n \l_@@_tmpa_tl
               \selectfont
               \hbox_set:Nn \l_@@_verb_box { 一 }
               \dim_gset:Nn \l_@@_verb_cjk_dim
@@ -4352,6 +4357,25 @@ abc汉字abc
 %
 % \subsection{Fonts}
 %
+% \begin{macro}[int]{\@@_family_font:n}
+% \changes{v0.0.4}{2026/11/20}{The font of a CJK family is resolved in the
+%   Unicode encoding: a document that sets its Latin text in an 8-bit encoding
+%   with \pkg{fontenc} keeps its CJK text.}
+% Choose the font of a CJK family without selecting it.
+% \pkg{fontspec} declares a family under the Unicode encoding, so a lookup
+% made in another encoding finds no such shape, warns that the shape is
+% undefined, and falls back to the Latin font: with \pkg{fontenc}'s
+% \texttt{T1} option the CJK text would be set in the T1 text font, and inside
+% \pkg{pifont}'s \texttt{U} encoding in the symbol font.
+% Every place that resolves the font identifier of a family goes through this
+% command, and \tn{selectfont} stays with the caller, which also sets the
+% series, the shape, and the size where it needs them.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_family_font:n #1
+  { \fontencoding { TU } \fontfamily {#1} }
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{\@@_set_family:nnn}
 % Define a family through \pkg{fontspec} and remember the resulting
 % family name. The family is only registered;
@@ -4540,7 +4564,7 @@ abc汉字abc
       \tl_clear:N \l_@@_fallback_ids_tl
       \clist_map_inline:nn {#1}
         {
-          \fontfamily {##1} \selectfont
+          \@@_family_font:n {##1} \selectfont
           \tl_set:Ne \l_@@_tmpb_tl
             { \int_eval:n { \tex_fontid:D \tex_font:D } }
           \tl_put_right:NV \l_@@_fallback_ids_tl \l_@@_tmpb_tl
@@ -4799,7 +4823,7 @@ abc汉字abc
         \prop_get:NVNTF \g_@@_family_prop \l_@@_family_tl \l_@@_family_name_tl
           {
             \group_begin:
-              \exp_args:NV \fontfamily \l_@@_family_name_tl
+              \exp_args:NV \@@_family_font:n \l_@@_family_name_tl
               \selectfont
               \int_gset:Nn \g_@@_fontid_int
                 { \tex_fontid:D \tex_font:D }
@@ -4822,7 +4846,7 @@ abc汉字abc
               \l_@@_tmpa_tl
               {
                 \group_begin:
-                  \exp_args:NV \fontfamily \l_@@_tmpa_tl
+                  \exp_args:NV \@@_family_font:n \l_@@_tmpa_tl
                   \selectfont
                   \int_gset:Nn \g_@@_punct_fontid_int
                     { \tex_fontid:D \tex_font:D }
@@ -4911,7 +4935,7 @@ abc汉字abc
 \cs_new_protected:Npn \@@_math_family_fonts:nn #1#2
   {
     \group_begin:
-      \fontfamily {#1}
+      \@@_family_font:n {#1}
       \fontseries { \mddefault }
       \fontshape { \shapedefault }
       \fontsize { \l_@@_math_size_tl pt } { \baselineskip }
@@ -5068,7 +5092,7 @@ abc汉字abc
               \l_@@_block_key_tl \l_@@_tmpa_tl
               {
                 \group_begin:
-                  \exp_args:NV \fontfamily \l_@@_tmpa_tl
+                  \exp_args:NV \@@_family_font:n \l_@@_tmpa_tl
                   \selectfont
                   \int_gset:Nn \g_@@_block_fontid_int
                     { \tex_fontid:D \tex_font:D }
