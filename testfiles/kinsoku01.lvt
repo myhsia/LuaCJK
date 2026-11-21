@@ -187,6 +187,45 @@
   \linefirsts{0}
 }
 
+\TEST{the percent sign cannot start a line}{
+  \setbox0=\hbox{99％}
+  \probe
+}
+
+\TEST{a percent sign stays with the number it follows}{
+  \begingroup
+    \parindent=0pt \raggedright
+    \setbox0=\vbox{\hsize=4.5em 合格率99％\par}
+    \linefirsts{0}
+  \endgroup
+}
+
+\TEST{a currency prefix cannot end a line}{
+  \setbox0=\hbox{字＄9}
+  \probe
+  \setbox0=\hbox{字￥9}
+  \probe
+}
+
+\TEST{a currency postfix cannot start a line}{
+  \setbox0=\hbox{99￠}
+  \probe
+}
+
+\TEST{a compatibility mark takes the group of its side}{
+  \setbox0=\hbox{字︾}
+  \probe
+  \setbox0=\hbox{﹁字}
+  \probe
+}
+
+\TEST{a tilde is a dash}{
+  \setbox0=\hbox{字～字}
+  \probe
+  \setbox0=\hbox{字～～字}
+  \probe
+}
+
 \END
 
 \end{document}

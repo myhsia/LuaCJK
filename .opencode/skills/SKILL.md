@@ -258,6 +258,14 @@ Every mark gets a group from `PUNCT_CLASS`: `open`, `close`, `middle`, `dash`,
 (`M.charsets`): `kaiming` (marks that stay full width in the `kaiming` style),
 `middle`, `long` (never compressed against each other), and `nobreak` (never
 separated by a line break).
+The groups are the lists of xeCJK: `OP` and `PR` are `open`; `CL`, `PO`, `EX`,
+and `IS` are `close`; the hyphens (`301C`, `30A0`, `FF5E`) are `dash`; and `NS`
+is read as `close` (`FF1A`, `FF1B`) or `middle` (`30FB`, `FF65`), because
+`middle` means the ink is centred in the box and those two are not.
+A mark is listed only when `CJK_RANGES` holds it as well, so the small-form and
+vertical variants outside that table (`FE10`–`FE19`, `FE50`–`FE6A`, `2E3A`,
+`16FE0`) keep no class; classing one is a `chars` change to both the range table
+and the listings table.
 A style (`M.punct_styles`) is a table of six optional fields:
 
 | field | effect |
@@ -722,7 +730,7 @@ The commands are in `AGENTS.md`. For this skill the points that matter are:
 ```bash
 l3build check <name>                # the local loop; must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
-l3build check                       # 69 tests, CI on every push
+l3build check                       # 70 tests, CI on every push
 bash scripts/ctex-subset.sh         # 21/21, CI; no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
 ```

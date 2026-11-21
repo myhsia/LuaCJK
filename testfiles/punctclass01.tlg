@@ -1,0 +1,30 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: the shared punctuation and the dashes
+============================================================
+PC 2013=dash 2014=dash 2015=dash 2018=open 2019=close 201C=open 201D=close 2025=ellipsis 2026=ellipsis 2027=middle
+PC 22EF=ellipsis
+============================================================
+============================================================
+TEST 2: the CJK punctuation
+============================================================
+PC 3001=close 3002=close 3008=open 3009=close 300A=open 300B=close 300C=open 300D=close 300E=open 300F=close 3010=open 3011=close 3014=open 3015=close 3016=open 3017=close 3018=open 3019=close 301A=open 301B=close 301C=dash 301D=open 301E=close 301F=close
+============================================================
+============================================================
+TEST 3: the compatibility forms
+============================================================
+PC FE35=open FE36=close FE37=open FE38=close FE39=open FE3A=close FE3B=open FE3C=close FE3D=open FE3E=close FE3F=open FE40=close FE41=open FE42=close FE43=open FE44=close FE47=open FE48=close
+============================================================
+============================================================
+TEST 4: the fullwidth and halfwidth forms
+============================================================
+PC FF01=close FF04=open FF05=close FF08=open FF09=close FF0C=close FF0D=dash FF0E=close FF1A=close FF1B=close FF1F=close FF3B=open FF3D=close FF5B=open FF5D=close FF5E=dash FF5F=open FF60=close FF61=close FF62=open FF63=close FF64=close FF65=middle
+PC FFE0=close FFE1=open FFE5=open FFE6=open
+============================================================
+============================================================
+TEST 5: the small and vertical variants outside the CJK table keep no class
+============================================================
+PC 2E3A=nil 16FE0=nil FE10=nil FE15=nil FE17=nil FE19=nil
+PC FE50=nil FE52=nil FE54=nil FE69=nil FE6A=nil
+============================================================

@@ -1,0 +1,85 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+
+% The report walks the table itself, so a code point a later release adds or
+% drops shows up in the baseline.  The helper lives on a test-local table and
+% writes no % or # characters, which TeX reads specially inside \directlua.
+\directlua{
+  PunctTest = {}
+
+  function PunctTest.hex (n)
+    local digits = "0123456789ABCDEF"
+    local out, count = {}, 0
+    repeat
+      count = count + 1
+      local d = math.fmod(n, 16) + 1
+      out[count] = digits:sub(d, d)
+      n = math.floor(n / 16)
+    until n == 0
+    local s = ""
+    for i = count, 1, -1 do s = s .. out[i] end
+    while string.len(s) < 4 do s = "0" .. s end
+    return s
+  end
+
+  function PunctTest.block (text)
+    for first, last in string.gmatch(text, "([0-9A-Fa-f]+)-([0-9A-Fa-f]+)") do
+      local out = {}
+      for c = tonumber(first, 16), tonumber(last, 16) do
+        local group = LuaCJK.punct_class(c, nil)
+        if group then
+          table.insert(out, PunctTest.hex(c) .. "=" .. group)
+        end
+      end
+      texio.write_nl("term and log", "PC " .. table.concat(out, " "))
+    end
+  end
+
+  function PunctTest.points (text)
+    local out = {}
+    for point in string.gmatch(text, "[^, ]+") do
+      local c = tonumber(point)
+      table.insert(out, PunctTest.hex(c) .. "="
+        .. tostring(LuaCJK.punct_class(c, nil)))
+    end
+    texio.write_nl("term and log", "PC " .. table.concat(out, " "))
+  end
+}
+
+% Report the marks of each hexadecimal block, "first-last", comma separated.
+\def\punctblocks#1{\directlua{ PunctTest.block("#1") }}
+
+% Report the group of each code point of a comma-separated list, nil included.
+\def\punctof#1{\directlua{ PunctTest.points("#1") }}
+
+\begin{document}
+
+\START
+
+\TEST{the shared punctuation and the dashes}{
+  \punctblocks{2010-2030, 22E0-22F0}
+}
+
+\TEST{the CJK punctuation}{
+  \punctblocks{3000-3030}
+}
+
+\TEST{the compatibility forms}{
+  \punctblocks{FE30-FE50}
+}
+
+\TEST{the fullwidth and halfwidth forms}{
+  \punctblocks{FF00-FF66, FFE0-FFE6}
+}
+
+\TEST{the small and vertical variants outside the CJK table keep no class}{
+  \punctof{0x2E3A, 0x16FE0, 0xFE10, 0xFE15, 0xFE17, 0xFE19}
+  \punctof{0xFE50, 0xFE52, 0xFE54, 0xFE69, 0xFE6A}
+}
+
+\END
+
+\end{document}
