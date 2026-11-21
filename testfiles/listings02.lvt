@@ -1,0 +1,108 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\usepackage{xcolor}
+\usepackage{luacolor}
+\usepackage{listings}
+\setCJKmainfont{FandolSong-Regular.otf}
+\lstset{basicstyle=\ttfamily, columns=fixed}
+
+% The colour of a glyph is the value of luacolor's attribute, resolved
+% through a table of names filled from boxes whose colour is known.
+\directlua{
+  local attr = oberdiek.luacolor.getattribute()
+  local names = {}
+  local function first_attribute ()
+    local n = tex.box[0].head
+    while n do
+      local v = node.has_attribute(n, attr)
+      if v then return v end
+      n = n.next
+    end
+  end
+  function luacjk_name_color (name)
+    names[first_attribute()] = name
+  end
+  local function walk (n)
+    while n do
+      if n.id == node.id("glyph") then
+        local v = node.has_attribute(n, attr)
+        texio.write_nl("term and log", "COLOR " .. n.char .. " "
+          .. (v and (names[v] or tostring(v)) or "none"))
+      elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+        walk(n.head)
+      end
+      n = n.next
+    end
+  end
+  function luacjk_listing_colors (box)
+    walk(tex.box[box].head)
+  end
+}
+\newcommand\listingcolors[1]{%
+  \directlua{luacjk_listing_colors(\number#1)}}
+
+\newbox\reportbox
+\newbox\cjkbox
+\newbox\latinbox
+\newbox\digitbox
+\newbox\markbox
+\newbox\keywordbox
+
+\begin{document}
+
+\setbox0=\hbox{x}\directlua{luacjk_name_color("black")}
+\setbox0=\hbox{\textcolor{red}{x}}\directlua{luacjk_name_color("red")}
+\setbox0=\hbox{\textcolor{blue}{x}}\directlua{luacjk_name_color("blue")}
+
+\setbox\reportbox=\vbox{\begin{lstlisting}[emph={total,单价,数量},emphstyle=\color{red}]
+total = 单价 * 数量
+\end{lstlisting}}
+
+\setbox\cjkbox=\vbox{\begin{lstlisting}[emph={中文},emphstyle=\color{red}]
+中文abc
+\end{lstlisting}}
+
+\setbox\latinbox=\vbox{\begin{lstlisting}[emph={abc},emphstyle=\color{red}]
+中文abc
+\end{lstlisting}}
+
+\setbox\digitbox=\vbox{\begin{lstlisting}[emph={单价},emphstyle=\color{red}]
+123单价456
+\end{lstlisting}}
+
+\setbox\markbox=\vbox{\begin{lstlisting}[emph={中文},emphstyle=\color{red}]
+中文，中文。
+\end{lstlisting}}
+
+\setbox\keywordbox=\vbox{\begin{lstlisting}[keywords={变量},keywordstyle=\color{blue}]
+变量 = 1;
+\end{lstlisting}}
+
+\START
+
+\TEST{a CJK word named by emph is one token of the listing}{
+  \listingcolors\reportbox
+}
+
+\TEST{a Latin letter ends a run of CJK characters}{
+  \listingcolors\cjkbox
+  \listingcolors\latinbox
+}
+
+\TEST{a digit ends a run of CJK characters}{
+  \listingcolors\digitbox
+}
+
+\TEST{a CJK mark is no word of its own}{
+  \listingcolors\markbox
+}
+
+\TEST{keywords names a CJK word}{
+  \listingcolors\keywordbox
+}
+
+\END
+
+\end{document}

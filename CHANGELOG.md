@@ -1,5 +1,6 @@
 ## [LuaCJK-v0.0.4](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.4)
 
+- A run of CJK characters inside an `lstlisting` block is one token of `listings`, so a `emph` or `keywords` entry that names a CJK word highlights it; a Latin character and a CJK mark both end the run.
 - `HalfLeft` and `HalfRight` declare a half-width ASCII bracket: it keeps its advance, does not hang, and hugs the text inside the pair, where they used to declare a full-width opening or closing mark.
 - The font of a CJK family is resolved in the Unicode encoding: a document that sets its Latin text in an 8-bit encoding with `fontenc` keeps its CJK text.
 - The family `\CJKfamilydefault` names is selected when the document starts, so a preamble that redefines it sets the main text in that family from the first line.

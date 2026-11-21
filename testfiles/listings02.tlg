@@ -1,0 +1,62 @@
+This is a generated file for the l3build validation system.
+Don't change this file in any respect.
+============================================================
+TEST 1: a CJK word named by emph is one token of the listing
+============================================================
+COLOR 116 red
+COLOR 111 red
+COLOR 116 red
+COLOR 97 red
+COLOR 108 red
+COLOR 61 black
+COLOR 21333 red
+COLOR 20215 red
+COLOR 42 black
+COLOR 25968 red
+COLOR 37327 red
+============================================================
+============================================================
+TEST 2: a Latin letter ends a run of CJK characters
+============================================================
+COLOR 20013 red
+COLOR 25991 red
+COLOR 97 black
+COLOR 98 black
+COLOR 99 black
+COLOR 20013 black
+COLOR 25991 black
+COLOR 97 red
+COLOR 98 red
+COLOR 99 red
+============================================================
+============================================================
+TEST 3: a digit ends a run of CJK characters
+============================================================
+COLOR 49 black
+COLOR 50 black
+COLOR 51 black
+COLOR 21333 red
+COLOR 20215 red
+COLOR 52 black
+COLOR 53 black
+COLOR 54 black
+============================================================
+============================================================
+TEST 4: a CJK mark is no word of its own
+============================================================
+COLOR 20013 red
+COLOR 25991 red
+COLOR 65292 black
+COLOR 20013 red
+COLOR 25991 red
+COLOR 12290 black
+============================================================
+============================================================
+TEST 5: keywords names a CJK word
+============================================================
+COLOR 21464 blue
+COLOR 37327 blue
+COLOR 61 black
+COLOR 49 black
+COLOR 59 black
+============================================================
