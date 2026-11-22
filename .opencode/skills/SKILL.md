@@ -470,38 +470,46 @@ nothing but one rule is therefore given a rule of zero width, which `\leaders`
 fills to the whole width of the glue: the rule covers the interval exactly, it
 follows the glue when the line stretches, and it keeps the rule's attributes,
 so the color survives. The height and depth are shifted by the box's own
-translation. A box that holds a pattern (the symbols) keeps the leaders.
+translation.
 
-The remainder cannot be spread at all. `\xleaders` divides it between the
+A repeated box is not even placed from the left edge of its glue: `\leaders`
+aligns the copies at the left edge of the enclosing box, and only a copy that
+lies wholly inside the glue is drawn. A span that is not a whole number of
+patterns therefore loses one at one end, which is what a wave showed whose span
+ended in the middle of a stretched line, and a one-em symbol whose span begins
+half a cell off that grid loses every copy, which is what a single indented
+character showed.
+
+The remainder cannot be spread either. `\xleaders` divides it between the
 copies, but that glue separates two butt caps, and a cap ends where its path
 ends: every gap shows as a hole in the stroke, one stroke width wide at the
-stretch of an ordinary justified line. `\leaders` keeps the copies adjacent but
-is no help either, because the copies of a leader glue are not laid out from its
-left edge: a span that is not a whole number of patterns loses one at one end,
-which is what a wave showed whose span ended in the middle of a stretched
-line. `\cleaders` splits the remainder between the two ends. Neither reaches the
-last character.
+stretch of an ordinary justified line. `\cleaders` splits the remainder between
+the two ends and reaches neither last character.
 
 So the append callback writes the copies instead. It is the one place where the
 width of the piece is final — the packed box carries `glue_set`, and a glue's
 actual width is its natural width plus its share of the box's stretch or shrink
-— and there `tile` divides that width into `round(w / period)` whole patterns
-and replaces the leaders glue with one copy of the leader box per pattern at
+— and there `tile` divides that width into `round(w / period)` whole cells and
+replaces the leaders glue with one copy of the leader box per cell at
 `floor(w / k)` followed by a kern of the remainder: no glue between the copies,
 nothing left at either end, and the period follows the stretch of the line.
-That width comes
-from `glue_set` together with `glue_sign`, since `glue_set` stays positive on a
-shrunk line; and the ink of the copy is painted inside a scope scaled
-horizontally to the slot, because the drawing's own period is one em and the slot
-is not. The scale must be undone without losing the advance the backend expects,
-so the closing literal carries the `Q` and a translation of one period. A copy
-drops l3draw's record of the drawing's origin (a box of no width holding only
-whatsits), because every copy would record the same label and the manual then
-reports `multiply defined`. A leader box is
-tiled only when it holds a whatsit and no glyph or rule, so the dots,
-`\CJKunderanyline`, `\CJKunderanysymbol` and the `symbol` cells keep their own
-box, and a box that never reaches a vertical list keeps the plain `\leaders`
-remainder. The wave and the slash are written this way, the wave with a
+That width comes from `glue_set` together with `glue_sign`, since `glue_set`
+stays positive on a shrunk line.
+
+What a copy does with its cell depends on what it holds. A drawing is scaled:
+its ink is painted inside a scope scaled horizontally to the cell, because the
+drawing's own period is one em and the cell is not. The scale must be undone
+without losing the advance the backend expects, so the closing literal carries
+the `Q` and a translation of one period, and a copy drops l3draw's record of the
+drawing's origin (a box of no width holding only whatsits), because every copy
+would record the same label and the manual then reports `multiply defined`. A
+symbol is a glyph, which does not scale: its copy keeps its size, and a kern of
+half the leftover in front of it centres it in the cell. `tile` writes copies
+for both, so the wave, the slash, `\CJKunderanysymbol`, `\CJKunderanyline` and
+the `symbol` of the wave and the dots start at the left edge of their span; a
+leader that is a rule, or a box that reduces to one solid rule, is left to
+`\leaders`; the dots keep their leader box of no ink; and a box that never
+reaches a vertical list keeps the plain `\leaders` remainder. The wave has a
 period of one em and an amplitude of a quarter em.
 
 The `depth` key places the rule below the baseline. `boxdepth`, which used to
