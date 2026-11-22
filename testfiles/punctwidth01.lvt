@@ -26,7 +26,7 @@
   \TYPE{width: \the\wd0}
 }
 
-\TEST{an explicit kern sets the gap between two marks}{
+\TEST{an explicit kern sets the blank between two marks}{
   \LuaCJKsetkern{。}{。}{0.3em}
   \setbox0=\hbox{字。。字}
   \TYPE{width: \the\wd0}

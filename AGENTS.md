@@ -230,6 +230,37 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   break inside.  The other ASCII punctuation (`,` `.` `;` `:` `!` `?`) stays
   Latin on purpose, so an English comma keeps the rules of its own script.
   `HalfLeft` and `HalfRight` of `\LuaCJKDeclareCharClass` declare these groups.
+- **An outline box is read at the curve's extremum, not at its handles.**  The
+  blank a mark hangs is measured from the font, and a Bézier handle lies
+  outside the ink its curve paints, so `cff_box` solves each curve for its
+  extreme abscissa; the alternating curve operators take the third point's
+  abscissa from the fourth or fifth operand, and the flex family draws two
+  curves of its own.  Reading the handles instead over-measured the ink by up
+  to a tenth of an em, which moved （ and “ in the margin and would have made
+  a fixed width cut into a glyph.  `fontloader` would be exact as well, but
+  `to_table` costs a second and a hundred megabytes on a CJK collection, so
+  the reader stays; validate a change against `fontTools`' pen, which is the
+  reference the numbers were checked with.
+- **The gap between two adjacent marks is the blank between their ink.**  A
+  length given to `\LuaCJKsetkern` is that visible blank, so `0pt` makes the
+  two inks meet rather than widening the gap, and the style's ratio takes at
+  most the blank on the right of the compressed mark, so a mark whose ink
+  fills its advance (an em dash, a fullwidth percent sign) keeps its ink.  The
+  kern stands in front of the boundary glue, which stays the break
+  opportunity the kinsoku penalty forbids.  A source space between two marks is
+  retimed to that glue and the blank rides in its width — never in a kern of
+  its own — so a newline in the source cannot space two marks apart, and a
+  break at the boundary discards the compression with the glue (`punct01`).
+- **A fixed-width style takes the blank, never the ink.**  A ratio style reads
+  the advance and the place of the ink from the outline: the smaller of the two
+  blanks stays on both sides and the rest of the outer blank is taken, so a
+  closing mark keeps its ink, an opening mark moves left by what it loses, a
+  middle mark is centred, and a mark whose ink nearly fills its advance (％,
+  ＄, ￥) keeps the full width rather than overlapping its neighbour.  The
+  advance the hang is measured inside is the same computation, so a widened
+  mark hangs by the blank it has.  A width the document sets with
+  `\LuaCJKsetwidth` or `PunctWidth` is used as it stands — that is what makes
+  `0pt` an advance — with the class moving the ink (`punctgeom01`).
 - **Every behavior change needs a test.**  Add or extend a `.lvt`, run
   `l3build save <name>`, then read the `.tlg` diff and confirm the numbers are
   the values you designed, not merely "whatever came out". `save` takes bare

@@ -92,6 +92,9 @@
   \showlines
 }
 
+% The left edge of “ lies in the middle of a curve, so its blank is the
+% extremum of that curve and not the handle beside it: 5.85pt, where the
+% control point stands 0.16pt further in.
 \TEST{a double opening mark measures its own blank, not its neighbour's}{
   \setbox0=\vbox{\hsize=3em “字字\par}
   \showlines
