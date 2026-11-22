@@ -107,12 +107,76 @@ TEST 7: the marking covers the break at either side of the hyphen
 half LINES 3 DISCS 10000,10000,50,50,50,50
 ============================================================
 ============================================================
-TEST 8: the marking ends with its group
+TEST 8: a quad is a break of its own
+============================================================
+plain-quad LINES 2 DISCS 
+============================================================
+============================================================
+TEST 9: LuaCJKnobreak forbids it
+============================================================
+Overfull \hbox (10.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 张 三 李 四  
+\hbox(7.6+1.54)x40.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x0.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 张
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 三
+.\penalty 10000
+.\glue 10.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 李
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 四
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0 plus 1.0fil
+marked-quad LINES 1 DISCS 
+============================================================
+============================================================
+TEST 10: the glue of an hspace is forbidden as well
+============================================================
+Overfull \hbox (20.0pt too wide) in paragraph at lines ...
+[]\TU/FandolSong-Regular.otf(0)/m/n/10 张 三 李 四  
+\hbox(7.6+1.54)x40.0, direction TLT
+.\localpar
+..\localinterlinepenalty=0
+..\localbrokenpenalty=0
+..\localleftbox=null
+..\localrightbox=null
+.\hbox(0.0+0.0)x0.0, direction TLT
+.\TU/FandolSong-Regular.otf(0)/m/n/10 张
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 三
+.\penalty 10000
+.\glue 20.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 李
+.\penalty 10000
+.\glue 0.0 plus 0.96002
+.\TU/FandolSong-Regular.otf(0)/m/n/10 四
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0 plus 1.0fil
+hspace LINES 1 DISCS 
+============================================================
+============================================================
+TEST 11: a glue behind the argument keeps its break
+============================================================
+behind LINES 2 DISCS 
+============================================================
+============================================================
+TEST 12: the marking ends with its group
 ============================================================
 group LINES 2 DISCS 50
 ============================================================
 ============================================================
-TEST 9: the paragraph of the report keeps its run together
+TEST 13: the paragraph of the report keeps its run together
 ============================================================
 Overfull \hbox (23.05397pt too wide) in paragraph at lines ...
 \TU/FandolSong-Regular.otf(0)/m/n/10 文 字 \TU/lmr/m/n/10 well-known \TU/FandolSong-Regular.otf(0)/m/n/10 字 中 

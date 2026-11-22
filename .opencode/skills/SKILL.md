@@ -159,6 +159,10 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    A discretionary that is already in the list states the value of its own
    break, so there the pass sets the node's penalty field instead of inserting
    a penalty in front of it.
+   The break points it reads are the glue the package inserted and the source
+   spaces; a glue the document wrote is read as well when it carries the
+   `nobreak` attribute, which is how a `\quad` or an `\hspace` inside
+   `\LuaCJKnobreak` keeps its place on the line (`nobreak03`).
 6. `apply_check_single` — raise the penalty at the last two break points of a
    paragraph, so a single character cannot end up alone on the last line.
    The scan back to the previous character passes over `transparent_node` —
@@ -224,7 +228,7 @@ Twelve attributes carry the per-node state; all are read through
 | `xecglue` | whether the CJK/Latin glue is suppressed at this space |
 | `inserted` | marks the nodes LuaCJK created, so they are not examined twice |
 | `disabled` | `\LuaCJKdisable` state |
-| `nobreak` | `\LuaCJKnobreak` and `\LuaCJKVerbAddon` state: a break at glue, kern, or discretionary that touches a node carrying it is forbidden |
+| `nobreak` | `\LuaCJKnobreak` and `\LuaCJKVerbAddon` state: a break at glue, kern, or discretionary that touches a node carrying it is forbidden, whether the glue is one the package inserted or one the document wrote |
 | `settings` | number of the option snapshot that applies to this node |
 | `attached` | the character is a joiner or a variation selector, so `drop_orphans` removes what shaping left of it |
 | `LuaCJKfntef/settings` | number of the decoration settings entry |

@@ -3,6 +3,7 @@
 - A run of CJK characters inside an `lstlisting` block is one token of `listings`, so a `emph` or `keywords` entry that names a CJK word highlights it; a Latin character and a CJK mark both end the run.
 - `Baseline` belongs to the declaration that writes it, so a fallback font and a family that name the same font keep their own offsets.
 - `HalfLeft` and `HalfRight` declare a half-width ASCII bracket: it keeps its advance, does not hang, and hugs the text inside the pair, where they used to declare a full-width opening or closing mark.
+- `\LuaCJKnobreak` forbids the break at a glue the document writes inside its argument, so a `\quad` or an `\hspace` there no longer starts a line.
 - The font of a CJK family is resolved in the Unicode encoding: a document that sets its Latin text in an 8-bit encoding with `fontenc` keeps its CJK text.
 - The family `\CJKfamilydefault` names is selected when the document starts, so a preamble that redefines it sets the main text in that family from the first line.
 - An untouched `\CJKfamilydefault` follows `\familydefault` at the start of the document, so a preamble that redefines `\familydefault` sets the main text in the matching CJK family.
