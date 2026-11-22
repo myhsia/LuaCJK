@@ -349,9 +349,14 @@ amount is the blank the mark's font carries, read from the outline by
 `mark_blank` (`CFF` charstring or `glyf` header, cached per file and glyph, the
 file never held whole), or half of the advance the style gives it when the file
 cannot be read; `PunctBoundWidth` replaces it by the part that stays inside.
-LuaTeX has no `\XeTeXglyphbounds`, which is why xeCJK's one-line query is a
-small font reader here. `hang01` pins the pair and the fit, `boundw01` the
-amount, and `punct01` the compressed style.
+The box is taken at the extremum of a curve, not at its control points, because
+a handle lies outside the ink the curve paints; the alternating curve operators
+read their third point's abscissa from the operand that carries it, and the
+four operators of the flex family draw the two curves they describe.  LuaTeX has
+no `\XeTeXglyphbounds`, which is why xeCJK's one-line query is a small font
+reader here; `fontloader` would be exact too, but `to_table` costs a second and
+a hundred megabytes on a CJK collection.  `hang01` pins the pair and the fit,
+`boundw01` the amount, and `punct01` the compressed style.
 
 Suspension does not take that break opportunity away.  `Verb` stops the spacing
 on both sides of a suspended run, but the zero-width glue stays at either edge:

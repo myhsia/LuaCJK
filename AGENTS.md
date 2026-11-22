@@ -230,6 +230,17 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   break inside.  The other ASCII punctuation (`,` `.` `;` `:` `!` `?`) stays
   Latin on purpose, so an English comma keeps the rules of its own script.
   `HalfLeft` and `HalfRight` of `\LuaCJKDeclareCharClass` declare these groups.
+- **An outline box is read at the curve's extremum, not at its handles.**  The
+  blank a mark hangs is measured from the font, and a Bézier handle lies
+  outside the ink its curve paints, so `cff_box` solves each curve for its
+  extreme abscissa; the alternating curve operators take the third point's
+  abscissa from the fourth or fifth operand, and the flex family draws two
+  curves of its own.  Reading the handles instead over-measured the ink by up
+  to a tenth of an em, which moved （ and “ in the margin and would have made
+  a fixed width cut into a glyph.  `fontloader` would be exact as well, but
+  `to_table` costs a second and a hundred megabytes on a CJK collection, so
+  the reader stays; validate a change against `fontTools`' pen, which is the
+  reference the numbers were checked with.
 - **Every behavior change needs a test.**  Add or extend a `.lvt`, run
   `l3build save <name>`, then read the `.tlg` diff and confirm the numbers are
   the values you designed, not merely "whatever came out". `save` takes bare

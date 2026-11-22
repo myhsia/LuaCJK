@@ -8702,13 +8702,23 @@ end
 %   alternating or the vertical curve operator is the blank the glyph has: a
 %   double opening quotation mark no longer stands in the margin by more
 %   than a tenth of a point.}
-% The horizontal extent of a Type 2 charstring. Every point of the outline is
-% visited, the control points of a curve included, which is the box the font's
-% own readers report; hints are counted only so that their masks can be
-% skipped.
+% \changes{v0.0.5}{2026/11/22}{The ink of a glyph is measured at the extremum
+%   of its curves rather than at their control points, and the alternating
+%   curve operators read the abscissa of their third point from the operand
+%   that carries it, so the blank a mark hangs is the blank its outline
+%   paints.}
+% The horizontal extent of a Type 2 charstring, read where the ink really
+% stands: a handle of a curve lies outside the ink that curve draws, so the
+% box is taken at the extremum of the curve, which is what the font paints.
+% A straight segment contributes its end point, and the horizontal line
+% operators alternate the axis from the one their name gives.
 % A curve operator takes four operands, and the alternating ones start on the
-% axis their name gives; the one operand of a $4n+1$ run closes the last
-% curve on the other axis.
+% axis their name gives: the fourth operand of a vertical curve is the abscissa
+% of its end point, and the one operand of a $4n+1$ run closes the last curve
+% on the other axis.  The four operators of the flex family draw two curves of
+% their own, so a glyph that joins two strokes without drawing them apart is
+% measured as well.
+% Hints are counted only so that their masks can be skipped.
 % Each number is read from the charstring that holds it, since a subroutine
 % carries its own operands, and the four bytes of the deprecated fixed form
 % are read in full.
@@ -8716,10 +8726,46 @@ end
 local function cff_box (f, cs)
   local x, xmin, xmax = 0, math.huge, -math.huge
   local stack, stems = {}, 0
-  local function point (dx, dy)
+  local function record (v)
+    if v < xmin then xmin = v end
+    if v > xmax then xmax = v end
+  end
+  local function move (dx)
     x = x + (dx or 0)
-    if x < xmin then xmin = x end
-    if x > xmax then xmax = x end
+    record(x)
+  end
+  local function line (dx)
+    x = x + (dx or 0)
+    record(x)
+  end
+  local function curve (dx1, dx2, dx3)
+    local x0 = x
+    local x1 = x0 + (dx1 or 0)
+    local x2 = x1 + (dx2 or 0)
+    local x3 = x2 + (dx3 or 0)
+    record(x0)
+    record(x3)
+    local a, b, c = x1 - x0, x2 - x1, x3 - x2
+    local q2, q1 = a - 2 * b + c, 2 * (b - a)
+    local roots = {}
+    if math.abs(q2) < 1e-9 then
+      if math.abs(q1) > 1e-9 then roots[1] = -a / q1 end
+    else
+      local disc = q1 * q1 - 4 * q2 * a
+      if disc >= 0 then
+        local root = math.sqrt(disc)
+        roots[1] = (-q1 + root) / (2 * q2)
+        roots[2] = (-q1 - root) / (2 * q2)
+      end
+    end
+    for _, t in ipairs(roots) do
+      if t > 0 and t < 1 then
+        local u = 1 - t
+        record(u * u * u * x0 + 3 * u * u * t * x1
+               + 3 * u * t * t * x2 + t * t * t * x3)
+      end
+    end
+    x = x3
   end
   local function number (code, b, i)
     if b >= 32 and b <= 246 then return b - 139, i + 1 end
@@ -8753,97 +8799,84 @@ local function cff_box (f, cs)
         stack[#stack + 1] = v
       else
         i = i + 1
-        if b == 21 then
-          point(stack[1], stack[2])
-          stack = {}
-        elseif b == 22 then
-          point(stack[1], 0)
-          stack = {}
+        local s = #stack
+        if b == 21 or b == 22 then
+          move(stack[1])
         elseif b == 4 then
-          point(0, stack[1])
-          stack = {}
+          move(0)
         elseif b == 5 then
-          for k = 1, #stack - 1, 2 do point(stack[k], stack[k + 1]) end
-          stack = {}
+          for k = 1, s - 1, 2 do line(stack[k]) end
         elseif b == 6 or b == 7 then
           local horiz = (b == 6)
-          for k = 1, #stack do
-            if horiz then point(stack[k], 0) else point(0, stack[k]) end
+          for k = 1, s do
+            line(horiz and stack[k] or 0)
             horiz = not horiz
           end
-          stack = {}
         elseif b == 8 then
-          for k = 1, #stack - 5, 6 do
-            point(stack[k], stack[k + 1])
-            point(stack[k + 2], stack[k + 3])
-            point(stack[k + 4], stack[k + 5])
-          end
-          stack = {}
+          for k = 1, s - 5, 6 do curve(stack[k], stack[k + 2], stack[k + 4]) end
         elseif b == 24 then
           local k = 1
-          while k <= #stack - 2 do
-            point(stack[k], stack[k + 1])
-            k = k + 2
-          end
-          point(stack[k], stack[k + 1])
-          stack = {}
-        elseif b == 25 then
-          local k = 1
-          while k <= #stack - 6 do
-            point(stack[k], stack[k + 1])
-            point(stack[k + 2], stack[k + 3])
-            point(stack[k + 4], stack[k + 5])
+          while k <= s - 5 do
+            curve(stack[k], stack[k + 2], stack[k + 4])
             k = k + 6
           end
-          point(stack[k], stack[k + 1])
-          stack = {}
+          line(stack[k])
+        elseif b == 25 then
+          local k = 1
+          while k <= s - 6 do
+            line(stack[k])
+            k = k + 2
+          end
+          curve(stack[k], stack[k + 2], stack[k + 4])
         elseif b == 26 or b == 27 then
           local k, first = 1, 0
-          if #stack % 4 == 1 then first, k = stack[1], 2 end
-          while k <= #stack - 3 do
+          if s % 4 == 1 then first, k = stack[1], 2 end
+          while k <= s - 3 do
             if b == 26 then
-              point(first, stack[k])
-              point(stack[k + 1], stack[k + 2])
-              point(0, stack[k + 3])
+              curve(first, stack[k + 1], 0)
             else
-              point(stack[k], first)
-              point(stack[k + 1], stack[k + 2])
-              point(stack[k + 3], 0)
+              curve(stack[k], stack[k + 1], stack[k + 3])
             end
             first = 0
             k = k + 4
           end
-          stack = {}
         elseif b == 30 or b == 31 then
-          local horiz = (b == 31)
+          local vertical = (b == 30)
           local k = 1
-          while k <= #stack - 3 do
-            if horiz then
-              point(stack[k], 0)
-              point(stack[k + 1], stack[k + 2])
-              point(0, stack[k + 3])
+          while k <= s - 3 do
+            if vertical then
+              curve(0, stack[k + 1], stack[k + 3])
             else
-              point(0, stack[k])
-              point(stack[k + 1], stack[k + 2])
-              point(stack[k + 3], 0)
+              curve(stack[k], stack[k + 1], (k + 4 == s) and stack[s] or 0)
             end
-            horiz = not horiz
+            vertical = not vertical
             k = k + 4
           end
-          if k == #stack then
-            if horiz then
-              point(stack[k], 0)
-            else
-              point(0, stack[k])
+        elseif b == 12 then
+          local op = code:byte(i)
+          i = i + 1
+          if op == 34 then
+            curve(stack[1], stack[2], stack[4])
+            curve(stack[5], stack[6], stack[7])
+          elseif op == 35 then
+            curve(stack[1], stack[3], stack[5])
+            curve(stack[7], stack[9], stack[11])
+          elseif op == 36 then
+            curve(stack[1], stack[3], stack[5])
+            curve(stack[6], stack[7], stack[9])
+          elseif op == 37 then
+            local dx, dy = 0, 0
+            for k = 1, 10, 2 do
+              dx, dy = dx + stack[k], dy + stack[k + 1]
             end
+            curve(stack[1], stack[3], stack[5])
+            curve(stack[7], stack[9],
+                  (math.abs(dx) > math.abs(dy)) and stack[11] or -dx)
           end
-          stack = {}
         elseif b == 1 or b == 3 or b == 18 or b == 23 then
-          stems = stems + #stack // 2
-          stack = {}
+          stems = stems + s // 2
         elseif b == 19 or b == 20 then
-          stems = stems + #stack // 2
-          stack = {}
+          stems = stems + s // 2
           i = i + (stems + 7) // 8
         elseif b == 10 or b == 29 then
           local sub = table.remove(stack)
@@ -8858,9 +8891,8 @@ local function cff_box (f, cs)
           end
         elseif b == 11 or b == 14 then
           return
-        else
-          stack = {}
         end
+        stack = {}
       end
     end
   end
