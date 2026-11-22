@@ -387,16 +387,25 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   all go through it; a new place that calls `\fontspec_gset_family` has to
   build the list the same way, or `\defaultCJKfontfeatures` silently misses
   that font.  `fontfeatures01` covers the three.
-- **A `Baseline` belongs to the declaration that writes it.**  The value is
-  keyed by the declaring family and the `fontspec` family
-  (`\g_@@_font_shift_prop`), `\g_@@_shift_pushed_prop` holds the value Lua has
-  for each font identifier, and `\@@_push_shift:nnn` hands one over only when
-  it changed — a change also clears `\g_@@_fallback_pushed_prop`, so a
-  fallback list that shares the instance is resolved again.  One font instance
-  carries one offset, so a paragraph takes the value in force when it is
-  shaped, which is what lets a fallback font and a family naming the same font
-  take turns (`baselineshift01`); the key is
-  `<declaring family>|<fontspec family>`, never the identifier alone.
+- **A `Baseline` travels on the node, and its key is the declaration.**  The
+  value is keyed by the declaring family and the `fontspec` family
+  (`\g_@@_font_shift_prop`), never by the font identifier alone, because every
+  declaration that supplies the font shares the identifier.
+  `\@@_shift_value:nn` evaluates it at the size in force, and
+  `\@@_update_font:` writes the scaled points into the `shift` attribute, or
+  into `punct_shift` for the family `PunctFamily` names.  The value is computed
+  inside the group that selects the font, so `em` follows the family's quad,
+  and assigned after it, because a group takes an attribute assignment back:
+  that is why it crosses the boundary in `\g_@@_shift_value_tl`.  Carrying it
+  on the node is what makes a family selected inside a group move only that
+  group's characters, and two declarations of one font keep their own offsets
+  in one paragraph (`baselineshift01`).  A fallback font is the exception: it is
+  chosen when the text is shaped, so its offset stays in the table `M.yoffset`,
+  keyed by identifier and filled by `\@@_push_shift:nnn`;
+  `\g_@@_shift_pushed_prop` holds the value Lua has per identifier and the push
+  happens only when it changed — a change also clears
+  `\g_@@_fallback_pushed_prop`, so a list that shares the instance is resolved
+  again.
 - **A CJK family is selected in the Unicode encoding.**  `\@@_family_font:n`
   sets `\fontencoding{TU}` before `\fontfamily`, and every place that resolves a
   family's font identifier goes through it: `\@@_update_font:` and its

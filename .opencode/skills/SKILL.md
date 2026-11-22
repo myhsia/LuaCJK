@@ -53,16 +53,21 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    list is installed, so a selection that resolves to a known identifier
    costs one property lookup rather than another `\lua_now:e`.
    A glyph that changes font takes that font's `Baseline` with it: the pass
-   adds `M.yoffset[fid]` (scaled points) to the glyph's `yoffset`.  Applying
-   it only where the font changes is what makes the pass idempotent, since it
-   runs on the paragraph and again on each line packed from it; the offset is
-   recorded per font identifier, so two families that supply the same font
-   share the last value they declared.  The table is filled by
-   `\@@_push_shift:nn` at every font selection — for the current family, for
-   each fallback font, and for the family `PunctFamily` names.  That last one
-   takes its font without a `\CJKfamily` switch, so a font identifier handed
-   to Lua on its own carries no offset unless it is pushed beside it
-   (`baselineshift01`).
+   adds the offset (scaled points) to the glyph's `yoffset`.  Applying it only
+   where the font changes is what makes the pass idempotent, since it runs on
+   the paragraph and again on each line packed from it.  The offset comes from
+   the step `target_font` took: the text reads the `shift` attribute and a mark
+   the `punct_shift` one, which `\@@_update_font:` fills at every font
+   selection with the value of the family in force, evaluated at the size in
+   force.  Being attributes, they follow the group, so a family selected inside
+   a group moves only that group's characters, and two declarations that name
+   the same font keep their own offsets in one paragraph; a table keyed by font
+   identifier could do neither, because every declaration that supplies the
+   font shares the identifier.  A fallback font is the exception: it is chosen
+   here, when the text is shaped, and only its identifier says which one
+   applies, so `M.yoffset[fid]` carries its offset, filled by
+   `\@@_push_shift:nnn` at each font selection and handed over again only when
+   it changed (`baselineshift01`).
    A luaotfload without `pre_shaping_filter` keeps the package's previous
    behavior: `rewrite_fonts` copies each shaped glyph into its font in
    `process` instead, `copy_glyph` adds the `Baseline` there, and every
@@ -233,7 +238,7 @@ document's math font, because the CJK font has no `MathConstants` table.
 
 ### Attributes
 
-Twelve attributes carry the per-node state; all are read through
+Fourteen attributes carry the per-node state; all are read through
 `node.has_attribute`/`has_attribute`:
 
 | attribute | meaning |
@@ -241,6 +246,8 @@ Twelve attributes carry the per-node state; all are read through
 | `font` | font identifier of the CJK family that applies |
 | `math_font` | the CJK math font identifier |
 | `punct_font` | font identifier for punctuation (`PunctFamily`) |
+| `shift` | the `Baseline` of the family in force, in scaled points, positive upwards |
+| `punct_shift` | the `Baseline` of the family `PunctFamily` names, in scaled points |
 | `cjk_space` | whether a source space inside CJK text is kept |
 | `explicit_space` | the space is one the document wrote with `\ ` or `~`, not a source space |
 | `xecglue` | whether the CJK/Latin glue is suppressed at this space |
