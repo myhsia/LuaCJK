@@ -134,6 +134,19 @@
   \endgroup
 }
 
+\TEST{two declarations of one font keep their offsets in one box}{
+  \begingroup
+    \LuaCJKsetup{AutoFallBack = true}
+    \setbox0=\hbox{\CJKfamily{pm}中\CJKfamily{fb}中}
+    \psall
+  \endgroup
+}
+
+\TEST{a Baseline in a group shifts only that group}{
+  \setbox0=\hbox{甲{\CJKfontspec[Baseline = 5pt]{FandolSong-Regular.otf}乙}丙}
+  \psall
+}
+
 \END
 
 \end{document}
