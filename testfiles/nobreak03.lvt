@@ -80,6 +80,26 @@
   \reportbox{half}
 }
 
+\TEST{a quad is a break of its own}{
+  \narrow{张三\quad 李四}
+  \reportbox{plain-quad}
+}
+
+\TEST{LuaCJKnobreak forbids it}{
+  \narrow{\LuaCJKnobreak{张三\quad 李四}}
+  \reportbox{marked-quad}
+}
+
+\TEST{the glue of an hspace is forbidden as well}{
+  \narrow{\LuaCJKnobreak{张三\hspace{2em}李四}}
+  \reportbox{hspace}
+}
+
+\TEST{a glue behind the argument keeps its break}{
+  \narrow{\LuaCJKnobreak{张三}\quad 李四}
+  \reportbox{behind}
+}
+
 \TEST{the marking ends with its group}{
   \narrow{{\LuaCJKnobreak{xx}}well-known}
   \reportbox{group}
