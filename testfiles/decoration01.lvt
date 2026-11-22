@@ -49,6 +49,26 @@
   }%
 }
 
+\def\ink{%
+  \directlua{
+    local gl, ru = 0, 0
+    local function walk (list)
+      while list do
+        if list.id == node.id("glyph") then
+          gl = gl + 1
+        elseif list.id == node.id("rule") and (list.width or 0) ~= 0 then
+          ru = ru + 1
+        elseif list.id == node.id("hlist") or list.id == node.id("vlist") then
+          walk(list.head)
+        end
+        list = list.next
+      end
+    end
+    walk(tex.box[0].head)
+    texio.write_nl("term and log", "INK glyph " .. gl .. " rule " .. ru)
+  }%
+}
+
 \begin{document}
 
 \START
@@ -124,6 +144,15 @@
   \setbox0=\hbox{\CJKunderline[hidden]{中文}}
   \TYPE{width: \the\wd0, height: \the\ht0, depth: \the\dp0}
   \nodes
+}
+
+\TEST{hidden takes the ink of a formula out and keeps its dimensions}{
+  \setbox0=\hbox{\CJKunderline[hidden]{$\frac{1}{2}$}}
+  \TYPE{width: \the\wd0, height: \the\ht0, depth: \the\dp0}
+  \ink
+  \setbox0=\hbox{\CJKunderline{$\frac{1}{2}$}}
+  \TYPE{width: \the\wd0, height: \the\ht0, depth: \the\dp0}
+  \ink
 }
 
 \TEST{drawn decorations do not add height or depth}{

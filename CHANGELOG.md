@@ -13,6 +13,7 @@
 - The first line of a list item hangs as well: the label box that the list writes in front of the item's text is passed over, so a mark that begins the item leaves its blank in the label's advance.
 - A centered or flush-right paragraph does not hang the mark it begins with: the line does not start at the edge of the measure, so the shift would move the whole line instead of leaving the blank in a margin that is not there.
 - A CJK character ends a word for hyphenation, so the line breaker no longer puts a hyphen beside a CJK character, and the boundary keeps the `CJKecglue` that the two sides give it.
+- `hidden` hides a formula as it hides text: a character or a rule inside a box of the span carries no ink, so a fraction is hidden like a plain number and keeps its width, height, and depth.
 - The wave is written one period at a time, so it covers the start and the end of a span that is not a whole number of periods, on a stretched line as well as on the last line of a paragraph.
 - The slashes are written one cell at a time, so they cover the whole span.
 
