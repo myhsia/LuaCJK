@@ -913,8 +913,9 @@ $ 天地玄黄 $ and 天地玄黄
 %   断行处的悬挂照旧，因为断行时它已经算进了这一行。
 %   \texttt{0pt} 把整个进距都悬挂出去，\texttt{false} 恢复这个默认值。
 %   \item[\keys{LatinPunct}]\val{\TFF}: 把引号
-%   （U+2018、U+2019、U+201C、U+201D）、间隔号（U+00B7）
-%   与省略号（U+2026、U+2027、U+22EF）当作拉丁标点：
+%   （U+2018、U+2019、U+201C、U+201D）、间隔号（U+00B7）、
+%   两点前导符（U+2025）、省略号（U+2026、U+22EF）
+%   与连字点（U+2027）当作拉丁标点：
 %   它们留在当前的拉丁字体里，也不被压缩。
 %   这样英文单词里的撇号就不会变成一个全角形式。破折号不受影响。
 %   \item[\keys{PunctFamily}]\val{family, false}: 为标点使用
@@ -2275,8 +2276,9 @@ $ 天地玄黄 $ and 天地玄黄
 %   \texttt{0pt} hangs the whole advance;
 %   \texttt{false} returns to that default.
 %   \item[\keys{LatinPunct}]\val{\TFF}: Treat the quotation marks
-%   (U+2018, U+2019, U+201C, U+201D), the middle dot (U+00B7),
-%   and the ellipses (U+2026, U+2027, U+22EF) as Latin punctuation:
+%   (U+2018, U+2019, U+201C, U+201D), the middle dot (U+00B7), the two dot
+%   leader (U+2025), the ellipses (U+2026, U+22EF), and the hyphenation point
+%   (U+2027) as Latin punctuation:
 %   they stay in the current Latin font and are not compressed.
 %   This keeps an apostrophe inside an English word from turning into
 %   a full-width form. The em dash is not affected.
@@ -6063,6 +6065,9 @@ end
 %   Unicode-encoded is a position in that font's encoding, not a character, so
 %   a symbol font's slot is no longer read as a CJK character: \pkg{pifont}'s
 %   slot 0xB7, the circled 2, keeps its own font and prints.}
+% \changes{v0.0.4}{2026/11/22}{With \keys{LatinPunct} on, the midline ellipsis
+%   U+22EF stays in the Latin font like the other shared marks that key
+%   lists.}
 % Test whether a character is treated as CJK.
 % The table is the set of code points this package sets with the CJK class.
 % It is a policy rather than a Unicode property: the punctuation that CJK
@@ -6132,7 +6137,7 @@ end
 local LATIN_PUNCT = {
   [0x00B7] = true, [0x2018] = true, [0x2019] = true,
   [0x201C] = true, [0x201D] = true, [0x2025] = true,
-  [0x2026] = true, [0x2027] = true,
+  [0x2026] = true, [0x2027] = true, [0x22EF] = true,
 }
 
 local SLOT_FONT = { }

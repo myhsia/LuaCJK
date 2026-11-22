@@ -9,6 +9,7 @@
 - `\defaultCJKfontfeatures` reaches the font of a sub-block and of a fallback font as well.
 - `\CJKfontspec` no longer reads an option list after the font name, so a bracket that the text starts with is no longer swallowed.
 - A code point below U+0100 in a font that is not Unicode-encoded is a position in that font's encoding, not a character, so a symbol font's slot is no longer read as a CJK character: `pifont`'s slot 0xB7, the circled 2, keeps its own font and prints.
+- With `LatinPunct` on, the midline ellipsis U+22EF stays in the Latin font like the other shared marks that key lists.
 - The punctuation table covers the marks `xeCJK` classes as opening or closing, so the percent sign U+FF05 no longer starts a line and the currency symbols no longer end one; the halfwidth and compatibility forms and the three hyphen-like marks follow the same class.
 - The ASCII brackets are punctuation marks of their own: a half-width opening bracket no longer ends a line and a half-width closing bracket no longer starts one, the pair hugs the text between it, and a compression style leaves the bracket's own advance alone.
 - A space in front of a color change keeps its advance: the whatsit a `\textcolor` inserts no longer hides the space from the boundary rules, so no `CJKecglue` or second `CJKglue` joins it.

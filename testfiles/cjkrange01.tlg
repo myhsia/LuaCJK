@@ -21,7 +21,7 @@ CJ 00B7=true 2015=true 2025=true 2027=true 22EF=true
 ============================================================
 TEST 4: LatinPunct turns the shared punctuation into Latin
 ============================================================
-LP 8212=true 8213=true 8943=true 183=false 8216=false 8229=false 8230=false 8231=false
+LP 8212=true 8213=true 8943=false 183=false 8216=false 8229=false 8230=false 8231=false
 ============================================================
 ============================================================
 TEST 5: a declared class wins over the table
