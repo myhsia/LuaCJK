@@ -373,6 +373,14 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   (`\setCJKmainfont` and its siblings, `\newCJKfontfamily`,
   `\setCJKfallbackfamilyfont`) keep the trailing form, because the text does
   not follow them.  `smoke01` pins the bracket.
+- **A value that must survive `\selectfont` lives in a variable of its own.**
+  `\@@_update_font:` runs on every `\selectfont`, so it also runs in the middle
+  of a font registration, and it spends the scratch variables (`\l_@@_tmpa_tl`
+  among them) on the family `PunctFamily` names, on the math family, and on the
+  fallback list.  `\CJKfontspec` therefore keeps the name of the family it is
+  creating in `\l_@@_new_family_tl`: read back from `\l_@@_tmpa_tl`, that name
+  was the punctuation family's internal one, the switch failed with an unknown
+  family, and the text kept the face it had (`punctfamily01`).
 - **Every font a family builds takes the default features.**  The list is
   built by `\@@_build_features:n`, and the main font, the font of a sub-block
   (`\@@_register_block_fonts:n`) and a fallback font (`\@@_add_fallback:nn`)
