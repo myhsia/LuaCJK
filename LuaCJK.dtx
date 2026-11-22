@@ -11284,11 +11284,17 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   \env{CJKfilltwosides} place the box as \cs{parbox} does: \texttt{t} puts
 %   the baseline of its first line on the surrounding baseline, and \texttt{c}
 %   centres the box on the text axis instead of on the baseline.}
+% \changes{v0.0.4}{2026/11/20}{\env{CJKfilltwosides} works inside a table
+%   cell: it gives |\\| the meaning it has in a \cs{parbox} within its group,
+%   so the enclosing alignment no longer takes the line break.}
 %   Set the body in a vertical box whose lines are justified to the given
 %   width, with the lines separated by |\\|.
 %   The inter-character glue is given an infinite stretch inside the box,
 %   so a line of CJK characters reaches the width even when there is no
 %   Latin word space to stretch.
+%   The environment takes |\\| back from an enclosing alignment, as
+%   \cs{parbox} does with \tn{@normalcr}, so a cell of a table can hold it:
+%   the break belongs to the box, and the alignment does not see it.
 %   The optional argument places the box on the baseline like the same
 %   argument of \cs{parbox}: \texttt{t} for the first line, \texttt{c} for
 %   the text axis (the default), and \texttt{b} for the last line.
@@ -11326,6 +11332,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \cs_new_protected:Npn \@@_fntef_fill_begin:nn #1#2
   {
     \group_begin:
+    \cs_set_eq:Nc \\ { @normalcr }
     \bool_set_false:N \l_@@_fntef_fill_struct_bool
     \cs_if_exist:NT \tag_struct_begin:n
       {
