@@ -907,6 +907,8 @@ $ 天地玄黄 $ and 天地玄黄
 %   \texttt{plain}、\texttt{banjiao}、\texttt{kaiming}、\texttt{CCT}
 %   与 \texttt{hangmobanjiao}。
 %   未知的名字给出警告并回退到 \texttt{plain}。
+%   带固定宽度的样式不会切进墨迹：标点保留自己的墨迹与两侧较小的一份空白，
+%   所以一个墨迹几乎占满进距的标点（例如 U+FF05）保持全角。
 %   \item[\keys{PunctWidth}]\val{length, false}: 不管样式怎么说，
 %   给每个标点同样的进距。
 %   \texttt{0pt} 也是一个进距，标点因此不占任何进距；
@@ -1103,9 +1105,14 @@ a’a\quad 不亦说乎！
 %   \begin{syntax}
 %     \tn{LuaCJKsetkern} \marg{before} \marg{after} \marg{length}
 %   \end{syntax}
-%   设置两个相邻标点之间的空隙，覆盖样式的设置。
+%   设置两个相邻标点之间的空白，覆盖样式的设置。
+%   这个长度是两处墨迹之间的空白，而不是从进距算起的 kern，
+%   所以 \texttt{0pt} 让两处墨迹相接，而不会把间距撑大；
+%   空白从字形的轮廓读出，读不到时按 kern 使用这个长度。
 %   每个参数只使用第一个字符。
 %   与 \cs{LuaCJKsetwidth} 一样，这个设置是全局的。
+%   与 \pkg{xeCJK} 不同，它也可以写在正文里：
+%   空白是在生成行时读取的，所以调用之后的行按新的空白排版。
 % \end{function}
 %
 % \iffalse
@@ -1132,6 +1139,7 @@ a’a\quad 不亦说乎！
 %   \item[\keys{compress-adjacent}]\val{\TTF}: 是否压缩相邻的标点。
 %   \item[\keys{adjacent-ratio}]\val{number}: 压缩的比例，
 %   相对于被压缩标点的宽度。
+%   压缩最多取走这个标点右侧的那份空白，所以它不会切进墨迹。
 %   \item[\keys{keep-open-close}]\val{\TTF}: 开标点与闭标点相邻时
 %   是否保持不压缩。
 % \end{keyval}
@@ -1596,9 +1604,10 @@ abc汉字abc
 %   \item \keys{Verb}：\texttt{env+} 的行为与 \texttt{false} 一样，
 %   因为两者都保留调整。
 %   \item 标点几何。样式把标点的尺寸给成一半，或者一半但句末标点保持全角，
-%   或者 0.7 倍，并且墨迹按类别随进距移动：
-%   开头的标点移动整个量，中间的标点移动一半，收尾的标点完全不移动。
-%   \pkg{xeCJK} 则是测量每个字形的真实侧边距。
+%   或者 0.7 倍，而进距与墨迹的位置取自标点自己的轮廓：
+%   样式只取走外侧的那份空白，所以墨迹几乎占满进距的标点保持全角。
+%   两个相邻标点之间的空白，以及 \cs{LuaCJKsetkern} 给出的长度，
+%   都是两处墨迹之间的空白。
 %   \item \cs{LuaCJKDeclarePunctStyle} 接受三个键
 %   \keys{compress-adjacent}、\keys{adjacent-ratio} 与
 %   \keys{keep-open-close}；\pkg{xeCJK} 的三十个几何键描述它的侧边距模型，
@@ -2279,6 +2288,9 @@ $ 天地玄黄 $ and 天地玄黄
 %   \texttt{plain}, \texttt{banjiao}, \texttt{kaiming}, \texttt{CCT},
 %   and \texttt{hangmobanjiao}.
 %   An unknown name issues a warning and falls back to \texttt{plain}.
+%   A style with a fixed width never cuts into the ink: a mark keeps its ink
+%   and the smaller of its two blanks, so a mark whose ink nearly fills its
+%   advance, U+FF05 for instance, keeps the full width.
 %   \item[\keys{PunctWidth}]\val{length, false}: Give
 %   every punctuation mark the same advance, whatever the style says.
 %   \texttt{0pt} is an advance too, so the marks take none at all;
@@ -2488,9 +2500,15 @@ a’a\quad 不亦说乎！
 %   \begin{syntax}
 %     \tn{LuaCJKsetkern} \marg{before} \marg{after} \marg{length}
 %   \end{syntax}
-%   Set the gap between two adjacent punctuation marks, overriding
-%   the style. Only the first character of each argument is used.
+%   Set the blank between two adjacent punctuation marks, overriding the style.
+%   The length is the blank between the two inks rather than a kern measured
+%   from the advance, so \texttt{0pt} makes the inks meet instead of widening
+%   the gap; the blank is read from the outline of the glyph, and the length
+%   is used as a kern when the file cannot be read.
+%   Only the first character of each argument is used.
 %   Like \cs{LuaCJKsetwidth}, the setting is global.
+%   Unlike \pkg{xeCJK}, it may also be used in the document body: the blank is
+%   read when a line is built, so the lines after the call take the new gap.
 % \end{function}
 %
 % \iffalse
@@ -2518,6 +2536,8 @@ a’a\quad 不亦说乎！
 %   punctuation marks are compressed.
 %   \item[\keys{adjacent-ratio}]\val{number}: the ratio of the compression,
 %   relative to the width of the mark that is compressed.
+%   A compression takes at most the blank on the right of that mark, so it
+%   never reaches into the ink.
 %   \item[\keys{keep-open-close}]\val{\TTF}: whether an opening mark next
 %   to a closing one stays uncompressed.
 % \end{keyval}
@@ -3006,10 +3026,11 @@ abc汉字abc
 %   \item \keys{Verb}: \texttt{env+} behaves like \texttt{false}, because both
 %   leave the adjustments on.
 %   \item Punctuation geometry. A style gives a mark half the size, half with
-%   the sentence-ending marks kept full, or 0.7 of it, and the ink moves with
-%   the advance by class: an opening mark by the whole amount, a middle mark by
-%   half, a closing mark not at all.
-%   \pkg{xeCJK} measures the real side bearings of each glyph instead.
+%   the sentence-ending marks kept full, or 0.7 of it, and the advance and the
+%   place of the ink come from the mark's outline: the style takes the outer
+%   blank and no more, so a mark whose ink nearly fills its advance keeps the
+%   full width. The gap between two adjacent marks, and the length
+%   \cs{LuaCJKsetkern} gives, are the blank between the two inks.
 %   \item \cs{LuaCJKDeclarePunctStyle} takes the three keys
 %   \keys{compress-adjacent}, \keys{adjacent-ratio}, and
 %   \keys{keep-open-close}; the thirty geometry keys of \pkg{xeCJK} describe
@@ -7323,9 +7344,65 @@ end
 % across a suspended node: no break follows an opening mark, none precedes a
 % closing, middle, or long mark that begins a run, and two Latin words are
 % never parted.
+% \begin{macro}[int]{pair_kern}
+% \changes{v0.0.5}{2026/11/22}{The gap between two adjacent marks is the blank
+%   between their ink: the length \cs{LuaCJKsetkern} gives is that blank, so
+%   \texttt{0pt} makes the two marks meet instead of widening the gap, and a
+%   compression takes at most the blank the compressed mark carries on its
+%   right.}
+% The kern between two adjacent punctuation marks, in scaled points, or
+% nothing when the two are not a pair the style spaces.  A length the document
+% gave through \cs{LuaCJKsetkern} is the blank between the two inks, which the
+% outlines give; without one the style's ratio decides, and it never takes more
+% than the right blank of the mark it compresses, so a mark whose ink nearly
+% fills its advance, such as the fullwidth percent sign, keeps its ink whole.
+%    \begin{macrocode}
+local function pair_kern (prev, cur, settings, style)
+  if not (prev and cur and prev.id == GLYPH and cur.id == GLYPH) then
+    return nil
+  end
+  local before = punct_class(prev.char, settings, prev.font)
+  local after  = punct_class(cur.char, settings, cur.font)
+  if not before or not after or half_mark(before) or half_mark(after) then
+    return nil
+  end
+  local explicit = user_kern(prev.char, cur.char)
+  if explicit then
+    local _, prev_rb = M.mark_blanks(prev)
+    local cur_lb     = M.mark_blanks(cur)
+    if prev_rb and cur_lb then
+      return explicit - (prev_rb + cur_lb)
+    end
+    return explicit
+  end
+  if not style.compress_adjacent then
+    return nil
+  end
+  local exempt = (style.keep_open_close
+      and before == "open" and after == "close")
+    or (M.charsets.long[prev.char] and M.charsets.long[cur.char])
+  if exempt or not prev.width or prev.width <= 0 then
+    return nil
+  end
+  local cut = math.floor(style.ratio * prev.width + 0.5)
+  local _, prev_rb = M.mark_blanks(prev)
+  if prev_rb then
+    cut = math.min(cut, prev_rb)
+  end
+  if cut <= 0 then
+    return nil
+  end
+  return -cut
+end
+%    \end{macrocode}
+% \end{macro}
+
 % \begin{macro}[int]{insert_boundary_glue}
-% Insert the CJK--CJK or CJK--Latin glue,
-% or the compression kern for two adjacent punctuation marks.
+% Insert the CJK--CJK or CJK--Latin glue, and the kern that spaces two
+% adjacent punctuation marks.
+% The kern is the one \cs{pair_kern} gives, and the glue follows it, so the
+% boundary keeps its break opportunity for the kinsoku penalty to forbid and
+% its share of the stretch a justified line needs.
 % The character on each side is the one the list shows, so a whatsit or a
 % penalty between two characters does not hide them from these rules; the
 % glue itself follows the node that carries the break, which may be such a
@@ -7412,24 +7489,9 @@ local function insert_boundary_glue (head, prev, prev_visible, prev_end,
   end
 
   if prev_mark and cur_mark then
-    local explicit = user_kern(prev.char, cur.char)
-    if explicit then
-      local k = make_kern(explicit, prev)
-      k.next  = cur
-      if prev then
-        prev.next = k
-      else
-        head = k
-      end
-      return head
-    end
-  end
-  if prev_mark and cur_mark and style.compress_adjacent then
-    local exempt = (style.keep_open_close
-        and prev_punct == "open" and cur_punct == "close")
-      or (M.charsets.long[prev.char] and M.charsets.long[cur.char])
-    if not exempt and prev.width and prev.width > 0 then
-      local k = make_kern(-math.floor(style.ratio * prev.width + 0.5), prev)
+    local kern = pair_kern(prev_visible, cur, settings, style)
+    if kern and kern ~= 0 then
+      local k = make_kern(kern, prev)
       local g = spec and make_glue(spec, prev) or nil
       k.next  = g or cur
       if g then
@@ -7513,6 +7575,11 @@ end
 % inter-character glue of \keys{CJKglue}. Freeing it instead would leave the
 % two characters adjacent with no glue, and the pass that would add the glue
 % runs after line breaking, so the break opportunity would be lost.
+% The blank of a pair of marks rides in that glue as its width, so a source
+% space between two marks no longer defeats their compression or the length
+% \cs{LuaCJKsetkern} gives them: the two marks are spaced as they are when no
+% space separates them, and a break at the boundary discards the blank with
+% the glue.
 % A space the document wrote with |\ | or \tn{nobreakspace} is not a source
 % space, and the attribute set around it is the only place that says so: the
 % two are the same \texttt{spaceskip} glue, with the same dimensions, until
@@ -7520,7 +7587,7 @@ end
 % boundary it stands at, because \pkg{xeCJK} sets it as a space too and
 % \keys{CJKspace} is about the source.
 %    \begin{macrocode}
-local function handle_source_space (head, glue, prev_end, cur,
+local function handle_source_space (head, glue, prev_visible, prev_end, cur,
                                     cur_start, settings)
   if glue.subtype ~= SPACESKIP then
     return head
@@ -7536,6 +7603,10 @@ local function handle_source_space (head, glue, prev_end, cur,
       and (has_attribute(glue, M.attr_cjk_space) or 0) ~= 0
     if not cjk_space then
       set_glue(glue, settings.ccglue)
+      local kern = pair_kern(prev_visible, cur, settings, style_of(settings))
+      if kern then
+        glue.width = glue.width + kern
+      end
       if M.attr_inserted then
         set_attribute(glue, M.attr_inserted, 1)
       end
@@ -7618,7 +7689,7 @@ local function handle_boundary (head, prev, prev_visible, prev_end,
   if prev and prev.id == GLUE then
     if not is_inserted(prev) then
       return handle_source_space(
-        head, prev, prev_end, cur, start_class, settings)
+        head, prev, prev_visible, prev_end, cur, start_class, settings)
     end
   elseif prev and prev.id == PENALTY then
     if prev.penalty >= 10000 then
@@ -7634,7 +7705,7 @@ local function handle_boundary (head, prev, prev_visible, prev_end,
       end
       if space then
         head = handle_source_space(
-          head, space, prev_end, cur, start_class, settings)
+          head, space, prev_visible, prev_end, cur, start_class, settings)
         local pred = before
         local m    = space
         while m and m ~= prev do
@@ -7658,7 +7729,7 @@ local function handle_boundary (head, prev, prev_visible, prev_end,
     if n and n.id == GLUE then
       if not is_inserted(n) then
         return handle_source_space(
-          head, n, prev_end, cur, start_class, settings)
+          head, n, prev_visible, prev_end, cur, start_class, settings)
       end
       return head
     end
@@ -8000,16 +8071,27 @@ end
 %   once: a box that holds the list is packed again, and the mark no longer
 %   takes a second compensating kern, so a fixed-width style no longer
 %   squeezes a table cell or a parbox.}
+% \changes{v0.0.5}{2026/11/22}{A ratio style never cuts into the ink: a mark
+%   keeps its ink and the smaller of its two blanks, so the fullwidth percent
+%   sign and the fullwidth currency signs keep their advance under
+%   \texttt{banjiao} and no longer overlap the character after them.}
 % Styles such as \texttt{banjiao} give every punctuation mark a fixed
 % advance. The glyph advance cannot be changed, so a compensating kern
 % goes right after the glyph. A penalty in front of that kern keeps \TeX\
 % from treating it as an extra break opportunity.
-% The kern alone is only right for a mark whose ink sits at the left of its
-% advance, which is what a closing mark does. An opening mark keeps its ink
-% at the right, so the ink is moved left by the same amount; a middle mark is
-% centered, so it moves by half. A dash or an ellipsis is not shortened by the
-% style: its advance is the length of the stroke, and halving it would let the
-% two halves of a two-em dash overlap.
+% The advance of a ratio style and the place of the ink in it come from the
+% outline: the mark keeps the smaller of its two blanks and the style takes the
+% rest from the blank on the outer side, which is the side that faces away from
+% the text the mark encloses.  A closing mark therefore keeps its ink where it
+% is, an opening mark moves left by what it loses, and a middle mark is centred
+% in the advance; a mark whose ink is not against the edge of its box (the
+% fullwidth percent sign, whose ink stands in the middle) keeps a blank on both
+% sides and grows back towards its natural advance, so the ink is never cut.
+% A width the document sets with \cs{LuaCJKsetwidth} or \keys{PunctWidth} is an
+% advance in its own right, and the ink keeps the place its class gives it.
+% A dash or an ellipsis is not shortened by the style: its advance is the
+% length of the stroke, and halving it would let the two halves of a two-em
+% dash overlap.
 % A half-width bracket is already narrow, so the ratio of a style leaves it
 % alone; a width the document sets applies to it like any other.
 % A mark keeps the kern it was given. \TeX\ runs the box-packing callback again
@@ -8032,7 +8114,7 @@ local function fixed_width (cur, settings, style)
     target = settings.punct_width
   end
   if target then
-    return target
+    return target, false
   end
   if half_mark(punct_class(cur.char, settings, cur.font)) then
     return nil
@@ -8048,9 +8130,51 @@ local function fixed_width (cur, settings, style)
   local f    = font.getfont(cur.font)
   local size = f and f.size or 0
   if size > 0 then
-    return math.floor(ratio * size + 0.5)
+    return math.floor(ratio * size + 0.5), true
   end
   return nil
+end
+
+% \begin{macro}[int]{style_metrics}
+% \changes{v0.0.5}{2026/11/22}{The advance a ratio style gives a mark and the
+%   place of its ink come from the outline, so a mark whose ink is not against
+%   the edge of its box keeps a blank on both sides instead of losing part of
+%   the ink.}
+% The advance and the ink shift of a ratio style, from the outline of the
+% mark: the smaller blank is kept on both sides, so the style takes the rest
+% of the outer blank and the advance grows by whatever the ink does not allow
+% it to lose.  A middle mark is centred in the target advance.  A file that
+% cannot be read falls back to the advance the style asks for, with the ink
+% moved by its class.
+%    \begin{macrocode}
+local function style_metrics (g, class, target)
+  local lb, rb = M.mark_blanks(g)
+  if not lb then
+    return target, ink_shift(class, target - g.width)
+  end
+  local w = g.width
+  if class == "middle" then
+    return target, math.floor((target - (w - lb - rb)) / 2 + 0.5) - lb
+  end
+  local outer = (class == "open" or class == "half-open") and lb or rb
+  local margin = math.max(math.min(lb, rb), outer - (w - target))
+  return w - outer + margin, (outer == lb) and (margin - lb) or 0
+end
+
+% \begin{macro}[int]{fixed_advance}
+% The advance a mark really takes, which is what the hang is measured inside:
+% the width the document set, or the one a ratio style can give without
+% cutting the ink.
+%    \begin{macrocode}
+local function fixed_advance (g, settings)
+  local target, ratio = fixed_width(g, settings, style_of(settings))
+  if not target then
+    return g.width
+  end
+  if not ratio then
+    return target
+  end
+  return style_metrics(g, punct_class(g.char, settings, g.font), target)
 end
 
 local function fixed_done (n)
@@ -8067,13 +8191,17 @@ local function apply_fixed_widths (head)
   while cur do
     local settings = settings_of(cur)
     local style    = style_of(settings)
-    if cur.id == GLYPH and punct_class(cur.char, settings, cur.font)
-       and not disabled(cur) and not fixed_done(cur) then
-      local target = fixed_width(cur, settings, style)
+    local class    = cur.id == GLYPH
+      and punct_class(cur.char, settings, cur.font)
+    if class and not disabled(cur) and not fixed_done(cur) then
+      local target, ratio = fixed_width(cur, settings, style)
       if target then
-        local delta = target - cur.width
+        local advance, shift = target, ink_shift(class, target - cur.width)
+        if ratio then
+          advance, shift = style_metrics(cur, class, target)
+        end
+        local delta = advance - cur.width
         if delta ~= 0 then
-          local shift = ink_shift(punct_class(cur.char, settings, cur.font), delta)
           local p = new_node("penalty")
           inherit_attributes(p, cur)
           p.penalty = 10000
@@ -8702,13 +8830,23 @@ end
 %   alternating or the vertical curve operator is the blank the glyph has: a
 %   double opening quotation mark no longer stands in the margin by more
 %   than a tenth of a point.}
-% The horizontal extent of a Type 2 charstring. Every point of the outline is
-% visited, the control points of a curve included, which is the box the font's
-% own readers report; hints are counted only so that their masks can be
-% skipped.
+% \changes{v0.0.5}{2026/11/22}{The ink of a glyph is measured at the extremum
+%   of its curves rather than at their control points, and the alternating
+%   curve operators read the abscissa of their third point from the operand
+%   that carries it, so the blank a mark hangs is the blank its outline
+%   paints.}
+% The horizontal extent of a Type 2 charstring, read where the ink really
+% stands: a handle of a curve lies outside the ink that curve draws, so the
+% box is taken at the extremum of the curve, which is what the font paints.
+% A straight segment contributes its end point, and the horizontal line
+% operators alternate the axis from the one their name gives.
 % A curve operator takes four operands, and the alternating ones start on the
-% axis their name gives; the one operand of a $4n+1$ run closes the last
-% curve on the other axis.
+% axis their name gives: the fourth operand of a vertical curve is the abscissa
+% of its end point, and the one operand of a $4n+1$ run closes the last curve
+% on the other axis.  The four operators of the flex family draw two curves of
+% their own, so a glyph that joins two strokes without drawing them apart is
+% measured as well.
+% Hints are counted only so that their masks can be skipped.
 % Each number is read from the charstring that holds it, since a subroutine
 % carries its own operands, and the four bytes of the deprecated fixed form
 % are read in full.
@@ -8716,10 +8854,46 @@ end
 local function cff_box (f, cs)
   local x, xmin, xmax = 0, math.huge, -math.huge
   local stack, stems = {}, 0
-  local function point (dx, dy)
+  local function record (v)
+    if v < xmin then xmin = v end
+    if v > xmax then xmax = v end
+  end
+  local function move (dx)
     x = x + (dx or 0)
-    if x < xmin then xmin = x end
-    if x > xmax then xmax = x end
+    record(x)
+  end
+  local function line (dx)
+    x = x + (dx or 0)
+    record(x)
+  end
+  local function curve (dx1, dx2, dx3)
+    local x0 = x
+    local x1 = x0 + (dx1 or 0)
+    local x2 = x1 + (dx2 or 0)
+    local x3 = x2 + (dx3 or 0)
+    record(x0)
+    record(x3)
+    local a, b, c = x1 - x0, x2 - x1, x3 - x2
+    local q2, q1 = a - 2 * b + c, 2 * (b - a)
+    local roots = {}
+    if math.abs(q2) < 1e-9 then
+      if math.abs(q1) > 1e-9 then roots[1] = -a / q1 end
+    else
+      local disc = q1 * q1 - 4 * q2 * a
+      if disc >= 0 then
+        local root = math.sqrt(disc)
+        roots[1] = (-q1 + root) / (2 * q2)
+        roots[2] = (-q1 - root) / (2 * q2)
+      end
+    end
+    for _, t in ipairs(roots) do
+      if t > 0 and t < 1 then
+        local u = 1 - t
+        record(u * u * u * x0 + 3 * u * u * t * x1
+               + 3 * u * t * t * x2 + t * t * t * x3)
+      end
+    end
+    x = x3
   end
   local function number (code, b, i)
     if b >= 32 and b <= 246 then return b - 139, i + 1 end
@@ -8753,97 +8927,84 @@ local function cff_box (f, cs)
         stack[#stack + 1] = v
       else
         i = i + 1
-        if b == 21 then
-          point(stack[1], stack[2])
-          stack = {}
-        elseif b == 22 then
-          point(stack[1], 0)
-          stack = {}
+        local s = #stack
+        if b == 21 or b == 22 then
+          move(stack[1])
         elseif b == 4 then
-          point(0, stack[1])
-          stack = {}
+          move(0)
         elseif b == 5 then
-          for k = 1, #stack - 1, 2 do point(stack[k], stack[k + 1]) end
-          stack = {}
+          for k = 1, s - 1, 2 do line(stack[k]) end
         elseif b == 6 or b == 7 then
           local horiz = (b == 6)
-          for k = 1, #stack do
-            if horiz then point(stack[k], 0) else point(0, stack[k]) end
+          for k = 1, s do
+            line(horiz and stack[k] or 0)
             horiz = not horiz
           end
-          stack = {}
         elseif b == 8 then
-          for k = 1, #stack - 5, 6 do
-            point(stack[k], stack[k + 1])
-            point(stack[k + 2], stack[k + 3])
-            point(stack[k + 4], stack[k + 5])
-          end
-          stack = {}
+          for k = 1, s - 5, 6 do curve(stack[k], stack[k + 2], stack[k + 4]) end
         elseif b == 24 then
           local k = 1
-          while k <= #stack - 2 do
-            point(stack[k], stack[k + 1])
-            k = k + 2
-          end
-          point(stack[k], stack[k + 1])
-          stack = {}
-        elseif b == 25 then
-          local k = 1
-          while k <= #stack - 6 do
-            point(stack[k], stack[k + 1])
-            point(stack[k + 2], stack[k + 3])
-            point(stack[k + 4], stack[k + 5])
+          while k <= s - 5 do
+            curve(stack[k], stack[k + 2], stack[k + 4])
             k = k + 6
           end
-          point(stack[k], stack[k + 1])
-          stack = {}
+          line(stack[k])
+        elseif b == 25 then
+          local k = 1
+          while k <= s - 6 do
+            line(stack[k])
+            k = k + 2
+          end
+          curve(stack[k], stack[k + 2], stack[k + 4])
         elseif b == 26 or b == 27 then
           local k, first = 1, 0
-          if #stack % 4 == 1 then first, k = stack[1], 2 end
-          while k <= #stack - 3 do
+          if s % 4 == 1 then first, k = stack[1], 2 end
+          while k <= s - 3 do
             if b == 26 then
-              point(first, stack[k])
-              point(stack[k + 1], stack[k + 2])
-              point(0, stack[k + 3])
+              curve(first, stack[k + 1], 0)
             else
-              point(stack[k], first)
-              point(stack[k + 1], stack[k + 2])
-              point(stack[k + 3], 0)
+              curve(stack[k], stack[k + 1], stack[k + 3])
             end
             first = 0
             k = k + 4
           end
-          stack = {}
         elseif b == 30 or b == 31 then
-          local horiz = (b == 31)
+          local vertical = (b == 30)
           local k = 1
-          while k <= #stack - 3 do
-            if horiz then
-              point(stack[k], 0)
-              point(stack[k + 1], stack[k + 2])
-              point(0, stack[k + 3])
+          while k <= s - 3 do
+            if vertical then
+              curve(0, stack[k + 1], stack[k + 3])
             else
-              point(0, stack[k])
-              point(stack[k + 1], stack[k + 2])
-              point(stack[k + 3], 0)
+              curve(stack[k], stack[k + 1], (k + 4 == s) and stack[s] or 0)
             end
-            horiz = not horiz
+            vertical = not vertical
             k = k + 4
           end
-          if k == #stack then
-            if horiz then
-              point(stack[k], 0)
-            else
-              point(0, stack[k])
+        elseif b == 12 then
+          local op = code:byte(i)
+          i = i + 1
+          if op == 34 then
+            curve(stack[1], stack[2], stack[4])
+            curve(stack[5], stack[6], stack[7])
+          elseif op == 35 then
+            curve(stack[1], stack[3], stack[5])
+            curve(stack[7], stack[9], stack[11])
+          elseif op == 36 then
+            curve(stack[1], stack[3], stack[5])
+            curve(stack[6], stack[7], stack[9])
+          elseif op == 37 then
+            local dx, dy = 0, 0
+            for k = 1, 10, 2 do
+              dx, dy = dx + stack[k], dy + stack[k + 1]
             end
+            curve(stack[1], stack[3], stack[5])
+            curve(stack[7], stack[9],
+                  (math.abs(dx) > math.abs(dy)) and stack[11] or -dx)
           end
-          stack = {}
         elseif b == 1 or b == 3 or b == 18 or b == 23 then
-          stems = stems + #stack // 2
-          stack = {}
+          stems = stems + s // 2
         elseif b == 19 or b == 20 then
-          stems = stems + #stack // 2
-          stack = {}
+          stems = stems + s // 2
           i = i + (stems + 7) // 8
         elseif b == 10 or b == 29 then
           local sub = table.remove(stack)
@@ -8858,9 +9019,8 @@ local function cff_box (f, cs)
           end
         elseif b == 11 or b == 14 then
           return
-        else
-          stack = {}
         end
+        stack = {}
       end
     end
   end
@@ -8959,7 +9119,37 @@ local function mark_blank (g, mark, target)
 end
 %    \end{macrocode}
 % \end{macro}
-
+%
+% \begin{macro}[int]{mark_blanks}
+% \changes{v0.0.5}{2026/11/22}{The blank of a glyph on each side is read from
+%   its outline, so the gap \cs{LuaCJKsetkern} gives and the amount a
+%   compression takes are the blanks the font carries.}
+% The blank of a glyph on each side, in scaled points at the size of the text,
+% or nothing when the file cannot be read or is one member of a collection.
+% The right blank is measured from the advance the node has, because that is
+% where the character after it starts.  The spacing pass reads this before the
+% reader is documented, so it is published on the module table.
+%    \begin{macrocode}
+local function mark_blanks (g)
+  local font = font.getfont(g.font)
+  if not (font and font.filename and font.size and (font.index or 0) == 0) then
+    return nil
+  end
+  local f = font_file(font.filename)
+  if not f then
+    return nil
+  end
+  local box = font_box(f, g.char)
+  if not box then
+    return nil
+  end
+  local scale = font.size / f.upem
+  return math.floor(box.xmin * scale + 0.5),
+         math.floor(g.width - box.xmax * scale + 0.5)
+end
+M.mark_blanks = mark_blanks
+%    \end{macrocode}
+% \end{macro}
 
 % \begin{macro}[int]{hang_amount}
 % How much of a mark's advance stands outside the line: the part that
@@ -8969,7 +9159,7 @@ end
 % compressed style hangs less.
 %    \begin{macrocode}
 local function hang_amount (g, mark, settings)
-  local target = fixed_width(g, settings, style_of(settings)) or g.width
+  local target = fixed_advance(g, settings)
   local bound  = bound_width(settings)
   if bound then
     return math.max(0, target - bound)

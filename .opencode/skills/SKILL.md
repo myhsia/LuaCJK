@@ -122,6 +122,16 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    before the rule existed.  A zero-width glue stays at that boundary, so it
    is still a break opportunity and the kinsoku penalty can forbid it
    (`boundary01`).
+   Two adjacent marks are spaced by the blank between their ink (`pair_kern`):
+   a length from `\LuaCJKsetkern` is that blank, so `0pt` makes the inks meet,
+   and without one the style's ratio decides, never taking more than the right
+   blank of the mark it compresses, so an em dash or a fullwidth percent sign
+   keeps its ink.  The kern stands in front of the boundary glue, so the glue
+   still offers the break and still carries the stretch.  A source space
+   between two marks is retimed to that same glue and the blank rides in its
+   width, so a line break in the source no longer spaces the two marks apart;
+   because a break discards the glue, the compression leaves with it
+   (`punct01`).
    A penalty that prohibits the break (`\penalty 10000`, `\nobreak`) does not
    end the run: the glue goes *after* it, where the prohibition still covers
    the break the glue offers, so `中文\nobreak ABC` keeps its `CJKecglue` and
@@ -132,11 +142,19 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    visible node, not from the glue's predecessor, so a whatsit or a penalty
    between two marks does not hide them from the long-punct rule.
 3. `apply_fixed_widths` — give punctuation the advance the style asks for, by
-   inserting a penalty and a kern after the mark. The ink is moved by class:
-   an opening mark by the whole amount, a middle mark by half, a closing mark
-   not at all. A dash or an ellipsis keeps its advance. A mark that already
-   carries the pair the pass inserted is passed over, because `hpack_filter`
-   walks the same list again for every box that holds it (`punct01`).
+   inserting a penalty and a kern after the mark. A ratio style reads the
+   advance and the place of the ink from the outline (`style_metrics`): the
+   smaller blank stays on both sides and the rest of the outer blank is taken,
+   so an opening mark moves left by what it loses, a closing mark keeps its
+   ink, a middle mark is centred, and a mark whose ink nearly fills its
+   advance (％, ＄, ￥) keeps the full width instead of losing part of the ink.
+   A width the document sets with `\LuaCJKsetwidth` or `PunctWidth` is used as
+   it stands, with the class moving the ink. A dash or an ellipsis keeps its
+   advance. `hang_amount` measures inside `fixed_advance`, the same
+   computation, so a widened mark hangs by the blank it really has. A mark that
+   already carries the pair the pass inserted is passed over, because
+   `hpack_filter` walks the same list again for every box that holds it
+   (`punct01`, `punctgeom01`).
 4. `hang_bounds` — insert the hang of a mark into the measure, as a zero-size
    rule of negative width beside the break glue (`hang01`), and at the two
    boundaries that carry no glue: in front of the opening mark that begins a
@@ -304,7 +322,7 @@ A style (`M.punct_styles`) is a table of six optional fields:
 | --- | --- |
 | `compress_adjacent`, `ratio` | shorten the mark before another one by `ratio` of its width |
 | `keep_open_close` | do not compress an opening against a closing mark |
-| `fixed_ratio`, `fixed_full` | give every mark `fixed_ratio` of the em, except the `kaiming` set |
+| `fixed_ratio`, `fixed_full` | give every mark `fixed_ratio` of the em, except the `kaiming` set, and never less than the ink and its smaller blank |
 | `hang` | let a line-final or line-initial mark stand in the margin by half its advance |
 
 Every style but `plain` sets `hang`, which is what `hangmobanjiao` used to
@@ -349,9 +367,14 @@ amount is the blank the mark's font carries, read from the outline by
 `mark_blank` (`CFF` charstring or `glyf` header, cached per file and glyph, the
 file never held whole), or half of the advance the style gives it when the file
 cannot be read; `PunctBoundWidth` replaces it by the part that stays inside.
-LuaTeX has no `\XeTeXglyphbounds`, which is why xeCJK's one-line query is a
-small font reader here. `hang01` pins the pair and the fit, `boundw01` the
-amount, and `punct01` the compressed style.
+The box is taken at the extremum of a curve, not at its control points, because
+a handle lies outside the ink the curve paints; the alternating curve operators
+read their third point's abscissa from the operand that carries it, and the
+four operators of the flex family draw the two curves they describe.  LuaTeX has
+no `\XeTeXglyphbounds`, which is why xeCJK's one-line query is a small font
+reader here; `fontloader` would be exact too, but `to_table` costs a second and
+a hundred megabytes on a CJK collection.  `hang01` pins the pair and the fit,
+`boundw01` the amount, and `punct01` the compressed style.
 
 Suspension does not take that break opportunity away.  `Verb` stops the spacing
 on both sides of a suspended run, but the zero-width glue stays at either edge:

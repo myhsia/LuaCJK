@@ -16,70 +16,94 @@ TEST 3: quanjiao open-close pair keeps natural blank
 width: 40.0pt
 ============================================================
 ============================================================
-TEST 4: quanjiao long punctuation keeps natural width
+TEST 4: quanjiao compression stops at the ink
+============================================================
+percent: 18.6pt
+period: 15.0pt
+============================================================
+============================================================
+TEST 5: a space in the source keeps the compression of two marks
+============================================================
+joined: 35.0pt
+space: 35.0pt
+============================================================
+============================================================
+TEST 6: a space in the source keeps the blank of a user kern
+============================================================
+joined: 42.12pt
+space: 42.12pt
+============================================================
+============================================================
+TEST 7: quanjiao long punctuation keeps natural width
 ============================================================
 dash: 40.0pt
 ellipsis: 40.0pt
 ============================================================
 ============================================================
-TEST 5: plain disables punctuation compression
+TEST 8: plain disables punctuation compression
 ============================================================
 width: 40.0pt
 ============================================================
 ============================================================
-TEST 6: custom punctuation style
+TEST 9: custom punctuation style
 ============================================================
 width: 38.0pt
 ============================================================
 ============================================================
-TEST 7: unimplemented punctuation style falls back
+TEST 10: unimplemented punctuation style falls back
 ============================================================
 Package LuaCJK Warning: PunctStyle `unknownstyle' is not implemented.
 (LuaCJK)                Using `plain' instead.
 width: 40.0pt
 ============================================================
 ============================================================
-TEST 8: banjiao halves punctuation width
+TEST 11: banjiao halves punctuation width
 ============================================================
 comma: 25.0pt
 hanzi: 10.0pt
 ============================================================
 ============================================================
-TEST 9: banjiao gives a mark its advance once in a nested box
+TEST 12: banjiao leaves a mark whose ink fills its advance alone
+============================================================
+percent: 10.0pt
+hanzi: 10.0pt
+============================================================
+============================================================
+TEST 13: banjiao gives a mark its advance once in a nested box
 ============================================================
 nested: 25.0pt
 flat: 25.0pt
 KERNS 1
 ============================================================
 ============================================================
-TEST 10: kaiming keeps final punctuation full width
+TEST 14: kaiming keeps final punctuation full width
 ============================================================
 comma: 25.0pt
 period: 30.0pt
 ============================================================
 ============================================================
-TEST 11: CCT narrows punctuation
+TEST 15: CCT narrows punctuation
 ============================================================
 comma: 27.0pt
 ============================================================
 ============================================================
-TEST 12: fixed width style reports no warning
+TEST 16: fixed width style reports no warning
 ============================================================
 ============================================================
 ============================================================
-TEST 13: hangmobanjiao hangs the line-final mark in the measure
+TEST 17: hangmobanjiao hangs the line-final mark in the measure
 ============================================================
 LINE 12290 xoff 0 hang 422052
 LINE 23383 xoff 0 hang 0
 ============================================================
 ============================================================
-TEST 14: quanjiao does not hang punctuation
+TEST 18: quanjiao does not hang punctuation
 ============================================================
 XOFFSET 0
 XOFFSET 0
 ============================================================
 ============================================================
-TEST 15: quanjiao restored after group
+TEST 19: quanjiao restored after group
 ============================================================
 plain: 40.0pt
 quanjiao: 35.0pt
