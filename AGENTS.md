@@ -28,7 +28,9 @@ Python 3 is available when a task needs it. The manual sets its CJK text in
 Noto Serif/Sans CJK SC (a system font, installed by CI's Linux leg from
 `.github/font-urls.txt`), with LXGW WenKai GB Lite for the italic and the kai
 family and Zhuque Fangsong for the monospaced text and the fangsong family;
-both come from the `lxgw-fonts` TeX Live package. The tests keep Fandol.
+both come from the `lxgw-fonts` TeX Live package. The tests keep Fandol,
+except the two halfwidth-mark tests of `kinsoku01`, which take LXGW WenKai
+because Fandol holds no halfwidth punctuation.
 The manual is itself a `ctex` document: its driver loads `ctex` with
 `engine = luacjk`, `fontset = fandol` and `linespread = 1`, so LuaCJK arrives
 through the engine file and the prose takes `ctex`'s glue defaults, which is why

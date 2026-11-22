@@ -3,6 +3,9 @@
 \documentclass{article}
 \usepackage{LuaCJK}
 \setCJKmainfont{FandolSong-Regular.otf}
+% Fandol holds no halfwidth punctuation, so the last two tests set the marks
+% in LXGW WenKai, which does; the probe reads the node list, never the ink.
+\newCJKfontfamily\marksfamily{LXGWWenKaiGBLite-Regular.ttf}
 \LuaCJKsetup{CJKglue=0pt, CJKecglue=0pt}
 
 \def\probe{%
@@ -223,6 +226,20 @@
   \setbox0=\hbox{字～字}
   \probe
   \setbox0=\hbox{字～～字}
+  \probe
+}
+
+\TEST{a halfwidth closing mark cannot start a line}{
+  \setbox0=\hbox{\marksfamily 字｡}
+  \probe
+  \setbox0=\hbox{\marksfamily 字､}
+  \probe
+  \setbox0=\hbox{\marksfamily 字｣}
+  \probe
+}
+
+\TEST{a halfwidth opening mark cannot end a line}{
+  \setbox0=\hbox{\marksfamily ｢字}
   \probe
 }
 
