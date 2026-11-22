@@ -122,6 +122,18 @@
   \endgroup
 }
 
+\TEST{two declarations of one font take turns at their own offset}{
+  \begingroup
+    \LuaCJKsetup{AutoFallBack = true}
+    \setbox0=\hbox{\CJKfamily{fb}中}
+    \psname
+    \setbox0=\hbox{\CJKfamily{pm}中}
+    \psname
+    \setbox0=\hbox{\CJKfamily{fb}中}
+    \psname
+  \endgroup
+}
+
 \END
 
 \end{document}
