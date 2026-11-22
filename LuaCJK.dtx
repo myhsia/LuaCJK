@@ -500,8 +500,10 @@ English 中文字体\\
 %   {\CJKrmdefault, \CJKsfdefault, \CJKttdefault,
 %   \CJKfamilydefault} 由 \tn{rmfamily}、\tn{sffamily} 与 \tn{ttfamily}
 %   选择的 CJK 字族，以及由 \tn{normalfont} 选择的字族。
-%   \cs{CJKfamilydefault} 默认跟随 \cs{CJKrmdefault}。
-%   它在文档开始时选取，所以在导言区重定义它，正文第一行就用新的字族。
+%   \cs{CJKfamilydefault} 默认跟随 \cs{familydefault}：
+%   主字族是三者之一时，它就是对应的那一族，否则它取 \cs{CJKrmdefault}。
+%   它在文档开始时选取，所以在导言区重定义它或 \cs{familydefault}，
+%   正文第一行就用新的字族。
 % \end{variable}
 %
 % \subsection{子区块}
@@ -1828,9 +1830,12 @@ English 中文字体\\
 %   {\CJKrmdefault, \CJKsfdefault, \CJKttdefault,
 %   \CJKfamilydefault} The CJK families selected by \tn{rmfamily},
 %   \tn{sffamily}, and \tn{ttfamily}, and the family selected by
-%   \tn{normalfont}. \cs{CJKfamilydefault} follows \cs{CJKrmdefault}
-%   by default. It is selected when the document starts, so redefining it in
-%   the preamble sets the main text in that family from the first line.
+%   \tn{normalfont}. \cs{CJKfamilydefault} follows \cs{familydefault} by
+%   default: it is the CJK family that corresponds to the main family when
+%   that is one of the three, and \cs{CJKrmdefault} otherwise.
+%   It is selected when the document starts, so redefining it or
+%   \cs{familydefault} in the preamble sets the main text in that family from
+%   the first line.
 % \end{variable}
 
 % \subsection{Sub-blocks}
@@ -5177,6 +5182,10 @@ abc汉字abc
 % \changes{v0.0.4}{2026/11/20}{The family \cs{CJKfamilydefault} names is
 %   selected when the document starts, so a preamble that redefines it sets
 %   the main text in that family from the first line.}
+% \changes{v0.0.4}{2026/11/20}{An untouched \cs{CJKfamilydefault} follows
+%   \cs{familydefault} at the start of the document, so a preamble that
+%   redefines \cs{familydefault} sets the main text in the matching CJK
+%   family.}
 % The CJK families used by the standard font commands.
 % The family hooks below re-select the CJK family whenever
 % \tn{rmfamily} and its siblings run, and \tn{normalfont} selects
@@ -5690,7 +5699,20 @@ abc汉字abc
 \hook_gput_code:nnn { begindocument } { LuaCJK }
   {
     \tl_if_eq:NNT \CJKfamilydefault \l_@@_family_default_init_tl
-      { \tl_gset:Nn \CJKfamilydefault { \CJKrmdefault } }
+      {
+        \group_begin:
+        \tl_gset:Ne \CJKfamilydefault
+          {
+            \str_case:onF { \familydefault }
+              {
+                { \rmdefault } { \exp_not:N \CJKrmdefault }
+                { \sfdefault } { \exp_not:N \CJKsfdefault }
+                { \ttdefault } { \exp_not:N \CJKttdefault }
+              }
+              { \exp_not:N \CJKrmdefault }
+          }
+        \group_end:
+      }
     \bool_if:NT \g_@@_load_fandol_bool
       {
         \prop_if_empty:NT \g_@@_family_prop

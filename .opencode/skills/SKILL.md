@@ -248,9 +248,10 @@ inside `\@@_update_font:` keeps the temporary font selections from pushing
 twice. `cmd / rmfamily / after`, `cmd / sffamily / after`, and
 `cmd / ttfamily / after` switch the family in the same way, and
 `cmd / normalfont / after` resets it to `\CJKfamilydefault`, which follows
-`\CJKrmdefault` until the document gives it a value.  That reset passes an
-unregistered name over in silence, because `\normalfont` also runs when the
-document starts, before any family need exist.
+`\familydefault` — the matching one of `\CJKrmdefault`, `\CJKsfdefault`, and
+`\CJKttdefault` — until the document gives it a value of its own.  That reset
+passes an unregistered name over in silence, because `\normalfont` also runs
+when the document starts, before any family need exist.
 
 `\CJKfamily` and `\setCJKfamilyfont` expand the name they are given, so a
 family is named by the macro that holds it — `\CJKfamily{\CJKsfdefault}`
@@ -776,7 +777,7 @@ The commands are in `AGENTS.md`. For this skill the points that matter are:
 ```bash
 l3build check <name>                # the local loop; must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
-l3build check                       # 76 tests, CI on every push
+l3build check                       # 77 tests, CI on every push
 bash scripts/ctex-subset.sh         # 21/21, CI; no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
 ```
