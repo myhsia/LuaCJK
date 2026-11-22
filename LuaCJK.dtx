@@ -126,7 +126,7 @@ The Current Maintainer of this work is **Mingyu Xia**.
 %<*package|fntef|listings|ctex>
 \NeedsTeXFormat{LaTeX2e}[2026/06/01]
 \RequirePackage { expl3 }
-\GetIdInfo $Id: LuaCJK.dtx v0.0.4 2026-11-20 myhsia<myhsia@outlook.com>$
+\GetIdInfo $Id: LuaCJK.dtx v0.0.4 2026-11-22 myhsia<myhsia@outlook.com>$
 %<package>  {A LuaTeX CJK typesetting package}
 %<package>\ProvidesExplPackage {\ExplFileName}
 %<fntef>  {Font effects for LuaCJK (CTEX)}
@@ -264,7 +264,7 @@ The Current Maintainer of this work is **Mingyu Xia**.
 %   ellipsis (U+22EF) are set in the CJK font, and \keys{LatinPunct} keeps the
 %   ones it lists in the Latin font; the two dot leader joins a run of dashes
 %   and ellipses that may not be broken.}
-% \changes{v0.0.4}{2026/11/20}{A run of CJK characters inside an
+% \changes{v0.0.4}{2026/11/22}{A run of CJK characters inside an
 %   \env{lstlisting} block is one token of \pkg{listings}, so a
 %   \texttt{emph} or \texttt{keywords} entry that names a CJK word highlights
 %   it; a Latin character and a CJK mark both end the run.}
@@ -3458,7 +3458,7 @@ abc汉字abc
 % \changes{v0.0.2}{2026/11/15}{\keys{Baseline} shifts the glyphs of the font
 %   that declares it, so two CJK fonts whose baselines do not match can be set
 %   side by side.}
-% \changes{v0.0.4}{2026/11/20}{\keys{Baseline} belongs to the declaration that
+% \changes{v0.0.4}{2026/11/22}{\keys{Baseline} belongs to the declaration that
 %   writes it, so a fallback font and a family that name the same font keep
 %   their own offsets.}
 % Pull the keys that \pkg{LuaCJK} keeps for itself out of a font option list:
@@ -3559,7 +3559,7 @@ abc汉字abc
 %   \texttt{HalfRight}, \texttt{NormalSpace}, \texttt{CJStarter}, \texttt{CM},
 %   \texttt{Boundary}), the reset also restores the normal-spaced set, and the
 %   built-in table covers the CJK blocks of Unicode 15 and 16.}
-% \changes{v0.0.4}{2026/11/20}{\texttt{HalfLeft} and \texttt{HalfRight}
+% \changes{v0.0.4}{2026/11/22}{\texttt{HalfLeft} and \texttt{HalfRight}
 %   declare a half-width ASCII bracket: it keeps its advance, does not hang,
 %   and hugs the text inside the pair, where they used to declare a full-width
 %   opening or closing mark.}
@@ -4156,7 +4156,7 @@ abc汉字abc
 % \changes{v0.0.2}{2026/11/15}{\cs{LuaCJKnobreak} also forbids the break at a
 %   \texttt{discretionary}, so an explicit hyphen or an automatic hyphenation
 %   point inside the argument no longer breaks the line.}
-% \changes{v0.0.4}{2026/11/20}{\cs{LuaCJKnobreak} forbids the break at a glue
+% \changes{v0.0.4}{2026/11/22}{\cs{LuaCJKnobreak} forbids the break at a glue
 %   the document writes inside its argument, so a \cs{quad} or an \cs{hspace}
 %   there no longer starts a line.}
 % Keep the argument on one line. The nodes of the argument are marked,
@@ -4437,7 +4437,7 @@ abc汉字abc
 % \subsection{Fonts}
 %
 % \begin{macro}[int]{\@@_family_font:n}
-% \changes{v0.0.4}{2026/11/20}{The font of a CJK family is resolved in the
+% \changes{v0.0.4}{2026/11/22}{The font of a CJK family is resolved in the
 %   Unicode encoding: a document that sets its Latin text in an 8-bit encoding
 %   with \pkg{fontenc} keeps its CJK text.}
 % Choose the font of a CJK family without selecting it.
@@ -5230,10 +5230,10 @@ abc汉字abc
 %
 % \begin{variable}[int]
 %   {\CJKrmdefault, \CJKsfdefault, \CJKttdefault, \CJKfamilydefault}
-% \changes{v0.0.4}{2026/11/20}{The family \cs{CJKfamilydefault} names is
+% \changes{v0.0.4}{2026/11/22}{The family \cs{CJKfamilydefault} names is
 %   selected when the document starts, so a preamble that redefines it sets
 %   the main text in that family from the first line.}
-% \changes{v0.0.4}{2026/11/20}{An untouched \cs{CJKfamilydefault} follows
+% \changes{v0.0.4}{2026/11/22}{An untouched \cs{CJKfamilydefault} follows
 %   \cs{familydefault} at the start of the document, so a preamble that
 %   redefines \cs{familydefault} sets the main text in the matching CJK
 %   family.}
@@ -5263,7 +5263,7 @@ abc汉字abc
 % \begin{macro}{\defaultCJKfontfeatures}
 % \changes{v0.0.1}{2026/11/11}{Provide \cs{defaultCJKfontfeatures} and
 %   \cs{addCJKfontfeatures}.}
-% \changes{v0.0.4}{2026/11/20}{\cs{defaultCJKfontfeatures} reaches the font of
+% \changes{v0.0.4}{2026/11/22}{\cs{defaultCJKfontfeatures} reaches the font of
 %   a sub-block and of a fallback font as well.}
 % Set the features prepended to every CJK family, replacing the initial
 % \texttt{Script = CJK}. Families registered earlier keep the value they
@@ -5481,7 +5481,7 @@ abc汉字abc
 % \begin{macro}{\CJKfontspec}
 % \changes{v0.0.2}{2026/11/15}{\cs{CJKfontspec} and \cs{newCJKfontfamily}
 %   take their options after the font name as well.}
-% \changes{v0.0.4}{2026/11/20}{\cs{CJKfontspec} no longer reads an option list
+% \changes{v0.0.4}{2026/11/22}{\cs{CJKfontspec} no longer reads an option list
 %   after the font name, so a bracket that the text starts with is no longer
 %   swallowed.}
 % Register a one-off family and switch to it immediately.
@@ -6076,11 +6076,11 @@ end
 % are not compressed; the em dash is not in the table, because it stays CJK.
 %
 % \begin{macro}[int]{LuaCJK.is_cjk}
-% \changes{v0.0.4}{2026/11/20}{A code point below U+0100 in a font that is not
+% \changes{v0.0.4}{2026/11/22}{A code point below U+0100 in a font that is not
 %   Unicode-encoded is a position in that font's encoding, not a character, so
 %   a symbol font's slot is no longer read as a CJK character: \pkg{pifont}'s
 %   slot 0xB7, the circled 2, keeps its own font and prints.}
-% \changes{v0.0.4}{2026/11/20}{With \keys{LatinPunct} on, the midline ellipsis
+% \changes{v0.0.4}{2026/11/22}{With \keys{LatinPunct} on, the midline ellipsis
 %   U+22EF stays in the Latin font like the other shared marks that key
 %   lists.}
 % Test whether a character is treated as CJK.
@@ -6210,12 +6210,12 @@ M.is_attached = is_attached
 % \end{macro}
 %
 % \begin{variable}[int]{PUNCT_CLASS}
-% \changes{v0.0.4}{2026/11/20}{The punctuation table covers the marks
+% \changes{v0.0.4}{2026/11/22}{The punctuation table covers the marks
 %   \pkg{xeCJK} classes as opening or closing, so the percent sign U+FF05 no
 %   longer starts a line and the currency symbols no longer end one; the
 %   halfwidth and compatibility forms and the three hyphen-like marks follow
 %   the same class.}
-% \changes{v0.0.4}{2026/11/20}{The ASCII brackets are punctuation marks of
+% \changes{v0.0.4}{2026/11/22}{The ASCII brackets are punctuation marks of
 %   their own: a half-width opening bracket no longer ends a line and a
 %   half-width closing bracket no longer starts one, the pair hugs the text
 %   between it, and a compression style leaves the bracket's own advance
@@ -7279,11 +7279,11 @@ end
 %   \cs{nobreak}, because the glue goes after the penalty, where the
 %   prohibition still covers it. A source space in front of the penalty is
 %   converted and the penalty moves in front of it.}
-% \changes{v0.0.4}{2026/11/20}{A space in front of a color change keeps its
+% \changes{v0.0.4}{2026/11/22}{A space in front of a color change keeps its
 %   advance: the whatsit a \cs{textcolor} inserts no longer hides the space
 %   from the boundary rules, so no \keys{CJKecglue} or second \keys{CJKglue}
 %   joins it.}
-% \changes{v0.0.4}{2026/11/20}{A suspended run keeps the break opportunity
+% \changes{v0.0.4}{2026/11/22}{A suspended run keeps the break opportunity
 %   beside it: the zero-width glue at its edge lets \cs{verb} end a line next
 %   to a CJK character while the spacing stays removed.}
 % Decide what to do at the boundary between two visible nodes.
@@ -7983,7 +7983,7 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{apply_fixed_widths}
-% \changes{v0.0.4}{2026/11/20}{A punctuation mark is given its fixed advance
+% \changes{v0.0.4}{2026/11/22}{A punctuation mark is given its fixed advance
 %   once: a box that holds the list is packed again, and the mark no longer
 %   takes a second compensating kern, so a fixed-width style no longer
 %   squeezes a table cell or a parbox.}
@@ -9059,11 +9059,11 @@ end
 %   line the document forces a break at, hangs as well: its blank stands in
 %   the indentation or in the margin, and \keys{PunctBoundWidth} decides how
 %   much of the advance stays inside the line there too.}
-% \changes{v0.0.4}{2026/11/20}{The first line of a list item hangs as well:
+% \changes{v0.0.4}{2026/11/22}{The first line of a list item hangs as well:
 %   the label box that the list writes in front of the item's text is passed
 %   over, so a mark that begins the item leaves its blank in the label's
 %   advance.}
-% \changes{v0.0.4}{2026/11/20}{A centered or flush-right paragraph does not
+% \changes{v0.0.4}{2026/11/22}{A centered or flush-right paragraph does not
 %   hang the mark it begins with: the line does not start at the edge of the
 %   measure, so the shift would move the whole line instead of leaving the
 %   blank in a margin that is not there.}
@@ -9356,7 +9356,7 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{LuaCJK.hyphenate}
-% \changes{v0.0.4}{2026/11/20}{A CJK character ends a word for hyphenation, so
+% \changes{v0.0.4}{2026/11/22}{A CJK character ends a word for hyphenation, so
 %   the line breaker no longer puts a hyphen beside a CJK character, and the
 %   boundary keeps the \keys{CJKecglue} that the two sides give it.}
 % The hyphenation callback.
@@ -10311,7 +10311,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   instead of putting it in a \tn{phantom}: the text keeps its line breaks, so
 %   a hidden paragraph breaks like the visible one instead of overflowing in
 %   one line.}
-% \changes{v0.0.4}{2026/11/20}{\keys{hidden} hides a formula as it hides text:
+% \changes{v0.0.4}{2026/11/22}{\keys{hidden} hides a formula as it hides text:
 %   a character or a rule inside a box of the span carries no ink, so a
 %   fraction is hidden like a plain number and keeps its width, height, and
 %   depth.}
@@ -10810,7 +10810,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \changes{v0.0.2}{2026/11/15}{The double rule takes \keys{format} like the
 %   other decorations, and a rule or a symbol that carries no \keys{format}
 %   follows the color of the surrounding text.}
-% \changes{v0.0.4}{2026/11/20}{\keys{format} is resolved at every call, so a
+% \changes{v0.0.4}{2026/11/22}{\keys{format} is resolved at every call, so a
 %   color that \cs{colorlet} redefines between two decorations is followed by
 %   the second one instead of keeping the color of the first.}
 % Two parallel rules. The optional argument takes the whole key set of the
@@ -10836,7 +10836,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   whole patterns once its final width is known and the pattern is drawn at
 %   that width, so the periods meet without a gap, the wave reaches the last
 %   character, and its period follows the stretch of the line.}
-% \changes{v0.0.4}{2026/11/20}{The wave is written one period at a time, so it
+% \changes{v0.0.4}{2026/11/22}{The wave is written one period at a time, so it
 %   covers the start and the end of a span that is not a whole number of
 %   periods, on a stretched line as well as on the last line of a paragraph.}
 % A wave drawn with \pkg{l3draw}, one period per em. The drawing is kept as
@@ -11039,7 +11039,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \changes{v0.0.3}{2026/11/20}{The slash is divided into whole cells once its
 %   width is final, so the slashes cover the span evenly and the last one reaches
 %   its end.}
-% \changes{v0.0.4}{2026/11/20}{The slashes are written one cell at a time, so
+% \changes{v0.0.4}{2026/11/22}{The slashes are written one cell at a time, so
 %   they cover the whole span.}
 % A repeated slash, as in \pkg{ulem}'s \tn{xout}.
 % The drawing is kept as code so that it scales with the font size,
@@ -11317,7 +11317,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   centred in the one-em cell of the character; Latin letters, digits, and
 %   spaces carry none, and the dots follow the characters when the
 %   inter-character glue stretches.}
-% \changes{v0.0.4}{2026/11/20}{A CJK character inside a box gets its dot
+% \changes{v0.0.4}{2026/11/22}{A CJK character inside a box gets its dot
 %   wherever the box sits in the span, so \cs{mbox} no longer drops the dot of
 %   a character in the middle of the text.}
 % Emphasise with dots below the glyphs. The optional argument takes the key
@@ -11376,10 +11376,10 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   \env{CJKfilltwosides} place the box as \cs{parbox} does: \texttt{t} puts
 %   the baseline of its first line on the surrounding baseline, and \texttt{c}
 %   centres the box on the text axis instead of on the baseline.}
-% \changes{v0.0.4}{2026/11/20}{\env{CJKfilltwosides} works inside a table
+% \changes{v0.0.4}{2026/11/22}{\env{CJKfilltwosides} works inside a table
 %   cell: it gives |\\| the meaning it has in a \cs{parbox} within its group,
 %   so the enclosing alignment no longer takes the line break.}
-% \changes{v0.0.4}{2026/11/20}{\env{CJKfilltwosides} leaves vertical mode as
+% \changes{v0.0.4}{2026/11/22}{\env{CJKfilltwosides} leaves vertical mode as
 %   \cs{parbox} does, so the text after it joins the box on the same line
 %   instead of beginning a paragraph, and a space after the environment is
 %   ignored as \pkg{xeCJK} ignores it.}
