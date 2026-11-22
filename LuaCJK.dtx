@@ -4501,13 +4501,23 @@ abc汉字abc
 \tl_set:Nn \l_@@_family_tl { zhsong }
 %    \end{macrocode}
 % \end{variable}
-% \begin{variable}[int]{\l_@@_fontspec_tl, \l_@@_family_name_tl, \l_@@_tmpa_tl}
+% \begin{variable}[int]
+%   {
+%     \l_@@_fontspec_tl, \l_@@_family_name_tl, \l_@@_new_family_tl,
+%     \l_@@_tmpa_tl
+%   }
 % Scratch variables holding the generated \pkg{fontspec} family name,
 % the family name looked up in the property list,
-% and a temporary value.
+% a temporary value,
+% and the name of the one-off family \cs{CJKfontspec} is creating.
+% That name is a variable of its own because it is held across the
+% registration of the family, which runs \tn{selectfont} and therefore
+% \cs{@@_update_font:}: a scratch variable would be spent by the time the
+% command selects the family.
 %    \begin{macrocode}
 \tl_new:N \l_@@_fontspec_tl
 \tl_new:N \l_@@_family_name_tl
+\tl_new:N \l_@@_new_family_tl
 \tl_new:N \l_@@_tmpa_tl
 \tl_new:N \l_@@_tmpb_tl
 \int_new:N \l_@@_tmpa_int
@@ -5518,7 +5528,13 @@ abc汉字abc
 % \changes{v0.0.4}{2026/11/22}{\cs{CJKfontspec} no longer reads an option list
 %   after the font name, so a bracket that the text starts with is no longer
 %   swallowed.}
+% \changes{v0.0.5}{2026/11/22}{\cs{CJKfontspec} switches the text to its font
+%   even when \keys{PunctFamily} names a family, which used to replace the
+%   family name the command was about to select.}
 % Register a one-off family and switch to it immediately.
+% The name is built once and kept in \cs{l_@@_new_family_tl}, because the
+% registration selects a font and therefore runs \cs{@@_update_font:}, which
+% spends the scratch variables on the family \keys{PunctFamily} names.
 % \begin{variable}[int]{\g_@@_fontspec_int}
 % Gives every call its own family name.
 %    \begin{macrocode}
@@ -5529,11 +5545,11 @@ abc汉字abc
 \NewDocumentCommand \CJKfontspec { o m }
   {
     \int_gincr:N \g_@@_fontspec_int
-    \tl_set:Ne \l_@@_tmpa_tl
+    \tl_set:Ne \l_@@_new_family_tl
       { LuaCJK / fontspec / \int_use:N \g_@@_fontspec_int }
     \exp_args:NV \@@_set_family_with_options:nnnn
-      \l_@@_tmpa_tl {#1} {#2} { }
-    \exp_args:NV \@@_switch_family:n \l_@@_tmpa_tl
+      \l_@@_new_family_tl {#1} {#2} { }
+    \exp_args:NV \@@_switch_family:n \l_@@_new_family_tl
     \tex_ignorespaces:D
   }
 %    \end{macrocode}

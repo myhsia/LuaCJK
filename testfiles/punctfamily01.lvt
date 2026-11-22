@@ -40,6 +40,11 @@
 \setCJKfamilyfont{zhhei}{FandolHei-Regular.otf}
 \setbox10=\hbox{字。}
 
+% A one-off family keeps the name \CJKfontspec gives it while the font is
+% registered, so the text takes that font and only the mark takes the
+% punctuation family.
+\setbox12=\hbox{\CJKfontspec{FandolFang-Regular.otf}字。}
+
 \TEST{by default punctuation uses the main CJK font}{
   \psnamesof{0}
 }
@@ -62,6 +67,10 @@
 
 \TEST{the family is picked up once it is declared}{
   \psnamesof{10}
+}
+
+\TEST{a PunctFamily does not stop \CJKfontspec from switching the text}{
+  \psnamesof{12}
 }
 
 \END
