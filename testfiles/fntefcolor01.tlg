@@ -165,3 +165,78 @@ rules: blue
 l. ...}
 rules: black
 ============================================================
+============================================================
+TEST 12: a color that colorlet redefines is followed
+============================================================
+rules: red red
+rules: blue blue
+> \box...=
+\hbox(7.78+1.62)x10.0, direction TLT
+.\leaders 10.0
+..\hbox(0.0+0.0)x10.0, glue set - 0.2fil, direction TLT
+...\glue 0.0 plus 1.0fil minus 1.0fil
+...\hbox(0.0+0.0)x10.4, direction TLT
+....\hbox(3.73401+0.0)x10.4, shifted 4.19998, direction TLT
+.....\hbox(3.73401+0.0)x10.4, direction TLT
+......\glue 0.2
+......\hbox(0.0+0.0)x0.0, shifted -1.867, direction TLT
+.......\pdfsave
+.......\pdfliteral origin{0.39851 w}
+.......\pdfliteral origin{0 J}
+.......\pdfliteral origin{0 j}
+.......\pdfliteral origin{10 M}
+.......\pdfliteral origin{[] 0 d}
+.......\hbox(0.0+0.0)x0.0, direction TLT
+........\hbox(0.0+0.0)x0.0, direction TLT
+.........\savepos
+.........\write1{\new@label@record{draw.1}{{xpos}{\__property_code_xpos: }{ypos}{\__property_code_ypos: }{abspage}{\__property_code_abspage: }}}
+.........\savepos
+........\pdfliteral direct{1 0 0 rg 1 0 0 RG}
+........\pdfliteral origin{0.39851 w}
+........\pdfliteral origin{0 0 m}
+........\pdfliteral origin{1.66078 1.66078 3.32054 1.66078 4.98132 0 c}
+........\pdfliteral origin{6.6421 -1.66078 8.30186 -1.66078 9.96265 0 c}
+........\pdfliteral origin{S}
+.......\pdfrestore
+...\glue 0.0 plus 1.0fil minus 1.0fil
+.\glue -10.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+! OK.
+<argument> ...ve [format = mark]{中}} \showbox 0 
+                                                  \colorlet {mark}{blue} \se...
+l. ...}
+> \box...=
+\hbox(7.78+1.62)x10.0, direction TLT
+.\leaders 10.0
+..\hbox(0.0+0.0)x10.0, glue set - 0.2fil, direction TLT
+...\glue 0.0 plus 1.0fil minus 1.0fil
+...\hbox(0.0+0.0)x10.4, direction TLT
+....\hbox(3.73401+0.0)x10.4, shifted 4.19998, direction TLT
+.....\hbox(3.73401+0.0)x10.4, direction TLT
+......\glue 0.2
+......\hbox(0.0+0.0)x0.0, shifted -1.867, direction TLT
+.......\pdfsave
+.......\pdfliteral origin{0.39851 w}
+.......\pdfliteral origin{0 J}
+.......\pdfliteral origin{0 j}
+.......\pdfliteral origin{10 M}
+.......\pdfliteral origin{[] 0 d}
+.......\hbox(0.0+0.0)x0.0, direction TLT
+........\hbox(0.0+0.0)x0.0, direction TLT
+.........\savepos
+.........\write1{\new@label@record{draw.5}{{xpos}{\__property_code_xpos: }{ypos}{\__property_code_ypos: }{abspage}{\__property_code_abspage: }}}
+.........\savepos
+........\pdfliteral direct{0 0 1 rg 0 0 1 RG}
+........\pdfliteral origin{0.39851 w}
+........\pdfliteral origin{0 0 m}
+........\pdfliteral origin{1.66078 1.66078 3.32054 1.66078 4.98132 0 c}
+........\pdfliteral origin{6.6421 -1.66078 8.30186 -1.66078 9.96265 0 c}
+........\pdfliteral origin{S}
+.......\pdfrestore
+...\glue 0.0 plus 1.0fil minus 1.0fil
+.\glue -10.0
+.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+! OK.
+<argument> ...ve [format = mark]{中}} \showbox 0 
+l. ...}
+============================================================

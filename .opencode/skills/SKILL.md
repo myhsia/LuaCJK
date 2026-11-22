@@ -416,15 +416,18 @@ which is why `format` takes a color name rather than code.
 A type is built once and reused, and it keeps the color and the font size it
 was built with: `lua-ul` copies the attributes of the built box onto every
 leader, and it scans that box once per type, so the cache key of a rule or a
-symbol decoration carries the color — `format` when it is set, otherwise the
-value of `luacolor`'s attribute, which is the color of the surrounding text —
-and the current font size, without which a pattern written in `em` units keeps
-the size of the first call.  Without the color a second call inherits the color
-of the first.  The name of the type already carries a counter, which is why the
-`lua-ul` context can be the constant `LuaCJKfntef`; a context that expands again
-when the type is used would rebuild it with whatever color is current at that
-moment.  The single rule and the strike-out carry their own color in the same
-way, in `\@@_fntef_formatted_underline:` and `\@@_fntef_use_sout:`.
+symbol decoration carries the color — the operations that
+`\luaul_context_color:` holds after `\luaul_set_color:n` when `format` is set,
+otherwise the value of `luacolor`'s attribute, which is the color of the
+surrounding text — and the current font size, without which a pattern written
+in `em` units keeps the size of the first call.  Without the color a second call
+inherits the color of the first.  The key holds those resolved operations rather
+than the name the document wrote, because `\colorlet` may redefine a name
+between two calls.  The name of the type already carries a counter, which is why
+the `lua-ul` context can be the constant `LuaCJKfntef`; a context that expands
+again when the type is used would rebuild it with whatever color is current at
+that moment.  The single rule and the strike-out carry their own color in the
+same way, in `\@@_fntef_formatted_underline:` and `\@@_fntef_use_sout:`.
 
 Every decoration parses one key set: a pair goes to the keys, and a bare item
 that names no key is a color and means `format`, so `[red]` and `[subtract]`

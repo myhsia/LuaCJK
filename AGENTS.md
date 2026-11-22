@@ -446,14 +446,17 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   built with.**  `luacolor` colors a rule by attribute, and `lua-ul` puts the
   attributes of the built box on every leader it inserts, so a type cached by
   geometry alone keeps the color of the first call.  The cache key therefore
-  carries the color —
-  `format` when it is set, otherwise the value of `luacolor`'s attribute, which
-  is the color of the surrounding text — and the font size, because `lua-ul`
-  scans the pattern box once per type, so a pattern written in `em` units would
-  otherwise keep the size of the first call.  The `lua-ul` context is the
-  constant `LuaCJKfntef`: the type name already carries a counter, while a
-  context that expands again at use time rebuilds the type with whatever color
-  is current then.
+  carries the color — the operations that `\luaul_context_color:` holds after
+  `\luaul_set_color:n`, which is what `lua-ul` puts in the context of its own
+  type, when `format` is set, otherwise the value of `luacolor`'s attribute,
+  which is the color of the surrounding text — and the font size, because
+  `lua-ul` scans the pattern box once per type, so a pattern written in `em`
+  units would otherwise keep the size of the first call.  The key holds the
+  resolved operations and not the name the document wrote, because a name can
+  be redefined: `\colorlet{mark}{blue}` after `red` must build a second type.
+  The `lua-ul` context is the constant `LuaCJKfntef`: the type name already
+  carries a counter, while a context that expands again at use time rebuilds
+  the type with whatever color is current then.
 - **A drawn decoration stays out of the line metrics.**  The wave and the
   xout slash are built at use time in
   `\l_@@_fntef_pattern_box`, which is then set to zero height and depth.
