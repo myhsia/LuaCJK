@@ -269,6 +269,49 @@
   }
 }
 
+\TEST{the copies of a symbol start where its span starts}{
+  \setbox0=\vbox{\hsize=120pt \parindent=0pt
+    x\CJKunderanysymbol{0pt}{*}{字字}%
+    \CJKunderdot[symbol = \textbullet]{字}\par}
+  \directlua{
+    local line = tex.box[0].head
+    local function x (n)
+      return node.dimensions(line.glue_set, line.glue_sign,
+        line.glue_order, line.head, n)
+    end
+    local function ink (l)
+      while l do
+        if l.id == node.id("glyph") then
+          return true
+        end
+        if l.id == node.id("hlist") and ink(l.head) then
+          return true
+        end
+        l = l.next
+      end
+      return false
+    end
+    local copies, width, first, n = 0, 0, nil, line.head
+    while n do
+      if n.id == node.id("hlist") and ink(n.head) then
+        copies = copies + 1
+        width  = n.width
+        first  = first or x(n)
+      end
+      n = n.next
+    end
+    local text = line.head
+    while text and not (text.id == node.id("glyph") and text.char > 127) do
+      text = text.next
+    end
+    texio.write_nl("term and log",
+      "copies " .. copies .. ", width " .. tostring(width))
+    local start = first and (x(text) - first) or "no"
+    texio.write_nl("term and log",
+      "the span starts " .. tostring(start) .. " sp from the first copy")
+  }
+}
+
 \END
 
 \end{document}
