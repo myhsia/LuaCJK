@@ -1,5 +1,6 @@
 ## [LuaCJK-v0.0.5](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.5)
 
+- `\CJKfontspec` switches the text to its font even when `PunctFamily` names a family, which used to replace the family name the command was about to select.
 - The gap between two adjacent marks is the blank between their ink: the length `\LuaCJKsetkern` gives is that blank, so `0pt` makes the two marks meet instead of widening the gap, and a compression takes at most the blank the compressed mark carries on its right.
 - A ratio style never cuts into the ink: a mark keeps its ink and the smaller of its two blanks, so the fullwidth percent sign and the fullwidth currency signs keep their advance under `banjiao` and no longer overlap the character after them.
 - The advance a ratio style gives a mark and the place of its ink come from the outline, so a mark whose ink is not against the edge of its box keeps a blank on both sides instead of losing part of the ink.
