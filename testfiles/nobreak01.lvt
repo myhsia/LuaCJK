@@ -51,6 +51,16 @@
   \TYPE{survived}
 }
 
+\TEST{a quad is a break opportunity of its own}{
+  \setbox0=\hbox{中\quad 中}
+  \countpenalties
+}
+
+\TEST{LuaCJKnobreak forbids the break at it}{
+  \setbox0=\hbox{\LuaCJKnobreak{中\quad 中}}
+  \countpenalties
+}
+
 \END
 
 \end{document}

@@ -1198,7 +1198,8 @@ a’a\quad 不亦说乎！
 %     \tn{LuaCJKnobreak} \marg{text}
 %   \end{syntax}
 %   把 \meta{text} 保持在一行之内。参数的节点被打上标记，
-%   断行的处理不在它们的任何边界处断开。标记随当前分组结束。
+%   断行的处理不在它们的任何边界处断开，参数里由 \cs{quad} 或
+%   \cs{hspace} 写出的胶也一样。标记随当前分组结束。
 % \end{function}
 %
 % \iffalse
@@ -2581,7 +2582,8 @@ a’a\quad 不亦说乎！
 %     \tn{LuaCJKnobreak} \marg{text}
 %   \end{syntax}
 %   Keep \meta{text} on one line. The nodes of the argument are marked
-%   and the line-breaking pass forbids a break at any of their boundaries.
+%   and the line-breaking pass forbids a break at any of their boundaries,
+%   including a glue the argument writes with \cs{quad} or \cs{hspace}.
 %   The marking ends with the current group.
 % \end{function}
 %
@@ -4154,9 +4156,15 @@ abc汉字abc
 % \changes{v0.0.2}{2026/11/15}{\cs{LuaCJKnobreak} also forbids the break at a
 %   \texttt{discretionary}, so an explicit hyphen or an automatic hyphenation
 %   point inside the argument no longer breaks the line.}
+% \changes{v0.0.4}{2026/11/20}{\cs{LuaCJKnobreak} forbids the break at a glue
+%   the document writes inside its argument, so a \cs{quad} or an \cs{hspace}
+%   there no longer starts a line.}
 % Keep the argument on one line. The nodes of the argument are marked,
 % and the line-breaking pass forbids every break opportunity that involves a
 % marked node, whether it is a glue, a kern, or a discretionary.
+% The glue need not be one \pkg{LuaCJK} inserted: a glue that carries the mark
+% forbids its break, so \cs{quad}, \cs{hspace}, and \cs{hfill} keep their place
+% on the line.
 %    \begin{macrocode}
 \NewDocumentCommand \LuaCJKnobreak { +m }
   {
@@ -7739,6 +7747,11 @@ end
 % Add the prohibitions where the settings of the text ask for them.
 % A node marked by \cs{LuaCJKnobreak} or by the verbatim addon
 % is prohibited regardless, because the mark itself is the prohibition.
+% The break points the pass reads are the glue \pkg{LuaCJK} inserts and the
+% source spaces, because the punctuation rules are about those places alone;
+% the mark is about every break, so a glue that carries it is read as a break
+% point as well, which is what keeps a \cs{quad} or an \cs{hspace} inside the
+% argument on the same line.
 % A box is read at the edge that faces the break, the way the spacing pass
 % reads it, so that a mark at the edge of the box is neither a line start nor
 % a line end.
@@ -7926,7 +7939,8 @@ local function apply_kinsoku (head)
       last = cur
     elseif cur.id == DISC then
       forbid_marked_disc(cur, last)
-    elseif is_break_point(cur) and last then
+    elseif last and (is_break_point(cur)
+                     or (cur.id == GLUE and no_break_mark(cur))) then
       local nxt                  = next_visible(cur.next)
       local settings             = settings_of(last)
       local prev_mark, prev_char = edge_mark(last, true)
@@ -7935,8 +7949,8 @@ local function apply_kinsoku (head)
         next_mark, next_char = edge_mark(nxt, false)
       end
       local cj = settings.cj_strict and next_char and M.cj[next_char]
-      if nxt and (no_break_mark(last) or no_break_mark(nxt)
-                  or cj
+      if nxt and (no_break_mark(cur) or no_break_mark(last)
+                  or no_break_mark(nxt) or cj
                   or (settings.kinsoku
                       and not disabled(last) and not disabled(nxt)
                       and forbids_break(prev_mark, prev_char,
