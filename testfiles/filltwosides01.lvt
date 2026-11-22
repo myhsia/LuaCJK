@@ -3,7 +3,7 @@
 \documentclass{article}
 \usepackage{LuaCJK}
 \usepackage{LuaCJKfntef}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{FandolSong-Regular.otf}[ItalicFont=FandolKai-Regular.otf]
 \showboxbreadth = 100
 \showboxdepth = 100
 
@@ -145,6 +145,55 @@
   \setbox0=\hbox{前\begin{CJKfilltwosides}{4em}作者\end{CJKfilltwosides}：张三}
   \setbox2=\hbox{前\begin{CJKfilltwosides}{4em}作者\end{CJKfilltwosides} ：张三}
   \TYPE{width: \the\wd0, spaced: \the\wd2}
+}
+
+\TEST{a paragraph after a paragraph break starts at the box's left edge}{
+  \setbox0=\hbox{%
+    \begin{CJKfilltwosides}{5em}
+      中文\par 字字
+    \end{CJKfilltwosides}
+  }
+  \TYPE{width: \the\wd0}
+  \directlua{
+    local n = tex.box[0].head.head
+    local i = 0
+    while n do
+      if n.id == node.id("hlist") then
+        i = i + 1
+        local g = n.head
+        while g and g.id == node.id("local_par") do g = g.next end
+        local lead = "none"
+        if g then
+          lead = node.type(g.id)
+          if g.id == node.id("hlist") then
+            lead = lead .. " " .. (g.width / 65536) .. "pt"
+          end
+        end
+        texio.write_nl("term and log", "line " .. i .. " lead: " .. lead)
+      end
+      n = n.next
+    end
+  }
+}
+
+\TEST{a footnote is set at the bottom of the box}{
+  \setbox0=\hbox{%
+    \begin{CJKfilltwosides}{6em}
+      张三\footnote{注}
+    \end{CJKfilltwosides}
+  }
+  \TYPE{width: \the\wd0, height: \the\ht0}
+  \directlua{
+    local items = {}
+    local i = 0
+    local n = tex.box[0].head.head
+    while n do
+      i = i + 1
+      items[i] = node.type(n.id)
+      n = n.next
+    end
+    texio.write_nl("term and log", "box: " .. table.concat(items, " "))
+  }
 }
 
 \END

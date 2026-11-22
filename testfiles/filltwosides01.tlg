@@ -44,7 +44,7 @@ line 2: glyph glue[4] glyph glue[2] glue[0]
 TEST 7: the environment works in a table cell
 ============================================================
 width: 128.99004pt
-height: 18.185pt, depth: 13.18498pt
+height: 19.67pt, depth: 14.66998pt
 ============================================================
 ============================================================
 TEST 8: the text after the environment joins the box on its line
@@ -57,4 +57,21 @@ line: local_par hlist vlist glyph rule glue glyph glue glyph penalty glue glue
 TEST 9: a space after the environment is ignored
 ============================================================
 width: 80.0pt, spaced: 80.0pt
+============================================================
+============================================================
+TEST 10: a paragraph after a paragraph break starts at the box's left edge
+============================================================
+width: 50.0pt
+line 1 lead: hlist 0.0pt
+line 2 lead: hlist 0.0pt
+============================================================
+============================================================
+TEST 11: a footnote is set at the bottom of the box
+============================================================
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line ....
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line ....
+width: 60.0pt, height: 16.30501pt
+box: hlist glue kern rule kern hlist
 ============================================================
