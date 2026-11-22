@@ -545,12 +545,16 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   for `\tag_*` and `\tagpdfpara*` with `\cs_if_exist:NT` and does nothing when
   tagging is off.  The manual driver declares
   `\DocumentMetadata{tagging=on}` and loads `latex-lab-testphase-l3doc`.
-- **`CJKfilltwosides` tags by mode, and its positions are those of
-  `\parbox`.**  In vertical mode it opens a `text-block` structure; in
-  horizontal mode it emits an MC attached to the surrounding paragraph.  A
-  `text-block` inside a paragraph is invalid (`P --> P`), so the branch is
-  required.  The automatic paragraph hooks are off around the vbox and on
-  again after it.  `t` rebuilds the vlist as a `\vtop`, `b` keeps the natural
+- **`CJKfilltwosides` begins the paragraph it sits in, and its positions are
+  those of `\parbox`.**  The begin hook leaves vertical mode before the box is
+  set, as `\parbox` does, so the box joins the paragraph that follows and the
+  text written after the environment continues on its line; a space after
+  `\end` is ignored through `\ignorespacesafterend`, as `xeCJK` ignores it.
+  The content is therefore always an MC attached to that paragraph, and the
+  automatic paragraph hooks are off around the vbox so that the box opens no
+  paragraph of its own; a `text-block` structure would sit inside a paragraph,
+  which is invalid (`P --> P`), so there is no branch on the mode.
+  `t` rebuilds the vlist as a `\vtop`, `b` keeps the natural
   box, and `c` centres it on `\Umathaxis\textstyle` after
   `\check@mathfonts`, the axis the kernel's text `\vcenter` reads.  A `\vtop`
   takes the height of the first item of its list, so the MC whatsit opens

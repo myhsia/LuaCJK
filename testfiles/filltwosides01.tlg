@@ -46,3 +46,15 @@ TEST 7: the environment works in a table cell
 width: 128.99004pt
 height: 18.185pt, depth: 13.18498pt
 ============================================================
+============================================================
+TEST 8: the text after the environment joins the box on its line
+============================================================
+height: 7.6pt, depth: 2.29pt
+items: hlist
+line: local_par hlist vlist glyph rule glue glyph glue glyph penalty glue glue
+============================================================
+============================================================
+TEST 9: a space after the environment is ignored
+============================================================
+width: 80.0pt, spaced: 80.0pt
+============================================================
