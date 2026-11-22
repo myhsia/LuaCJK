@@ -122,6 +122,21 @@
   \rulecolors
 }
 
+\TEST{a color that colorlet redefines is followed}{
+  \colorlet{mark}{red}
+  \setbox0=\hbox{\CJKunderdblline[format = mark]{中}}
+  \rulecolors
+  \colorlet{mark}{blue}
+  \setbox0=\hbox{\CJKunderdblline[format = mark]{中}}
+  \rulecolors
+  \colorlet{mark}{red}
+  \setbox0=\hbox{\CJKunderwave[format = mark]{中}}
+  \showbox0
+  \colorlet{mark}{blue}
+  \setbox0=\hbox{\CJKunderwave[format = mark]{中}}
+  \showbox0
+}
+
 \END
 
 \end{document}
