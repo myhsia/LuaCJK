@@ -500,3 +500,9 @@ TEST 24: the copies of a drawn pattern start where its span starts
 copies 8, width 674474
 the span starts -1 sp from the first copy
 ============================================================
+============================================================
+TEST 25: the copies of a symbol start where its span starts
+============================================================
+copies 3, width 655360
+the span starts 0 sp from the first copy
+============================================================

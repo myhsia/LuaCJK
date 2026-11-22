@@ -51,7 +51,7 @@ Entry points:
 | --- | --- |
 | `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
-| `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.4`, `packtdszip = false` with `tdslocations` kept for `l3build install`, `ctanpkg`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
+| `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.5`, `packtdszip = false` with `tdslocations` kept for `l3build install`, `ctanpkg`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
 | `testfiles/NN.lvt` + `.tlg` | 77 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree |
@@ -507,35 +507,36 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   its character, so the dots take the color of their text; `format` replaces
   `luacolor`'s attribute value with the one the TeX side resolved, because a
   rule is colored by attribute.
-- **A continuous drawn pattern is written copy by copy by the pass, never
-  repeated by `\leaders` and never spread by `\xleaders`.**  The wave and the
-  slash are a stroke, and `\TeX` repeats only whole copies of a leader box: a
-  span that is not a whole number of periods leaves a remainder, which stops
-  the wave before the last character; `\xleaders` divides it into glue between
-  two copies, and since a butt cap ends where its path ends, every gap is a
-  hole in the stroke as wide as the stroke itself.  `\leaders` is no help
-  either, because the copies of a leader glue are not laid out from its left
-  edge, so a span that is not a whole number of periods loses one at one end —
-  which is what a wave showed whose span ended in the middle of a stretched
-  line, on every line but the ones it filled.  The
-  `pre_append_to_vlist_filter` pass therefore divides the piece into
-  `round(w / period)` whole patterns and writes one copy of the leader box per
-  pattern at `floor(w / k)`, then a kern of the remainder, in place of the
-  leaders glue.  Three details make that exact: the width is read from the
-  line's `glue_set` **and** `glue_sign`, because `glue_set` stays positive on a
-  shrunk line; the ink of the copy is painted inside a scope scaled
-  horizontally to the slot, because the drawing's period is one em and the slot
+- **A repeated pattern is written copy by copy by the pass, never repeated by
+  `\leaders` and never spread by `\xleaders`.**  `\TeX` repeats only whole
+  copies of a leader box, and it aligns them at the left edge of the enclosing
+  box rather than at the left edge of the glue, drawing only a copy that lies
+  wholly inside the glue: a span that is not a whole number of periods loses one
+  at one end, which is what a wave showed whose span ended in the middle of a
+  stretched line, and a one-em symbol of an indented character lost every copy,
+  because its span began half a cell off that grid.  `\xleaders` is no help
+  either: it divides the remainder into glue between two copies, and since a butt
+  cap ends where its path ends, every gap is a hole in the stroke as wide as the
+  stroke itself.  The `pre_append_to_vlist_filter` pass therefore divides the
+  piece into `round(w / period)` whole cells and writes one copy of the leader
+  box per cell at `floor(w / k)`, then a kern of the remainder, in place of the
+  leaders glue.  Three details make that exact for a drawing: the width is read
+  from the line's `glue_set` **and** `glue_sign`, because `glue_set` stays
+  positive on a shrunk line; the ink of the copy is painted inside a scope scaled
+  horizontally to the cell, because the drawing's period is one em and the cell
   is not; and the closing literal carries `Q` plus `1 0 0 1 <period> 0 cm`,
   because a `q … Q` around the content rewinds the point the backend advances
   from TeX's own bookkeeping.  A copy also drops l3draw's record of the
   drawing's origin, a box of no width that holds nothing but whatsits: every
   copy would record the same label, and the manual then reports `multiply
-  defined`.  `tile` touches a leader box only when it holds a
-  whatsit and no glyph or rule, so the dots (whose ink is per character),
-  `\CJKunderanyline`, `\CJKunderanysymbol` and the `symbol` cells keep theirs,
-  and a box that never reaches a vertical list, such as `\hbox to`, keeps the
-  plain `\leaders` remainder.  The wave's period is one em and its amplitude a
-  quarter em.
+  defined`.  A symbol is a glyph, which does not scale, so its copy keeps its
+  size and is centred in its cell by a kern instead, and that is what
+  `\CJKunderanysymbol`, `\CJKunderanyline` and the `symbol` of the wave and the
+  dots get.  A leader that is a rule, or a box that reduces to one solid rule, is
+  left to `\leaders`, which fills it to the whole width of the glue; the dots
+  keep the leader box of no ink they were given; and a box that never reaches a
+  vertical list, such as `\hbox to`, keeps the plain `\leaders` remainder.  The
+  wave's period is one em and its amplitude a quarter em.
 - **A decoration symbol is not text the reader should copy.**  The glyphs of
   `\CJKunderanysymbol` and of the `symbol` key are wrapped in an
   `ActualText` marked-content sequence whose replacement is `U+200B`; readers
@@ -764,7 +765,7 @@ l3build upload --dry-run           # the form, without publishing it
   new release edits that table and nothing else.
   `pkg` is `string.lower(module)`, the id the archive's top directory must
   carry, and `version` is the tag's version as written followed by the release
-  date, `v0.0.4 2026-11-22`: CTAN drops the leading `v` when it displays the
+  date, `v0.0.5 2026-11-22`: CTAN drops the leading `v` when it displays the
   record, and its maintainers ask that the date found in the package files be
   repeated there.  `date` is the one source of it, so `scripts/check-docs.sh`
   keeps the record and the `\changes` history in step.

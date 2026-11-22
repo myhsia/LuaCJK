@@ -1,3 +1,7 @@
+## [LuaCJK-v0.0.5](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.5)
+
+- The cell of a repeated symbol starts at the left edge of the decorated span, so `\CJKunderanysymbol` keeps the symbol of a single character whose span begins in the middle of a cell; `\CJKunderanyline` and the `symbol` of `\CJKunderdot` and `\CJKunderwave` follow the same rule.
+
 ## [LuaCJK-v0.0.4](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.4)
 
 - A run of CJK characters inside an `lstlisting` block is one token of `listings`, so a `emph` or `keywords` entry that names a CJK word highlights it; a Latin character and a CJK mark both end the run.

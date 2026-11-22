@@ -126,7 +126,7 @@ The Current Maintainer of this work is **Mingyu Xia**.
 %<*package|fntef|listings|ctex>
 \NeedsTeXFormat{LaTeX2e}[2026/06/01]
 \RequirePackage { expl3 }
-\GetIdInfo $Id: LuaCJK.dtx v0.0.4 2026-11-22 myhsia<myhsia@outlook.com>$
+\GetIdInfo $Id: LuaCJK.dtx v0.0.5 2026-11-22 myhsia<myhsia@outlook.com>$
 %<package>  {A LuaTeX CJK typesetting package}
 %<package>\ProvidesExplPackage {\ExplFileName}
 %<fntef>  {Font effects for LuaCJK (CTEX)}
@@ -10143,27 +10143,32 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}[int]{tile}
-% Write the copies of a drawn decoration into the piece it covers.
+% \begin{macro}[int]{tile, write_copies}
+% Write the copies of a repeated decoration into the piece it covers.
 % The append callback is the one place where the width of the piece is
 % final, so there it is divided into the nearest whole number of patterns and
 % the piece is rebuilt from copies of the leader box, each as wide as that
 % division: the copies are adjacent, the pattern reaches both ends of the span,
 % and its period follows the stretch of the line. The width is rounded down, so
-% that the remainder is a few scaled points at most and is left as a kern, and
-% the ink of a copy is scaled to the width it is given, so that one copy's path
-% ends exactly where the next one's begins: the period of the drawing is one
-% em, and the width the piece is divided into is almost never the same.
+% that the remainder is a few scaled points at most and is left as a kern.
 %
-% The copies are written here rather than repeated by \tn{leaders}, because the
-% copies of a leader glue are not laid out from its left edge: a span that is
-% not a whole number of patterns loses one at one end, which is what a
-% decoration showed whose span ended in the middle of a stretched line.
+% The copies are written here rather than repeated by \tn{leaders}, because a
+% copy of a leader glue is aligned at the left edge of the enclosing box and not
+% at the left edge of the glue, and only a copy that lies wholly inside the glue
+% is drawn: a span that is not a whole number of patterns loses one at one end,
+% and a span that does not begin on the grid loses every copy that straddles its
+% edge, which is what a symbol of a single indented character showed.
 % \tn{xleaders} cannot spread the pattern either, because the glue it puts
 % between two copies separates two butt caps.
 %
-% A copy also loses the record of the drawing's origin, which \pkg{l3draw} puts
-% in front of every drawing: it is a box of no width that holds nothing but
+% The ink of a drawn copy is scaled to the width it is given, so that one
+% copy's path ends exactly where the next one's begins: the period of the
+% drawing is one em, and the width the piece is divided into is almost never
+% the same. A symbol is a glyph, which does not scale, so its copy keeps its
+% size and is centred in its cell instead.
+%
+% A drawn copy also loses the record of the drawing's origin, which \pkg{l3draw}
+% puts in front of every drawing: it is a box of no width that holds nothing but
 % whatsits, and a label that every copy records is multiply defined.
 %    \begin{macrocode}
 local function only_whatsits (head)
@@ -10194,6 +10199,49 @@ local function strip_record (head)
   return head
 end
 
+local function write_copies (box, prev, n, w, scale)
+  local period = n.leader.width
+  local k      = math.floor(w / period + 0.5)
+  local width  = math.floor(w / k)
+  local first, last
+  for _ = 1, k do
+    local copy = node.copy(n.leader)
+    copy.head  = node.copy_list(n.leader.head)
+    copy.width = width
+    if scale then
+      copy.head = strip_record(copy.head)
+      scale_ink(copy, width / period, period / 65536 * 72 / 72.27)
+    elseif width ~= period then
+      local shift = node.new("kern")
+      shift.kern  = math.floor((width - period) / 2)
+      shift.next  = copy.head
+      copy.head   = shift
+    end
+    copy_attributes(copy, n)
+    copy.next = nil
+    if last then
+      last.next = copy
+    else
+      first = copy
+    end
+    last = copy
+  end
+  local rest = w - k * width
+  if rest > 0 then
+    local tail = node.new("kern")
+    tail.kern  = rest
+    last.next  = tail
+    last       = tail
+  end
+  last.next = n.next
+  if prev then
+    prev.next = first
+  else
+    box.head  = first
+  end
+  return last
+end
+
 local function tile (box)
   local prev = nil
   local n    = box.head
@@ -10201,41 +10249,13 @@ local function tile (box)
     local nxt = n.next
     if n.id == GLUE and n.subtype == LEADERS and n.leader then
       local literal, ink = drawn(n.leader)
-      if literal and not ink then
+      local pattern = literal and not ink
+      local symbol  = ink and not box_rule(n.leader)
+      if pattern or symbol then
         local w      = glue_width(box, n)
         local period = n.leader.width
         if period > 0 and w >= period then
-          local k     = math.floor(w / period + 0.5)
-          local width = math.floor(w / k)
-          local first, last
-          for _ = 1, k do
-            local copy = node.copy(n.leader)
-            copy.head  = strip_record(node.copy_list(n.leader.head))
-            copy.width = width
-            scale_ink(copy, width / period, period / 65536 * 72 / 72.27)
-            copy_attributes(copy, n)
-            copy.next = nil
-            if last then
-              last.next = copy
-            else
-              first = copy
-            end
-            last = copy
-          end
-          local rest = w - k * width
-          if rest > 0 then
-            local tail = node.new("kern")
-            tail.kern  = rest
-            last.next  = tail
-            last       = tail
-          end
-          last.next = nxt
-          if prev then
-            prev.next = first
-          else
-            box.head  = first
-          end
-          n = last
+          n = write_copies(box, prev, n, w, pattern)
         end
       end
     end
@@ -11294,9 +11314,17 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \end{macro}
 %
 % \begin{macro}{\CJKunderanysymbol}
+% \changes{v0.0.5}{2026/11/22}{The cell of a repeated symbol starts at the
+%   left edge of the decorated span, so \cs{CJKunderanysymbol} keeps the symbol
+%   of a single character whose span begins in the middle of a cell;
+%   \cs{CJKunderanyline} and the \keys{symbol} of \cs{CJKunderdot} and
+%   \cs{CJKunderwave} follow the same rule.}
 % One symbol per em, which is what one wants for a repeated mark:
 % the cell is as wide as a CJK character, so a row of symbols lines up with
 % the characters above, and the symbol is centered in its cell.
+% The append callback writes one copy of the symbol per cell, from the left edge
+% of the span, because \tn{leaders} aligns its copies at the edge of the
+% enclosing box and draws none that straddles the edge of the glue.
 % The depth is handed to \cs{LuaCJKfntef_use_symbol:n},
 % which puts the top of the symbol that far below the baseline.
 %    \begin{macrocode}
