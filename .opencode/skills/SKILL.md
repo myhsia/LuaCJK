@@ -706,24 +706,32 @@ extracts and selects; `selectable = true` keeps it as text. The wrapper is a
 `pdf_literal` inside the leader box, not a font change: a cloned font used in
 a `\leaders` box aborts LuaTeX at shipout.
 
-`\CJKfilltwosides` leaves vertical mode before it sets the box, as `\parbox`
-does, so the box joins the paragraph that follows: the text written after the
-environment stays on the same line and a space after `\end` is ignored.  Its
-content is therefore always an MC attached to that paragraph; there is no
-branch on the mode, because a `text-block` structure inside a paragraph is
-invalid (`P --> P`), and the automatic paragraph hooks stay off around the
-vbox so that it opens no paragraph of its own.
+`\CJKfilltwosides` is a `minipage`. The environment sets its body in
+`\minipage[position]{width}` — a width of zero or less passes `\linewidth` —
+inside a group that gives the inter-character glue an infinite stretch, and
+leaves everything else to the kernel: `\parindent` and `\parskip` are zero, so
+a paragraph after a paragraph break starts at the left edge of the box and is
+filled like the first; the leading is the document's own rather than the
+`\lineskip` an enclosing alignment would impose; `\\` is `\@normalcr`, so a
+table cell can hold the environment; and `\leavevmode` leaves vertical mode,
+so the box joins the paragraph that follows, the text after the environment
+stays on the same line, and a space after `\end` is ignored.
 
-Its positions are those of `\parbox`, because the report that asked for them
-compared the two: `t` rebuilds the vlist as a `\vtop`, `b` keeps the natural
-box, and `c` centres it on `\Umathaxis\textstyle` after `\check@mathfonts`,
-the axis the kernel's text `\vcenter` reads. A `\vtop` takes the height of the
-first item of its list, so the MC whatsit opens after `\noindent`, inside the
-first line; in the vlist in front of it, a `t` box would have no height.
+The `t`, `c`, and `b` positions are the kernel's: `t` is a `\vtop`, `b` the
+natural box, and `c` the kernel's text `\vcenter`, centred on
+`\Umathaxis\textstyle` after `\check@mathfonts`. A `\footnote` inside the body
+is the minipage's: it is set at the bottom of the box, below the rule, and
+numbered with the box's own counter, because `\@mpfootnotetext` keeps the note
+in `\@mpfootins` and `\endminipage` unpacks that box into the vlist. A
+hand-rolled `\vbox` cannot do either: the insert would be discarded at shipout,
+and the settings above would have to be copied from the kernel one by one.
 
-It also takes `\\` back to `\@normalcr` inside its group, as `\parbox` does, so
-a cell of a table can hold it: without that, the `\vbox` inherits the
-`\@arraycr` of the alignment and the `\cr` ends the cell.
+Tagging follows from that. `latex-lab`'s minipage module patches
+`\@iiiminipage` and `\endminipage`, so around the box it ends the paragraph
+structure, opens a `text-minipage` for the body, and reopens the paragraph
+after it; the package opens no MC of its own and turns no paragraph hook off.
+The module is loaded by any `\DocumentMetadata`, so a document that tags gets
+the structure without the package knowing whether tagging is on.
 
 The reader's selection height comes from the font's `hhea` ascent and descent,
 not from the em box. For Noto Serif CJK SC that is 1.437em, so the selection

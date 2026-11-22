@@ -548,23 +548,26 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   for `\tag_*` and `\tagpdfpara*` with `\cs_if_exist:NT` and does nothing when
   tagging is off.  The manual driver declares
   `\DocumentMetadata{tagging=on}` and loads `latex-lab-testphase-l3doc`.
-- **`CJKfilltwosides` begins the paragraph it sits in, and its positions are
-  those of `\parbox`.**  The begin hook leaves vertical mode before the box is
-  set, as `\parbox` does, so the box joins the paragraph that follows and the
-  text written after the environment continues on its line; a space after
-  `\end` is ignored through `\ignorespacesafterend`, as `xeCJK` ignores it.
-  The content is therefore always an MC attached to that paragraph, and the
-  automatic paragraph hooks are off around the vbox so that the box opens no
-  paragraph of its own; a `text-block` structure would sit inside a paragraph,
-  which is invalid (`P --> P`), so there is no branch on the mode.
-  `t` rebuilds the vlist as a `\vtop`, `b` keeps the natural
-  box, and `c` centres it on `\Umathaxis\textstyle` after
-  `\check@mathfonts`, the axis the kernel's text `\vcenter` reads.  A `\vtop`
-  takes the height of the first item of its list, so the MC whatsit opens
-  after `\noindent`, inside the first line, and never in the vlist in front of
-  it: there it would leave a `t` box with no height at all.  The environment
-  also takes `\\` back to `\@normalcr`, as `\parbox` does, so a cell of a
-  table can hold it: the break belongs to the box, not to the alignment.
+- **`CJKfilltwosides` is a `minipage`.**  The environment sets its body in
+  `\minipage[position]{width}` inside a group that gives the inter-character
+  glue an infinite stretch, and a width of zero or less passes `\linewidth`.
+  The body is therefore a parbox whose settings the kernel keeps: `\parindent`
+  and `\parskip` are zero, so a paragraph after a paragraph break starts at the
+  left edge of the box and is filled like the first; the leading is the
+  document's own, which an enclosing alignment would otherwise replace with
+  `\lineskip`; `\textwidth` and `\columnwidth` follow the width; the list depth
+  restarts; and `\\` is `\@normalcr`, so a cell of a table can hold the
+  environment.  A `\footnote` inside is set at the bottom of the box, below the
+  rule, and numbered with the box's own counter.  Do not go back to a
+  hand-rolled `\vbox`: an insert in a vertical box is discarded at shipout, so
+  the note disappears, and every one of those settings would have to be copied
+  from the kernel.  The box leaves vertical mode through `\leavevmode`, so the
+  text after the environment continues on its line, and a space after `\end` is
+  ignored through `\ignorespacesafterend`, as `xeCJK` ignores it.  Under
+  tagging, `latex-lab`'s minipage module owns the structure — it ends the
+  paragraph around the box, opens a `text-minipage` for the body, and reopens
+  the paragraph after it — so the package opens no MC of its own and leaves the
+  paragraph hooks alone.
 - **The selection rectangle is not ours.**  A PDF reader derives its height
   from the font's `hhea` ascent and descent.  For Noto Serif CJK SC that is
   1.437em, so the reader's box is taller than the 1em square even though the
@@ -1023,6 +1026,19 @@ was one glyph, and a joiner never reached the font at all, so an emoji
 sequence was split.  What replaces it is the substitution in front of shaping;
 copying a shaped glyph cannot carry what shaping decided, and a character the
 shaper must see cannot be removed at the input.
+
+A sixth was the body of `CJKfilltwosides` set in a hand-rolled `\vbox` whose
+lines were placed by the package: the `t` position rebuilt the vlist as a
+`\vtop`, the `c` position centred it on `\Umathaxis\textstyle`, and the body
+was tagged as one MC of the paragraph around it, which meant turning the
+automatic paragraph hooks off around the box.  It went for two reports that
+read the box from the outside: a paragraph after `\par` kept the surrounding
+`\parindent` (15pt on the report's two-line box) while `xeCJK`'s minipage
+starts at the left edge, and a `\footnote` became an `ins` node that a
+vertical box discards at shipout, so the mark printed and the note never did.
+What replaces it is `\minipage` itself: the kernel keeps the parbox settings,
+the mpfootnote mechanism, and — through `latex-lab`'s minipage module — the
+tagged structure, so none of it is copied here.
 
 ## Issue triage
 
