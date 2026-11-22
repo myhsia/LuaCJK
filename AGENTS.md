@@ -251,6 +251,16 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   retimed to that glue and the blank rides in its width — never in a kern of
   its own — so a newline in the source cannot space two marks apart, and a
   break at the boundary discards the compression with the glue (`punct01`).
+- **A fixed-width style takes the blank, never the ink.**  A ratio style reads
+  the advance and the place of the ink from the outline: the smaller of the two
+  blanks stays on both sides and the rest of the outer blank is taken, so a
+  closing mark keeps its ink, an opening mark moves left by what it loses, a
+  middle mark is centred, and a mark whose ink nearly fills its advance (％,
+  ＄, ￥) keeps the full width rather than overlapping its neighbour.  The
+  advance the hang is measured inside is the same computation, so a widened
+  mark hangs by the blank it has.  A width the document sets with
+  `\LuaCJKsetwidth` or `PunctWidth` is used as it stands — that is what makes
+  `0pt` an advance — with the class moving the ink (`punctgeom01`).
 - **Every behavior change needs a test.**  Add or extend a `.lvt`, run
   `l3build save <name>`, then read the `.tlg` diff and confirm the numbers are
   the values you designed, not merely "whatever came out". `save` takes bare

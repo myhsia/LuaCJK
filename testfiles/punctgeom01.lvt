@@ -47,6 +47,17 @@
   \endgroup
 }
 
+% The ink of ％ stands in the middle of its box, so a blank remains on both
+% sides: the style keeps the smaller one and gives the rest of the advance
+% back, and the ink stays where the font put it.
+\TEST{a mark whose ink fills its advance keeps it}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle = banjiao}
+    \setbox0=\hbox{％}\dumpgeom
+    \setbox0=\hbox{＄}\dumpgeom
+  \endgroup
+}
+
 \TEST{a middle mark moves its ink by half}{
   \begingroup
     \LuaCJKsetup{PunctStyle = banjiao}

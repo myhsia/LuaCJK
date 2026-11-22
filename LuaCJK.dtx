@@ -907,6 +907,8 @@ $ 天地玄黄 $ and 天地玄黄
 %   \texttt{plain}、\texttt{banjiao}、\texttt{kaiming}、\texttt{CCT}
 %   与 \texttt{hangmobanjiao}。
 %   未知的名字给出警告并回退到 \texttt{plain}。
+%   带固定宽度的样式不会切进墨迹：标点保留自己的墨迹与两侧较小的一份空白，
+%   所以一个墨迹几乎占满进距的标点（例如 U+FF05）保持全角。
 %   \item[\keys{PunctWidth}]\val{length, false}: 不管样式怎么说，
 %   给每个标点同样的进距。
 %   \texttt{0pt} 也是一个进距，标点因此不占任何进距；
@@ -1110,7 +1112,7 @@ a’a\quad 不亦说乎！
 %   每个参数只使用第一个字符。
 %   与 \cs{LuaCJKsetwidth} 一样，这个设置是全局的。
 %   与 \pkg{xeCJK} 不同，它也可以写在正文里：
-%   空隙是在生成行时读取的，所以调用之后的行按新的空白排版。
+%   空白是在生成行时读取的，所以调用之后的行按新的空白排版。
 % \end{function}
 %
 % \iffalse
@@ -1602,9 +1604,10 @@ abc汉字abc
 %   \item \keys{Verb}：\texttt{env+} 的行为与 \texttt{false} 一样，
 %   因为两者都保留调整。
 %   \item 标点几何。样式把标点的尺寸给成一半，或者一半但句末标点保持全角，
-%   或者 0.7 倍，并且墨迹按类别随进距移动：
-%   开头的标点移动整个量，中间的标点移动一半，收尾的标点完全不移动。
-%   \pkg{xeCJK} 则是测量每个字形的真实侧边距。
+%   或者 0.7 倍，而进距与墨迹的位置取自标点自己的轮廓：
+%   样式只取走外侧的那份空白，所以墨迹几乎占满进距的标点保持全角。
+%   两个相邻标点之间的空白，以及 \cs{LuaCJKsetkern} 给出的长度，
+%   都是两处墨迹之间的空白。
 %   \item \cs{LuaCJKDeclarePunctStyle} 接受三个键
 %   \keys{compress-adjacent}、\keys{adjacent-ratio} 与
 %   \keys{keep-open-close}；\pkg{xeCJK} 的三十个几何键描述它的侧边距模型，
@@ -2285,6 +2288,9 @@ $ 天地玄黄 $ and 天地玄黄
 %   \texttt{plain}, \texttt{banjiao}, \texttt{kaiming}, \texttt{CCT},
 %   and \texttt{hangmobanjiao}.
 %   An unknown name issues a warning and falls back to \texttt{plain}.
+%   A style with a fixed width never cuts into the ink: a mark keeps its ink
+%   and the smaller of its two blanks, so a mark whose ink nearly fills its
+%   advance, U+FF05 for instance, keeps the full width.
 %   \item[\keys{PunctWidth}]\val{length, false}: Give
 %   every punctuation mark the same advance, whatever the style says.
 %   \texttt{0pt} is an advance too, so the marks take none at all;
@@ -3020,10 +3026,11 @@ abc汉字abc
 %   \item \keys{Verb}: \texttt{env+} behaves like \texttt{false}, because both
 %   leave the adjustments on.
 %   \item Punctuation geometry. A style gives a mark half the size, half with
-%   the sentence-ending marks kept full, or 0.7 of it, and the ink moves with
-%   the advance by class: an opening mark by the whole amount, a middle mark by
-%   half, a closing mark not at all.
-%   \pkg{xeCJK} measures the real side bearings of each glyph instead.
+%   the sentence-ending marks kept full, or 0.7 of it, and the advance and the
+%   place of the ink come from the mark's outline: the style takes the outer
+%   blank and no more, so a mark whose ink nearly fills its advance keeps the
+%   full width. The gap between two adjacent marks, and the length
+%   \cs{LuaCJKsetkern} gives, are the blank between the two inks.
 %   \item \cs{LuaCJKDeclarePunctStyle} takes the three keys
 %   \keys{compress-adjacent}, \keys{adjacent-ratio}, and
 %   \keys{keep-open-close}; the thirty geometry keys of \pkg{xeCJK} describe
@@ -8064,16 +8071,27 @@ end
 %   once: a box that holds the list is packed again, and the mark no longer
 %   takes a second compensating kern, so a fixed-width style no longer
 %   squeezes a table cell or a parbox.}
+% \changes{v0.0.5}{2026/11/22}{A ratio style never cuts into the ink: a mark
+%   keeps its ink and the smaller of its two blanks, so the fullwidth percent
+%   sign and the fullwidth currency signs keep their advance under
+%   \texttt{banjiao} and no longer overlap the character after them.}
 % Styles such as \texttt{banjiao} give every punctuation mark a fixed
 % advance. The glyph advance cannot be changed, so a compensating kern
 % goes right after the glyph. A penalty in front of that kern keeps \TeX\
 % from treating it as an extra break opportunity.
-% The kern alone is only right for a mark whose ink sits at the left of its
-% advance, which is what a closing mark does. An opening mark keeps its ink
-% at the right, so the ink is moved left by the same amount; a middle mark is
-% centered, so it moves by half. A dash or an ellipsis is not shortened by the
-% style: its advance is the length of the stroke, and halving it would let the
-% two halves of a two-em dash overlap.
+% The advance of a ratio style and the place of the ink in it come from the
+% outline: the mark keeps the smaller of its two blanks and the style takes the
+% rest from the blank on the outer side, which is the side that faces away from
+% the text the mark encloses.  A closing mark therefore keeps its ink where it
+% is, an opening mark moves left by what it loses, and a middle mark is centred
+% in the advance; a mark whose ink is not against the edge of its box (the
+% fullwidth percent sign, whose ink stands in the middle) keeps a blank on both
+% sides and grows back towards its natural advance, so the ink is never cut.
+% A width the document sets with \cs{LuaCJKsetwidth} or \keys{PunctWidth} is an
+% advance in its own right, and the ink keeps the place its class gives it.
+% A dash or an ellipsis is not shortened by the style: its advance is the
+% length of the stroke, and halving it would let the two halves of a two-em
+% dash overlap.
 % A half-width bracket is already narrow, so the ratio of a style leaves it
 % alone; a width the document sets applies to it like any other.
 % A mark keeps the kern it was given. \TeX\ runs the box-packing callback again
@@ -8096,7 +8114,7 @@ local function fixed_width (cur, settings, style)
     target = settings.punct_width
   end
   if target then
-    return target
+    return target, false
   end
   if half_mark(punct_class(cur.char, settings, cur.font)) then
     return nil
@@ -8112,9 +8130,51 @@ local function fixed_width (cur, settings, style)
   local f    = font.getfont(cur.font)
   local size = f and f.size or 0
   if size > 0 then
-    return math.floor(ratio * size + 0.5)
+    return math.floor(ratio * size + 0.5), true
   end
   return nil
+end
+
+% \begin{macro}[int]{style_metrics}
+% \changes{v0.0.5}{2026/11/22}{The advance a ratio style gives a mark and the
+%   place of its ink come from the outline, so a mark whose ink is not against
+%   the edge of its box keeps a blank on both sides instead of losing part of
+%   the ink.}
+% The advance and the ink shift of a ratio style, from the outline of the
+% mark: the smaller blank is kept on both sides, so the style takes the rest
+% of the outer blank and the advance grows by whatever the ink does not allow
+% it to lose.  A middle mark is centred in the target advance.  A file that
+% cannot be read falls back to the advance the style asks for, with the ink
+% moved by its class.
+%    \begin{macrocode}
+local function style_metrics (g, class, target)
+  local lb, rb = M.mark_blanks(g)
+  if not lb then
+    return target, ink_shift(class, target - g.width)
+  end
+  local w = g.width
+  if class == "middle" then
+    return target, math.floor((target - (w - lb - rb)) / 2 + 0.5) - lb
+  end
+  local outer = (class == "open" or class == "half-open") and lb or rb
+  local margin = math.max(math.min(lb, rb), outer - (w - target))
+  return w - outer + margin, (outer == lb) and (margin - lb) or 0
+end
+
+% \begin{macro}[int]{fixed_advance}
+% The advance a mark really takes, which is what the hang is measured inside:
+% the width the document set, or the one a ratio style can give without
+% cutting the ink.
+%    \begin{macrocode}
+local function fixed_advance (g, settings)
+  local target, ratio = fixed_width(g, settings, style_of(settings))
+  if not target then
+    return g.width
+  end
+  if not ratio then
+    return target
+  end
+  return style_metrics(g, punct_class(g.char, settings, g.font), target)
 end
 
 local function fixed_done (n)
@@ -8131,13 +8191,17 @@ local function apply_fixed_widths (head)
   while cur do
     local settings = settings_of(cur)
     local style    = style_of(settings)
-    if cur.id == GLYPH and punct_class(cur.char, settings, cur.font)
-       and not disabled(cur) and not fixed_done(cur) then
-      local target = fixed_width(cur, settings, style)
+    local class    = cur.id == GLYPH
+      and punct_class(cur.char, settings, cur.font)
+    if class and not disabled(cur) and not fixed_done(cur) then
+      local target, ratio = fixed_width(cur, settings, style)
       if target then
-        local delta = target - cur.width
+        local advance, shift = target, ink_shift(class, target - cur.width)
+        if ratio then
+          advance, shift = style_metrics(cur, class, target)
+        end
+        local delta = advance - cur.width
         if delta ~= 0 then
-          local shift = ink_shift(punct_class(cur.char, settings, cur.font), delta)
           local p = new_node("penalty")
           inherit_attributes(p, cur)
           p.penalty = 10000
@@ -9095,7 +9159,7 @@ M.mark_blanks = mark_blanks
 % compressed style hangs less.
 %    \begin{macrocode}
 local function hang_amount (g, mark, settings)
-  local target = fixed_width(g, settings, style_of(settings)) or g.width
+  local target = fixed_advance(g, settings)
   local bound  = bound_width(settings)
   if bound then
     return math.max(0, target - bound)

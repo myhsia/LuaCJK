@@ -63,41 +63,47 @@ comma: 25.0pt
 hanzi: 10.0pt
 ============================================================
 ============================================================
-TEST 12: banjiao gives a mark its advance once in a nested box
+TEST 12: banjiao leaves a mark whose ink fills its advance alone
+============================================================
+percent: 10.0pt
+hanzi: 10.0pt
+============================================================
+============================================================
+TEST 13: banjiao gives a mark its advance once in a nested box
 ============================================================
 nested: 25.0pt
 flat: 25.0pt
 KERNS 1
 ============================================================
 ============================================================
-TEST 13: kaiming keeps final punctuation full width
+TEST 14: kaiming keeps final punctuation full width
 ============================================================
 comma: 25.0pt
 period: 30.0pt
 ============================================================
 ============================================================
-TEST 14: CCT narrows punctuation
+TEST 15: CCT narrows punctuation
 ============================================================
 comma: 27.0pt
 ============================================================
 ============================================================
-TEST 15: fixed width style reports no warning
+TEST 16: fixed width style reports no warning
 ============================================================
 ============================================================
 ============================================================
-TEST 16: hangmobanjiao hangs the line-final mark in the measure
+TEST 17: hangmobanjiao hangs the line-final mark in the measure
 ============================================================
 LINE 12290 xoff 0 hang 422052
 LINE 23383 xoff 0 hang 0
 ============================================================
 ============================================================
-TEST 17: quanjiao does not hang punctuation
+TEST 18: quanjiao does not hang punctuation
 ============================================================
 XOFFSET 0
 XOFFSET 0
 ============================================================
 ============================================================
-TEST 18: quanjiao restored after group
+TEST 19: quanjiao restored after group
 ============================================================
 plain: 40.0pt
 quanjiao: 35.0pt

@@ -92,6 +92,18 @@
   \endgroup
 }
 
+% The percent sign's ink nearly fills its advance, so a ratio style has no
+% blank to take and the mark keeps its full width.
+\TEST{banjiao leaves a mark whose ink fills its advance alone}{
+  \begingroup
+    \LuaCJKsetup{PunctStyle=banjiao}
+    \setbox0=\hbox{％}
+    \setbox2=\hbox{字}
+    \TYPE{percent: \the\wd0}
+    \TYPE{hanzi: \the\wd2}
+  \endgroup
+}
+
 \TEST{banjiao gives a mark its advance once in a nested box}{
   \begingroup
     \LuaCJKsetup{PunctStyle=banjiao}

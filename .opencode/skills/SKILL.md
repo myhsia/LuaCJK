@@ -142,11 +142,19 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    visible node, not from the glue's predecessor, so a whatsit or a penalty
    between two marks does not hide them from the long-punct rule.
 3. `apply_fixed_widths` — give punctuation the advance the style asks for, by
-   inserting a penalty and a kern after the mark. The ink is moved by class:
-   an opening mark by the whole amount, a middle mark by half, a closing mark
-   not at all. A dash or an ellipsis keeps its advance. A mark that already
-   carries the pair the pass inserted is passed over, because `hpack_filter`
-   walks the same list again for every box that holds it (`punct01`).
+   inserting a penalty and a kern after the mark. A ratio style reads the
+   advance and the place of the ink from the outline (`style_metrics`): the
+   smaller blank stays on both sides and the rest of the outer blank is taken,
+   so an opening mark moves left by what it loses, a closing mark keeps its
+   ink, a middle mark is centred, and a mark whose ink nearly fills its
+   advance (％, ＄, ￥) keeps the full width instead of losing part of the ink.
+   A width the document sets with `\LuaCJKsetwidth` or `PunctWidth` is used as
+   it stands, with the class moving the ink. A dash or an ellipsis keeps its
+   advance. `hang_amount` measures inside `fixed_advance`, the same
+   computation, so a widened mark hangs by the blank it really has. A mark that
+   already carries the pair the pass inserted is passed over, because
+   `hpack_filter` walks the same list again for every box that holds it
+   (`punct01`, `punctgeom01`).
 4. `hang_bounds` — insert the hang of a mark into the measure, as a zero-size
    rule of negative width beside the break glue (`hang01`), and at the two
    boundaries that carry no glue: in front of the opening mark that begins a
@@ -314,7 +322,7 @@ A style (`M.punct_styles`) is a table of six optional fields:
 | --- | --- |
 | `compress_adjacent`, `ratio` | shorten the mark before another one by `ratio` of its width |
 | `keep_open_close` | do not compress an opening against a closing mark |
-| `fixed_ratio`, `fixed_full` | give every mark `fixed_ratio` of the em, except the `kaiming` set |
+| `fixed_ratio`, `fixed_full` | give every mark `fixed_ratio` of the em, except the `kaiming` set, and never less than the ink and its smaller blank |
 | `hang` | let a line-final or line-initial mark stand in the margin by half its advance |
 
 Every style but `plain` sets `hang`, which is what `hangmobanjiao` used to
