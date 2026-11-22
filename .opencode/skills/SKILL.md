@@ -526,7 +526,10 @@ resolved by `luaul_apply_color:` — so the TeX side reads the value of
 
 `subtract` keeps its meaning as a distance from each end: a character whose
 centre falls in the inset part gets no dot, so half an em removes nothing from
-a span of whole characters and a whole em removes its first and its last.
+a span of whole characters and a whole em removes its first and its last.  The
+two bounds are those of the span and they travel into a box unchanged, so a
+character inside an `\mbox` is measured from the edge of the span rather than
+from the edge of its box.
 `skip` leaves the punctuation undotted, and `hidden` still runs after the dots
 are written, so a hidden span keeps them while its glyphs become kerns.
 
