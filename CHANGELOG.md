@@ -1,9 +1,13 @@
 ## [LuaCJK-v0.0.4](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.4)
 
 - A run of CJK characters inside an `lstlisting` block is one token of `listings`, so a `emph` or `keywords` entry that names a CJK word highlights it; a Latin character and a CJK mark both end the run.
+- `Baseline` belongs to the declaration that writes it, so a fallback font and a family that name the same font keep their own offsets.
 - `HalfLeft` and `HalfRight` declare a half-width ASCII bracket: it keeps its advance, does not hang, and hugs the text inside the pair, where they used to declare a full-width opening or closing mark.
 - The font of a CJK family is resolved in the Unicode encoding: a document that sets its Latin text in an 8-bit encoding with `fontenc` keeps its CJK text.
 - The family `\CJKfamilydefault` names is selected when the document starts, so a preamble that redefines it sets the main text in that family from the first line.
+- An untouched `\CJKfamilydefault` follows `\familydefault` at the start of the document, so a preamble that redefines `\familydefault` sets the main text in the matching CJK family.
+- `\defaultCJKfontfeatures` reaches the font of a sub-block and of a fallback font as well.
+- `\CJKfontspec` no longer reads an option list after the font name, so a bracket that the text starts with is no longer swallowed.
 - A code point below U+0100 in a font that is not Unicode-encoded is a position in that font's encoding, not a character, so a symbol font's slot is no longer read as a CJK character: `pifont`'s slot 0xB7, the circled 2, keeps its own font and prints.
 - The punctuation table covers the marks `xeCJK` classes as opening or closing, so the percent sign U+FF05 no longer starts a line and the currency symbols no longer end one; the halfwidth and compatibility forms and the three hyphen-like marks follow the same class.
 - The ASCII brackets are punctuation marks of their own: a half-width opening bracket no longer ends a line and a half-width closing bracket no longer starts one, the pair hugs the text between it, and a compression style leaves the bracket's own advance alone.

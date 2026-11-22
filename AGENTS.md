@@ -340,6 +340,22 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   (`\setCJKmainfont` and its siblings, `\newCJKfontfamily`,
   `\setCJKfallbackfamilyfont`) keep the trailing form, because the text does
   not follow them.  `smoke01` pins the bracket.
+- **Every font a family builds takes the default features.**  The list is
+  built by `\@@_build_features:n`, and the main font, the font of a sub-block
+  (`\@@_register_block_fonts:n`) and a fallback font (`\@@_add_fallback:nn`)
+  all go through it; a new place that calls `\fontspec_gset_family` has to
+  build the list the same way, or `\defaultCJKfontfeatures` silently misses
+  that font.  `fontfeatures01` covers the three.
+- **A `Baseline` belongs to the declaration that writes it.**  The value is
+  keyed by the declaring family and the `fontspec` family
+  (`\g_@@_font_shift_prop`), `\g_@@_shift_pushed_prop` holds the value Lua has
+  for each font identifier, and `\@@_push_shift:nnn` hands one over only when
+  it changed — a change also clears `\g_@@_fallback_pushed_prop`, so a
+  fallback list that shares the instance is resolved again.  One font instance
+  carries one offset, so a paragraph takes the value in force when it is
+  shaped, which is what lets a fallback font and a family naming the same font
+  take turns (`baselineshift01`); the key is
+  `<declaring family>|<fontspec family>`, never the identifier alone.
 - **A CJK family is selected in the Unicode encoding.**  `\@@_family_font:n`
   sets `\fontencoding{TU}` before `\fontfamily`, and every place that resolves a
   family's font identifier goes through it: `\@@_update_font:` and its

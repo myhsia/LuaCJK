@@ -608,8 +608,8 @@ English 中文字体\\
 %   它和其他字体选项一样可以写在后备字体的声明里，
 %   这也是它最常见的用处：让后备字体贴住主字体的基线。
 %   单位可以用任何 \TeX\ 长度单位，|em| 随字号一起变化。
-%   两条声明给出同一个字体时，共享后一条声明的值，
-%   因为字的位置是按字体记录的。
+%   两条声明给出同一个字体时，各自保留自己的值；
+%   一个字体实例只记一个位置，所以一段文字取排出它时所选的字族的那个值。
 % \end{keyval}
 %
 % \iffalse
@@ -684,7 +684,7 @@ English 中文字体
 %   \begin{syntax}
 %     \tn{defaultCJKfontfeatures} \marg{font features}
 %   \end{syntax}
-%   设置前置到此后注册的每一个 CJK 字族的特性。
+%   设置前置到此后注册的每一个 CJK 字族及其子区块与后备字体的特性。
 %   初始值是 |Script = CJK|。
 %   在调用之前注册的字族保留它们当时得到的特性。
 % \end{function}
@@ -1943,8 +1943,9 @@ English 中文字体\\
 %   lowers them. It is an option like the others, so a fallback declaration
 %   may carry it as well, and that is its usual use: it makes a fallback font
 %   stand on the baseline of the main font. Any \TeX\ unit works, and |em|
-%   follows the size. Two declarations that supply the same font share the
-%   value of the last one, because a position is recorded per font.
+%   follows the size. Two declarations that supply the same font keep their own
+%   values; a font instance carries one position, so a paragraph takes the
+%   value of the family that is selected when it is set.
 % \end{keyval}
 %
 % \iffalse
@@ -2022,7 +2023,8 @@ English 中文字体
 %   \begin{syntax}
 %     \tn{defaultCJKfontfeatures} \marg{font features}
 %   \end{syntax}
-%   Set the features prepended to every CJK family registered afterwards.
+%   Set the features prepended to every CJK family registered afterwards, and
+%   to the font of each of its sub-blocks and fallbacks.
 %   The initial value is |Script = CJK|.
 %   Families registered before the call keep the features they were given.
 % \end{function}
@@ -3445,6 +3447,9 @@ abc汉字abc
 % \changes{v0.0.2}{2026/11/15}{\keys{Baseline} shifts the glyphs of the font
 %   that declares it, so two CJK fonts whose baselines do not match can be set
 %   side by side.}
+% \changes{v0.0.4}{2026/11/20}{\keys{Baseline} belongs to the declaration that
+%   writes it, so a fallback font and a family that name the same font keep
+%   their own offsets.}
 % Pull the keys that \pkg{LuaCJK} keeps for itself out of a font option list:
 % the block names, which name a font of their own, and \keys{Baseline}.
 % The remaining options go into \cs{l_@@_features_tl}, which is what
@@ -3522,7 +3527,9 @@ abc汉字abc
     \prop_map_inline:Nn \g_@@_pending_block_prop
       {
         \group_begin:
-          \fontspec_gset_family:Nnn \l_@@_tmpa_tl { } {##2}
+          \@@_build_features:n { }
+          \fontspec_gset_family:NVn \l_@@_tmpa_tl
+            \l_@@_feature_tl {##2}
           \tl_set:Ne \l_@@_block_key_tl { #1 | ##1 }
           \prop_gput:NVV \g_@@_family_block_prop
             \l_@@_block_key_tl \l_@@_tmpa_tl
@@ -3808,8 +3815,8 @@ abc汉字abc
 %     \l_@@_fallback_family_tl, \l_@@_fallback_ids_tl, \l_@@_fontid_tl,
 %     \g_@@_shift_decl_prop,    \g_@@_font_shift_prop,
 %     \g_@@_shift_pushed_prop,  \l_@@_shift_dim_tl,
-%     \l_@@_shift_fid_tl,
-%     \l_@@_shift_family_tl
+%     \l_@@_shift_fid_tl,       \l_@@_shift_key_tl,
+%     \l_@@_shift_value_tl,     \l_@@_shift_old_tl
 %   }
 % The switches read by the Lua side, the \keys{Verb} setting,
 % whether a block of verbatim material is being set,
@@ -3855,7 +3862,9 @@ abc汉字abc
 \prop_new:N \g_@@_shift_pushed_prop
 \tl_new:N \l_@@_shift_dim_tl
 \tl_new:N \l_@@_shift_fid_tl
-\tl_new:N \l_@@_shift_family_tl
+\tl_new:N \l_@@_shift_key_tl
+\tl_new:N \l_@@_shift_value_tl
+\tl_new:N \l_@@_shift_old_tl
 \cs_generate_variant:Nn \prop_get:NnNF { NVNF }
 \cs_generate_variant:Nn \prop_gput:Nnn { NVV , NnV }
 \tl_new:N \l_@@_fallback_ids_tl
@@ -4565,8 +4574,9 @@ abc汉字abc
       \prop_gput:NnV \g_@@_family_prop {#1} \l_@@_fontspec_tl
       \tl_if_empty:NF \l_@@_shift_dim_tl
         {
+          \tl_set:Ne \l_@@_shift_key_tl { #1 | \l_@@_fontspec_tl }
           \prop_gput:NVV \g_@@_font_shift_prop
-            \l_@@_fontspec_tl \l_@@_shift_dim_tl
+            \l_@@_shift_key_tl \l_@@_shift_dim_tl
         }
     \group_end:
     \prop_if_in:NVT \g_@@_family_prop \l_@@_family_tl
@@ -4622,7 +4632,7 @@ abc汉字abc
             { \int_eval:n { \tex_fontid:D \tex_font:D } }
           \tl_put_right:NV \l_@@_fallback_ids_tl \l_@@_tmpb_tl
           \tl_put_right:Nn \l_@@_fallback_ids_tl { , }
-          \@@_push_shift:nn { \l_@@_tmpb_tl } {##1}
+          \@@_push_shift:nnn { \l_@@_tmpb_tl } { \l_@@_family_tl } {##1}
         }
       \bool_if:NT \g_@@_lua_loaded_bool
         {
@@ -4652,41 +4662,59 @@ abc汉字abc
 % \end{variable}
 % \end{macro}
 %
-% \begin{macro}[int]{\@@_push_shift:nn}
-% Hand the vertical offset of one font to Lua, once per font identifier.
+% \begin{macro}[int]{\@@_push_shift:nnn}
+% Hand the vertical offset of one font to Lua.
 % It is called for the current family, for each of its fallback fonts, and
 % for the family \keys{PunctFamily} names.
+% One font instance carries one offset, so a paragraph is set with the value
+% in force when it is shaped: the entry is keyed by the declaring family as
+% well as by the family \pkg{fontspec} returned, and a value is handed over
+% again when it differs from the one Lua holds, which is what lets a fallback
+% font and a family that name the same font take turns.
+% A change also drops the record of which fallback list was handed over for a
+% font identifier, because a list that shares the instance has to be resolved
+% again for its own value.
 % \begin{variable}[int]
 %   {
 %     \g_@@_font_shift_prop, \g_@@_shift_pushed_prop,
-%     \l_@@_shift_dim_tl,    \l_@@_shift_fid_tl, \l_@@_shift_family_tl
+%     \l_@@_shift_dim_tl,    \l_@@_shift_fid_tl,
+%     \l_@@_shift_key_tl,    \l_@@_shift_value_tl, \l_@@_shift_old_tl
 %   }
-% The \keys{Baseline} value of each registered font, keyed by the family
-% \pkg{fontspec} returned for it; the identifiers whose offset Lua already
-% knows; and scratch variables for the identifier and the offset, which is
-% evaluated at the size in force so that a value in |em| follows the text.
+% The \keys{Baseline} value of each declared font, keyed by the declaring
+% family and the family \pkg{fontspec} returned for it; the value Lua holds
+% for each font identifier; and scratch variables for the identifier, the
+% offset, and the two values that decide whether it has to be handed over,
+% the offset being evaluated at the size in force so that a value in |em|
+% follows the text.
 %    \begin{macrocode}
-\cs_new_protected:Npn \@@_push_shift:nn #1#2
+\cs_new_protected:Npn \@@_push_shift:nnn #1#2#3
   {
     \tl_set:Ne \l_@@_shift_fid_tl {#1}
-    \tl_set:Ne \l_@@_shift_family_tl {#2}
-    \prop_get:NVNT \g_@@_font_shift_prop
-      \l_@@_shift_family_tl \l_@@_shift_dim_tl
+    \tl_set:Ne \l_@@_shift_key_tl { #2 | #3 }
+    \prop_get:NVNF \g_@@_font_shift_prop \l_@@_shift_key_tl
+      \l_@@_shift_dim_tl
+      { \tl_clear:N \l_@@_shift_dim_tl }
+    \tl_if_empty:NTF \l_@@_shift_dim_tl
+      { \tl_set:Nn \l_@@_shift_value_tl { 0 } }
       {
-        \tl_if_empty:NF \l_@@_shift_dim_tl
+        \tl_set:Ne \l_@@_shift_value_tl
           {
-            \prop_if_in:NVF \g_@@_shift_pushed_prop \l_@@_shift_fid_tl
-              {
-                \prop_gput:NVn \g_@@_shift_pushed_prop
-                  \l_@@_shift_fid_tl { }
-                \lua_now:e
-                  {
-                    LuaCJK.set_yoffset
-                      ( \l_@@_shift_fid_tl ,
-                        \dim_to_decimal_in_sp:n
-                          { \dim_eval:n { \l_@@_shift_dim_tl } } )
-                  }
-              }
+            \dim_to_decimal_in_sp:n
+              { \dim_eval:n { \l_@@_shift_dim_tl } }
+          }
+      }
+    \prop_get:NVNF \g_@@_shift_pushed_prop \l_@@_shift_fid_tl
+      \l_@@_shift_old_tl
+      { \tl_set:Nn \l_@@_shift_old_tl { 0 } }
+    \tl_if_eq:NNF \l_@@_shift_value_tl \l_@@_shift_old_tl
+      {
+        \prop_gput:NVV \g_@@_shift_pushed_prop
+          \l_@@_shift_fid_tl \l_@@_shift_value_tl
+        \prop_gclear:N \g_@@_fallback_pushed_prop
+        \lua_now:e
+          {
+            LuaCJK.set_yoffset
+              ( \l_@@_shift_fid_tl , \l_@@_shift_value_tl )
           }
       }
   }
@@ -4881,8 +4909,9 @@ abc汉字abc
               \selectfont
               \int_gset:Nn \g_@@_fontid_int
                 { \tex_fontid:D \tex_font:D }
-              \@@_push_shift:nn
-                { \int_use:N \g_@@_fontid_int } { \l_@@_family_name_tl }
+              \@@_push_shift:nnn
+                { \int_use:N \g_@@_fontid_int }
+                { \l_@@_family_tl } { \l_@@_family_name_tl }
             \group_end:
             \g_@@_font_attr = \g_@@_fontid_int
           }
@@ -4904,9 +4933,9 @@ abc汉字abc
                   \selectfont
                   \int_gset:Nn \g_@@_punct_fontid_int
                     { \tex_fontid:D \tex_font:D }
-                  \@@_push_shift:nn
+                  \@@_push_shift:nnn
                     { \int_use:N \g_@@_punct_fontid_int }
-                    { \l_@@_tmpa_tl }
+                    { \l_@@_punct_family_tl } { \l_@@_tmpa_tl }
                 \group_end:
                 \g_@@_punct_font_attr = \g_@@_punct_fontid_int
               }
@@ -5217,6 +5246,8 @@ abc汉字abc
 % \begin{macro}{\defaultCJKfontfeatures}
 % \changes{v0.0.1}{2026/11/11}{Provide \cs{defaultCJKfontfeatures} and
 %   \cs{addCJKfontfeatures}.}
+% \changes{v0.0.4}{2026/11/20}{\cs{defaultCJKfontfeatures} reaches the font of
+%   a sub-block and of a fallback font as well.}
 % Set the features prepended to every CJK family, replacing the initial
 % \texttt{Script = CJK}. Families registered earlier keep the value they
 % were given; call \cs{setCJKmainfont} again to apply a new default.
@@ -5258,8 +5289,10 @@ abc汉字abc
             \l_@@_feature_tl \l_@@_registered_name_tl
           \tl_if_empty:NF \l_@@_shift_dim_tl
             {
+              \tl_set:Ne \l_@@_shift_key_tl
+                { #1 | \l_@@_fontspec_tl }
               \prop_gput:NVV \g_@@_font_shift_prop
-                \l_@@_fontspec_tl \l_@@_shift_dim_tl
+                \l_@@_shift_key_tl \l_@@_shift_dim_tl
             }
         \group_end:
         \prop_put:NnV \g_@@_family_prop       {#1}
@@ -5355,12 +5388,15 @@ abc汉字abc
     \tl_if_empty:NT \l_@@_shift_tl
       { \tl_set:Nn \l_@@_features_tl {#1} }
     \group_begin:
+      \exp_args:NV \@@_build_features:n \l_@@_features_tl
       \fontspec_gset_family:NVn
-        \l_@@_fallback_family_tl \l_@@_features_tl {#2}
+        \l_@@_fallback_family_tl \l_@@_feature_tl {#2}
       \tl_if_empty:NF \l_@@_shift_tl
         {
+          \tl_set:Ne \l_@@_shift_key_tl
+            { \l_@@_fallback_key_tl | \l_@@_fallback_family_tl }
           \prop_gput:NVV \g_@@_font_shift_prop
-            \l_@@_fallback_family_tl \l_@@_shift_tl
+            \l_@@_shift_key_tl \l_@@_shift_tl
         }
       \prop_get:NVNF \g_@@_fallback_prop
         \l_@@_fallback_key_tl \l_@@_tmpa_tl
