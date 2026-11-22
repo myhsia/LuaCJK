@@ -102,9 +102,9 @@ TEST 6: LuaCJKnobreak forbids that one as well
 written LINES 0 DISCS 10000
 ============================================================
 ============================================================
-TEST 7: the marking covers the break at either side of the hyphen
+TEST 7: the hyphen inside the argument is forbidden, the one behind it is free
 ============================================================
-half LINES 3 DISCS 10000,10000,50,50,50,50
+half LINES 3 DISCS 10000,50,50,50,50,50
 ============================================================
 ============================================================
 TEST 8: a quad is a break of its own
@@ -178,12 +178,9 @@ group LINES 2 DISCS 50
 ============================================================
 TEST 13: the paragraph of the report keeps its run together
 ============================================================
-Overfull \hbox (23.05397pt too wide) in paragraph at lines ...
-\TU/FandolSong-Regular.otf(0)/m/n/10 文 字 \TU/lmr/m/n/10 well-known \TU/FandolSong-Regular.otf(0)/m/n/10 字 中 
-\hbox(7.78+1.75)x70.0, glue set - 1.0, direction TLT
-.\TU/FandolSong-Regular.otf(0)/m/n/10 文
-.\penalty 10000
-.\glue 0.0 plus 0.96002
+Overfull \hbox (3.05397pt too wide) in paragraph at lines ...
+\TU/FandolSong-Regular.otf(0)/m/n/10 字 \TU/lmr/m/n/10 well-known \TU/FandolSong-Regular.otf(0)/m/n/10 字 
+\hbox(7.69+1.75)x70.0, glue set - 1.0, direction TLT
 .\TU/FandolSong-Regular.otf(0)/m/n/10 字
 .\penalty 10000
 .\glue 3.33298 plus 1.66702 minus 1.111
@@ -204,9 +201,16 @@ Overfull \hbox (23.05397pt too wide) in paragraph at lines ...
 .\penalty 10000
 .\glue 3.33298 plus 1.66702 minus 1.111
 .\TU/FandolSong-Regular.otf(0)/m/n/10 字
-.\penalty 10000
-.\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
 .\glue(\rightskip) 0.0 plus 1.0fil
 paragraph LINES 3 DISCS 10000
+============================================================
+============================================================
+TEST 14: the paragraph of the report breaks at the edge of the argument
+============================================================
+mwe LINES 3 DISCS 
+============================================================
+============================================================
+TEST 15: the argument itself still travels together
+============================================================
+together LINES 3 DISCS 
 ============================================================
