@@ -122,6 +122,16 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    before the rule existed.  A zero-width glue stays at that boundary, so it
    is still a break opportunity and the kinsoku penalty can forbid it
    (`boundary01`).
+   Two adjacent marks are spaced by the blank between their ink (`pair_kern`):
+   a length from `\LuaCJKsetkern` is that blank, so `0pt` makes the inks meet,
+   and without one the style's ratio decides, never taking more than the right
+   blank of the mark it compresses, so an em dash or a fullwidth percent sign
+   keeps its ink.  The kern stands in front of the boundary glue, so the glue
+   still offers the break and still carries the stretch.  A source space
+   between two marks is retimed to that same glue and the blank rides in its
+   width, so a line break in the source no longer spaces the two marks apart;
+   because a break discards the glue, the compression leaves with it
+   (`punct01`).
    A penalty that prohibits the break (`\penalty 10000`, `\nobreak`) does not
    end the run: the glue goes *after* it, where the prohibition still covers
    the break the glue offers, so `中文\nobreak ABC` keeps its `CJKecglue` and

@@ -16,9 +16,9 @@ TEST 3: a user width wins over the style
 width: 28.00003pt
 ============================================================
 ============================================================
-TEST 4: an explicit kern sets the gap between two marks
+TEST 4: an explicit kern sets the blank between two marks
 ============================================================
-width: 43.00003pt
+width: 35.12003pt
 ============================================================
 ============================================================
 TEST 5: the star form is accepted with a warning

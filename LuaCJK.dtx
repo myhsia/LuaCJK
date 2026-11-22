@@ -1103,9 +1103,14 @@ a’a\quad 不亦说乎！
 %   \begin{syntax}
 %     \tn{LuaCJKsetkern} \marg{before} \marg{after} \marg{length}
 %   \end{syntax}
-%   设置两个相邻标点之间的空隙，覆盖样式的设置。
+%   设置两个相邻标点之间的空白，覆盖样式的设置。
+%   这个长度是两处墨迹之间的空白，而不是从进距算起的 kern，
+%   所以 \texttt{0pt} 让两处墨迹相接，而不会把间距撑大；
+%   空白从字形的轮廓读出，读不到时按 kern 使用这个长度。
 %   每个参数只使用第一个字符。
 %   与 \cs{LuaCJKsetwidth} 一样，这个设置是全局的。
+%   与 \pkg{xeCJK} 不同，它也可以写在正文里：
+%   空隙是在生成行时读取的，所以调用之后的行按新的空白排版。
 % \end{function}
 %
 % \iffalse
@@ -1132,6 +1137,7 @@ a’a\quad 不亦说乎！
 %   \item[\keys{compress-adjacent}]\val{\TTF}: 是否压缩相邻的标点。
 %   \item[\keys{adjacent-ratio}]\val{number}: 压缩的比例，
 %   相对于被压缩标点的宽度。
+%   压缩最多取走这个标点右侧的那份空白，所以它不会切进墨迹。
 %   \item[\keys{keep-open-close}]\val{\TTF}: 开标点与闭标点相邻时
 %   是否保持不压缩。
 % \end{keyval}
@@ -2488,9 +2494,15 @@ a’a\quad 不亦说乎！
 %   \begin{syntax}
 %     \tn{LuaCJKsetkern} \marg{before} \marg{after} \marg{length}
 %   \end{syntax}
-%   Set the gap between two adjacent punctuation marks, overriding
-%   the style. Only the first character of each argument is used.
+%   Set the blank between two adjacent punctuation marks, overriding the style.
+%   The length is the blank between the two inks rather than a kern measured
+%   from the advance, so \texttt{0pt} makes the inks meet instead of widening
+%   the gap; the blank is read from the outline of the glyph, and the length
+%   is used as a kern when the file cannot be read.
+%   Only the first character of each argument is used.
 %   Like \cs{LuaCJKsetwidth}, the setting is global.
+%   Unlike \pkg{xeCJK}, it may also be used in the document body: the blank is
+%   read when a line is built, so the lines after the call take the new gap.
 % \end{function}
 %
 % \iffalse
@@ -2518,6 +2530,8 @@ a’a\quad 不亦说乎！
 %   punctuation marks are compressed.
 %   \item[\keys{adjacent-ratio}]\val{number}: the ratio of the compression,
 %   relative to the width of the mark that is compressed.
+%   A compression takes at most the blank on the right of that mark, so it
+%   never reaches into the ink.
 %   \item[\keys{keep-open-close}]\val{\TTF}: whether an opening mark next
 %   to a closing one stays uncompressed.
 % \end{keyval}
@@ -7323,9 +7337,65 @@ end
 % across a suspended node: no break follows an opening mark, none precedes a
 % closing, middle, or long mark that begins a run, and two Latin words are
 % never parted.
+% \begin{macro}[int]{pair_kern}
+% \changes{v0.0.5}{2026/11/22}{The gap between two adjacent marks is the blank
+%   between their ink: the length \cs{LuaCJKsetkern} gives is that blank, so
+%   \texttt{0pt} makes the two marks meet instead of widening the gap, and a
+%   compression takes at most the blank the compressed mark carries on its
+%   right.}
+% The kern between two adjacent punctuation marks, in scaled points, or
+% nothing when the two are not a pair the style spaces.  A length the document
+% gave through \cs{LuaCJKsetkern} is the blank between the two inks, which the
+% outlines give; without one the style's ratio decides, and it never takes more
+% than the right blank of the mark it compresses, so a mark whose ink nearly
+% fills its advance, such as the fullwidth percent sign, keeps its ink whole.
+%    \begin{macrocode}
+local function pair_kern (prev, cur, settings, style)
+  if not (prev and cur and prev.id == GLYPH and cur.id == GLYPH) then
+    return nil
+  end
+  local before = punct_class(prev.char, settings, prev.font)
+  local after  = punct_class(cur.char, settings, cur.font)
+  if not before or not after or half_mark(before) or half_mark(after) then
+    return nil
+  end
+  local explicit = user_kern(prev.char, cur.char)
+  if explicit then
+    local _, prev_rb = M.mark_blanks(prev)
+    local cur_lb     = M.mark_blanks(cur)
+    if prev_rb and cur_lb then
+      return explicit - (prev_rb + cur_lb)
+    end
+    return explicit
+  end
+  if not style.compress_adjacent then
+    return nil
+  end
+  local exempt = (style.keep_open_close
+      and before == "open" and after == "close")
+    or (M.charsets.long[prev.char] and M.charsets.long[cur.char])
+  if exempt or not prev.width or prev.width <= 0 then
+    return nil
+  end
+  local cut = math.floor(style.ratio * prev.width + 0.5)
+  local _, prev_rb = M.mark_blanks(prev)
+  if prev_rb then
+    cut = math.min(cut, prev_rb)
+  end
+  if cut <= 0 then
+    return nil
+  end
+  return -cut
+end
+%    \end{macrocode}
+% \end{macro}
+
 % \begin{macro}[int]{insert_boundary_glue}
-% Insert the CJK--CJK or CJK--Latin glue,
-% or the compression kern for two adjacent punctuation marks.
+% Insert the CJK--CJK or CJK--Latin glue, and the kern that spaces two
+% adjacent punctuation marks.
+% The kern is the one \cs{pair_kern} gives, and the glue follows it, so the
+% boundary keeps its break opportunity for the kinsoku penalty to forbid and
+% its share of the stretch a justified line needs.
 % The character on each side is the one the list shows, so a whatsit or a
 % penalty between two characters does not hide them from these rules; the
 % glue itself follows the node that carries the break, which may be such a
@@ -7412,24 +7482,9 @@ local function insert_boundary_glue (head, prev, prev_visible, prev_end,
   end
 
   if prev_mark and cur_mark then
-    local explicit = user_kern(prev.char, cur.char)
-    if explicit then
-      local k = make_kern(explicit, prev)
-      k.next  = cur
-      if prev then
-        prev.next = k
-      else
-        head = k
-      end
-      return head
-    end
-  end
-  if prev_mark and cur_mark and style.compress_adjacent then
-    local exempt = (style.keep_open_close
-        and prev_punct == "open" and cur_punct == "close")
-      or (M.charsets.long[prev.char] and M.charsets.long[cur.char])
-    if not exempt and prev.width and prev.width > 0 then
-      local k = make_kern(-math.floor(style.ratio * prev.width + 0.5), prev)
+    local kern = pair_kern(prev_visible, cur, settings, style)
+    if kern and kern ~= 0 then
+      local k = make_kern(kern, prev)
       local g = spec and make_glue(spec, prev) or nil
       k.next  = g or cur
       if g then
@@ -7513,6 +7568,11 @@ end
 % inter-character glue of \keys{CJKglue}. Freeing it instead would leave the
 % two characters adjacent with no glue, and the pass that would add the glue
 % runs after line breaking, so the break opportunity would be lost.
+% The blank of a pair of marks rides in that glue as its width, so a source
+% space between two marks no longer defeats their compression or the length
+% \cs{LuaCJKsetkern} gives them: the two marks are spaced as they are when no
+% space separates them, and a break at the boundary discards the blank with
+% the glue.
 % A space the document wrote with |\ | or \tn{nobreakspace} is not a source
 % space, and the attribute set around it is the only place that says so: the
 % two are the same \texttt{spaceskip} glue, with the same dimensions, until
@@ -7520,7 +7580,7 @@ end
 % boundary it stands at, because \pkg{xeCJK} sets it as a space too and
 % \keys{CJKspace} is about the source.
 %    \begin{macrocode}
-local function handle_source_space (head, glue, prev_end, cur,
+local function handle_source_space (head, glue, prev_visible, prev_end, cur,
                                     cur_start, settings)
   if glue.subtype ~= SPACESKIP then
     return head
@@ -7536,6 +7596,10 @@ local function handle_source_space (head, glue, prev_end, cur,
       and (has_attribute(glue, M.attr_cjk_space) or 0) ~= 0
     if not cjk_space then
       set_glue(glue, settings.ccglue)
+      local kern = pair_kern(prev_visible, cur, settings, style_of(settings))
+      if kern then
+        glue.width = glue.width + kern
+      end
       if M.attr_inserted then
         set_attribute(glue, M.attr_inserted, 1)
       end
@@ -7618,7 +7682,7 @@ local function handle_boundary (head, prev, prev_visible, prev_end,
   if prev and prev.id == GLUE then
     if not is_inserted(prev) then
       return handle_source_space(
-        head, prev, prev_end, cur, start_class, settings)
+        head, prev, prev_visible, prev_end, cur, start_class, settings)
     end
   elseif prev and prev.id == PENALTY then
     if prev.penalty >= 10000 then
@@ -7634,7 +7698,7 @@ local function handle_boundary (head, prev, prev_visible, prev_end,
       end
       if space then
         head = handle_source_space(
-          head, space, prev_end, cur, start_class, settings)
+          head, space, prev_visible, prev_end, cur, start_class, settings)
         local pred = before
         local m    = space
         while m and m ~= prev do
@@ -7658,7 +7722,7 @@ local function handle_boundary (head, prev, prev_visible, prev_end,
     if n and n.id == GLUE then
       if not is_inserted(n) then
         return handle_source_space(
-          head, n, prev_end, cur, start_class, settings)
+          head, n, prev_visible, prev_end, cur, start_class, settings)
       end
       return head
     end
@@ -8991,7 +9055,37 @@ local function mark_blank (g, mark, target)
 end
 %    \end{macrocode}
 % \end{macro}
-
+%
+% \begin{macro}[int]{mark_blanks}
+% \changes{v0.0.5}{2026/11/22}{The blank of a glyph on each side is read from
+%   its outline, so the gap \cs{LuaCJKsetkern} gives and the amount a
+%   compression takes are the blanks the font carries.}
+% The blank of a glyph on each side, in scaled points at the size of the text,
+% or nothing when the file cannot be read or is one member of a collection.
+% The right blank is measured from the advance the node has, because that is
+% where the character after it starts.  The spacing pass reads this before the
+% reader is documented, so it is published on the module table.
+%    \begin{macrocode}
+local function mark_blanks (g)
+  local font = font.getfont(g.font)
+  if not (font and font.filename and font.size and (font.index or 0) == 0) then
+    return nil
+  end
+  local f = font_file(font.filename)
+  if not f then
+    return nil
+  end
+  local box = font_box(f, g.char)
+  if not box then
+    return nil
+  end
+  local scale = font.size / f.upem
+  return math.floor(box.xmin * scale + 0.5),
+         math.floor(g.width - box.xmax * scale + 0.5)
+end
+M.mark_blanks = mark_blanks
+%    \end{macrocode}
+% \end{macro}
 
 % \begin{macro}[int]{hang_amount}
 % How much of a mark's advance stands outside the line: the part that

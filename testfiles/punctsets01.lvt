@@ -63,6 +63,10 @@
   \countglue
 }
 
+% With LongPunct emptied the dash is compressed like any other mark, but its
+% ink fills its advance, so the compression takes nothing: the count is the
+% penalty that keeps the run out of the line start and the one that forbids
+% the break at the glue, which is still the boundary.
 \TEST{NoBreakLongPunct forbids the breaks of a mark that is not long}{
   \begingroup
     \LuaCJKsetup{LongPunct = {}, NoBreakLongPunct = {"2014}}

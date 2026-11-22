@@ -1,6 +1,8 @@
 ## [LuaCJK-v0.0.5](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.5)
 
+- The gap between two adjacent marks is the blank between their ink: the length `\LuaCJKsetkern` gives is that blank, so `0pt` makes the two marks meet instead of widening the gap, and a compression takes at most the blank the compressed mark carries on its right.
 - The ink of a glyph is measured at the extremum of its curves rather than at their control points, and the alternating curve operators read the abscissa of their third point from the operand that carries it, so the blank a mark hangs is the blank its outline paints.
+- The blank of a glyph on each side is read from its outline, so the gap `\LuaCJKsetkern` gives and the amount a compression takes are the blanks the font carries.
 - The cell of a repeated symbol starts at the left edge of the decorated span, so `\CJKunderanysymbol` keeps the symbol of a single character whose span begins in the middle of a cell; `\CJKunderanyline` and the `symbol` of `\CJKunderdot` and `\CJKunderwave` follow the same rule.
 - The body of `CJKfilltwosides` is set as a `minipage`, so a paragraph after a paragraph break starts at the left edge of the box and is filled like the first one, and the leading between the lines is the leading of the document instead of whatever an enclosing alignment left behind.
 - A `\footnote` inside `CJKfilltwosides` is set at the bottom of the box and numbered with the box's own counter, instead of being lost with the insert that a plain vertical box cannot hold.

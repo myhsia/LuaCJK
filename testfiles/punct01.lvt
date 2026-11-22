@@ -24,6 +24,34 @@
   \TYPE{width: \the\wd0}
 }
 
+% A compression takes the blank the mark carries on its right and no more: the
+% fullwidth percent sign is all ink on its right, so the pair keeps its width.
+\TEST{quanjiao compression stops at the ink}{
+  \setbox0=\hbox{％。}
+  \setbox2=\hbox{。。}
+  \TYPE{percent: \the\wd0}
+  \TYPE{period: \the\wd2}
+}
+
+% A newline in the source is a space; between two marks it is retimed to the
+% inter-character glue, and the blank of the pair rides in that glue.
+\TEST{a space in the source keeps the compression of two marks}{
+  \setbox0=\hbox{字，，字}
+  \setbox2=\hbox{字，，
+字}
+  \TYPE{joined: \the\wd0}
+  \TYPE{space: \the\wd2}
+}
+
+\TEST{a space in the source keeps the blank of a user kern}{
+  \LuaCJKsetkern{。}{。}{1em}
+  \setbox0=\hbox{字。。字}
+  \setbox2=\hbox{字。。
+字}
+  \TYPE{joined: \the\wd0}
+  \TYPE{space: \the\wd2}
+}
+
 \TEST{quanjiao long punctuation keeps natural width}{
   \setbox0=\hbox{字——字}
   \setbox2=\hbox{字……字}
