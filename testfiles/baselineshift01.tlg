@@ -72,3 +72,16 @@ PS FandolFang-Regular size 655360 yoffset 65540
 PS FandolFang-Regular size 655360 yoffset 163840
 PS FandolFang-Regular size 655360 yoffset 65540
 ============================================================
+============================================================
+TEST 12: two declarations of one font keep their offsets in one box
+============================================================
+PS FandolFang-Regular size 655360 yoffset 163840
+PS FandolFang-Regular size 655360 yoffset 65540
+============================================================
+============================================================
+TEST 13: a Baseline in a group shifts only that group
+============================================================
+PS FandolSong-Regular size 655360 yoffset 0
+PS FandolSong-Regular size 655360 yoffset 327680
+PS FandolSong-Regular size 655360 yoffset 0
+============================================================

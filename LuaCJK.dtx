@@ -608,8 +608,9 @@ English 中文字体\\
 %   它和其他字体选项一样可以写在后备字体的声明里，
 %   这也是它最常见的用处：让后备字体贴住主字体的基线。
 %   单位可以用任何 \TeX\ 长度单位，|em| 随字号一起变化。
-%   两条声明给出同一个字体时，各自保留自己的值；
-%   一个字体实例只记一个位置，所以一段文字取排出它时所选的字族的那个值。
+%   这个偏移记在字族排出的字上：
+%   两条声明给出同一个字体时，各自保留自己的值，
+%   在一个编组里选用的字族也只移动这个编组里的字。
 % \end{keyval}
 %
 % \iffalse
@@ -1963,9 +1964,10 @@ English 中文字体\\
 %   lowers them. It is an option like the others, so a fallback declaration
 %   may carry it as well, and that is its usual use: it makes a fallback font
 %   stand on the baseline of the main font. Any \TeX\ unit works, and |em|
-%   follows the size. Two declarations that supply the same font keep their own
-%   values; a font instance carries one position, so a paragraph takes the
-%   value of the family that is selected when it is set.
+%   follows the size. The offset is recorded on the characters the family
+%   sets, so two declarations that supply the same font keep their own values
+%   in one paragraph, and a family selected inside a group moves only that
+%   group.
 % \end{keyval}
 %
 % \iffalse
@@ -3144,30 +3146,36 @@ abc汉字abc
 %     \g_@@_nobreak_attr,    \c_@@_nobreak_attr_int,
 %     \g_@@_attached_attr,   \c_@@_attached_attr_int,
 %     \g_@@_explicit_space_attr,
-%                            \c_@@_explicit_space_attr_int
+%                            \c_@@_explicit_space_attr_int,
+%     \g_@@_shift_attr,      \c_@@_shift_attr_int,
+%     \g_@@_punct_shift_attr,\c_@@_punct_shift_attr_int
 %   }
 % The attributes record, per node, the CJK font, the space and glue
 % policies, whether the node was inserted by \pkg{LuaCJK}, the CJK math font,
 % whether the adjustments are suspended, whether the character is one
-% that attaches to the character in front of it, and whether a space is one
-% the document wrote with |\ | or \tn{nobreakspace}. The integer constants
-% hold the allocated attribute numbers for the Lua side.
+% that attaches to the character in front of it, whether a space is one
+% the document wrote with |\ | or \tn{nobreakspace}, and the \keys{Baseline}
+% offset of the family that sets the character, in scaled points.
+% The integer constants hold the allocated attribute numbers for the Lua side.
 %    \begin{macrocode}
 \clist_map_inline:nn
   {
     font,     cjk_space,  xecglue,   inserted,   math_font,
     disabled, punct_font, settings,  nobreak,    attached,
-    explicit_space
+    explicit_space,
+    shift,    punct_shift
   }
   {
     \exp_args:Nc \newattribute { g_@@_#1_attr }
     \int_const:cn { c_@@_#1_attr_int } { \int_use:N \allocationnumber }
   }
-\g_@@_cjk_space_attr  = 0
-\g_@@_xecglue_attr    = 0
-\g_@@_math_font_attr  = 0
-\g_@@_punct_font_attr = 0
-\g_@@_settings_attr   = 0
+\g_@@_cjk_space_attr   = 0
+\g_@@_xecglue_attr     = 0
+\g_@@_math_font_attr   = 0
+\g_@@_punct_font_attr  = 0
+\g_@@_settings_attr    = 0
+\g_@@_shift_attr       = 0
+\g_@@_punct_shift_attr = 0
 %    \end{macrocode}
 % \end{variable}
 %
@@ -3495,6 +3503,11 @@ abc汉字abc
 % \changes{v0.0.4}{2026/11/22}{\keys{Baseline} belongs to the declaration that
 %   writes it, so a fallback font and a family that name the same font keep
 %   their own offsets.}
+% \changes{v0.0.5}{2026/11/22}{\keys{Baseline} moves the characters of the
+%   family in force where they are written, and the marks of the family
+%   \keys{PunctFamily} names, so a family selected inside a group moves only
+%   that group and two declarations of one font keep their values in the same
+%   paragraph.}
 % Pull the keys that \pkg{LuaCJK} keeps for itself out of a font option list:
 % the block names, which name a font of their own, and \keys{Baseline}.
 % The remaining options go into \cs{l_@@_features_tl}, which is what
@@ -3861,7 +3874,7 @@ abc汉字abc
 %     \g_@@_shift_decl_prop,    \g_@@_font_shift_prop,
 %     \g_@@_shift_pushed_prop,  \l_@@_shift_dim_tl,
 %     \l_@@_shift_fid_tl,       \l_@@_shift_key_tl,
-%     \l_@@_shift_value_tl,     \l_@@_shift_old_tl
+%     \g_@@_shift_value_tl,     \l_@@_shift_old_tl
 %   }
 % The switches read by the Lua side, the \keys{Verb} setting,
 % whether a block of verbatim material is being set,
@@ -3908,7 +3921,7 @@ abc汉字abc
 \tl_new:N \l_@@_shift_dim_tl
 \tl_new:N \l_@@_shift_fid_tl
 \tl_new:N \l_@@_shift_key_tl
-\tl_new:N \l_@@_shift_value_tl
+\tl_new:N \g_@@_shift_value_tl
 \tl_new:N \l_@@_shift_old_tl
 \cs_generate_variant:Nn \prop_get:NnNF { NVNF }
 \cs_generate_variant:Nn \prop_gput:Nnn { NVV , NnV }
@@ -4723,15 +4736,27 @@ abc汉字abc
 % \end{variable}
 % \end{macro}
 %
-% \begin{macro}[int]{\@@_push_shift:nnn}
-% Hand the vertical offset of one font to Lua.
-% It is called for the current family, for each of its fallback fonts, and
-% for the family \keys{PunctFamily} names.
-% One font instance carries one offset, so a paragraph is set with the value
-% in force when it is shaped: the entry is keyed by the declaring family as
-% well as by the family \pkg{fontspec} returned, and a value is handed over
-% again when it differs from the one Lua holds, which is what lets a fallback
-% font and a family that name the same font take turns.
+% \begin{macro}[int]{\@@_shift_value:nn, \@@_push_shift:nnn}
+% Compute the vertical offset \keys{Baseline} asks for, and hand the offset of
+% a fallback font to Lua.
+% \cs{@@_shift_value:nn} reads the value of one declaration, keyed by the
+% declaring family and the family \pkg{fontspec} returned for it, and
+% evaluates it at the size in force, so a value in |em| follows the text.
+% It stores scaled points in \cs{g_@@_shift_value_tl}, which is global because
+% the value is computed inside the group that selects the font and read after
+% that group: the text and the punctuation marks take their offset from an
+% attribute, and an attribute assignment inside the group would be taken back
+% with it.
+% The attribute is what keeps the offset with the characters a family sets:
+% a font identifier is shared by every declaration that supplies the same
+% font, so a family selected inside a group would otherwise move the whole
+% paragraph.
+% \cs{@@_push_shift:nnn} hands the offset of a fallback font to Lua, keyed by
+% its font identifier, because a fallback is chosen when the text is shaped
+% and only its identifier says which one applies.
+% One font instance carries one offset, so a value is handed over again only
+% when it differs from the one Lua holds, which is what lets two fallback
+% lists that name the same font take turns.
 % A change also drops the record of which fallback list was handed over for a
 % font identifier, because a list that shares the instance has to be resolved
 % again for its own value.
@@ -4739,7 +4764,7 @@ abc汉字abc
 %   {
 %     \g_@@_font_shift_prop, \g_@@_shift_pushed_prop,
 %     \l_@@_shift_dim_tl,    \l_@@_shift_fid_tl,
-%     \l_@@_shift_key_tl,    \l_@@_shift_value_tl, \l_@@_shift_old_tl
+%     \l_@@_shift_key_tl,    \g_@@_shift_value_tl, \l_@@_shift_old_tl
 %   }
 % The \keys{Baseline} value of each declared font, keyed by the declaring
 % family and the family \pkg{fontspec} returned for it; the value Lua holds
@@ -4748,34 +4773,38 @@ abc汉字abc
 % the offset being evaluated at the size in force so that a value in |em|
 % follows the text.
 %    \begin{macrocode}
-\cs_new_protected:Npn \@@_push_shift:nnn #1#2#3
+\cs_new_protected:Npn \@@_shift_value:nn #1#2
   {
-    \tl_set:Ne \l_@@_shift_fid_tl {#1}
-    \tl_set:Ne \l_@@_shift_key_tl { #2 | #3 }
+    \tl_set:Ne \l_@@_shift_key_tl { #1 | #2 }
     \prop_get:NVNF \g_@@_font_shift_prop \l_@@_shift_key_tl
       \l_@@_shift_dim_tl
       { \tl_clear:N \l_@@_shift_dim_tl }
     \tl_if_empty:NTF \l_@@_shift_dim_tl
-      { \tl_set:Nn \l_@@_shift_value_tl { 0 } }
+      { \tl_gset:Nn \g_@@_shift_value_tl { 0 } }
       {
-        \tl_set:Ne \l_@@_shift_value_tl
+        \tl_gset:Ne \g_@@_shift_value_tl
           {
             \dim_to_decimal_in_sp:n
               { \dim_eval:n { \l_@@_shift_dim_tl } }
           }
       }
+  }
+\cs_new_protected:Npn \@@_push_shift:nnn #1#2#3
+  {
+    \tl_set:Ne \l_@@_shift_fid_tl {#1}
+    \@@_shift_value:nn {#2} {#3}
     \prop_get:NVNF \g_@@_shift_pushed_prop \l_@@_shift_fid_tl
       \l_@@_shift_old_tl
       { \tl_set:Nn \l_@@_shift_old_tl { 0 } }
-    \tl_if_eq:NNF \l_@@_shift_value_tl \l_@@_shift_old_tl
+    \tl_if_eq:NNF \g_@@_shift_value_tl \l_@@_shift_old_tl
       {
         \prop_gput:NVV \g_@@_shift_pushed_prop
-          \l_@@_shift_fid_tl \l_@@_shift_value_tl
+          \l_@@_shift_fid_tl \g_@@_shift_value_tl
         \prop_gclear:N \g_@@_fallback_pushed_prop
         \lua_now:e
           {
             LuaCJK.set_yoffset
-              ( \l_@@_shift_fid_tl , \l_@@_shift_value_tl )
+              ( \l_@@_shift_fid_tl , \g_@@_shift_value_tl )
           }
       }
   }
@@ -4910,11 +4939,15 @@ abc汉字abc
 %   \keys{Baseline} of the family it names.}
 % On every \tn{selectfont}, resolve the current family, its fallback
 % families, the math family, and the \keys{PunctFamily} family to font
-% identifiers and store them in the attributes, and hand the \keys{Baseline}
-% offset of each to Lua.
+% identifiers and store them in the attributes, with the \keys{Baseline}
+% offset of the current family and of the punctuation family; each fallback
+% font's offset goes to Lua with its identifier.
 % The punctuation family takes a selection of its own, because nothing reaches
-% it through \cs{CJKfamily}; without the offset handed over here its marks
+% it through \cs{CJKfamily}; without the offset computed here its marks
 % would stand on the baseline of a font they are not set in.
+% The offset is computed inside the group that selects the font, so that |em|
+% follows the family's own size, and assigned to the attribute after the
+% group, which would otherwise take the assignment back with it.
 % \begin{variable}[int]{\l_@@_selectfont_bool, \g_@@_fontid_int}
 % A guard against re-entering the update while \tn{selectfont} runs,
 % and the font identifier of the current CJK family.
@@ -4970,21 +5003,25 @@ abc汉字abc
               \selectfont
               \int_gset:Nn \g_@@_fontid_int
                 { \tex_fontid:D \tex_font:D }
-              \@@_push_shift:nnn
-                { \int_use:N \g_@@_fontid_int }
+              \@@_shift_value:nn
                 { \l_@@_family_tl } { \l_@@_family_name_tl }
             \group_end:
             \g_@@_font_attr = \g_@@_fontid_int
+            \g_@@_shift_attr = \g_@@_shift_value_tl
           }
           {
             \g_@@_font_attr = \c_zero_int
+            \g_@@_shift_attr = \c_zero_int
             \tl_clear:N \l_@@_family_name_tl
           }
         \@@_math_font_update:
         \@@_push_fallback:
         \@@_push_block_fonts:
         \tl_if_empty:NTF \l_@@_punct_family_tl
-          { \g_@@_punct_font_attr = \c_zero_int }
+          {
+            \g_@@_punct_font_attr = \c_zero_int
+            \g_@@_punct_shift_attr = \c_zero_int
+          }
           {
             \prop_get:NVNTF \g_@@_family_prop \l_@@_punct_family_tl
               \l_@@_tmpa_tl
@@ -4994,13 +5031,16 @@ abc汉字abc
                   \selectfont
                   \int_gset:Nn \g_@@_punct_fontid_int
                     { \tex_fontid:D \tex_font:D }
-                  \@@_push_shift:nnn
-                    { \int_use:N \g_@@_punct_fontid_int }
+                  \@@_shift_value:nn
                     { \l_@@_punct_family_tl } { \l_@@_tmpa_tl }
                 \group_end:
                 \g_@@_punct_font_attr = \g_@@_punct_fontid_int
+                \g_@@_punct_shift_attr = \g_@@_shift_value_tl
               }
-              { \g_@@_punct_font_attr = \c_zero_int }
+              {
+                \g_@@_punct_font_attr = \c_zero_int
+                \g_@@_punct_shift_attr = \c_zero_int
+              }
           }
         \bool_set_false:N \l_@@_selectfont_bool
       }
@@ -5758,6 +5798,8 @@ abc汉字abc
     LuaCJK.attr_attached    =  \int_use:N   \c_@@_attached_attr_int ;
     LuaCJK.attr_explicit_space
                             =  \int_use:N   \c_@@_explicit_space_attr_int ;
+    LuaCJK.attr_shift       =  \int_use:N   \c_@@_shift_attr_int ;
+    LuaCJK.attr_punct_shift =  \int_use:N   \c_@@_punct_shift_attr_int ;
     LuaCJK.name_ccglue      = "\cs_to_str:N \l_@@_ccglue_skip" ;
     LuaCJK.name_ecglue      = "\cs_to_str:N \l_@@_ecglue_skip" ;
   }
@@ -6712,11 +6754,14 @@ end
 % \end{variable}
 %
 % \begin{variable}[int]{M.yoffset}
-% The vertical offset of each font, in scaled points, positive upwards.
-% The \keys{Baseline} key of a font declaration fills it,
-% and \texttt{pre_shaping} adds it when it moves a glyph into the font, so the
-% offset belongs to the font the glyph is set in and not to the text that
-% asks for it.
+% The vertical offset of each fallback font, in scaled points, positive
+% upwards.
+% A fallback is chosen when the text is shaped, and only its identifier says
+% which one applies, so its offset arrives with the identifier and
+% \texttt{pre\_shaping} adds it when it moves a glyph into that font.
+% The text and the marks take their offset from the \texttt{shift} attribute
+% instead: a font identifier is shared by every declaration that supplies the
+% same font, so the table cannot tell two of them apart.
 %    \begin{macrocode}
 M.yoffset = {}
 
@@ -6779,6 +6824,8 @@ end
 % sub-block font when one is declared for its block, then the punctuation
 % family when the character is a mark it covers, then a fallback font when
 % the font that applies does not have the character.
+% The second value names the step that decided the font, because the step
+% decides where the \keys{Baseline} offset comes from as well.
 %    \begin{macrocode}
 local function target_font (n)
   if not M.attr_font then
@@ -6788,21 +6835,54 @@ local function target_font (n)
   if not (target and target > 0) then
     return nil
   end
+  local kind     = "family"
   local settings = settings_of(n)
   local block    = block_font(target, n.char, settings)
   if block then
-    target = block
+    target, kind = block, "block"
   end
   if M.attr_punct_font and punct_class(n.char, nil, n.font) then
     local punct = has_attribute(n, M.attr_punct_font)
     if punct and punct > 0 then
-      target = punct
+      target, kind = punct, "punct"
     end
   end
   if not has_char(target, n.char) then
-    target = fallback_font(target, n.char, settings) or target
+    local fallback = fallback_font(target, n.char, settings)
+    if fallback then
+      target, kind = fallback, "fallback"
+    end
   end
-  return target
+  return target, kind
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{shift_of, attribute_shift}
+% The vertical offset a CJK glyph takes, in scaled points.
+% The text and the marks read the attribute their family filled, and a
+% sub-block or fallback font reads the table that arrived with its
+% identifier; an attribute the node does not carry, or one set to zero, is no
+% offset at all.
+%    \begin{macrocode}
+local function attribute_shift (n, attr)
+  if not attr then
+    return nil
+  end
+  local sp = has_attribute(n, attr)
+  if sp and sp ~= 0 then
+    return sp
+  end
+end
+
+local function shift_of (n, kind, target)
+  if kind == "family" then
+    return attribute_shift(n, M.attr_shift)
+  elseif kind == "punct" then
+    return attribute_shift(n, M.attr_punct_shift)
+  end
+  return M.yoffset[target]
 end
 
 %    \end{macrocode}
@@ -6834,6 +6914,9 @@ end
 % A glyph already in its font is left alone, so the pass is idempotent across
 % the two lists it sees, the paragraph and each line packed from it, and the
 % \keys{Baseline} shift is added once.
+% The shift is the one the glyph carries, or the one its fallback font
+% arrived with, so a family selected inside a group moves only its own
+% characters.
 % The joiner or selector is marked, because shaping may leave a space glyph
 % and a negative kern where the font had no use for the character, and
 % \texttt{drop_orphans} cannot recognize them afterwards.
@@ -6857,12 +6940,12 @@ local function pre_shaping (head)
           cur.font = last.font
         end
       elseif is_cjk(cur.char, settings_of(cur), cur.font) then
-        local target = target_font(cur)
+        local target, kind = target_font(cur)
         if target and target > 0 and target ~= cur.font then
           if not has_char(target, cur.char) then
             missing_chars[target * 0x200000 + cur.char] = true
           end
-          local shift = M.yoffset[target]
+          local shift = shift_of(cur, kind, target)
           if shift then
             cur.yoffset = (cur.yoffset or 0) + shift
           end
@@ -6941,8 +7024,10 @@ end
 % Copy a glyph node, changing only its font.
 % Only the fallback for a \pkg{luaotfload} without
 % \texttt{pre\_shaping\_filter} uses it.
+% The \keys{Baseline} offset arrives as the third argument, because the step
+% that chose the font decides where it comes from.
 %    \begin{macrocode}
-local function copy_glyph (n, fid)
+local function copy_glyph (n, fid, shift)
   local g = new_node("glyph")
   g.font = fid
   for _, field in ipairs {
@@ -6953,7 +7038,6 @@ local function copy_glyph (n, fid)
   } do
     g[field] = n[field]
   end
-  local shift = M.yoffset[fid]
   if shift then
     g.yoffset = (g.yoffset or 0) + shift
   end
@@ -6983,7 +7067,7 @@ local function rewrite_fonts (head)
   while cur do
     local nxt = cur.next
     if cur.id == GLYPH and is_cjk(cur.char, settings_of(cur), cur.font) then
-      local target = target_font(cur)
+      local target, kind = target_font(cur)
       if target and target > 0 and target ~= cur.font then
         if nxt and nxt.id == GLYPH and nxt.font == cur.font
            and placeholder(nxt.char) then
@@ -6991,7 +7075,7 @@ local function rewrite_fonts (head)
           free_node(nxt)
           nxt = after
         end
-        local g = copy_glyph(cur, target)
+        local g = copy_glyph(cur, target, shift_of(cur, kind, target))
         g.next  = nxt
         if prev then
           prev.next = g
