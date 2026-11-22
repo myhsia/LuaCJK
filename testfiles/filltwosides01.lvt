@@ -98,6 +98,20 @@
   }
 }
 
+\TEST{the environment works in a table cell}{
+  \setbox0=\hbox{
+    \begin{tabular}{|l|l|}
+      \hline
+      联系人 & {\begin{CJKfilltwosides}{4em}张三\\李四\end{CJKfilltwosides}} \\
+      \hline
+      联系电话 & 020-12345678 \\
+      \hline
+    \end{tabular}
+  }
+  \TYPE{width: \the\wd0}
+  \TYPE{height: \the\ht0, depth: \the\dp0}
+}
+
 \END
 
 \end{document}
