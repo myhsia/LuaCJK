@@ -231,6 +231,15 @@
   \endgroup
 }
 
+\TEST{a character inside a box is dotted wherever the box sits}{
+  \setbox0=\hbox{\CJKunderdot{\mbox{甲}乙丙}}
+  \dotcount{0}
+  \setbox0=\hbox{\CJKunderdot{甲\mbox{乙}丙}}
+  \dotcount{0}
+  \setbox0=\hbox{\CJKunderdot{\mbox{甲}\mbox{乙}\mbox{丙}}}
+  \dotcount{0}
+}
+
 \END
 
 \end{document}

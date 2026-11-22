@@ -9759,14 +9759,19 @@ end
 % walked with the interval of its own, so a character inside a box is dotted
 % as well.  A dot goes where the centre of its character lies inside the
 % span that \keys{subtract} leaves, and \keys{skip} leaves the punctuation
-% marks undotted.  A character that already carries a dot behind it is passed
-% over, because the pass also runs when a box is packed a second time.
+% marks undotted; the two bounds are measured on the span and travel into a
+% box unchanged, because the centre is measured from the start of the span
+% and not from the start of the box. A character that already carries a dot
+% behind it is passed over, because the pass also runs when a box is packed a
+% second time.
 %    \begin{macrocode}
-local function insert_dots (start, w, settings, dots, offset)
+local function insert_dots (start, w, settings, dots, offset, low, high)
   offset = offset or 0
-  local subtract = settings.subtract or 0
-  local low      = math.min(subtract, w)
-  local high     = math.max(w - subtract, low)
+  if not low then
+    local subtract = settings.subtract or 0
+    low  = math.min(subtract, w)
+    high = math.max(w - subtract, low)
+  end
   local x        = 0
   local n        = start
   while n and x < w do
@@ -9784,7 +9789,8 @@ local function insert_dots (start, w, settings, dots, offset)
         n.next   = dot
       end
     elseif n.id == HLIST then
-      insert_dots(n.head, n.width or 0, settings, dots, offset + x)
+      insert_dots(n.head, n.width or 0, settings, dots, offset + x,
+        low, high)
     end
     x = x + width
     n = nxt
@@ -11219,6 +11225,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   centred in the one-em cell of the character; Latin letters, digits, and
 %   spaces carry none, and the dots follow the characters when the
 %   inter-character glue stretches.}
+% \changes{v0.0.4}{2026/11/22}{A CJK character inside a box gets its dot
+%   wherever the box sits in the span, so \cs{mbox} no longer drops the dot of
+%   a character in the middle of the text.}
 % Emphasise with dots below the glyphs. The optional argument takes the key
 % set of \cs{CJKunderline}, like the other decorations.
 % A symbol given with \keys{symbol} is a pattern repeated along the span, as
