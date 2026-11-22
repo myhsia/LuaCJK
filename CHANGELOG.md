@@ -24,6 +24,7 @@
 - The slashes are written one cell at a time, so they cover the whole span.
 - A CJK character inside a box gets its dot wherever the box sits in the span, so `\mbox` no longer drops the dot of a character in the middle of the text.
 - `CJKfilltwosides` works inside a table cell: it gives `\\` the meaning it has in a `\parbox` within its group, so the enclosing alignment no longer takes the line break.
+- `CJKfilltwosides` leaves vertical mode as `\parbox` does, so the text after it joins the box on the same line instead of beginning a paragraph, and a space after the environment is ignored as `xeCJK` ignores it.
 
 ## [LuaCJK-v0.0.3](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.3)
 

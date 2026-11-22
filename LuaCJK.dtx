@@ -857,6 +857,9 @@ $ 天地玄黄 $ and 天地玄黄
 %   \texttt{t} 让第一行的基线与周围的行齐平，
 %   \texttt{c} 表示居中（默认），
 %   \texttt{b} 让最后一行的基线与周围的行齐平。
+%   环境像 \cs{parbox} 一样先离开竖直模式，
+%   所以它后面的文字接着盒子排在同一行，而不是另起一段；
+%   环境之后的空格与 \pkg{xeCJK} 一样被忽略。
 %   宽度为零或为负时沿用周围的行宽。
 %   带星号的形式行为相同；它不与内容的自然宽度作比较。
 %   \begin{syntax}
@@ -2216,6 +2219,10 @@ $ 天地玄黄 $ and 天地玄黄
 %   the box as \cs{parbox} does: \texttt{t} puts the baseline of the first
 %   line on the surrounding baseline, \texttt{c} centres the box on the text
 %   axis (the default), and \texttt{b} puts the last line there.
+%   The environment leaves vertical mode first, as \cs{parbox} does, so the
+%   text after it joins the box on the same line instead of beginning a
+%   paragraph, and a space after the environment is ignored as \pkg{xeCJK}
+%   ignores it.
 %   A width of zero or less keeps the surrounding line width.
 %   The starred form behaves the same;
 %   it does not compare against the natural width of the content.
@@ -11358,11 +11365,22 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \changes{v0.0.4}{2026/11/22}{\env{CJKfilltwosides} works inside a table
 %   cell: it gives |\\| the meaning it has in a \cs{parbox} within its group,
 %   so the enclosing alignment no longer takes the line break.}
+% \changes{v0.0.4}{2026/11/22}{\env{CJKfilltwosides} leaves vertical mode as
+%   \cs{parbox} does, so the text after it joins the box on the same line
+%   instead of beginning a paragraph, and a space after the environment is
+%   ignored as \pkg{xeCJK} ignores it.}
 %   Set the body in a vertical box whose lines are justified to the given
 %   width, with the lines separated by |\\|.
 %   The inter-character glue is given an infinite stretch inside the box,
 %   so a line of CJK characters reaches the width even when there is no
 %   Latin word space to stretch.
+%   The body leaves vertical mode first, as \cs{parbox} does, so the box joins
+%   the paragraph that follows and the text after the environment continues on
+%   its line; a space written after the environment is ignored, as \pkg{xeCJK}
+%   ignores it.
+%   The content is therefore one marked-content sequence of that paragraph,
+%   and the automatic paragraph hooks are off around the box, so the box opens
+%   no paragraph of its own inside it.
 %   The environment takes |\\| back from an enclosing alignment, as
 %   \cs{parbox} does with \tn{@normalcr}, so a cell of a table can hold it:
 %   the break belongs to the box, and the alignment does not see it.
@@ -11384,8 +11402,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   {
 %     \l_@@_fntef_fill_box,       \l_@@_fntef_fill_width_dim,
 %     \l_@@_fntef_fill_total_dim, \l_@@_fntef_fill_axis_dim,
-%     \l_@@_fntef_fill_position_tl,
-%     \l_@@_fntef_fill_tag_tl,    \l_@@_fntef_fill_struct_bool
+%     \l_@@_fntef_fill_position_tl
 %   }
 % The box being filled, its requested width, its total height and depth,
 % the axis of the text style, and the requested baseline position.
@@ -11395,27 +11412,15 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \dim_new:N \l_@@_fntef_fill_total_dim
 \dim_new:N \l_@@_fntef_fill_axis_dim
 \tl_new:N \l_@@_fntef_fill_position_tl
-\tl_new:N \l_@@_fntef_fill_tag_tl
-\bool_new:N \l_@@_fntef_fill_struct_bool
 %    \end{macrocode}
 % \end{variable}
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_fill_begin:nn #1#2
   {
+    \mode_leave_vertical:
     \group_begin:
     \cs_set_eq:Nc \\ { @normalcr }
-    \bool_set_false:N \l_@@_fntef_fill_struct_bool
-    \cs_if_exist:NT \tag_struct_begin:n
-      {
-        \mode_if_vertical:TF
-          {
-            \tag_struct_begin:n { tag = text-block }
-            \tl_set:Nn \l_@@_fntef_fill_tag_tl { text-block }
-            \bool_set_true:N \l_@@_fntef_fill_struct_bool
-          }
-          { \tl_clear:N \l_@@_fntef_fill_tag_tl }
-        \cs_if_exist:NT \tagpdfparaOff { \tagpdfparaOff }
-      }
+    \cs_if_exist:NT \tagpdfparaOff { \tagpdfparaOff }
     \tl_set:Nn \l_@@_fntef_fill_position_tl {#1}
     \dim_set:Nn \l_@@_fntef_fill_width_dim {#2}
     \LuaCJKsetup { CJKglue = 0pt plus 1filll }
@@ -11423,12 +11428,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       \dim_compare:nNnT { \l_@@_fntef_fill_width_dim } > { 0pt }
         { \dim_set:Nn \tex_hsize:D { \l_@@_fntef_fill_width_dim } }
       \tex_noindent:D
-      \cs_if_exist:NT \tag_mc_begin:n
-        {
-          \tl_if_empty:NTF \l_@@_fntef_fill_tag_tl
-            { \tag_mc_begin:n { } }
-            { \tag_mc_begin:n { tag = \l_@@_fntef_fill_tag_tl } }
-        }
+      \cs_if_exist:NT \tag_mc_begin:n { \tag_mc_begin:n { } }
       \tex_ignorespaces:D
   }
 \cs_new_protected:Npn \@@_fntef_fill_end:
@@ -11457,13 +11457,9 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         }
       }
     \box_use_drop:N \l_@@_fntef_fill_box
-    \cs_if_exist:NT \tag_struct_end:
-      {
-        \cs_if_exist:NT \tagpdfparaOn { \tagpdfparaOn }
-        \bool_if:NT \l_@@_fntef_fill_struct_bool
-          { \tag_struct_end: }
-      }
+    \cs_if_exist:NT \tagpdfparaOn { \tagpdfparaOn }
     \group_end:
+    \ignorespacesafterend
   }
 \NewDocumentEnvironment { CJKfilltwosides } { O{c} m }
   { \@@_fntef_fill_begin:nn {#1} {#2} }

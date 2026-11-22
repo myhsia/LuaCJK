@@ -12,7 +12,7 @@
 \START
 
 \TEST{the box takes the requested width}{
-  \setbox0=\vbox{
+  \setbox0=\hbox{%
     \begin{CJKfilltwosides}{5em}
       中\\文
     \end{CJKfilltwosides}
@@ -21,7 +21,7 @@
 }
 
 \TEST{the default position centres the box like a parbox}{
-  \setbox0=\vbox{
+  \setbox0=\hbox{%
     \begin{CJKfilltwosides}{5em}
       中\\文
     \end{CJKfilltwosides}
@@ -32,7 +32,7 @@
 }
 
 \TEST{the t position puts the first line on the surrounding baseline}{
-  \setbox0=\vbox{
+  \setbox0=\hbox{%
     \begin{CJKfilltwosides}[t]{5em}
       中\\文
     \end{CJKfilltwosides}
@@ -43,7 +43,7 @@
 }
 
 \TEST{the b position puts the last line on the surrounding baseline}{
-  \setbox0=\vbox{
+  \setbox0=\hbox{%
     \begin{CJKfilltwosides}[b]{5em}
       中\\文
     \end{CJKfilltwosides}
@@ -54,7 +54,7 @@
 }
 
 \TEST{a zero width keeps the surrounding line width}{
-  \setbox0=\vbox{
+  \setbox0=\hbox{%
     \begin{CJKfilltwosides*}{0pt}
       中\\文
     \end{CJKfilltwosides*}
@@ -63,7 +63,7 @@
 }
 
 \TEST{each line is filled to the width}{
-  \setbox0=\vbox{
+  \setbox0=\hbox{%
     \begin{CJKfilltwosides}{5em}
       中文\\字字
     \end{CJKfilltwosides}
@@ -110,6 +110,41 @@
   }
   \TYPE{width: \the\wd0}
   \TYPE{height: \the\ht0, depth: \the\dp0}
+}
+
+\TEST{the text after the environment joins the box on its line}{
+  \setbox0=\vbox{
+    \begin{CJKfilltwosides}{4em}
+      作者
+    \end{CJKfilltwosides}：张三
+  }
+  \TYPE{height: \the\ht0, depth: \the\dp0}
+  \directlua{
+    local ids = {}
+    local i = 0
+    local n = tex.box[0].head
+    while n do
+      i = i + 1
+      ids[i] = node.type(n.id)
+      n = n.next
+    end
+    texio.write_nl("term and log", "items: " .. table.concat(ids, " "))
+    local inner = {}
+    i = 0
+    n = tex.box[0].head.head
+    while n do
+      i = i + 1
+      inner[i] = node.type(n.id)
+      n = n.next
+    end
+    texio.write_nl("term and log", "line: " .. table.concat(inner, " "))
+  }
+}
+
+\TEST{a space after the environment is ignored}{
+  \setbox0=\hbox{前\begin{CJKfilltwosides}{4em}作者\end{CJKfilltwosides}：张三}
+  \setbox2=\hbox{前\begin{CJKfilltwosides}{4em}作者\end{CJKfilltwosides} ：张三}
+  \TYPE{width: \the\wd0, spaced: \the\wd2}
 }
 
 \END

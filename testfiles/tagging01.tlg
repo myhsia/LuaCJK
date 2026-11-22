@@ -8,14 +8,14 @@ Lua-only attribute luaul2 = ...
 decorations: ok
 ============================================================
 ============================================================
-TEST 2: CJKfilltwosides is a tagged text block in vertical mode
+TEST 2: CJKfilltwosides begins the paragraph it is alone in
 ============================================================
-filltwosides vertical: ok
+filltwosides alone: ok
 ============================================================
 ============================================================
-TEST 3: CJKfilltwosides joins the surrounding paragraph in horizontal mode
+TEST 3: CJKfilltwosides joins the surrounding paragraph
 ============================================================
-filltwosides horizontal: ok
+filltwosides inline: ok
 ============================================================
 [1
 ]
