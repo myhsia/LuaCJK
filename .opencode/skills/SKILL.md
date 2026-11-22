@@ -694,10 +694,13 @@ extracts and selects; `selectable = true` keeps it as text. The wrapper is a
 `pdf_literal` inside the leader box, not a font change: a cloned font used in
 a `\leaders` box aborts LuaTeX at shipout.
 
-`\CJKfilltwosides` tags by mode. In vertical mode the vbox becomes a
-`text-block` structure; in horizontal mode its MC joins the surrounding
-paragraph. A `text-block` inside a paragraph is invalid (`P --> P`), and the
-automatic paragraph hooks stay off around the vbox.
+`\CJKfilltwosides` leaves vertical mode before it sets the box, as `\parbox`
+does, so the box joins the paragraph that follows: the text written after the
+environment stays on the same line and a space after `\end` is ignored.  Its
+content is therefore always an MC attached to that paragraph; there is no
+branch on the mode, because a `text-block` structure inside a paragraph is
+invalid (`P --> P`), and the automatic paragraph hooks stay off around the
+vbox so that it opens no paragraph of its own.
 
 Its positions are those of `\parbox`, because the report that asked for them
 compared the two: `t` rebuilds the vlist as a `\vtop`, `b` keeps the natural
@@ -797,7 +800,7 @@ guessing from widths alone: walk `tex.box[0].head` and report the glue, kern,
 and penalty nodes, then assert the numbers in the `.tlg`.
 Existing examples are `decoration01` (the leaders pair), `selectable01` (the
 `ActualText` wrapper and the `selectable` key), `tagging01` (tagged
-decorations and both branches of `CJKfilltwosides`), `settingsscope01`
+decorations and the paragraph `CJKfilltwosides` joins), `settingsscope01`
 (a group that closes before `\par`), `nobreak01`/`nobreak02` (penalties),
 `nobreak03` (the penalty field of a discretionary),
 `nobreak04` (a prohibiting penalty and the boundary glue),
