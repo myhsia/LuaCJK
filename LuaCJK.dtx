@@ -920,9 +920,10 @@ $ 天地玄黄 $ and 天地玄黄
 %   其余的墨迹悬挂到页边，或者悬挂到段落开头或列表项开头的缩进里。
 %   默认悬挂标点自带的空白，所以它的墨迹正好落在版心边上；
 %   断行时这一份悬挂已经算进去，行尾的标点因此能随它所在的行一起放下。
-%   居中的段落与右对齐的段落没有页边可悬挂，
-%   所以它的开头与 |\\| 强制换行之后的一行都不悬挂，
-%   断行处的悬挂照旧，因为断行时它已经算进了这一行。
+%   居中的段落与右对齐的段落不从版心边上起行，
+%   所以它的开头与 |\\| 强制换行之后的一行都不悬挂，否则整行会一起挪动；
+%   行尾照旧悬挂，段落最后一行也悬挂，墨迹落在右侧的对齐边上，
+%   于是这种段落的每一行都停在同一条边上。
 %   \texttt{0pt} 把整个进距都悬挂出去，\texttt{false} 恢复这个默认值。
 %   \item[\keys{LatinPunct}]\val{\TFF}: 把引号
 %   （U+2018、U+2019、U+201C、U+201D）、间隔号（U+00B7）、
@@ -2306,9 +2307,11 @@ $ 天地玄黄 $ and 天地玄黄
 %   The default leaves the mark's own blank out, so its ink stands on the
 %   measure, and line breaking counts that hang, so a mark can end the line the
 %   natural width would refuse.
-%   A centered or a flush-right paragraph has no margin to hang into, so the
-%   paragraph start and a line after |\\| do not hang there; the hang at a
-%   break stays, because line breaking has already counted it.
+%   A centered or a flush-right paragraph does not begin its lines at the edge
+%   of the measure, so its start and a line after |\\| do not hang there, where
+%   the rule would move the whole line; the end of a line still hangs, and so
+%   does the last line of the paragraph, which puts the ink of the mark on the
+%   alignment edge and makes every line of it stop at the same place.
 %   \texttt{0pt} hangs the whole advance;
 %   \texttt{false} returns to that default.
 %   \item[\keys{LatinPunct}]\val{\TFF}: Treat the quotation marks
@@ -9379,6 +9382,10 @@ end
 %   hang the mark it begins with: the line does not start at the edge of the
 %   measure, so the shift would move the whole line instead of leaving the
 %   blank in a margin that is not there.}
+% \changes{v0.0.5}{2026/11/22}{The last line of a centered or flush-right
+%   paragraph hangs the mark it ends with as well, so every line of it stops at
+%   the same edge instead of the last one standing the width of that blank
+%   further in.}
 % Bracket every break point that a mark ends or starts, so the line measures
 % the hang and the text inside a line does not move. A break that a preceding
 % penalty already forbids is left alone, so a fixed width does not carry a rule
@@ -9389,9 +9396,18 @@ end
 % Those two are left out when \tn{leftskip} reaches the line with a fill, which
 % is how a centered or a flush-right paragraph is set: the line then begins at
 % the centering position rather than at the edge of the measure, and the rule
-% would move it instead of leaving the mark's blank in the margin.  The hang at
-% a break stays in every case, because the line breaker has already counted it
-% when it decided that the mark fits.
+% would move it instead of leaving the mark's blank in the margin.
+% The hang at a break stays in every case, because the line breaker has already
+% counted it when it decided that the mark fits; where the lines are centered or
+% flushed right it is also what keeps the ink of a line end on the alignment
+% edge, since the widened glue moves the whole line by the blank it takes out.
+% The last line of such a paragraph is bracketed by hand, because no break glue
+% ends it: the rule alone goes behind the last mark, with no glue to widen,
+% since no break decision depends on it.  It is put there only when
+% \tn{leftskip} carries a fill, because otherwise the material starts at the
+% margin and the rule leaves the position of the ink alone -- in a justified or
+% a ragged-right paragraph the trailing fill absorbs it, so the line would only
+% carry a node that does nothing.
 %    \begin{macrocode}
 local function finite_skip (s)
   return not s or (s.stretch_order == 0 and s.shrink_order == 0)
@@ -9470,6 +9486,17 @@ local function hang_bounds (head)
     end
     prev = cur
     cur  = cur.next
+  end
+  if last and not left then
+    local tail, _, glyph = edge_mark(last, true)
+    if glyph and not disabled(glyph)
+       and (tail == "close" or tail == "middle")
+       and style_of(settings_of(glyph)).hang then
+      local w_end = hang_amount(glyph, tail, settings_of(glyph))
+      if w_end > 0 then
+        hang_rule(w_end, glyph, last, last.next)
+      end
+    end
   end
   return head
 end

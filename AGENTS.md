@@ -454,23 +454,27 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   record, and `apply_kinsoku`, `apply_check_single`, and `apply_fixed_widths`
   each read it.  Without the check a fixed-width style gives a mark a second
   compensating kern in a table cell or a parbox, which squeezes the text.
-- **A hang is bracketed at a glue break, and the three boundaries without a
-  glue are bracketed by hand.**  `hang_bounds` adds the hang to the glue a
-  line breaks at, which covers every wrapped line; the first line of a
-  paragraph and a line that `\\` forces begin with no glue, so the rule that
-  shifts the line goes in front of the opening mark itself, or after the
-  `-10000` penalty of the forced break.  The indentation in front of a
-  paragraph is an empty box of the width of `\parindent`, not a glue, and the
-  first line of a list item begins with the label box, which the list follows
-  with a penalty of zero, so `head_lead` walks over both with the whatsit and
-  local-paragraph nodes and over a penalty that does not force a break, and
-  stops at any other box that has ink and an advance of its own.  The two
-  hand-bracketed boundaries are skipped when `\leftskip` carries a fill: a
-  centered or flush-right paragraph starts its lines at the centering position
-  rather than at the edge of the measure, so the rule would move the whole line
-  instead of leaving the blank in a margin that is not there.  The hang at a
-  break stays in every case, because the line breaker has already counted it
-  when it decides that the mark fits (`hang01`).
+- **A hang is bracketed at a glue break, and the boundaries without a glue are
+  bracketed by hand.**  `hang_bounds` adds the hang to the glue a line breaks
+  at, which covers every wrapped line; the first line of a paragraph and a line
+  that `\\` forces begin with no glue, so the rule that shifts the line goes in
+  front of the opening mark itself, or after the `-10000` penalty of the forced
+  break.  The indentation in front of a paragraph is an empty box of the width
+  of `\parindent`, not a glue, and the first line of a list item begins with the
+  label box, which the list follows with a penalty of zero, so `head_lead` walks
+  over both with the whatsit and local-paragraph nodes and over a penalty that
+  does not force a break, and stops at any other box that has ink and an advance
+  of its own.  The two hand-bracketed boundaries are skipped when `\leftskip`
+  carries a fill: a centered or flush-right paragraph starts its lines at the
+  centering position rather than at the edge of the measure, so the rule would
+  move the whole line instead of leaving the blank in a margin that is not
+  there.  The hang at a break stays in every case, because the line breaker has
+  already counted it when it decides that the mark fits, and it is what keeps
+  the ink of a line end on the right edge there.  The last line of such a
+  paragraph is the fourth boundary: no glue ends it, so the bare rule goes
+  behind the last mark, and it is put there only when `\leftskip` carries a
+  fill, because otherwise the trailing fill absorbs it and the ink does not
+  move (`hang01`).
 - **A Type 2 charstring number belongs to the charstring that holds it.**
   `cff_box` hands the charstring being interpreted to the number reader,
   because a subroutine carries its own operands; read from the outer

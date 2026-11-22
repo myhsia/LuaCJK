@@ -175,13 +175,33 @@
     \showlines
   \endgroup
 }
-
 \TEST{a compressed mark hangs by its own advance}{
   \begingroup
     \LuaCJKsetup{PunctStyle = banjiao}
     \setbox0=\vbox{\hsize=1.4em 中。文\par}
     \showlines
   \endgroup
+}
+
+\TEST{a flush-right paragraph hangs the mark its last line ends with}{
+  \begingroup
+    \leftskip=0pt plus 1fil \rightskip=0pt \parfillskip=0pt
+    \setbox0=\vbox{\hsize=3.5em 收到。收到。\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{a centered paragraph hangs it as well}{
+  \begingroup
+    \leftskip=0pt plus 1fil \rightskip=0pt plus 1fil \parfillskip=0pt
+    \setbox0=\vbox{\hsize=3.5em 收到。收到。\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{a justified paragraph leaves the last line alone}{
+  \setbox0=\vbox{\hsize=4em 收到。收到。\par}
+  \showlines
 }
 
 \END
