@@ -52,12 +52,13 @@ width: 20.0pt
 GLYPH 20013 FandolKai
 ============================================================
 ============================================================
-TEST 8: CJKfontspec options after the font name
+TEST 8: a bracket after the font name is text
 ============================================================
-Package fontspec Info: 
-(fontspec)             FandolKai-Regular scale = 2.
-width: 20.0pt
-GLYPH 20013 FandolKai
+width: 25.56pt
+GLYPH 91 LMRoman10-Regular
+GLYPH 37325 FandolKai
+GLYPH 28857 FandolKai
+GLYPH 93 LMRoman10-Regular
 ============================================================
 ============================================================
 TEST 9: newCJKfontfamily options after the font name

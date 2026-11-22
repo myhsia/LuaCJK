@@ -50,7 +50,7 @@ Entry points:
 | `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
 | `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.4`, `packtdszip = false` with `tdslocations` kept for `l3build install`, `ctanpkg`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
-| `testfiles/NN.lvt` + `.tlg` | 76 regression tests and their baselines, one pair per feature |
+| `testfiles/NN.lvt` + `.tlg` | 77 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree |
 | `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, collapses only ASCII whitespace, and names the forge repository of the release link with `--repo`.  It also exports `newest` and `announcement`, which `build.lua` calls to turn the newest section of that changelog into the CTAN announcement |
@@ -316,20 +316,46 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   main family and as `zhsong` — so both declarations carry the option; the
   other three families have no italic face.
 - **The default family is selected when the document starts.**  The hook at
-  `\begin{document}` settles `\CJKfamilydefault`: an untouched default becomes
-  `\CJKrmdefault`, `LoadFandol` declares the Fandol faces when the preamble
-  declared nothing, a default that no family carries is replaced, and
-  `\@@_reset_family:` then selects the surviving family.  Without that last
-  step the main text kept whichever family the last `\setCJKfamilyfont` had
-  switched to, while `\normalfont` already honoured a redefinition; a preamble
-  that writes `\renewcommand{\CJKfamilydefault}{\CJKsfdefault}` therefore set
-  the first line in Song and every later `\normalfont` in Hei.  `familydefault01`
-  pins the two together.
+  `\begin{document}` settles `\CJKfamilydefault`: an untouched default follows
+  `\familydefault` — `\CJKrmdefault`, `\CJKsfdefault`, or `\CJKttdefault` for
+  the matching main family, and `\CJKrmdefault` otherwise — `LoadFandol`
+  declares the Fandol faces when the preamble declared nothing, a default that
+  no family carries is replaced, and `\@@_reset_family:` then selects the
+  surviving family.  Without that last step the main text kept whichever family
+  the last `\setCJKfamilyfont` had switched to, while `\normalfont` already
+  honoured a redefinition; a preamble that writes
+  `\renewcommand{\CJKfamilydefault}{\CJKsfdefault}` therefore set the first
+  line in Song and every later `\normalfont` in Hei.  The mapping stores a
+  token (`\exp_not:N`), so the default follows a later redefinition of
+  `\CJKsfdefault` as well.  `familydefault01` pins the chosen default,
+  `familydefault02` the redefined `\familydefault`.
 - **A command that takes a family name expands it.**  `\CJKfamily`,
   `\setCJKfamilyfont`, and `\setCJKfallbackfamilyfont` pass the name through
   `\tl_set:Ne`, so a family is named by `\CJKrmdefault` and friends; the
   property key is the expanded name, and a new entry point that skips the
   expansion silently keeps the previous family and warns about the macro.
+- **`\CJKfontspec` takes its options before the font name.**  A third optional
+  argument would read the bracket the text begins with as its option list and
+  swallow it, and the command is used inside the text; the preamble commands
+  (`\setCJKmainfont` and its siblings, `\newCJKfontfamily`,
+  `\setCJKfallbackfamilyfont`) keep the trailing form, because the text does
+  not follow them.  `smoke01` pins the bracket.
+- **Every font a family builds takes the default features.**  The list is
+  built by `\@@_build_features:n`, and the main font, the font of a sub-block
+  (`\@@_register_block_fonts:n`) and a fallback font (`\@@_add_fallback:nn`)
+  all go through it; a new place that calls `\fontspec_gset_family` has to
+  build the list the same way, or `\defaultCJKfontfeatures` silently misses
+  that font.  `fontfeatures01` covers the three.
+- **A `Baseline` belongs to the declaration that writes it.**  The value is
+  keyed by the declaring family and the `fontspec` family
+  (`\g_@@_font_shift_prop`), `\g_@@_shift_pushed_prop` holds the value Lua has
+  for each font identifier, and `\@@_push_shift:nnn` hands one over only when
+  it changed — a change also clears `\g_@@_fallback_pushed_prop`, so a
+  fallback list that shares the instance is resolved again.  One font instance
+  carries one offset, so a paragraph takes the value in force when it is
+  shaped, which is what lets a fallback font and a family naming the same font
+  take turns (`baselineshift01`); the key is
+  `<declaring family>|<fontspec family>`, never the identifier alone.
 - **A CJK family is selected in the Unicode encoding.**  `\@@_family_font:n`
   sets `\fontencoding{TU}` before `\fontfamily`, and every place that resolves a
   family's font identifier goes through it: `\@@_update_font:` and its
@@ -666,7 +692,7 @@ texlua scripts/check-charclass.lua     # ~1 s, the CJK range table against Scrip
 texlua scripts/check-bilingual.lua     # ~1 s, the two documentation languages
 
 # CI, on every push: the full suite and the manual
-l3build check           # ~3 min, 76 tests, both test runs
+l3build check           # ~3 min, 77 tests, both test runs
 l3build doc             # ~2 min, tagged manual, needs latex-lab and tagpdf
 bash scripts/ctex-subset.sh            # ~3 min, needs ../ctex-kit or network
 bash scripts/ctex-subset.sh --skip-unpack

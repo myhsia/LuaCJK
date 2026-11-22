@@ -28,6 +28,18 @@
   \TYPE{width: \the\wd0}
 }
 
+\TEST{the font of a sub-block takes the default features}{
+  \begingroup
+    \LuaCJKDeclareSubCJKBlock{Kana}{"3040 -> "30FF}
+    \defaultCJKfontfeatures{Script = CJK, Scale = 2}
+    \setCJKfamilyfont{zhkana}[Kana = FandolKai-Regular.otf]
+      {FandolSong-Regular.otf}
+    \CJKfamily{zhkana}
+    \setbox0=\hbox{あ}
+    \TYPE{width: \the\wd0}
+  \endgroup
+}
+
 \TEST{addCJKfontfeatures changes the current family}{
   \addCJKfontfeatures{Scale = 1.2}
   \setbox0=\hbox{中}

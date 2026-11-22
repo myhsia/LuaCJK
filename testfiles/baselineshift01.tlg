@@ -65,3 +65,10 @@ TEST 10: the offset is applied once when both families are the same
 PS FandolFang-Regular size 655360 yoffset 163840
 PS FandolFang-Regular size 655360 yoffset 163840
 ============================================================
+============================================================
+TEST 11: two declarations of one font take turns at their own offset
+============================================================
+PS FandolFang-Regular size 655360 yoffset 65540
+PS FandolFang-Regular size 655360 yoffset 163840
+PS FandolFang-Regular size 655360 yoffset 65540
+============================================================
