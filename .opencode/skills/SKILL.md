@@ -175,7 +175,12 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    then begins at the centering position, not at the edge of the measure, and
    the rule would shift the whole line instead of leaving the blank in a margin
    that is not there.  The hang at a break stays in every case, because the
-   line breaker has already counted it when it decides that the mark fits.
+   line breaker has already counted it when it decides that the mark fits, and
+   there it is what keeps the ink of a line end on the right edge.  The last
+   line of such a paragraph is bracketed by hand, because no break glue ends
+   it: the bare rule goes behind the last mark, with no glue to widen, and only
+   when `\leftskip` carries a fill, since otherwise the trailing fill absorbs
+   the rule and the ink does not move (`hang01`).
 5. `apply_kinsoku` — insert a `\penalty 10000` at a break point the
    line-breaking prohibitions forbid. It reads a box at the edge that faces the
    break (`first_punct`/`last_punct`), so a mark inside an `\mbox` takes part.
@@ -373,7 +378,11 @@ before every one an opening mark starts, `hang_bounds` puts a zero-size rule of
 negative width and adds the same width to the glue. Inside a line the two
 cancel; at a break the glue is discarded and the rule alone shortens the line,
 so the mark's ink stands in the margin and the line can hold a mark its natural
-width would refuse. A kern would not do, because a kern after a character is a
+width would refuse. The last line of a paragraph has no break glue to widen, so
+there the rule goes in alone, and it is the trailing fill of a justified or
+ragged-right line that absorbs it: only a line that starts at the centering
+position, or at the right edge, moves its ink (`hang01`). A kern would not do,
+because a kern after a character is a
 break opportunity of its own and would take a kinsoku penalty; character
 protrusion would not either, because `\rpcode` leaves the ink where it was. The
 amount is the blank the mark's font carries, read from the outline by
