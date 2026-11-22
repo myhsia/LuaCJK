@@ -164,7 +164,19 @@ width: 20.0pt, height: 7.78pt, depth: 2.39996pt
 NODES leaders:1310720 glue:-1310720 kern:655360 glue:0 kern:655360
 ============================================================
 ============================================================
-TEST 14: drawn decorations do not add height or depth
+TEST 14: hidden takes the ink of a formula out and keeps its dimensions
+============================================================
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line ....
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line ....
+width: 6.38612pt, height: 8.44843pt, depth: 3.44841pt
+INK glyph 0 rule 0
+width: 6.38612pt, height: 8.44843pt, depth: 3.44841pt
+INK glyph 2 rule 1
+============================================================
+============================================================
+TEST 15: drawn decorations do not add height or depth
 ============================================================
 plain: 7.78pt, 1.62pt
 dots: 7.78pt, 1.62pt
@@ -172,18 +184,18 @@ wave: 7.78pt, 1.62pt
 slash: 7.78pt, 1.62pt
 ============================================================
 ============================================================
-TEST 15: each decoration keeps its own settings
+TEST 16: each decoration keeps its own settings
 ============================================================
 NODES kern:327680 leaders:218430 kern:327680 glue:-873790 glyph glue:218430 glyph glue:218430 leaders:655360 glue:-655360 glyph
 ============================================================
 ============================================================
-TEST 16: settings do not leak to another decoration
+TEST 17: settings do not leak to another decoration
 ============================================================
 span: 20.0pt
 LEADERS 1310720
 ============================================================
 ============================================================
-TEST 17: a decoration keeps the width, stretch, and shrink of its text
+TEST 18: a decoration keeps the width, stretch, and shrink of its text
 ============================================================
 DIM w=3276800 st=262144 sh=0
 DIM w=3276800 st=262144 sh=0
@@ -192,13 +204,13 @@ DIM w=3276800 st=262144 sh=0
 DIM w=3276800 st=262144 sh=0
 ============================================================
 ============================================================
-TEST 18: a kern inside the text moves the cut of skip
+TEST 19: a kern inside the text moves the cut of skip
 ============================================================
 NODES leaders:1310720 kern:655360 leaders:655360 glue:-2621440 glyph kern:655360 glue:0 glyph glue:0 glyph
 NODES leaders:1310720 kern:655360 leaders:655360 glue:-2621440 glyph glue:655360 glyph glue:0 glyph
 ============================================================
 ============================================================
-TEST 19: a pattern built from em units is rebuilt per font size
+TEST 20: a pattern built from em units is rebuilt per font size
 ============================================================
 > \box...=
 \hbox(7.78+1.99997)x10.0, direction TLT
@@ -231,7 +243,7 @@ l. ...}
 l. ...}
 ============================================================
 ============================================================
-TEST 20: a rule sized in em keeps its thickness when the size changes
+TEST 21: a rule sized in em keeps its thickness when the size changes
 ============================================================
 > \box...=
 \hbox(7.78+1.62)x10.0, direction TLT
@@ -254,7 +266,7 @@ l. ...}
 l. ...}
 ============================================================
 ============================================================
-TEST 21: a drawn pattern is repeated with leaders
+TEST 22: a drawn pattern is repeated with leaders
 ============================================================
 > \box...=
 \hbox(7.78+1.78)x40.0, direction TLT
@@ -332,7 +344,7 @@ l. ...}
 l. ...}
 ============================================================
 ============================================================
-TEST 22: a decoration is divided into whole patterns when its width is final
+TEST 23: a decoration is divided into whole patterns when its width is final
 ============================================================
 > \box...=
 \vbox(7.78+1.78)x41.0, direction TLT
@@ -483,7 +495,7 @@ TEST 22: a decoration is divided into whole patterns when its width is final
 l. ...}
 ============================================================
 ============================================================
-TEST 23: the copies of a drawn pattern start where its span starts
+TEST 24: the copies of a drawn pattern start where its span starts
 ============================================================
 copies 8, width 674474
 the span starts -1 sp from the first copy

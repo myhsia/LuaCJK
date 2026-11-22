@@ -9356,6 +9356,7 @@ local CLEADERS = 101
 local XLEADERS = 102
 local KERN     = node.id("kern")
 local HLIST    = node.id("hlist")
+local VLIST    = node.id("vlist")
 local RULE     = node.id("rule")
 local WHATSIT  = node.id("whatsit")
 
@@ -9602,6 +9603,55 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{hide_list}
+% Take the ink out of the list a packed box holds.
+% A glyph becomes a kern of the same width and a rule is dropped, because the
+% box recorded its dimensions when it was packed and only the ink has to go;
+% a box inside it is walked in turn, so the numerator of a fraction and the
+% rule of its bar are hidden like a plain number.
+% A box of the emphasis dots is left alone: its rule is the ink of the
+% decoration, which \keys{hidden} keeps, not of the text it covers.
+%    \begin{macrocode}
+local function hide_list (head)
+  local prev, n = nil, head
+  while n do
+    local nxt = n.next
+    if n.id == GLYPH then
+      local k = node.new("kern")
+      k.kern  = n.width or 0
+      k.next  = nxt
+      copy_attributes(k, n)
+      if prev then
+        prev.next = k
+      else
+        head = k
+      end
+      node.free(n)
+      prev = k
+    elseif n.id == RULE then
+      if prev then
+        prev.next = nxt
+      else
+        head = nxt
+      end
+      node.free(n)
+    elseif n.id == HLIST
+           and node.has_attribute(n, M.dot_attr) ~= nil then
+      prev = n
+    elseif n.id == HLIST or n.id == VLIST then
+      n.head = hide_list(n.head)
+      prev   = n
+    else
+      prev = n
+    end
+    n = nxt
+  end
+  return head
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{hide_text}
 % Take the ink out of a decorated span and keep its dimensions.
 % Every glyph becomes a kern of the same width, so the text still occupies the
@@ -9609,6 +9659,8 @@ end
 % before the pass ran; one rule of no width carries the height and the depth,
 % because a kern has neither.  The span is the text the leaders pair covers,
 % so the walk stops at the width of that pair.
+% A box of the span has its own dimensions, so \texttt{hide_list} takes its
+% ink out instead, and the box is left in the list where it stands.
 %    \begin{macrocode}
 local function hide_text (start, w)
   local x, height, depth = 0, 0, 0
@@ -9632,10 +9684,13 @@ local function hide_text (start, w)
       node.free(n)
       prev = k
     else
-      if n.id == HLIST then
+      if n.id == HLIST or n.id == VLIST then
         height = math.max(height, n.height or 0)
         depth  = math.max(depth,  n.depth  or 0)
-        n.head = hide_text(n.head, n.width)
+        if n.id == VLIST
+           or node.has_attribute(n, M.dot_attr) == nil then
+          n.head = hide_list(n.head)
+        end
       end
       prev = n
     end
@@ -10158,6 +10213,10 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   instead of putting it in a \tn{phantom}: the text keeps its line breaks, so
 %   a hidden paragraph breaks like the visible one instead of overflowing in
 %   one line.}
+% \changes{v0.0.4}{2026/11/20}{\keys{hidden} hides a formula as it hides text:
+%   a character or a rule inside a box of the span carries no ink, so a
+%   fraction is hidden like a plain number and keeps its width, height, and
+%   depth.}
 % Underline the argument. The optional argument takes
 % \keys{thickness, depth, textformat}, and any other key is passed on to
 % \pkg{lua-ul}, which understands
