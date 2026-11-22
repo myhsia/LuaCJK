@@ -529,7 +529,9 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   `\check@mathfonts`, the axis the kernel's text `\vcenter` reads.  A `\vtop`
   takes the height of the first item of its list, so the MC whatsit opens
   after `\noindent`, inside the first line, and never in the vlist in front of
-  it: there it would leave a `t` box with no height at all.
+  it: there it would leave a `t` box with no height at all.  The environment
+  also takes `\\` back to `\@normalcr`, as `\parbox` does, so a cell of a
+  table can hold it: the break belongs to the box, not to the alignment.
 - **The selection rectangle is not ours.**  A PDF reader derives its height
   from the font's `hhea` ascent and descent.  For Noto Serif CJK SC that is
   1.437em, so the reader's box is taller than the 1em square even though the

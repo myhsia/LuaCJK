@@ -705,6 +705,10 @@ the axis the kernel's text `\vcenter` reads. A `\vtop` takes the height of the
 first item of its list, so the MC whatsit opens after `\noindent`, inside the
 first line; in the vlist in front of it, a `t` box would have no height.
 
+It also takes `\\` back to `\@normalcr` inside its group, as `\parbox` does, so
+a cell of a table can hold it: without that, the `\vbox` inherits the
+`\@arraycr` of the alignment and the `\cr` ends the cell.
+
 The reader's selection height comes from the font's `hhea` ascent and descent,
 not from the em box. For Noto Serif CJK SC that is 1.437em, so the selection
 is taller than the 1em square even when the highlight is right. Tagging does
