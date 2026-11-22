@@ -1213,8 +1213,9 @@ a’a\quad 不亦说乎！
 %     \tn{LuaCJKnobreak} \marg{text}
 %   \end{syntax}
 %   把 \meta{text} 保持在一行之内。参数的节点被打上标记，
-%   断行的处理不在它们的任何边界处断开，参数里由 \cs{quad} 或
-%   \cs{hspace} 写出的胶也一样。标记随当前分组结束。
+%   相邻两个字符之间的断开被禁止，参数里由 \cs{quad} 或
+%   \cs{hspace} 写出的胶也一样；参数与前后文之间的边界属于那段文字，
+%   照旧可以断开。标记随当前分组结束。
 % \end{function}
 %
 % \iffalse
@@ -2616,10 +2617,11 @@ a’a\quad 不亦说乎！
 %   \begin{syntax}
 %     \tn{LuaCJKnobreak} \marg{text}
 %   \end{syntax}
-%   Keep \meta{text} on one line. The nodes of the argument are marked
-%   and the line-breaking pass forbids a break at any of their boundaries,
-%   including a glue the argument writes with \cs{quad} or \cs{hspace}.
-%   The marking ends with the current group.
+%   Keep \meta{text} on one line. The nodes of the argument are marked and the
+%   line-breaking pass forbids a break between two of them, including a glue
+%   the argument writes with \cs{quad} or \cs{hspace}; the boundary between the
+%   argument and the text around it belongs to that text, so it keeps the break
+%   the text offers. The marking ends with the current group.
 % \end{function}
 %
 % \iffalse
@@ -4206,12 +4208,15 @@ abc汉字abc
 % \changes{v0.0.4}{2026/11/22}{\cs{LuaCJKnobreak} forbids the break at a glue
 %   the document writes inside its argument, so a \cs{quad} or an \cs{hspace}
 %   there no longer starts a line.}
-% Keep the argument on one line. The nodes of the argument are marked,
-% and the line-breaking pass forbids every break opportunity that involves a
-% marked node, whether it is a glue, a kern, or a discretionary.
-% The glue need not be one \pkg{LuaCJK} inserted: a glue that carries the mark
-% forbids its break, so \cs{quad}, \cs{hspace}, and \cs{hfill} keep their place
-% on the line.
+% \changes{v0.0.5}{2026/11/22}{\cs{LuaCJKnobreak} forbids the breaks inside its
+%   argument alone: a break at either edge of the argument is the business of
+%   the text around it, and the glue the package inserts behind the last
+%   character no longer carries the prohibition.}
+% Keep the argument on one line: the marked nodes on both sides of a break
+% forbid it, and so does a glue the document writes with the mark, whether it
+% is a \cs{quad}, an \cs{hspace}, or an \cs{hfill}.  The boundary between the
+% argument and the text around it is not marked on both sides, so it keeps the
+% break the text offers.
 %    \begin{macrocode}
 \NewDocumentCommand \LuaCJKnobreak { +m }
   {
@@ -7929,13 +7934,17 @@ end
 %   next line whole, while the break between the marks of a run stays the
 %   business of the \texttt{NoBreakLongPunct} set.}
 % Add the prohibitions where the settings of the text ask for them.
-% A node marked by \cs{LuaCJKnobreak} or by the verbatim addon
-% is prohibited regardless, because the mark itself is the prohibition.
 % The break points the pass reads are the glue \pkg{LuaCJK} inserts and the
 % source spaces, because the punctuation rules are about those places alone;
 % the mark is about every break, so a glue that carries it is read as a break
 % point as well, which is what keeps a \cs{quad} or an \cs{hspace} inside the
 % argument on the same line.
+% The mark that counts is the document's own: a break is forbidden when the
+% material on both sides of it is marked, or when a node the document wrote
+% carries the mark itself.  The glue and the kerns the package inserts take the
+% attributes of the character in front of them, so a mark there records the
+% decoration a span carries and says nothing about the break, and the boundary
+% between the argument and the text around it belongs to that text.
 % A box is read at the edge that faces the break, the way the spacing pass
 % reads it, so that a mark at the edge of the box is neither a line start nor
 % a line end.
@@ -7972,16 +7981,15 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{forbid_marked_disc}
-% Forbid the break at a discretionary that involves a marked node.
-% The break lies between the letters on either side of the discretionary, so
-% it is prohibited when either of them is marked, the way the break at a glue
-% is.
+% Forbid the break at a discretionary whose two sides are both marked, the way
+% the break at a glue is forbidden.
 % \TeX\ gives a discretionary the attributes of the character in front of it,
-% which is why the node itself is read as well as its neighbours.
+% so the node's own attributes are the mark of that character and not a
+% statement about the break, and they are not read: a discretionary at either
+% edge of the argument leaves the marked text on one side only.
 %    \begin{macrocode}
 local function forbid_marked_disc (disc, left)
-  if no_break_mark(disc) or no_break_mark(left)
-     or no_break_mark(next_glyph(disc.next)) then
+  if no_break_mark(left) and no_break_mark(next_glyph(disc.next)) then
     disc.penalty = 10000
   end
 end
@@ -8132,9 +8140,10 @@ local function apply_kinsoku (head)
       if nxt then
         next_mark, next_char = edge_mark(nxt, false)
       end
-      local cj = settings.cj_strict and next_char and M.cj[next_char]
-      if nxt and (no_break_mark(cur) or no_break_mark(last)
-                  or no_break_mark(nxt) or cj
+      local cj                   = settings.cj_strict and next_char and M.cj[next_char]
+      local cur_marked           = no_break_mark(cur) and not is_inserted(cur)
+      if nxt and (cur_marked
+                  or (no_break_mark(last) and no_break_mark(nxt)) or cj
                   or (settings.kinsoku
                       and not disabled(last) and not disabled(nxt)
                       and forbids_break(prev_mark, prev_char,

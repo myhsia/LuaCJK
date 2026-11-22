@@ -75,7 +75,7 @@
   \reportbox{written}
 }
 
-\TEST{the marking covers the break at either side of the hyphen}{
+\TEST{the hyphen inside the argument is forbidden, the one behind it is free}{
   \narrow{\LuaCJKnobreak{inter}nationalization}
   \reportbox{half}
 }
@@ -108,6 +108,16 @@
 \TEST{the paragraph of the report keeps its run together}{
   \setbox0=\vbox{\hsize=70pt \raggedright 中文\LuaCJKnobreak{字well-known字}中文中文\par}
   \reportbox{paragraph}
+}
+
+\TEST{the paragraph of the report breaks at the edge of the argument}{
+  \setbox0=\vbox{\hsize=2em \parindent=0pt 请找\LuaCJKnobreak{张三}签字\par}
+  \reportbox{mwe}
+}
+
+\TEST{the argument itself still travels together}{
+  \narrow{请\LuaCJKnobreak{张三李四}签字}
+  \reportbox{together}
 }
 
 \END
