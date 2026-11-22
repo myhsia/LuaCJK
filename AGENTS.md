@@ -471,7 +471,10 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   writes one dot behind each CJK character: a zero-width box holding the dot
   shifted by the `depth` key below the em box bottom, with a kern of half the
   advance and half the dot, so the ink is centred and the line keeps its width
-  and leading.  A dot the pass writes carries `LuaCJKfntef.dot`, which is how a
+  and leading.  A character that the span holds inside a box is dotted as well,
+  and the box is entered with the bounds of the whole span, because `subtract`
+  and the centre are measured from the start of the span and not from the start
+  of the box.  A dot the pass writes carries `LuaCJKfntef.dot`, which is how a
   box that is packed twice is not dotted twice, and it copies the attributes of
   its character, so the dots take the color of their text; `format` replaces
   `luacolor`'s attribute value with the one the TeX side resolved, because a
