@@ -61,6 +61,16 @@
   \countpenalties
 }
 
+\TEST{the prohibition covers the inside and not the two edges}{
+  \setbox0=\hbox{中\LuaCJKnobreak{中中}中}
+  \countpenalties
+}
+
+\TEST{the break in front of the argument is free as well}{
+  \setbox0=\hbox{中中\LuaCJKnobreak{中}}
+  \countpenalties
+}
+
 \END
 
 \end{document}

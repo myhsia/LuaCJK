@@ -186,6 +186,12 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    spaces; a glue the document wrote is read as well when it carries the
    `nobreak` attribute, which is how a `\quad` or an `\hspace` inside
    `\LuaCJKnobreak` keeps its place on the line (`nobreak03`).
+   A break is forbidden when the material on both sides of it carries the mark,
+   or when a node the document wrote carries it; the glue and kerns the spacing
+   pass inserts inherit the attributes of the character in front of them, so a
+   mark there belongs to a decoration and not to the break, and the boundary
+   between the argument and the text around it belongs to that text
+   (`nobreak01`, `nobreak03`).
 6. `apply_check_single` — raise the penalty at the last two break points of a
    paragraph, so a single character cannot end up alone on the last line.
    The scan back to the previous character passes over `transparent_node` —
@@ -202,7 +208,7 @@ The `hyphenate` callback is the one that runs *inside* the line breaker:
 `\TeX` inserts the hyphens of a word there, after `pre_linebreak_filter` has
 already placed the prohibitions, so `M.hyphenate` hyphenates through
 `lang.hyphenate` and then sets the penalty of each discretionary it created to
-10000 when the letters on either side of it carry the `nobreak` attribute.
+10000 when the letters on both sides of it carry the `nobreak` attribute.
 A CJK character is a letter to `\TeX`, so it is also a word boundary here: the
 callback hyphenates each run of non-CJK text between two CJK characters on its
 own, which keeps a hyphenation point from standing between a CJK character and
@@ -253,7 +259,7 @@ Fourteen attributes carry the per-node state; all are read through
 | `xecglue` | whether the CJK/Latin glue is suppressed at this space |
 | `inserted` | marks the nodes LuaCJK created, so they are not examined twice |
 | `disabled` | `\LuaCJKdisable` state |
-| `nobreak` | `\LuaCJKnobreak` and `\LuaCJKVerbAddon` state: a break at glue, kern, or discretionary that touches a node carrying it is forbidden, whether the glue is one the package inserted or one the document wrote |
+| `nobreak` | `\LuaCJKnobreak` and `\LuaCJKVerbAddon` state: a break whose two sides carry it is forbidden, and so is a break at a glue or kern the document wrote with it; a mark a node inherits from the character in front of it is a decoration's record and not a prohibition |
 | `settings` | number of the option snapshot that applies to this node |
 | `attached` | the character is a joiner or a variation selector, so `drop_orphans` removes what shaping left of it |
 | `LuaCJKfntef/settings` | number of the decoration settings entry |
