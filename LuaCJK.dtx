@@ -851,7 +851,7 @@ $ 天地玄黄 $ and 天地玄黄
 % 所以 |\rlap|、|\llap| 与 |\clap| 覆盖在文字上的内容仍属于同一串。
 %
 % \begin{environment}{CJKfilltwosides}
-%   把各行排进一个竖直盒子里，
+%   把各行排进一个 \env{minipage}，
 %   盒中的行两端对齐到 \meta{width}，各行之间用 |\\| 分开。
 %   它的 \meta{position} 参数像 \cs{parbox} 一样决定盒子落在基线上的方式：
 %   \texttt{t} 让第一行的基线与周围的行齐平，
@@ -860,6 +860,12 @@ $ 天地玄黄 $ and 天地玄黄
 %   环境像 \cs{parbox} 一样先离开竖直模式，
 %   所以它后面的文字接着盒子排在同一行，而不是另起一段；
 %   环境之后的空格与 \pkg{xeCJK} 一样被忽略。
+%   盒内的段落设置也是 \cs{parbox} 的：
+%   段首缩进和段间距为零，
+%   所以分段之后的每一段都从盒子左端起排，并与第一段一样两端对齐，
+%   行距是文档自己的行距，而不是外面某个对齐环境留下的值。
+%   正文里的 \cs{footnote} 排在盒子底部、横线之下，
+%   用盒子自己的计数器编号，与它在 \env{minipage} 里一样。
 %   宽度为零或为负时沿用周围的行宽。
 %   带星号的形式行为相同；它不与内容的自然宽度作比较。
 %   \begin{syntax}
@@ -2215,7 +2221,7 @@ $ 天地玄黄 $ and 天地玄黄
 % |\clap| set over the text stays in one run.
 %
 % \begin{environment}{CJKfilltwosides}
-%   Set the lines in a vertical box whose lines are justified
+%   Set the lines in a \env{minipage} whose lines are justified
 %   to \meta{width}, separated by |\\|. Its \meta{position} argument places
 %   the box as \cs{parbox} does: \texttt{t} puts the baseline of the first
 %   line on the surrounding baseline, \texttt{c} centres the box on the text
@@ -2224,6 +2230,13 @@ $ 天地玄黄 $ and 天地玄黄
 %   text after it joins the box on the same line instead of beginning a
 %   paragraph, and a space after the environment is ignored as \pkg{xeCJK}
 %   ignores it.
+%   The settings of the body are those of a \cs{parbox} as well: the paragraph
+%   indent and the paragraph skip are zero, so every paragraph after a
+%   paragraph break starts at the left edge of the box and is filled like the
+%   first, and the leading is the document's own rather than whatever an
+%   enclosing alignment left behind.
+%   A \cs{footnote} in the body is set at the bottom of the box, below a rule,
+%   and numbered with the box's own counter, as it is in a \env{minipage}.
 %   A width of zero or less keeps the surrounding line width.
 %   The starred form behaves the same;
 %   it does not compare against the natural width of the content.
@@ -11411,95 +11424,58 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   \cs{parbox} does, so the text after it joins the box on the same line
 %   instead of beginning a paragraph, and a space after the environment is
 %   ignored as \pkg{xeCJK} ignores it.}
-%   Set the body in a vertical box whose lines are justified to the given
-%   width, with the lines separated by |\\|.
+% \changes{v0.0.5}{2026/11/22}{The body of \env{CJKfilltwosides} is set as a
+%   \env{minipage}, so a paragraph after a paragraph break starts at the left
+%   edge of the box and is filled like the first one, and the leading between
+%   the lines is the leading of the document instead of whatever an enclosing
+%   alignment left behind.}
+% \changes{v0.0.5}{2026/11/22}{A \cs{footnote} inside \env{CJKfilltwosides} is
+%   set at the bottom of the box and numbered with the box's own counter,
+%   instead of being lost with the insert that a plain vertical box cannot
+%   hold.}
+%   Set the body in a \env{minipage} of the given width, with the lines
+%   separated by |\\|.
 %   The inter-character glue is given an infinite stretch inside the box,
 %   so a line of CJK characters reaches the width even when there is no
 %   Latin word space to stretch.
-%   The body leaves vertical mode first, as \cs{parbox} does, so the box joins
-%   the paragraph that follows and the text after the environment continues on
-%   its line; a space written after the environment is ignored, as \pkg{xeCJK}
-%   ignores it.
-%   The content is therefore one marked-content sequence of that paragraph,
-%   and the automatic paragraph hooks are off around the box, so the box opens
-%   no paragraph of its own inside it.
-%   The environment takes |\\| back from an enclosing alignment, as
-%   \cs{parbox} does with \tn{@normalcr}, so a cell of a table can hold it:
-%   the break belongs to the box, and the alignment does not see it.
+%   A \env{minipage} is a \cs{parbox}, so the body takes the settings of one
+%   and the box keeps the settings of the kernel: the paragraph indent and the
+%   paragraph skip are zero, so every paragraph after a paragraph break starts
+%   at the left edge of the box and is filled like the first; the leading is
+%   the document's own, which an enclosing alignment would otherwise replace;
+%   |\\| is the break of running text even in a table cell, so the break
+%   belongs to the box and not to the alignment; and the box leaves vertical
+%   mode, so the text after the environment continues on its line.
+%   A space written after the environment is ignored, as \pkg{xeCJK} ignores
+%   it.
+%   A \cs{footnote} in the body is set at the bottom of the box, below a rule,
+%   and numbered with the box's own counter, as it is in a \env{minipage}.
+%   Under tagging, \pkg{latex-lab}'s minipage module ends the paragraph
+%   structure around the box, opens a \texttt{text-minipage} for the body, and
+%   reopens the paragraph after it, so the body is a structure of its own
+%   rather than a marked-content sequence of the surrounding paragraph.
 %   The optional argument places the box on the baseline like the same
 %   argument of \cs{parbox}: \texttt{t} for the first line, \texttt{c} for
 %   the text axis (the default), and \texttt{b} for the last line.
-%   A width of zero or less keeps the surrounding line width.
-%   A \texttt{t} box is rebuilt as a \tn{vtop}, so that its reference point is
-%   the baseline of its first line, and a \texttt{b} box keeps its natural
-%   height and depth, whose reference point is the baseline of the last line.
-%   A \texttt{c} box is centred on the axis of the text style,
-%   \tn{Umathaxis}, the axis \cs{parbox} centres on; \cs{check@mathfonts} runs
-%   first, as it does there, because the axis reads the largest dimension
-%   until the math fonts exist.
-%   A \tn{vtop} takes the height of the first item of its list, so the marked
-%   content opens inside the first line rather than in the list in front of
-%   it; in front of it, a \texttt{t} box would have no height at all.
-% \begin{variable}[int]
-%   {
-%     \l_@@_fntef_fill_box,       \l_@@_fntef_fill_width_dim,
-%     \l_@@_fntef_fill_total_dim, \l_@@_fntef_fill_axis_dim,
-%     \l_@@_fntef_fill_position_tl
-%   }
-% The box being filled, its requested width, its total height and depth,
-% the axis of the text style, and the requested baseline position.
-%    \begin{macrocode}
-\box_new:N \l_@@_fntef_fill_box
-\dim_new:N \l_@@_fntef_fill_width_dim
-\dim_new:N \l_@@_fntef_fill_total_dim
-\dim_new:N \l_@@_fntef_fill_axis_dim
-\tl_new:N \l_@@_fntef_fill_position_tl
-%    \end{macrocode}
-% \end{variable}
+%   A width of zero or less keeps the surrounding line width, which reaches
+%   the box as \tn{linewidth}.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_fill_begin:nn #1#2
   {
-    \mode_leave_vertical:
     \group_begin:
-    \cs_set_eq:Nc \\ { @normalcr }
-    \cs_if_exist:NT \tagpdfparaOff { \tagpdfparaOff }
-    \tl_set:Nn \l_@@_fntef_fill_position_tl {#1}
-    \dim_set:Nn \l_@@_fntef_fill_width_dim {#2}
     \LuaCJKsetup { CJKglue = 0pt plus 1filll }
-    \vbox_set:Nw \l_@@_fntef_fill_box
-      \dim_compare:nNnT { \l_@@_fntef_fill_width_dim } > { 0pt }
-        { \dim_set:Nn \tex_hsize:D { \l_@@_fntef_fill_width_dim } }
-      \tex_noindent:D
-      \cs_if_exist:NT \tag_mc_begin:n { \tag_mc_begin:n { } }
-      \tex_ignorespaces:D
+    \dim_compare:nNnTF {#2} > { 0pt }
+      { \@@_fntef_fill_box:nn {#1} {#2} }
+      { \@@_fntef_fill_box:nn {#1} { \linewidth } }
+  }
+\cs_new_protected:Npn \@@_fntef_fill_box:nn #1#2
+  {
+    \use:e
+      { \exp_not:N \minipage [#1] { \dim_eval:n {#2} } }
   }
 \cs_new_protected:Npn \@@_fntef_fill_end:
   {
-    \tex_par:D
-    \cs_if_exist:NT \tag_mc_end: { \tag_mc_end: }
-    \vbox_set_end:
-    \str_case:Vn \l_@@_fntef_fill_position_tl
-      {
-        { t }
-        {
-          \vbox_set_top:Nn \l_@@_fntef_fill_box
-            { \vbox_unpack:N \l_@@_fntef_fill_box }
-        }
-        { c }
-        {
-          \use:c { check@mathfonts }
-          \dim_set:Nn \l_@@_fntef_fill_total_dim
-            { \box_ht_plus_dp:N \l_@@_fntef_fill_box }
-          \dim_set:Nn \l_@@_fntef_fill_axis_dim
-            { \tex_Umathaxis:D \textstyle }
-          \box_set_ht:Nn \l_@@_fntef_fill_box
-            { \l_@@_fntef_fill_total_dim / 2 + \l_@@_fntef_fill_axis_dim }
-          \box_set_dp:Nn \l_@@_fntef_fill_box
-            { \l_@@_fntef_fill_total_dim - \box_ht:N \l_@@_fntef_fill_box }
-        }
-      }
-    \box_use_drop:N \l_@@_fntef_fill_box
-    \cs_if_exist:NT \tagpdfparaOn { \tagpdfparaOn }
+    \endminipage
     \group_end:
     \ignorespacesafterend
   }
