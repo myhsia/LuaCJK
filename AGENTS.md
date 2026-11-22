@@ -334,6 +334,12 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   `\tl_set:Ne`, so a family is named by `\CJKrmdefault` and friends; the
   property key is the expanded name, and a new entry point that skips the
   expansion silently keeps the previous family and warns about the macro.
+- **`\CJKfontspec` takes its options before the font name.**  A third optional
+  argument would read the bracket the text begins with as its option list and
+  swallow it, and the command is used inside the text; the preamble commands
+  (`\setCJKmainfont` and its siblings, `\newCJKfontfamily`,
+  `\setCJKfallbackfamilyfont`) keep the trailing form, because the text does
+  not follow them.  `smoke01` pins the bracket.
 - **A CJK family is selected in the Unicode encoding.**  `\@@_family_font:n`
   sets `\fontencoding{TU}` before `\fontfamily`, and every place that resolves a
   family's font identifier goes through it: `\@@_update_font:` and its

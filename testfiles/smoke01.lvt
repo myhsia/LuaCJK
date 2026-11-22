@@ -77,9 +77,10 @@
   \endgroup
 }
 
-\TEST{CJKfontspec options after the font name}{
+\TEST{a bracket after the font name is text}{
   \begingroup
-  \setbox0=\hbox{\CJKfontspec{FandolKai-Regular.otf}[Scale = 2]中}
+  \setbox0=\hbox{\CJKfontspec{FandolKai-Regular.otf}%
+    [重点]}
   \TYPE{width: \the\wd0}
   \showglyphfont
   \endgroup

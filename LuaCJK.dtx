@@ -470,10 +470,12 @@ English 中文字体\\
 %
 % \begin{function}{\CJKfontspec}
 %   \begin{syntax}
-%     \tn{CJKfontspec} \oarg{options} \marg{font} \oarg{options}
+%     \tn{CJKfontspec} \oarg{options} \marg{font}
 %   \end{syntax}
 %   为当前分组选择一个 CJK 字体。
-%   选项可以写在字体名之前，也可以写在之后。
+%   与 \cs{fontspec} 一样，选项写在字体名之前：
+%   这个命令用在正文中间，若它还要读取字体名之后的方括号，
+%   正文紧接着的那个方括号就会被当成选项而消失。
 % \end{function}
 %
 % \begin{function}{\songti, \heiti, \fangsong, \kaishu, \lishu, \youyuan}
@@ -1800,10 +1802,13 @@ English 中文字体\\
 %
 % \begin{function}{\CJKfontspec}
 %   \begin{syntax}
-%     \tn{CJKfontspec} \oarg{options} \marg{font} \oarg{options}
+%     \tn{CJKfontspec} \oarg{options} \marg{font}
 %   \end{syntax}
 %   Select a CJK font for the current group.
-%   The options may be given before or after the font name.
+%   The options go before the font name, as for \cs{fontspec}:
+%   the command is used inside the text, so if it also read a bracket after
+%   the font name, the bracket that the text begins with would be taken as an
+%   option list and would vanish.
 % \end{function}
 %
 % \begin{function}{\songti, \heiti, \fangsong, \kaishu, \lishu, \youyuan}
@@ -5423,6 +5428,9 @@ abc汉字abc
 % \begin{macro}{\CJKfontspec}
 % \changes{v0.0.2}{2026/11/15}{\cs{CJKfontspec} and \cs{newCJKfontfamily}
 %   take their options after the font name as well.}
+% \changes{v0.0.4}{2026/11/20}{\cs{CJKfontspec} no longer reads an option list
+%   after the font name, so a bracket that the text starts with is no longer
+%   swallowed.}
 % Register a one-off family and switch to it immediately.
 % \begin{variable}[int]{\g_@@_fontspec_int}
 % Gives every call its own family name.
@@ -5431,13 +5439,13 @@ abc汉字abc
 %    \end{macrocode}
 % \end{variable}
 %    \begin{macrocode}
-\NewDocumentCommand \CJKfontspec { o m o }
+\NewDocumentCommand \CJKfontspec { o m }
   {
     \int_gincr:N \g_@@_fontspec_int
     \tl_set:Ne \l_@@_tmpa_tl
       { LuaCJK / fontspec / \int_use:N \g_@@_fontspec_int }
     \exp_args:NV \@@_set_family_with_options:nnnn
-      \l_@@_tmpa_tl {#1} {#2} {#3}
+      \l_@@_tmpa_tl {#1} {#2} { }
     \exp_args:NV \@@_switch_family:n \l_@@_tmpa_tl
     \tex_ignorespaces:D
   }
