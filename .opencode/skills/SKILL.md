@@ -208,10 +208,13 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    `\LuaCJKnobreak` keeps its place on the line (`nobreak03`).
    A break is forbidden when the material on both sides of it carries the mark,
    or when a node the document wrote carries it; the glue and kerns the spacing
-   pass inserts inherit the attributes of the character in front of them, so a
-   mark there belongs to a decoration and not to the break, and the boundary
-   between the argument and the text around it belongs to that text
-   (`nobreak01`, `nobreak03`).
+   pass inserts take the attributes both neighbours carry, so a mark there
+   belongs to a decoration when the span is whole and to neither side when it
+   ends, and the boundary between the argument and the text around it belongs to
+   that text (`nobreak01`, `nobreak03`).  That same rule is what ends a
+   decoration at its last character: `\CJKunderline{ABC}文` keeps the
+   `CJKecglue` outside the span, where inheriting from the character in front
+   alone set the rule over the glue (`decoration01`).
 6. `apply_check_single` — raise the penalty at the last two break points of a
    paragraph, so a single character cannot end up alone on the last line.
    The scan back to the previous character passes over `transparent_node` —
