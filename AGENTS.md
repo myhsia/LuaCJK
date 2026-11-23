@@ -240,6 +240,11 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   declares either group, so `{none}` gives a mark its word spacing back.
   The local `inert_mark` predicate keeps a mark of either group out of
   `pair_kern` and `fixed_width`.
+  A formula that sets one opening or closing delimiter alone is that bracket
+  too: the math pass marks its single character (`mark_math_brackets`, the
+  `math_bracket` attribute), the boundary reads the mark through the two math
+  nodes the conversion puts beside the glyph, and the pair hugs its text with
+  the glue outside (`boundary01`).
 - **An outline box is read at the curve's extremum, not at its handles.**  The
   blank a mark hangs is measured from the font, and a Bézier handle lies
   outside the ink its curve paints, so `cff_box` solves each curve for its

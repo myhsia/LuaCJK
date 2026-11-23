@@ -9,6 +9,21 @@
 
 \START
 
+\TEST{the initial list holds the slash}{
+  \setbox0=\hbox{中/中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{the initial list holds the hyphen}{
+  \setbox0=\hbox{中-中}
+  \TYPE{width: \the\wd0}
+}
+
+\TEST{the initial list does not hold the backslash}{
+  \setbox0=\hbox{中\textbackslash 中}
+  \TYPE{width: \the\wd0}
+}
+
 \TEST{a Latin letter gets glue on both sides}{
   \setbox0=\hbox{中z中}
   \TYPE{width: \the\wd0}
@@ -31,7 +46,7 @@
   \TYPE{width: \the\wd0}
 }
 
-\TEST{the initial list contains the hyphen}{
+\TEST{a list given with separators still names its character}{
   \normalspacedchars{/, \, , -}
   \setbox0=\hbox{中-中}
   \TYPE{width: \the\wd0}
