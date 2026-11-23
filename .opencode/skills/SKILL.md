@@ -427,15 +427,18 @@ reader here; `fontloader` would be exact too, but `to_table` costs a second and
 a hundred megabytes on a CJK collection.  `hang01` pins the pair and the fit,
 `boundw01` the amount, and `punct01` the compressed style.
 
-Suspension does not take that break opportunity away.  `Verb` stops the spacing
-on both sides of a suspended run, but the zero-width glue stays at either edge:
-it moves no ink, and a `\verb` beside a CJK character can end a line where the
-`CJKecglue` would have been.  The mark prohibitions are applied when the glue is
-inserted (`suspended_break`), because the kinsoku pass skips a break that
-involves suspended material: no break follows an opening mark or precedes a
-closing, middle, or long mark that begins a run, and two Latin words stay whole.
-`verb02` pins the right and left edges, the closing mark, and the line that ends
-at the mark.
+Suspension stops at the edge of the material.  `Verb` keeps the interior alone —
+no compression, no hang, no inter-character glue — but the boundary between the
+run and the text around it takes what the two classes give, through the same
+`boundary_spec` the ordinary boundary uses: a `\verb` beside a CJK character is
+spaced as the same characters in a text font are, and `Verb = false` differs
+only inside.  A mark at the edge still takes the zero-width glue of a mark or
+none at all, and the mark prohibitions are applied when the glue is inserted
+(`suspended_break`), because the kinsoku pass skips a break that involves
+suspended material: no break follows an opening mark or precedes a closing,
+middle, or long mark that begins a run, and two Latin words stay whole.
+`verb02` pins both edges, the width against `\texttt` and shortvrb, the
+`Verb = false` equality, the closing mark, and the line that ends at the mark.
 
 `\LuaCJKVerbAddon` is the exception, and it has to be: the gap that makes one
 CJK character two columns reaches the text only through the spacing pass, and

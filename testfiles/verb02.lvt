@@ -2,6 +2,7 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
+\usepackage{shortvrb}
 \setCJKmainfont{FandolSong-Regular.otf}
 \LuaCJKsetup{CJKglue = 10pt, CJKecglue = 5pt}
 
@@ -115,6 +116,22 @@
 \setbox\verbclosebox=\hbox{\verb|ab|。}
 \setbox\verblinebox=\vbox{\hsize=52pt \raggedright \noindent\verb|Backspace|键}
 
+% The edge takes the glue its two classes give, so the same characters in a
+% text font are the reference.
+\newbox\verbedgebox
+\newbox\textedgebox
+\newbox\shortvrbedgebox
+\newbox\verbedgefalsebox
+\setbox\verbedgebox=\hbox{甲\verb!Esc!乙}
+\setbox\textedgebox=\hbox{甲\texttt{Esc}乙}
+\MakeShortVerb{\|}
+\global\setbox\shortvrbedgebox=\hbox{甲|Esc|乙}
+\DeleteShortVerb{\|}
+\begingroup
+  \LuaCJKsetup{Verb = false}
+  \global\setbox\verbedgefalsebox=\hbox{甲\verb!Esc!乙}
+\endgroup
+
 \begin{document}
 
 \START
@@ -141,12 +158,23 @@
   \lastglyph{6}
 }
 
-\TEST{a suspended run keeps the break opportunity on its right}{
+\TEST{a suspended run takes the inter-script glue on its right}{
   \reportlist{\number\verbrighthbox}
 }
 
-\TEST{a suspended run keeps the break opportunity on its left}{
+\TEST{a suspended run takes the inter-script glue on its left}{
   \reportlist{\number\verbleftbox}
+}
+
+\TEST{a suspended run is spaced as a text font is}{
+  \TYPE{verb: \the\wd\verbedgebox}
+  \TYPE{texttt: \the\wd\textedgebox}
+  \TYPE{shortvrb: \the\wd\shortvrbedgebox}
+}
+
+\TEST{the Verb setting does not change the edge}{
+  \TYPE{suspended: \the\wd\verbedgebox}
+  \TYPE{adjusted: \the\wd\verbedgefalsebox}
 }
 
 \TEST{no break opportunity before a closing mark}{
