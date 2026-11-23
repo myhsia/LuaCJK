@@ -784,6 +784,8 @@ $ 天地玄黄 $ and 天地玄黄
 %   标点两侧的胶没有宽度：标点的进距本身就带有间距。
 %   半角的 ASCII 括号只留下开头括号之前的这一份胶，
 %   括号内侧不加，于是成对的括号贴住它括起来的文字。
+%   只排出一个开头或收尾定界符的公式同样如此：
+%   定界符贴住它括起来的文字，胶只加在成对定界符的外侧。
 %   初始值是 \texttt{0.3333em plus 0.1667em minus 0.1111em}，
 %   它同样跟随字号，字号取自与它相邻的 CJK 字符而不是拉丁文本：
 %   拉丁文本用 \cs{scriptsize} 或 \cs{large} 排时，
@@ -824,7 +826,9 @@ $ 天地玄黄 $ and 天地玄黄
 %   \end{syntax}
 %   列出的字符两侧都不加胶，
 %   这样拉丁文字中的连字符或斜线不会把周围的文字拉开。
-%   初始列表是 |/|、|\| 与 |-|。这个设置是全局的。
+%   初始列表是 |/| 与 |-|。这个设置是全局的。
+%   反斜线不在列表里：它紧邻汉字时通常是排出的命令名的开头，
+%   那就该像其他拉丁字符一样加胶，而不像路径中的分隔符那样不加。
 % \end{function}
 %
 % \iffalse
@@ -835,7 +839,7 @@ $ 天地玄黄 $ and 天地玄黄
 中x中\par
 \normalspacedchars{x}中x中
 \end{codemo}
-\normalspacedchars{/\c_backslash_str-}
+\normalspacedchars{/-}
 \endgroup
 % \iffalse
 %</example>
@@ -2176,6 +2180,9 @@ $ 天地玄黄 $ and 天地玄黄
 %   A half-width ASCII bracket keeps that glue only in front of an opening
 %   one; the inside of the pair takes none, so the brackets hug the text they
 %   enclose.
+%   A formula that sets one opening or closing delimiter alone is the same:
+%   the delimiter hugs the text it encloses, and the glue stands on its
+%   outside.
 %   The initial value is \texttt{0.3333em plus 0.1667em minus 0.1111em},
 %   which follows the size of the CJK character it stands beside rather than
 %   the size of the Latin text: a run set with \cs{scriptsize} or \cs{large}
@@ -2217,7 +2224,10 @@ $ 天地玄黄 $ and 天地玄黄
 %   \end{syntax}
 %   The listed characters get no glue on either side, so that a hyphen
 %   or a slash inside Latin text does not pull the surrounding text apart.
-%   The initial list is |/|, |\|, and |-|. The setting is global.
+%   The initial list is |/| and |-|. The setting is global.
+%   A backslash is not in the list: beside a CJK character it usually begins
+%   the name of a printed command, which takes the glue as any other Latin
+%   character does, not the none that a separator in a path takes.
 % \end{function}
 %
 % \iffalse
@@ -2228,7 +2238,7 @@ $ 天地玄黄 $ and 天地玄黄
 中x中\par
 \normalspacedchars{x}中x中
 \end{codemo}
-\normalspacedchars{/\c_backslash_str-}
+\normalspacedchars{/-}
 \endgroup
 % \iffalse
 %</example>
@@ -3181,6 +3191,8 @@ abc汉字abc
 %     \g_@@_xecglue_attr,    \c_@@_xecglue_attr_int,
 %     \g_@@_inserted_attr,   \c_@@_inserted_attr_int,
 %     \g_@@_math_font_attr,  \c_@@_math_font_attr_int,
+%     \g_@@_math_bracket_attr,
+%                            \c_@@_math_bracket_attr_int,
 %     \g_@@_disabled_attr,   \c_@@_disabled_attr_int,
 %     \g_@@_punct_font_attr, \c_@@_punct_font_attr_int,
 %     \g_@@_settings_attr,   \c_@@_settings_attr_int,
@@ -3193,7 +3205,8 @@ abc汉字abc
 %   }
 % The attributes record, per node, the CJK font, the space and glue
 % policies, whether the node was inserted by \pkg{LuaCJK}, the CJK math font,
-% whether the adjustments are suspended, whether the character is one
+% whether the adjustments are suspended, whether a formula sets one opening or
+% closing delimiter, whether the character is one
 % that attaches to the character in front of it, whether a space is one
 % the document wrote with |\ | or \tn{nobreakspace}, and the \keys{Baseline}
 % offset of the family that sets the character, in scaled points.
@@ -3203,6 +3216,7 @@ abc汉字abc
   {
     font,     cjk_space,  xecglue,   inserted,   math_font,
     disabled, punct_font, settings,  nobreak,    attached,
+    math_bracket,
     explicit_space,
     shift,    punct_shift
   }
@@ -5672,23 +5686,24 @@ abc汉字abc
 % \begin{macro}{\normalspacedchars}
 % \changes{v0.0.1}{2026/11/05}{Provide \cs{normalspacedchars} so that slashes,
 %   backslashes, and hyphens take no glue on either side.}
-% \changes{v0.0.5}{2026/11/23}{The initial list holds the three characters it
-%   documents: the list is read as a sequence of characters, so the commas that
-%   separated them used to be normal-spaced as well, and so did the space
-%   between two of them.}
+% \changes{v0.0.5}{2026/11/24}{The initial list holds the two characters it
+%   documents, the slash and the hyphen: the list is read as a sequence of
+%   characters, so the commas that separated them used to be normal-spaced as
+%   well, and so did the space between two of them.  A backslash is not in it,
+%   because beside a CJK character it usually begins a printed command name,
+%   which takes the glue on both of its sides like any other Latin character.}
 % The characters in the list get no glue on either side, which is what
-% one wants for slashes, backslashes, and hyphens inside Latin text.
+% one wants for slashes and hyphens inside Latin text.
 % The list is kept on the Lua side as a set of code points,
 % so the setting is global: a group does not restore the previous list.
 % Every character of the list counts, separators included, so the initial list
-% names its three characters without any.
+% names its two characters without any.
 % \begin{variable}[int]{\g_@@_normal_spaced_chars_tl}
-% The list, initially \texttt{/}, \texttt{\c_backslash_str},
-% and \texttt{-}.
+% The list, initially \texttt{/} and \texttt{-}.
 %    \begin{macrocode}
 \tl_new:N \g_@@_normal_spaced_chars_tl
 \tl_gset:Nn \g_@@_normal_spaced_chars_tl
-  {/\c_backslash_str-}
+  {/-}
 %    \end{macrocode}
 % \end{variable}
 %    \begin{macrocode}
@@ -5845,6 +5860,8 @@ abc汉字abc
     LuaCJK.attr_xecglue     =  \int_use:N   \c_@@_xecglue_attr_int ;
     LuaCJK.attr_inserted    =  \int_use:N   \c_@@_inserted_attr_int ;
     LuaCJK.attr_math_font   =  \int_use:N   \c_@@_math_font_attr_int ;
+    LuaCJK.attr_math_bracket
+                            =  \int_use:N   \c_@@_math_bracket_attr_int ;
     LuaCJK.attr_punct_font  =  \int_use:N   \c_@@_punct_font_attr_int ;
     LuaCJK.attr_nobreak     =  \int_use:N   \c_@@_nobreak_attr_int ;
     LuaCJK.attr_settings    =  \int_use:N   \c_@@_settings_attr_int ;
@@ -7733,12 +7750,83 @@ end
 %    \end{macrocode}
 % \end{macro}
 
+% \begin{macro}[int]{math_bracket}
+% The punctuation class a formula takes at its edge, or nothing.
+% A formula that sets one opening or closing delimiter alone is that bracket:
+% the math pass marked its only character, and the converted list holds that
+% character between the two math nodes, so each of the two reads the same mark.
+% A formula that holds anything else is not a bracket and takes no class.
+%    \begin{macrocode}
+local function math_bracket (n)
+  if not (n and n.id == MATH and M.attr_math_bracket) then
+    return nil
+  end
+  local glyph = nil
+  if n.subtype == 0 then
+    glyph = n.next
+    if not (glyph and glyph.id == GLYPH and glyph.next
+            and glyph.next.id == MATH and glyph.next.subtype == 1) then
+      glyph = nil
+    end
+  elseif n.subtype == 1 then
+    glyph = n.prev
+    if not (glyph and glyph.id == GLYPH and glyph.prev
+            and glyph.prev.id == MATH and glyph.prev.subtype == 0) then
+      glyph = nil
+    end
+  end
+  if not glyph then
+    return nil
+  end
+  local value = has_attribute(glyph, M.attr_math_bracket)
+  if value == 1 then
+    return "half-open"
+  elseif value == 2 then
+    return "half-close"
+  end
+  return nil
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{edge_punct}
+% The punctuation class of the node that faces the boundary: the class of the
+% glyph, the bracket a formula is, or the class of the text nearest the edge of
+% a box.
+%    \begin{macrocode}
+local function edge_punct (n, at_end, settings)
+  if not n then
+    return nil
+  end
+  if n.id == GLYPH then
+    return punct_class(n.char, settings, n.font)
+  elseif n.id == MATH then
+    return math_bracket(n)
+  elseif n.id == HLIST or n.id == VLIST then
+    if at_end then
+      return last_punct(n.head)
+    end
+    return first_punct(n.head)
+  end
+  return nil
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{boundary_spec}
+% \changes{v0.0.5}{2026/11/24}{A formula that sets one opening or closing
+%   delimiter alone is that bracket: the CJK--Latin glue stands outside the pair
+%   and not between the delimiter and the text it encloses, so the angle
+%   brackets of a \cs{meta} argument hug their Chinese characters.}
 % Decide the glue a boundary takes, so that the ordinary boundary and the edge
 % of suspended material are read the same way.
 % A CJK character next to another takes \keys{CJKglue}, and next to Latin
 % material \keys{CJKecglue}; a character of the normal-spaced set takes
 % neither, and neither does the boundary on either side of it.
+% A formula that is one delimiter is a bracket, and \cs{edge_punct} answers
+% with that class, so it is read like the half-width bracket below.
 % A run of dashes or ellipses is one unit: the marks are joined without glue,
 % so that justification cannot pull a two-em dash apart, and the absence of a
 % break opportunity replaces the explicit prohibition.
@@ -7784,22 +7872,8 @@ local function boundary_spec (prev_visible, prev_end, cur, cur_start, settings)
   if long_punct(prev_visible) and long_punct(cur) then
     return nil
   end
-  local prev_punct = nil
-  if prev_visible then
-    if prev_visible.id == GLYPH then
-      prev_punct = punct_class(prev_visible.char, settings, prev_visible.font)
-    elseif prev_visible.id == HLIST or prev_visible.id == VLIST then
-      prev_punct = last_punct(prev_visible.head)
-    end
-  end
-  local cur_punct = nil
-  if cur then
-    if cur.id == GLYPH then
-      cur_punct = punct_class(cur.char, settings, cur.font)
-    elseif cur.id == HLIST or cur.id == VLIST then
-      cur_punct = first_punct(cur.head)
-    end
-  end
+  local prev_punct = edge_punct(prev_visible, true, settings)
+  local cur_punct  = edge_punct(cur, false, settings)
   if prev_end == "CJK" and cur_start == "CJK" then
     return settings.ccglue
   end
@@ -7849,22 +7923,8 @@ local function insert_boundary_glue (head, prev, prev_visible, prev_end,
     return head
   end
   local style = style_of(settings)
-  local prev_punct = nil
-  if prev_visible then
-    if prev_visible.id == GLYPH then
-      prev_punct = punct_class(prev_visible.char, settings, prev_visible.font)
-    elseif prev_visible.id == HLIST or prev_visible.id == VLIST then
-      prev_punct = last_punct(prev_visible.head)
-    end
-  end
-  local cur_punct = nil
-  if cur then
-    if cur.id == GLYPH then
-      cur_punct = punct_class(cur.char, settings, cur.font)
-    elseif cur.id == HLIST or cur.id == VLIST then
-      cur_punct = first_punct(cur.head)
-    end
-  end
+  local prev_punct = edge_punct(prev_visible, true, settings)
+  local cur_punct  = edge_punct(cur, false, settings)
   local prev_mark = prev_punct and prev.id == GLYPH
       and not half_mark(prev_punct)
   local cur_mark  = cur_punct and cur.id == GLYPH
@@ -8019,10 +8079,10 @@ local function suspended_break (prev_visible, cur, prev_end, start_class,
   if normal_spaced(prev_visible) or normal_spaced(cur) then
     return false
   end
-  local prev_mark = prev_visible.id == GLYPH
-    and punct_class(prev_visible.char, settings, prev_visible.font)
-  local cur_mark = cur.id == GLYPH
-    and punct_class(cur.char, settings, cur.font)
+  local prev_mark = (prev_visible.id == GLYPH or prev_visible.id == MATH)
+    and edge_punct(prev_visible, true, settings)
+  local cur_mark = (cur.id == GLYPH or cur.id == MATH)
+    and edge_punct(cur, false, settings)
   if prev_mark == "open" or prev_mark == "half-open" then
     return false
   end
@@ -8657,6 +8717,60 @@ local SUB_MLIST = node.id("sub_mlist")
 
 %    \end{macrocode}
 % \end{variable}
+%
+% \begin{macro}[int]{mark_math_brackets}
+% Mark a formula that sets one opening or closing delimiter alone, so that the
+% boundary rules can treat it as the bracket it is instead of as a Latin atom.
+% The math list is still available here, before \TeX\ converts it: such a
+% formula is a single noad whose nucleus is one character and whose subtype is
+% the math class \texttt{open} or \texttt{close}; the numbers of those classes
+% are read from \cs{node.subtypes} rather than written here, and the mark is
+% set on the noad and on its nucleus, whose attribute the conversion carries to
+% the glyph it builds.
+% A formula that also has a superscript, a subscript, a numerator, or a
+% denominator is not a bracket, and neither is a formula of two atoms; both are
+% left alone.
+%    \begin{macrocode}
+local function noad_class (name)
+  local class = node.subtypes("noad")
+  for sub = 0, 24 do
+    if class[sub] == name then
+      return sub
+    end
+  end
+  return nil
+end
+
+local OPEN_NOAD  = noad_class("open")
+local CLOSE_NOAD = noad_class("close")
+
+local function mark_math_brackets (head)
+  local n = head
+  if not (M.attr_math_bracket and n and n.next == nil) then
+    return head
+  end
+  if n.sup or n.sub or n.num or n.denom then
+    return head
+  end
+  local nucleus = n.nucleus
+  if not (nucleus and nucleus.id == MATH_CHAR) then
+    return head
+  end
+  local value = nil
+  if n.subtype == OPEN_NOAD then
+    value = 1
+  elseif n.subtype == CLOSE_NOAD then
+    value = 2
+  end
+  if value then
+    set_attribute(n, M.attr_math_bracket, value)
+    set_attribute(nucleus, M.attr_math_bracket, value)
+  end
+  return head
+end
+
+%    \end{macrocode}
+% \end{macro}
 %
 % \begin{macro}[int]{rewrite_math}
 % \changes{v0.0.1}{2026/11/05}{Provide \keys{CJKmath} and \cs{setCJKmathfont}
@@ -9929,9 +10043,11 @@ end
 %
 % \begin{macro}[int]{LuaCJK.pre_mlist_to_hlist}
 % The math callback.
+% The bracket mark is set first, so that a formula which is one delimiter is
+% read the same way whether or not \keys{CJKmath} is on.
 %    \begin{macrocode}
 function M.pre_mlist_to_hlist (head, display, penalties)
-  return rewrite_math(head)
+  return rewrite_math(mark_math_brackets(head))
 end
 
 %    \end{macrocode}

@@ -267,13 +267,14 @@ document's math font, because the CJK font has no `MathConstants` table.
 
 ### Attributes
 
-Fourteen attributes carry the per-node state; all are read through
+Fifteen attributes carry the per-node state; all are read through
 `node.has_attribute`/`has_attribute`:
 
 | attribute | meaning |
 | --- | --- |
 | `font` | font identifier of the CJK family that applies |
 | `math_font` | the CJK math font identifier |
+| `math_bracket` | the formula is one opening (`1`) or closing (`2`) delimiter, so it is that bracket |
 | `punct_font` | font identifier for punctuation (`PunctFamily`) |
 | `shift` | the `Baseline` of the family in force, in scaled points, positive upwards |
 | `punct_shift` | the `Baseline` of the family `PunctFamily` names, in scaled points |
@@ -355,6 +356,15 @@ behind it keeps the zero-width boundary glue of a mark.  A break does exist
 after the closing bracket, because the pair's outside glue stands there;
 `PunctKinsoku` keeps a half-width opening bracket out of the line end and a
 closing one out of the line start wherever a break exists (`punct02`).
+The same rule reaches math: a formula that sets one opening or closing
+delimiter alone is that bracket.  `mark_math_brackets` marks its single
+character, because the noad's math class is `open` or `close`, read from
+`node.subtypes` rather than written as a number; the boundary then reads that
+mark through the two math nodes the conversion leaves beside the glyph
+(`math_bracket`, reached by `edge_punct`).  So `$\langle$` beside a Han
+character hugs the text and the glue stands outside, and the angle brackets of
+doc's `\meta` hug their argument; a formula of two atoms, or one with a
+script, is not a bracket and keeps the Latin-atom rule (`boundary01`).
 The ASCII closing marks — `!`, `"`, `%`, `'`, `,`, `.`, `:`, `;`, `?` — are the
 other exception and the group `latin-close`: a mark that ends an English phrase
 even inside CJK text.  It takes the zero-width boundary glue of any mark beside

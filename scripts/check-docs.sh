@@ -195,7 +195,7 @@ attrs=$(awk '
     for (i = 1; i <= NR; i++) {
       if (line[i] !~ /\\newattribute /) continue
       mapped = 0
-      for (j = i - 1; j >= 1 && j >= i - 8; j--)
+      for (j = i - 1; j >= 1 && j >= i - 40; j--)
         if (line[j] ~ /\\clist_map_inline:nn[ ]*$/) { mapped = 1; break }
       if (!mapped) { total++; continue }
       list = ""
