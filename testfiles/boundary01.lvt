@@ -183,6 +183,29 @@
   \TYPE{Latin: \the\wd2}
 }
 
+\TEST{an underline takes the glue on both sides}{
+  \setbox0=\hbox{中\underline{ABC}文}
+  \setbox2=\hbox{\underline{ABC}}
+  \setbox4=\hbox{中ABC文}
+  \TYPE{underline: \the\wd0}
+  \TYPE{box alone: \the\wd2}
+  \TYPE{direct: \the\wd4}
+}
+
+\TEST{an underline of CJK text keeps the inter-character glue}{
+  \setbox0=\hbox{中\underline{中文}文}
+  \setbox2=\hbox{\underline{中文}}
+  \TYPE{underline: \the\wd0}
+  \TYPE{box alone: \the\wd2}
+}
+
+\TEST{a vertical box that holds no text is Latin}{
+  \setbox0=\hbox{中\vbox{\hrule width 2pt height 4pt}文}
+  \setbox2=\hbox{\vbox{\hrule width 2pt height 4pt}}
+  \TYPE{with CJK: \the\wd0}
+  \TYPE{box alone: \the\wd2}
+}
+
 \TEST{sbox measurement}{
   \sbox0{中\mbox{中}}
   \sbox2{中中}
