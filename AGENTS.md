@@ -52,7 +52,7 @@ Entry points:
 | `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
 | `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.5`, `packtdszip = false` with `tdslocations` kept for `l3build install`, `ctanpkg`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
-| `testfiles/NN.lvt` + `.tlg` | 77 regression tests and their baselines, one pair per feature |
+| `testfiles/NN.lvt` + `.tlg` | 78 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree |
 | `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, collapses only ASCII whitespace, and names the forge repository of the release link with `--repo`.  It also exports `newest` and `announcement`, which `build.lua` calls to turn the newest section of that changelog into the CTAN announcement |
@@ -222,14 +222,20 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   table of other characters: `listings` has made printable ASCII active by
   then, so a digit printed with the current table would not be a number.
   `listings02` pins the colour of every character in each of those cases.
-- **The half-width brackets are marks, not Latin punctuation.**  `(`, `[`, and
-  `{` are `half-open` and `)`, `]`, and `}` are `half-close`, the only entries
-  of `PUNCT_CLASS` outside `CJK_RANGES`: they keep their advance (a compression
-  style leaves them alone), never hang, and take the CJK–Latin glue only in
-  front of an opening one, so a pair hugs the text between it and offers no
-  break inside.  The other ASCII punctuation (`,` `.` `;` `:` `!` `?`) stays
-  Latin on purpose, so an English comma keeps the rules of its own script.
-  `HalfLeft` and `HalfRight` of `\LuaCJKDeclareCharClass` declare these groups.
+- **The ASCII brackets and the Latin closing marks are marks, not Latin
+  punctuation.**  `(`, `[`, and `{` are `half-open` and `)`, `]`, and `}` are
+  `half-close`: they keep their advance (a compression style leaves them alone),
+  never hang, and take the CJK–Latin glue only in front of an opening one, so a
+  pair hugs the text between it and offers no break inside.  `!`, `"`, `%`,
+  `'`, `,`, `.`, `:`, `;`, and `?` are `latin-close`: a mark that ends an
+  English phrase even inside CJK text, so it takes the zero-width boundary glue
+  of a mark and may not start a line, while its advance stays the Latin font's,
+  which no compression, no hang, and no `PunctWidth` touches.  Both groups are
+  entries of `PUNCT_CLASS` outside `CJK_RANGES`; `HalfLeft` and `HalfRight` of
+  `\LuaCJKDeclareCharClass` declare the brackets and `\LuaCJKDeclarePunctClass`
+  declares either group, so `{none}` gives a mark its word spacing back.
+  The local `inert_mark` predicate keeps a mark of either group out of
+  `pair_kern` and `fixed_width`.
 - **An outline box is read at the curve's extremum, not at its handles.**  The
   blank a mark hangs is measured from the font, and a Bézier handle lies
   outside the ink its curve paints, so `cff_box` solves each curve for its
@@ -754,7 +760,7 @@ texlua scripts/check-charclass.lua     # ~1 s, the CJK range table against Scrip
 texlua scripts/check-bilingual.lua     # ~1 s, the two documentation languages
 
 # CI, on every push: the full suite and the manual
-l3build check           # ~3 min, 77 tests, both test runs
+l3build check           # ~3 min, 78 tests, both test runs
 l3build doc             # ~2 min, tagged manual, needs latex-lab and tagpdf
 bash scripts/ctex-subset.sh            # ~3 min, needs ../ctex-kit or network
 bash scripts/ctex-subset.sh --skip-unpack

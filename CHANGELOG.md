@@ -1,8 +1,11 @@
 ## [LuaCJK-v0.0.5](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.5)
 
 - `Baseline` moves the characters of the family in force where they are written, and the marks of the family `PunctFamily` names, so a family selected inside a group moves only that group and two declarations of one font keep their values in the same paragraph.
+- The punctuation group `latin-close` can be declared and removed like the others, so the spacing of the ASCII closing marks is a setting of the document and not only a default.
 - `\LuaCJKnobreak` forbids the breaks inside its argument alone: a break at either edge of the argument is the business of the text around it, and the glue the package inserts behind the last character no longer carries the prohibition.
 - `\CJKfontspec` switches the text to its font even when `PunctFamily` names a family, which used to replace the family name the command was about to select.
+- The initial list holds the three characters it documents: the list is read as a sequence of characters, so the commas that separated them used to be normal-spaced as well, and so did the space between two of them.
+- The ASCII closing marks are a punctuation group of their own: a `!`, `,`, `.`, `:`, `;`, `?`, `%`, `"`, or `'` takes the zero-width boundary glue beside a CJK character and may not start a line, and it keeps the advance the Latin font gave it, which no compression style, no hang, and no `PunctWidth` touches.
 - The gap between two adjacent marks is the blank between their ink: the length `\LuaCJKsetkern` gives is that blank, so `0pt` makes the two marks meet instead of widening the gap, and a compression takes at most the blank the compressed mark carries on its right.
 - A ratio style never cuts into the ink: a mark keeps its ink and the smaller of its two blanks, so the fullwidth percent sign and the fullwidth currency signs keep their advance under `banjiao` and no longer overlap the character after them.
 - The advance a ratio style gives a mark and the place of its ink come from the outline, so a mark whose ink is not against the edge of its box keeps a blank on both sides instead of losing part of the ink.

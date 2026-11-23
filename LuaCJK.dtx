@@ -833,7 +833,7 @@ $ 天地玄黄 $ and 天地玄黄
 中x中\par
 \normalspacedchars{x}中x中
 \end{codemo}
-\normalspacedchars{/,\,,-}
+\normalspacedchars{/\c_backslash_str-}
 \endgroup
 % \iffalse
 %</example>
@@ -1056,7 +1056,10 @@ a’a\quad 不亦说乎！
 %   \end{syntax}
 %   改写一段范围的标点组。组有 \texttt{open}、\texttt{close}、
 %   \texttt{middle}、\texttt{dash} 与 \texttt{ellipsis}，
-%   以及半角括号的两组 \texttt{half-open} 与 \texttt{half-close}；
+%   半角括号的两组 \texttt{half-open} 与 \texttt{half-close}，
+%   以及拉丁文收尾标点的一组 \texttt{latin-close}：
+%   这一组两侧的胶没有宽度，它的进距属于拉丁字体，
+%   所以不压缩、不悬挂，\keys{PunctWidth} 也不改写它。
 %   \texttt{none} 去掉标点处理，于是这些字符不再被压缩或悬挂。
 % \end{function}
 %
@@ -2210,7 +2213,7 @@ $ 天地玄黄 $ and 天地玄黄
 中x中\par
 \normalspacedchars{x}中x中
 \end{codemo}
-\normalspacedchars{/,\,,-}
+\normalspacedchars{/\c_backslash_str-}
 \endgroup
 % \iffalse
 %</example>
@@ -2453,8 +2456,12 @@ a’a\quad 不亦说乎！
 %   \end{syntax}
 %   Override the punctuation group of a range. The groups
 %   are \texttt{open}, \texttt{close}, \texttt{middle}, \texttt{dash},
-%   and \texttt{ellipsis}, and \texttt{half-open} and \texttt{half-close} for
-%   the half-width brackets; \texttt{none} removes the punctuation
+%   \texttt{ellipsis}, \texttt{half-open} and \texttt{half-close} for the
+%   half-width brackets, and \texttt{latin-close} for the ASCII closing marks:
+%   that group takes the zero-width boundary glue beside CJK, and its advance
+%   belongs to the Latin font, so no compression style, no hang, and
+%   \keys{PunctWidth} rewrites it.
+%   \texttt{none} removes the punctuation
 %   treatment, so the characters are no longer compressed or hung.
 % \end{function}
 %
@@ -3697,6 +3704,9 @@ abc汉字abc
 % \end{macro}
 %
 % \begin{macro}{\LuaCJKDeclarePunctClass}
+% \changes{v0.0.5}{2026/11/22}{The punctuation group \texttt{latin-close} can
+%   be declared and removed like the others, so the spacing of the ASCII
+%   closing marks is a setting of the document and not only a default.}
 % Override the punctuation group of a range,
 % or with \texttt{none} remove the punctuation treatment from it.
 %    \begin{macrocode}
@@ -3709,8 +3719,9 @@ abc汉字abc
         { middle   } { \@@_push_punct:nn { "middle" } {#2}   }
         { dash     } { \@@_push_punct:nn { "dash" } {#2}     }
         { ellipsis } { \@@_push_punct:nn { "ellipsis" } {#2} }
-        { half-open  } { \@@_push_punct:nn { "half-open" } {#2} }
-        { half-close } { \@@_push_punct:nn { "half-close" } {#2} }
+        { half-open   } { \@@_push_punct:nn { "half-open" } {#2} }
+        { half-close  } { \@@_push_punct:nn { "half-close" } {#2} }
+        { latin-close } { \@@_push_punct:nn { "latin-close" } {#2} }
         { none     } { \@@_push_punct:nn { false } {#2}      }
       } { \msg_warning:nnn { LuaCJK } { unknown-punct-class } {#1} }
   }
@@ -5632,17 +5643,23 @@ abc汉字abc
 % \begin{macro}{\normalspacedchars}
 % \changes{v0.0.1}{2026/11/11}{Provide \cs{normalspacedchars} so that slashes,
 %   backslashes, and hyphens take no glue on either side.}
+% \changes{v0.0.5}{2026/11/22}{The initial list holds the three characters it
+%   documents: the list is read as a sequence of characters, so the commas that
+%   separated them used to be normal-spaced as well, and so did the space
+%   between two of them.}
 % The characters in the list get no glue on either side, which is what
 % one wants for slashes, backslashes, and hyphens inside Latin text.
 % The list is kept on the Lua side as a set of code points,
 % so the setting is global: a group does not restore the previous list.
+% Every character of the list counts, separators included, so the initial list
+% names its three characters without any.
 % \begin{variable}[int]{\g_@@_normal_spaced_chars_tl}
 % The list, initially \texttt{/}, \texttt{\c_backslash_str},
 % and \texttt{-}.
 %    \begin{macrocode}
 \tl_new:N \g_@@_normal_spaced_chars_tl
 \tl_gset:Nn \g_@@_normal_spaced_chars_tl
-  { / , \c_backslash_str , - }
+  {/\c_backslash_str-}
 %    \end{macrocode}
 % \end{variable}
 %    \begin{macrocode}
@@ -6320,8 +6337,14 @@ M.is_attached = is_attached
 %   half-width closing bracket no longer starts one, the pair hugs the text
 %   between it, and a compression style leaves the bracket's own advance
 %   alone.}
+% \changes{v0.0.5}{2026/11/22}{The ASCII closing marks are a punctuation group
+%   of their own: a \texttt{!}, \texttt{,}, \texttt{.}, \texttt{:},
+%   \texttt{;}, \texttt{?}, \texttt{\%}, \texttt{"}, or \texttt{'} takes the
+%   zero-width boundary glue beside a CJK character and may not start a line,
+%   and it keeps the advance the Latin font gave it, which no compression
+%   style, no hang, and no \keys{PunctWidth} touches.}
 % The punctuation \pkg{LuaCJK} knows about, grouped as opening, closing,
-% middle, dash, and ellipsis.
+% middle, dash, ellipsis, and the Latin closing marks.
 % The group decides compression, line-breaking prohibitions, and hanging.
 % The groups are the lists of \pkg{xeCJK}: its \texttt{OP} and \texttt{PR} are
 % opening, its \texttt{CL}, \texttt{PO}, \texttt{EX}, and \texttt{IS} are
@@ -6332,8 +6355,17 @@ M.is_attached = is_attached
 % The ASCII brackets are the exception, because they are set in the Latin font
 % and cannot be compressed or hung: \texttt{half-open} and \texttt{half-close}
 % are their own groups, which only the prohibitions and the spacing read.
+% The Latin closing marks are the other exception, for the same reason:
+% \texttt{latin-close} holds the marks that end an English phrase even inside
+% CJK text, so they take the zero-width boundary glue of a mark and the
+% prohibition of a closing one, and nothing an advance of the CJK font brings.
 %    \begin{macrocode}
 local PUNCT_CLASS = {
+  [0x0021] = "latin-close", [0x0022] = "latin-close",
+  [0x0025] = "latin-close", [0x0027] = "latin-close",
+  [0x002C] = "latin-close", [0x002E] = "latin-close",
+  [0x003A] = "latin-close", [0x003B] = "latin-close",
+  [0x003F] = "latin-close",
   [0x0028] = "half-open",  [0x005B] = "half-open",
   [0x007B] = "half-open",
   [0x0029] = "half-close", [0x005D] = "half-close",
@@ -6390,6 +6422,18 @@ local PUNCT_CLASS = {
 %    \begin{macrocode}
 local function half_mark (mark)
   return mark == "half-open" or mark == "half-close"
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{inert_mark}
+% Whether a group is a mark whose advance belongs to the font alone, so that
+% nothing a CJK advance would bring reaches it: the half-width brackets and the
+% Latin closing marks.
+%    \begin{macrocode}
+local function inert_mark (mark)
+  return half_mark(mark) or mark == "latin-close"
 end
 
 %    \end{macrocode}
@@ -7464,6 +7508,7 @@ end
 % outlines give; without one the style's ratio decides, and it never takes more
 % than the right blank of the mark it compresses, so a mark whose ink nearly
 % fills its advance, such as the fullwidth percent sign, keeps its ink whole.
+% A mark whose advance belongs to the font is never compressed.
 %    \begin{macrocode}
 local function pair_kern (prev, cur, settings, style)
   if not (prev and cur and prev.id == GLYPH and cur.id == GLYPH) then
@@ -7471,7 +7516,7 @@ local function pair_kern (prev, cur, settings, style)
   end
   local before = punct_class(prev.char, settings, prev.font)
   local after  = punct_class(cur.char, settings, cur.font)
-  if not before or not after or half_mark(before) or half_mark(after) then
+  if not before or not after or inert_mark(before) or inert_mark(after) then
     return nil
   end
   local explicit = user_kern(prev.char, cur.char)
@@ -7752,7 +7797,7 @@ local function suspended_break (prev_visible, cur, prev_end, start_class,
     return false
   end
   if cur_mark == "close" or cur_mark == "middle"
-     or cur_mark == "half-close" then
+     or cur_mark == "half-close" or cur_mark == "latin-close" then
     return false
   end
   if (cur_mark == "dash" or cur_mark == "ellipsis")
@@ -8022,8 +8067,8 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{forbids_break}
-% The rules: closing, middle, dash, and ellipsis punctuation must not start a
-% line,
+% The rules: closing, middle, dash, ellipsis, and Latin closing punctuation
+% must not start a line,
 % opening punctuation must not end one,
 % a half-width bracket follows the rule of the side it closes,
 % a run of dashes or ellipses stays together,
@@ -8038,7 +8083,7 @@ end
 local function forbids_break (prev_mark, prev_char, next_mark, next_char,
                               settings)
   if next_mark == "close" or next_mark == "middle"
-     or next_mark == "half-close" then
+     or next_mark == "half-close" or next_mark == "latin-close" then
     return true
   end
   if run_mark(next_mark) and not run_mark(prev_mark) then
@@ -8206,6 +8251,9 @@ end
 % dash overlap.
 % A half-width bracket is already narrow, so the ratio of a style leaves it
 % alone; a width the document sets applies to it like any other.
+% A Latin closing mark is left alone by the whole of this pass: its advance is
+% the one the Latin font gave it, so neither a ratio nor \keys{PunctWidth}
+% rewrites it.
 % A mark keeps the kern it was given. \TeX\ runs the box-packing callback again
 % for every box that holds the list, so a mark whose advance was corrected
 % would be corrected a second time: the penalty and the kern the pass inserted
@@ -8221,15 +8269,15 @@ local function ink_shift (class, delta)
 end
 
 local function fixed_width (cur, settings, style)
+  if inert_mark(punct_class(cur.char, settings, cur.font)) then
+    return nil
+  end
   local target = user_width(cur.char)
   if not target and settings.punct_width then
     target = settings.punct_width
   end
   if target then
     return target, false
-  end
-  if half_mark(punct_class(cur.char, settings, cur.font)) then
-    return nil
   end
   local ratio = style.fixed_ratio
   if not ratio or M.charsets.long[cur.char] then
