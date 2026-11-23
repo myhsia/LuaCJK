@@ -1,0 +1,111 @@
+\input{regression-test}
+
+\documentclass{article}
+\usepackage{LuaCJK}
+\setCJKmainfont{FandolSong-Regular.otf}
+\LuaCJKsetup{CJKglue=1pt, CJKecglue=5pt}
+
+% The report is the node list itself: the glue, kern, and penalty the passes
+% insert, with the code point of each glyph.  The helper writes no %, #, or
+% backslash, which TeX reads specially inside \directlua.
+\directlua{
+  LatinPunct = {}
+
+  function LatinPunct.hex (n)
+    local digits = "0123456789ABCDEF"
+    local out, count = {}, 0
+    repeat
+      count = count + 1
+      local d = math.fmod(n, 16) + 1
+      out[count] = digits:sub(d, d)
+      n = math.floor(n / 16)
+    until n == 0
+    local s = ""
+    for i = count, 1, -1 do s = s .. out[i] end
+    while string.len(s) < 4 do s = "0" .. s end
+    return s
+  end
+
+  function LatinPunct.dump (box)
+    local parts = {}
+    local n = tex.box[box].head
+    while n do
+      if n.id == node.id("glyph") then
+        table.insert(parts, "glyph(" .. LatinPunct.hex(n.char) .. ")")
+      elseif n.id == node.id("glue") then
+        table.insert(parts, "glue(" .. n.width .. ")")
+      elseif n.id == node.id("kern") then
+        table.insert(parts, "kern(" .. n.kern .. ")")
+      elseif n.id == node.id("penalty") then
+        table.insert(parts, "penalty(" .. n.penalty .. ")")
+      else
+        table.insert(parts, node.type(n.id))
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "NP " .. table.concat(parts, " "))
+  end
+}
+\newcommand*\nodes[1]{\directlua{LatinPunct.dump(0)}\TYPE{#1}}
+
+\begin{document}
+
+\START
+
+\TEST{the ASCII punctuation next to CJK}{
+  \directlua{
+    local out = {}
+    for c = 0x21, 0x3F do
+      local group = LuaCJK.punct_class(c, nil)
+      if group then
+        table.insert(out, LatinPunct.hex(c) .. "=" .. group)
+      end
+    end
+    texio.write_nl("term and log", "PC " .. table.concat(out, " "))
+  }
+}
+
+\TEST{an ASCII period takes the boundary glue of a mark after CJK}{
+  \setbox0=\hbox{中.}
+  \nodes{after:}
+}
+
+\TEST{an ASCII period takes the boundary glue of a mark before CJK}{
+  \setbox0=\hbox{.中}
+  \nodes{before:}
+}
+
+\TEST{the comma is not normal-spaced}{
+  \setbox0=\hbox{中,中}
+  \nodes{comma:}
+}
+
+\TEST{a fullwidth period keeps the inter-character glue}{
+  \setbox0=\hbox{中。中}
+  \nodes{fullwidth:}
+}
+
+\TEST{two Latin marks are not compressed}{
+  \setbox0=\hbox{..}
+  \TYPE{double: \the\wd0}
+}
+
+\TEST{a fixed width leaves a Latin mark alone}{
+  \LuaCJKsetup{PunctWidth = .8em}
+  \setbox0=\hbox{.}
+  \setbox2=\hbox{,}
+  \setbox4=\hbox{。}
+  \TYPE{period: \the\wd0}
+  \TYPE{comma: \the\wd2}
+  \TYPE{fullwidth: \the\wd4}
+}
+
+\TEST{the group can be removed}{
+  \LuaCJKDeclarePunctClass{none}{002E}
+  \setbox0=\hbox{中.}
+  \nodes{plain:}
+}
+
+\END
+
+\end{document}
