@@ -52,11 +52,20 @@
 \newbox\scriptrunbox
 \newbox\scriptlinebox
 \newbox\plainlinebox
+\newbox\raisedbox
+\newbox\raisedrunbox
+\newbox\markbox
 
 \setbox\scriptbox=\hbox{中\textsuperscript{2}}
 \setbox\subscriptbox=\hbox{中\textsubscript{2}}
 \setbox\plainbox=\hbox{中\mbox{2}}
 \setbox\scriptrunbox=\hbox{中\textsuperscript{文}中}
+\setbox\raisedbox=\hbox{中\raisebox{1ex}{2}}
+\setbox\raisedrunbox=\hbox{中\raisebox{1ex}{2}中}
+\makeatletter
+\def\@thefnmark{1}
+\setbox\markbox=\hbox{中\@makefnmark}
+\makeatother
 \begingroup
   \LuaCJKsetup{CJKglue = 0pt}
   \global\setbox\scriptlinebox=\vbox{\hsize=3em \noindent 中中中\textsuperscript{2}\par}
@@ -85,6 +94,21 @@
 \TEST{the run ends at the shifted box}{
   \report\scriptrunbox
   \TYPE{width: \the\wd\scriptrunbox}
+}
+
+\TEST{a raised box in an unshifted wrapper takes no glue}{
+  \report\raisedbox
+  \TYPE{width: \the\wd\raisedbox}
+}
+
+\TEST{the run ends at a raised box in an unshifted wrapper}{
+  \report\raisedrunbox
+  \TYPE{width: \the\wd\raisedrunbox}
+}
+
+\TEST{a footnote mark takes no glue}{
+  \report\markbox
+  \TYPE{width: \the\wd\markbox}
 }
 
 \TEST{a superscript does not start a line}{

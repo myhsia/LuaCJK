@@ -7262,13 +7262,40 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{attached_box}
+% \changes{v0.0.5}{2026/11/23}{A box that holds nothing on its own baseline,
+%   only raised or lowered boxes, is attached like a shifted box: the mark of
+%   \tn{footnote} and \tn{raisebox} therefore take no glue on either side, as
+%   the box \tn{textsuperscript} builds already did.}
 % Whether a box belongs to the character in front of it. \TeX\ writes the
 % shift of a raised or lowered box into the box node, and
 % \cs{textsuperscript} and \cs{textsubscript} build one, so the baseline of
 % such a box is not the baseline of the text around it.
+% A mark is often wrapped in a box that is not shifted itself, which is what
+% \cs{@makefnmark} and \cs{raisebox} produce: the outer box has no shift, and
+% everything it holds is raised or lowered.  Such a box belongs to the
+% character in front of it just the same, because it holds no text on the
+% baseline its own shift speaks of.
 %    \begin{macrocode}
+local function raised_only (list)
+  local found = false
+  local n = list
+  while n do
+    if n.id == GLYPH or n.id == MATH then
+      return false
+    elseif n.id == HLIST or n.id == VLIST then
+      if n.shift == 0 and not raised_only(n.head) then
+        return false
+      end
+      found = true
+    end
+    n = n.next
+  end
+  return found
+end
+
 local function attached_box (n)
-  return (n.id == HLIST or n.id == VLIST) and n.shift ~= 0
+  return (n.id == HLIST or n.id == VLIST)
+     and (n.shift ~= 0 or raised_only(n.head))
 end
 
 %    \end{macrocode}
