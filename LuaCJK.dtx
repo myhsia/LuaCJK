@@ -1322,9 +1322,11 @@ abc汉字abc
 %   \texttt{env+} 在所有地方都保留调整；\texttt{false} 完全不碰抄录材料。
 %   既然 \texttt{env+} 与 \texttt{false} 都保留调整，
 %   它们在 \pkg{LuaCJK} 里行为相同。
-%   暂停只去掉间距，不取折断行机会：被暂停材料两边的零宽胶仍在，
-%   所以紧挨着一个 CJK 字符的 \tn{verb} 可以断行，
-%   紧挨着被暂停材料的一个标点也保留它后面的断行机会。
+%   暂停只管材料自己的内部：材料里的字符不再被压缩、悬挂，
+%   也不再加字间胶，而材料与周围文字之间的边界照常加胶，
+%   按两侧字符的类别决定，与同样一串文字用文本字体排出时相同。
+%   所以紧挨着汉字的 \tn{verb} 与 \tn{texttt} 留出同样的中西文胶，
+%   紧挨着被暂停材料的标点仍按标点处理，断行机会也照旧。
 %   无论这个设置取什么值，\cs{LuaCJKVerbAddon} 都会在它所在的分组里
 %   把调整重新打开。
 %   \pkg{fancyvrb} 的行内命令 \tn{Verb} 与 \tn{UseVerb} 按 \tn{verb} 的规则处理；
@@ -2751,10 +2753,13 @@ abc汉字abc
 %   \texttt{env+} keeps them everywhere; \texttt{false} leaves verbatim
 %   material entirely alone. Since \texttt{env+} and \texttt{false} both
 %   leave the adjustments on, they behave the same in \pkg{LuaCJK}.
-%   Suspension removes the spacing only, not the break: the zero-width glue at
-%   either edge of suspended material stays, so a \tn{verb} beside a CJK
-%   character can end a line, and a punctuation mark next to suspended
-%   material still keeps the break opportunity that follows it.
+%   Suspension leaves the material itself alone: its characters are not
+%   compressed, hung, or joined by inter-character glue, while the boundary
+%   between the material and the text around it takes the glue its two classes
+%   give, as the same characters in a text font would. A \tn{verb} beside a CJK
+%   character is therefore spaced as \tn{texttt} is, and a punctuation mark next
+%   to suspended material keeps the glue and the break opportunity it has
+%   beside ordinary text.
 %   Whatever the setting is, \cs{LuaCJKVerbAddon} turns the adjustments
 %   back on inside the group it is used in.
 %   The inline \tn{Verb} and \tn{UseVerb} of \pkg{fancyvrb} are treated as
@@ -7647,6 +7652,9 @@ end
 % \changes{v0.0.4}{2026/11/22}{A suspended run keeps the break opportunity
 %   beside it: the zero-width glue at its edge lets \cs{verb} end a line next
 %   to a CJK character while the spacing stays removed.}
+% \changes{v0.0.5}{2026/11/22}{A suspended run takes the glue its two classes
+%   give at its edge: \cs{verb} beside a CJK character is spaced as the same
+%   characters in a text font are, while the material itself is left alone.}
 % Decide what to do at the boundary between two visible nodes.
 % Only source-generated glue is a candidate for replacement;
 % other glue is left alone, and a discretionary is opaque, so neither is
@@ -7664,13 +7672,13 @@ end
 % character is passed over: a color change in front of the character does not
 % hide the space, which stays the boundary and is never joined by a second
 % glue.  A penalty ends that search, because it has a boundary rule of its own.
-% A boundary that touches a suspended run is bridged by nothing, because
-% \keys{Verb} removes the spacing; the break opportunity stays, as a glue of
-% zero width in the place the spacing would have taken.  The mark rules are
-% applied by hand there, because the kinsoku pass cannot see a prohibition
-% across a suspended node: no break follows an opening mark, none precedes a
-% closing, middle, or long mark that begins a run, and two Latin words are
-% never parted.
+% A boundary that touches a suspended run takes the glue its two classes give,
+% because \keys{Verb} leaves the material alone and not the text around it:
+% the edge is spaced as the same characters would be in a text font, and the
+% interior keeps its own advance.  The mark rules are applied by hand there,
+% because the kinsoku pass cannot see a prohibition across a suspended node:
+% no break follows an opening mark, none precedes a closing, middle, or long
+% mark that begins a run, and two Latin words are never parted.
 % \begin{macro}[int]{pair_kern}
 % \changes{v0.0.5}{2026/11/22}{The gap between two adjacent marks is the blank
 %   between their ink: the length \cs{LuaCJKsetkern} gives is that blank, so
@@ -7725,28 +7733,20 @@ end
 %    \end{macrocode}
 % \end{macro}
 
-% \begin{macro}[int]{insert_boundary_glue}
-% \changes{v0.0.5}{2026/11/22}{A half-width closing bracket keeps the
-%   \keys{CJKecglue} between itself and the CJK character that follows it, so
-%   the outside of a pair of brackets is spaced on both sides while the pair
-%   still hugs the text it encloses.}
-% Insert the CJK--CJK or CJK--Latin glue, and the kern that spaces two
-% adjacent punctuation marks.
-% The kern is the one \cs{pair_kern} gives, and the glue follows it, so the
-% boundary keeps its break opportunity for the kinsoku penalty to forbid and
-% its share of the stretch a justified line needs.
-% The character on each side is the one the list shows, so a whatsit or a
-% penalty between two characters does not hide them from these rules; the
-% glue itself follows the node that carries the break, which may be such a
-% whatsit or penalty.
+% \begin{macro}[int]{boundary_spec}
+% Decide the glue a boundary takes, so that the ordinary boundary and the edge
+% of suspended material are read the same way.
+% A CJK character next to another takes \keys{CJKglue}, and next to Latin
+% material \keys{CJKecglue}; a character of the normal-spaced set takes
+% neither, and neither does the boundary on either side of it.
 % A run of dashes or ellipses is one unit: the marks are joined without glue,
 % so that justification cannot pull a two-em dash apart, and the absence of a
 % break opportunity replaces the explicit prohibition.
 % A punctuation mark takes no CJK--Latin advance on either side: the advance
 % of the mark already carries its spacing, and the glue would add a third of
 % an em that the typography does not ask for.
-% The boundary keeps a glue of zero width, so that it stays a break
-% opportunity and the kinsoku penalty can forbid the break.
+% The boundary between two marks keeps a glue of zero width instead, so that
+% it stays a break opportunity and the kinsoku penalty can forbid the break.
 % A half-width bracket is the exception, and its two sides are read
 % differently.  The pair takes no glue inside, so it hugs the text it encloses
 % and offers no break there, while its outside takes the CJK--Latin glue the
@@ -7755,8 +7755,7 @@ end
 % letter stays against it, and a mark behind it keeps the zero-width boundary
 % glue of a mark.  That is how \pkg{xeCJK} sets its half-width marks, whose
 % outside is spaced on both sides.
-% The glue and the kern keep only the attributes both characters carry, so a
-% decoration ends at the last character it covers rather than one glue further.
+% Nothing is returned when the two classes take no glue at all.
 %    \begin{macrocode}
 M.normal_spaced = {}
 
@@ -7778,12 +7777,75 @@ end
 
 local PUNCT_BOUNDARY_GLUE = { width = 0, stretch = 0, shrink = 0 }
 
+local function boundary_spec (prev_visible, prev_end, cur, cur_start, settings)
+  if not prev_end or not cur_start then
+    return nil
+  end
+  if long_punct(prev_visible) and long_punct(cur) then
+    return nil
+  end
+  local prev_punct = nil
+  if prev_visible then
+    if prev_visible.id == GLYPH then
+      prev_punct = punct_class(prev_visible.char, settings, prev_visible.font)
+    elseif prev_visible.id == HLIST or prev_visible.id == VLIST then
+      prev_punct = last_punct(prev_visible.head)
+    end
+  end
+  local cur_punct = nil
+  if cur then
+    if cur.id == GLYPH then
+      cur_punct = punct_class(cur.char, settings, cur.font)
+    elseif cur.id == HLIST or cur.id == VLIST then
+      cur_punct = first_punct(cur.head)
+    end
+  end
+  if prev_end == "CJK" and cur_start == "CJK" then
+    return settings.ccglue
+  end
+  if prev_end ~= cur_start
+     and not normal_spaced(prev_visible) and not normal_spaced(cur) then
+    if half_mark(prev_punct) then
+      if prev_punct ~= "half-close" or cur_punct or cur_start ~= "CJK" then
+        return nil
+      end
+      return settings.ecglue
+    elseif cur_punct == "half-open" then
+      return prev_punct and PUNCT_BOUNDARY_GLUE or settings.ecglue
+    elseif half_mark(cur_punct) then
+      return nil
+    elseif prev_punct or cur_punct then
+      return PUNCT_BOUNDARY_GLUE
+    else
+      return settings.ecglue
+    end
+  end
+  return nil
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{insert_boundary_glue}
+% \changes{v0.0.5}{2026/11/22}{A half-width closing bracket keeps the
+%   \keys{CJKecglue} between itself and the CJK character that follows it, so
+%   the outside of a pair of brackets is spaced on both sides while the pair
+%   still hugs the text it encloses.}
+% Insert the glue \cs{boundary_spec} gives, and the kern that spaces two
+% adjacent punctuation marks.
+% The kern is the one \cs{pair_kern} gives, and the glue follows it, so the
+% boundary keeps its break opportunity for the kinsoku penalty to forbid and
+% its share of the stretch a justified line needs.
+% The character on each side is the one the list shows, so a whatsit or a
+% penalty between two characters does not hide them from these rules; the
+% glue itself follows the node that carries the break, which may be such a
+% whatsit or penalty.
+% The glue and the kern keep only the attributes both characters carry, so a
+% decoration ends at the last character it covers rather than one glue further.
+%    \begin{macrocode}
 local function insert_boundary_glue (head, prev, prev_visible, prev_end,
                                     cur, cur_start, settings)
   if not prev_end or not cur_start then
-    return head
-  end
-  if long_punct(prev_visible) and long_punct(cur) then
     return head
   end
   local style = style_of(settings)
@@ -7807,26 +7869,7 @@ local function insert_boundary_glue (head, prev, prev_visible, prev_end,
       and not half_mark(prev_punct)
   local cur_mark  = cur_punct and cur.id == GLYPH
       and not half_mark(cur_punct)
-  local spec = nil
-  if prev_end == "CJK" and cur_start == "CJK" then
-    spec = settings.ccglue
-  elseif prev_end ~= cur_start
-     and not normal_spaced(prev_visible) and not normal_spaced(cur) then
-    if half_mark(prev_punct) then
-      if prev_punct ~= "half-close" or cur_punct or cur_start ~= "CJK" then
-        return head
-      end
-      spec = settings.ecglue
-    elseif cur_punct == "half-open" then
-      spec = prev_punct and PUNCT_BOUNDARY_GLUE or settings.ecglue
-    elseif half_mark(cur_punct) then
-      return head
-    elseif prev_punct or cur_punct then
-      spec = PUNCT_BOUNDARY_GLUE
-    else
-      spec = settings.ecglue
-    end
-  end
+  local spec = boundary_spec(prev_visible, prev_end, cur, cur_start, settings)
 
   if prev_mark and cur_mark then
     local kern = pair_kern(prev_visible, cur, settings, style)
@@ -8014,7 +8057,9 @@ local function handle_boundary (head, prev, prev_visible, prev_end,
        and suspended_break(prev_visible, cur, prev_end, start_class, settings)
     then
       local source = disabled(cur) and prev_visible or cur
-      local g = make_glue(PUNCT_BOUNDARY_GLUE, source)
+      local spec = boundary_spec(prev_visible, prev_end, cur, start_class,
+                                 settings)
+      local g = spec and make_glue(spec, source) or nil
       if g then
         g.next = cur
         if prev then
