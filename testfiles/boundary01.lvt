@@ -241,6 +241,24 @@
   \TYPE{boxed-first: \the\wd4}
 }
 
+\TEST{a formula that is one delimiter is that bracket}{
+  \setbox0=\hbox{中$\langle$中$\rangle$中}
+  \setbox2=\hbox{中$\langle$中}
+  \setbox4=\hbox{中$\rangle$中}
+  \TYPE{pair: \the\wd0}
+  \TYPE{open: \the\wd2}
+  \TYPE{close: \the\wd4}
+}
+
+\TEST{a formula that is not one delimiter keeps its glue}{
+  \setbox0=\hbox{中$\langle x\rangle$中}
+  \setbox2=\hbox{中$x$中}
+  \setbox4=\hbox{中$+$中}
+  \TYPE{two atoms: \the\wd0}
+  \TYPE{control: \the\wd2}
+  \TYPE{binary: \the\wd4}
+}
+
 \END
 
 \end{document}
