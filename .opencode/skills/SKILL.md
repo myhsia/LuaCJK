@@ -120,6 +120,11 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    offers no break.  That is the box `\textsuperscript` and `\textsubscript`
    build, and the shift is the box's own field, so the outer box of a
    `\raisebox` or of a footnote mark keeps its boundary (`boundary04`).
+   Each boundary reads the option snapshot of the CJK character it touches
+   (`boundary_settings`), so the CJK/Latin glue is the CJK text's: a Latin run
+   set with `\scriptsize` or `\large` keeps the `CJKecglue` of the surrounding
+   text on both of its sides, where reading the previous node alone took the
+   run's own size on its right (`settingsscope01`).
    A run of dashes or ellipses is joined without glue, so justification cannot
    pull a two-em dash apart.  A punctuation mark takes no `CJKecglue` advance
    on either side: its own advance carries the spacing, and the extra third of
