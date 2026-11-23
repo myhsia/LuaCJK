@@ -314,8 +314,8 @@ value is used as written. That is what the `ccglue_touched` flags are for.
 ### The punctuation model
 
 Every mark gets a group from `PUNCT_CLASS`: `open`, `close`, `middle`, `dash`,
-`ellipsis`, and `half-open`/`half-close` for the ASCII brackets. Four character
-sets are editable at run time
+`ellipsis`, `half-open`/`half-close` for the ASCII brackets, and `latin-close`
+for the ASCII closing marks. Four character sets are editable at run time
 (`M.charsets`): `kaiming` (marks that stay full width in the `kaiming` style),
 `middle`, `long` (never compressed against each other), and `nobreak` (never
 separated by a line break).
@@ -334,6 +334,14 @@ of an opening one, so a pair hugs the text between it; neither side of a pair
 offers a break at all, because no glue stands there, and `PunctKinsoku` keeps a
 half-width opening bracket out of the line end and a closing one out of the line
 start wherever a break does exist (`punct02`).
+The ASCII closing marks — `!`, `"`, `%`, `'`, `,`, `.`, `:`, `;`, `?` — are the
+other exception and the group `latin-close`: a mark that ends an English phrase
+even inside CJK text.  It takes the zero-width boundary glue of any mark beside
+CJK and may not start a line (a break after it is allowed, unlike a bracket), and
+`inert_mark` keeps it out of `pair_kern` and `fixed_width`, so no compression,
+no hang, and no `PunctWidth` reaches a Latin period; `\LuaCJKDeclarePunctClass`
+declares the group and `{none}` gives the character its word spacing back
+(`latinpunct02`).
 A style (`M.punct_styles`) is a table of six optional fields:
 
 | field | effect |
@@ -852,7 +860,7 @@ The commands are in `AGENTS.md`. For this skill the points that matter are:
 ```bash
 l3build check <name>                # the local loop; must print "All checks passed"
 l3build save <name>                 # only after inspecting why the baseline moved
-l3build check                       # 77 tests, CI on every push
+l3build check                       # 78 tests, CI on every push
 bash scripts/ctex-subset.sh         # 21/21, CI; no log may mention luatexja
 bash scripts/check-docs.sh          # guides, and the two documentation languages
 ```
