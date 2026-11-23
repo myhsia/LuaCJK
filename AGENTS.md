@@ -225,8 +225,12 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
 - **The ASCII brackets and the Latin closing marks are marks, not Latin
   punctuation.**  `(`, `[`, and `{` are `half-open` and `)`, `]`, and `}` are
   `half-close`: they keep their advance (a compression style leaves them alone),
-  never hang, and take the CJK–Latin glue only in front of an opening one, so a
-  pair hugs the text between it and offers no break inside.  `!`, `"`, `%`,
+  never hang, and take the CJK–Latin glue on the outside of a pair — in front of
+  an opening one, and behind a closing one when a CJK character follows — so a
+  pair hugs the text between it and offers no break inside.  A closing bracket
+  gives a Latin letter no glue, and a mark behind it keeps the zero-width
+  boundary glue of a mark, which is what `xeCJK` does on both sides of the pair.
+  `!`, `"`, `%`,
   `'`, `,`, `.`, `:`, `;`, and `?` are `latin-close`: a mark that ends an
   English phrase even inside CJK text, so it takes the zero-width boundary glue
   of a mark and may not start a line, while its advance stays the Latin font's,
