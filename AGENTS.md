@@ -301,6 +301,13 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   `\@@_settings_push:`, and a read through `settings_of(node)` in Lua.
   Skipping any of the five makes the option global, which contradicts the
   documented grouping.
+- **A boundary takes the snapshot of the CJK character it touches.**  The
+  glue the boundary inserts is the CJK text's, so `boundary_settings` reads the
+  CJK side rather than the previous node: a Latin run set smaller or larger
+  keeps the `CJKecglue` of the surrounding text on both of its sides, and only
+  the CJK side's own size may change it (`settingsscope01`).  Taking the
+  previous node's snapshot instead gave the run's own size on the side it
+  stood on.
 - **A zero length is a length.**  An option whose documented type is
   `length, false` keeps its off state outside the length, in a `_given_`
   boolean beside the `\dim`, because the settings snapshot carries a number

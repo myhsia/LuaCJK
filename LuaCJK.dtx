@@ -785,7 +785,9 @@ $ 天地玄黄 $ and 天地玄黄
 %   半角的 ASCII 括号只留下开头括号之前的这一份胶，
 %   括号内侧不加，于是成对的括号贴住它括起来的文字。
 %   初始值是 \texttt{0.3333em plus 0.1667em minus 0.1111em}，
-%   它同样跟随字号。
+%   它同样跟随字号，字号取自与它相邻的 CJK 字符而不是拉丁文本：
+%   拉丁文本用 \cs{scriptsize} 或 \cs{large} 排时，
+%   两侧的间距仍是周围汉字的间距。
 %   \item[\keys{CJKspace}]\val{\TFF}: 是否保留源文件中 CJK 字符之间的空格。
 %   不保留时，空格换成字符之间的胶，断行与伸缩都随之保留。
 %   用 |\ | 或 \tn{nobreakspace} 写出的空格不是源文件中的空格，
@@ -2164,7 +2166,9 @@ $ 天地玄黄 $ and 天地玄黄
 %   one; the inside of the pair takes none, so the brackets hug the text they
 %   enclose.
 %   The initial value is \texttt{0.3333em plus 0.1667em minus 0.1111em},
-%   which follows the size in the same way.
+%   which follows the size of the CJK character it stands beside rather than
+%   the size of the Latin text: a run set with \cs{scriptsize} or \cs{large}
+%   keeps the spacing of the surrounding CJK text on both of its sides.
 %   \item[\keys{CJKspace}]\val{\TFF}: Whether to keep source spaces between
 %   CJK characters. When they are not kept, the space becomes the
 %   inter-character glue, so the break opportunity and the stretch survive.
@@ -6131,6 +6135,32 @@ M.settings_of = settings_of
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{boundary_settings}
+% \changes{v0.0.5}{2026/11/22}{A CJK--Latin boundary takes the settings of the
+%   CJK character it touches, so \keys{CJKecglue} follows the size of the CJK
+%   text: a Latin run set with \cs{scriptsize} or \cs{large} keeps the space of
+%   the surrounding text on both of its sides.}
+% The snapshot a boundary reads.
+% A boundary belongs to the CJK character on one side of it, so a CJK--Latin
+% boundary takes that character's snapshot: the glue is the CJK text's, and a
+% Latin run set at another size must not change it on one side only.
+% A CJK--CJK boundary keeps reading the character in front of it, which is a
+% CJK character as well, and a boundary with no CJK side has no glue to size.
+% The CJK side is preferred only when it carries a snapshot; text set before
+% any font selection carries none, and the other side decides then.
+%    \begin{macrocode}
+local function boundary_settings (prev_visible, prev_end, cur, start_class)
+  if start_class == "CJK" and prev_end ~= "CJK" then
+    local id = M.attr_settings and cur and has_attribute(cur, M.attr_settings)
+    if id and id > 0 and M.settings[id] then
+      return M.settings[id]
+    end
+  end
+  return settings_of(prev_visible)
+end
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{variable}[int]{LuaCJK.cj, LuaCJK.cj_count, LuaCJK.cj_loaded}
 % \changes{v0.0.1}{2026/11/11}{Provide \keys{CJLineBreak}, which forbids a
 %   line break before the characters whose Unicode \texttt{Line\_Break}
@@ -7454,6 +7484,9 @@ end
 % offers no break. That is the box \cs{textsuperscript} and
 % \cs{textsubscript} build; the shift is the box's own field, so the outer box
 % of a \cs{raisebox} or of a footnote mark keeps its boundary.
+% The snapshot a boundary reads is the one the CJK character it touches
+% carries (\cs{boundary_settings}), so the CJK--Latin glue is the CJK text's
+% and a Latin run set at another size keeps it the same on both of its sides.
 % A penalty that prohibits the break is passed over the same way, because the
 % glue of that boundary belongs after it; a smaller penalty, and a
 % discretionary, end the run.
@@ -7941,7 +7974,7 @@ local function spacing (head)
       elseif visible then
         head = handle_boundary(
           head, prev, prev_visible, prev_end, cur, start_class,
-          settings_of(prev_visible))
+          boundary_settings(prev_visible, prev_end, cur, start_class))
         prev_visible = cur
         prev_end     = end_class
       elseif cur.id == PENALTY or cur.id == DISC then
