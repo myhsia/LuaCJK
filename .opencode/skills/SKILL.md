@@ -111,7 +111,10 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    A box is an atom, and the class at its edge is the class of the text
    nearest that edge: a kern, a spacing glue, or a rule inside the box does
    not hide that text, so the boundary glue is added by the class of the text
-   and not by a skip the document wrote inside the box (`boundary01`).  A
+   and not by a skip the document wrote inside the box (`boundary01`).  That
+   holds for a vertical box as well, so the rule under `\underline`'s text does
+   not hide it and `中\underline{ABC}文` takes the glue on both sides, like the
+   run `\mbox` or `\CJKunderline` holds.  A
    filling glue is the exception: the text does not reach the edge of a box it
    stretches, so `\numberline`'s `\hfil` leaves the edge without a class and a
    Chinese TOC title stays aligned with its English counterpart.  A box that
@@ -341,11 +344,14 @@ vertical variants outside that table (`FE10`–`FE19`, `FE50`–`FE6A`, `2E3A`,
 and the listings table.  The ASCII brackets are the one exception: `(`, `[`, and
 `{` are `half-open` and `)`, `]`, and `}` are `half-close`, although they are
 Latin glyphs outside `CJK_RANGES`.  They keep their own advance (a compression
-style leaves them alone), do not hang, and take the CJK–Latin glue only in front
-of an opening one, so a pair hugs the text between it; neither side of a pair
-offers a break at all, because no glue stands there, and `PunctKinsoku` keeps a
-half-width opening bracket out of the line end and a closing one out of the line
-start wherever a break does exist (`punct02`).
+style leaves them alone), do not hang, and take the CJK–Latin glue on the
+outside of a pair — in front of an opening one, and behind a closing one when a
+CJK character follows — so a pair hugs the text between it and offers no break
+inside, while a Latin letter behind the closing bracket takes no glue and a mark
+behind it keeps the zero-width boundary glue of a mark.  A break does exist
+after the closing bracket, because the pair's outside glue stands there;
+`PunctKinsoku` keeps a half-width opening bracket out of the line end and a
+closing one out of the line start wherever a break exists (`punct02`).
 The ASCII closing marks — `!`, `"`, `%`, `'`, `,`, `.`, `:`, `;`, `?` — are the
 other exception and the group `latin-close`: a mark that ends an English phrase
 even inside CJK text.  It takes the zero-width boundary glue of any mark beside

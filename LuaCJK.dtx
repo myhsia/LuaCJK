@@ -857,6 +857,8 @@ $ 天地玄黄 $ and 天地玄黄
 % 所以中西文胶按文字本身的类别加在盒外；
 % 只有无限伸长的胶（目录里 \cs{numberline} 的 \cs{hfil}）让文字到不了盒边，
 % 那时盒外不加胶。
+% 竖排的盒子同样按这条边读：|\underline| 这样的盒子末尾是它下面的标尺，
+% 标尺不遮住它盖着的文字，所以这条文字两侧都加胶。
 % 只有墨迹、没有文字的盒子按西文材料计，两侧都加胶。
 %
 % \begin{environment}{CJKfilltwosides}
@@ -1051,7 +1053,8 @@ a’a\quad 不亦说乎！
 %   \texttt{FullRight} 与 \texttt{HalfRight} 把它当作收尾的标点，
 %   于是断行禁则适用；
 %   前者是全角标点，照样压缩与悬挂，后者只能是 ASCII 括号：
-%   它不压缩、不悬挂，只在成对时贴住括号内的文字。
+%   它不压缩、不悬挂，成对的括号贴住括号内的文字，
+%   括号外则照常留中西文胶：开头括号之前一份，收尾括号之后一份。
 %   \texttt{NormalSpace} 把这段范围移出 CJK/拉丁胶，
 %   就像 \cs{normalspacedchars} 那样；
 %   \texttt{CJStarter}、\texttt{CM} 与 \texttt{Boundary} 当作 \texttt{CJK} 处理，
@@ -2249,8 +2252,11 @@ $ 天地玄黄 $ and 天地玄黄
 % does not hide that text, so the glue is added by the class of the text and
 % not by the skip the document wrote inside the box. Only a filling glue, such
 % as the \cs{hfil} of \cs{numberline}, leaves the edge without text, which
-% keeps the titles of a table of contents aligned. A box that holds no text
-% and has ink is Latin material, so a rule box takes the glue on both sides.
+% keeps the titles of a table of contents aligned. A vertical box is read at
+% its edge by the same rule, so the rule under the text of an |\underline| does
+% not hide that text and the underlined run takes the glue on both sides. A box
+% that holds no text and has ink is Latin material, so a rule box takes the
+% glue on both sides.
 %
 % \begin{environment}{CJKfilltwosides}
 %   Set the lines in a \env{minipage} whose lines are justified
@@ -2459,7 +2465,9 @@ a’a\quad 不亦说乎！
 %   so the line-breaking prohibitions apply;
 %   the first of each pair is a full-width mark and is compressed and hung as
 %   well, while the second is an ASCII bracket: it keeps its own advance, does
-%   not hang, and hugs the text between the two of a pair.
+%   not hang, hugs the text between the two of a pair, and takes the CJK/Latin
+%   glue on the outside of the pair, in front of an opening bracket and behind
+%   a closing one.
 %   \texttt{NormalSpace} takes the range out of the CJK/Latin glue,
 %   like \cs{normalspacedchars}; \texttt{CJStarter}, \texttt{CM},
 %   and \texttt{Boundary} are treated as \texttt{CJK},
@@ -7211,15 +7219,20 @@ end
 %   beside its last letter, a box that holds no text takes the glue on both
 %   sides, and a filling glue still leaves the edge empty, which keeps the
 %   titles of a table of contents aligned.}
-% Return the class at both edges of a node. A horizontal box carries the class
-% of the text nearest its edge, so a kern, a spacing glue, or a rule between
-% the last character and the edge does not hide it; a filling glue does, since
-% the text does not reach the edge of a box it stretches, and that is what
-% keeps \cs{numberline}'s \cs{hfil} from spacing a CJK title away from the
-% English ones. A box that holds no text and has ink of its own is a Latin
-% atom, because an object box is not CJK material; a box of no size is
-% transparent, and formulas count as Latin. A vertical box keeps the older
-% rule, which reads the node at its edge alone.
+% \changes{v0.0.5}{2026/11/22}{A vertical box reads its edges by the same rule,
+%   so the rule that underlines a \tn{underline} no longer hides the text above
+%   it: the underlined Latin run takes the \keys{CJKecglue} on both of its
+%   sides, like the run a \tn{mbox} or \cs{CJKunderline} holds.}
+% Return the class at both edges of a node. A box carries the class of the text
+% nearest its edge, so a kern, a spacing glue, or a rule between the last
+% character and the edge does not hide it; a filling glue does, since the text
+% does not reach the edge of a box it stretches, and that is what keeps
+% \cs{numberline}'s \cs{hfil} from spacing a CJK title away from the English
+% ones. A box that holds no text and has ink of its own is a Latin atom,
+% because an object box is not CJK material; a box of no size is transparent,
+% and formulas count as Latin. A vertical box is read the same way, whichever
+% of its edges faces the text: an underline is a vertical box whose last node
+% is the rule, and the text it lies under is what the edge holds.
 % \begin{macro}[int]{transparent_node}
 % Whether a node carries neither text nor advance, so that the text reaches
 % the edge past it. A kern of no width, such as the italic correction that
@@ -7283,57 +7296,6 @@ end
 local function attached_box (n)
   return (n.id == HLIST or n.id == VLIST)
      and (n.shift ~= 0 or raised_only(n.head))
-end
-
-%    \end{macrocode}
-% \end{macro}
-% \begin{macro}[int]{first_visible_class}
-% The class of the text at the start of a list: a glyph, a formula, or a box
-% inspected at its own edge. Glue, a kern, a rule, and a discretionary are not
-% text, so a list that starts with one has no class at that point, and a box
-% whose first edge has no class ends the search instead of yielding to a
-% character after it.
-%    \begin{macrocode}
-local function first_visible_class (list)
-  local n = list
-  while n do
-    if n.id == GLYPH then
-      return class_of_char(n.char, settings_of(n), n.font)
-    elseif n.id == HLIST or n.id == VLIST then
-      return first_visible_class(n.head)
-    elseif n.id == MATH then
-      return "LATIN"
-    elseif not transparent_node(n) then
-      return nil
-    end
-    n = n.next
-  end
-  return nil
-end
-
-%    \end{macrocode}
-% \end{macro}
-% \begin{macro}[int]{last_visible_class}
-% The class of the text at the end of a list, read the same way: a node that
-% is not text ends the text, so the class is nothing when something follows
-% the last character.
-%    \begin{macrocode}
-local function last_visible_class (list)
-  local n    = list
-  local last = nil
-  while n do
-    if n.id == GLYPH then
-      last = class_of_char(n.char, settings_of(n), n.font)
-    elseif n.id == HLIST or n.id == VLIST then
-      last = last_visible_class(n.head)
-    elseif n.id == MATH then
-      last = "LATIN"
-    elseif not transparent_node(n) then
-      last = nil
-    end
-    n = n.next
-  end
-  return last
 end
 
 %    \end{macrocode}
@@ -7429,7 +7391,7 @@ local function first_box_class (list)
     elseif n.id == HLIST then
       return first_box_class(n.head)
     elseif n.id == VLIST then
-      return first_visible_class(n.head)
+      return first_box_class(n.head)
     elseif n.id == MATH then
       return "LATIN"
     elseif filling_glue(n) then
@@ -7451,7 +7413,7 @@ local function last_box_class (list)
     elseif n.id == HLIST then
       last = last_box_class(n.head)
     elseif n.id == VLIST then
-      last = last_visible_class(n.head)
+      last = last_box_class(n.head)
     elseif n.id == MATH then
       last = "LATIN"
     elseif filling_glue(n) then
@@ -7468,7 +7430,7 @@ local function class_of_node (n)
   if n.id == GLYPH then
     local c = class_of_char(n.char, settings_of(n), n.font)
     return c, c
-  elseif n.id == HLIST then
+  elseif n.id == HLIST or n.id == VLIST then
     local first = first_box_class(n.head)
     local last  = last_box_class(n.head)
     if not first and not last
@@ -7476,8 +7438,6 @@ local function class_of_node (n)
       return "LATIN", "LATIN"
     end
     return first, last
-  elseif n.id == VLIST then
-    return first_visible_class(n.head), last_visible_class(n.head)
   elseif n.id == MATH then
     return "LATIN", "LATIN"
   end
@@ -7719,6 +7679,10 @@ end
 % \end{macro}
 
 % \begin{macro}[int]{insert_boundary_glue}
+% \changes{v0.0.5}{2026/11/22}{A half-width closing bracket keeps the
+%   \keys{CJKecglue} between itself and the CJK character that follows it, so
+%   the outside of a pair of brackets is spaced on both sides while the pair
+%   still hugs the text it encloses.}
 % Insert the CJK--CJK or CJK--Latin glue, and the kern that spaces two
 % adjacent punctuation marks.
 % The kern is the one \cs{pair_kern} gives, and the glue follows it, so the
@@ -7736,11 +7700,14 @@ end
 % an em that the typography does not ask for.
 % The boundary keeps a glue of zero width, so that it stays a break
 % opportunity and the kinsoku penalty can forbid the break.
-% A half-width bracket is the exception: the boundary in front of an opening
-% one keeps the spacing that the two classes give it, and the other three
-% sides of the pair take no glue at all.  The pair therefore hugs the text it
-% encloses and offers no break inside, which is how \pkg{xeCJK} sets its
-% half-width marks.
+% A half-width bracket is the exception, and its two sides are read
+% differently.  The pair takes no glue inside, so it hugs the text it encloses
+% and offers no break there, while its outside takes the CJK--Latin glue the
+% two classes give it, in front of an opening bracket and behind a closing one.
+% A closing bracket takes that glue only in front of a CJK character: a Latin
+% letter stays against it, and a mark behind it keeps the zero-width boundary
+% glue of a mark.  That is how \pkg{xeCJK} sets its half-width marks, whose
+% outside is spaced on both sides.
 %    \begin{macrocode}
 M.normal_spaced = {}
 
@@ -7797,7 +7764,10 @@ local function insert_boundary_glue (head, prev, prev_visible, prev_end,
   elseif prev_end ~= cur_start
      and not normal_spaced(prev_visible) and not normal_spaced(cur) then
     if half_mark(prev_punct) then
-      return head
+      if prev_punct ~= "half-close" or cur_punct or cur_start ~= "CJK" then
+        return head
+      end
+      spec = settings.ecglue
     elseif cur_punct == "half-open" then
       spec = prev_punct and PUNCT_BOUNDARY_GLUE or settings.ecglue
     elseif half_mark(cur_punct) then
