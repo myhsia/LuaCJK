@@ -122,8 +122,11 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    A box whose own baseline TeX has shifted is attached to the character in
    front of it: the run ends at it, so it takes no glue on either side and
    offers no break.  That is the box `\textsuperscript` and `\textsubscript`
-   build, and the shift is the box's own field, so the outer box of a
-   `\raisebox` or of a footnote mark keeps its boundary (`boundary04`).
+   build, and the shift is the box's own field.  A box that holds nothing but
+   raised or lowered boxes is attached the same way, because it holds no text
+   on the baseline its own shift would name: that is the wrapper `\raisebox`
+   and `\@makefnmark` put around the mark, so a footnote mark takes no glue and
+   its width is the one `\textsuperscript` gives (`boundary04`).
    Each boundary reads the option snapshot of the CJK character it touches
    (`boundary_settings`), so the CJK/Latin glue is the CJK text's: a Latin run
    set with `\scriptsize` or `\large` keeps the `CJKecglue` of the surrounding
