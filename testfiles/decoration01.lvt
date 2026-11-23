@@ -167,7 +167,28 @@
 }
 
 \TEST{each decoration keeps its own settings}{
-  \setbox0=\hbox{\CJKunderline[subtract]{中}x\CJKunderline{文}}
+  \setbox0=\hbox{\CJKunderline[subtract]{中中}x\CJKunderline{文}}
+  \nodes
+}
+
+\TEST{a decoration ends at the last character it covers}{
+  \setbox2=\hbox{ABC}
+  \TYPE{argument: \the\wd2}
+  \setbox0=\hbox{中\CJKunderline{ABC}文}
+  \nodes
+}
+
+\TEST{the boundary inside a decoration keeps it whole}{
+  \setbox2=\hbox{中A文}
+  \TYPE{argument: \the\wd2}
+  \setbox0=\hbox{中\CJKunderline{中A文}文}
+  \nodes
+}
+
+\TEST{a wave ends at the last character it covers}{
+  \setbox2=\hbox{ABC}
+  \TYPE{argument: \the\wd2}
+  \setbox0=\hbox{中\CJKunderwave{ABC}文}
   \nodes
 }
 

@@ -7480,18 +7480,59 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{inherit_common_attributes}
+% \changes{v0.0.5}{2026/11/22}{A node inserted at a CJK--Latin boundary keeps
+%   only the attributes both characters carry, so a decoration ends at the last
+%   character it covers: the \keys{CJKecglue} behind \cs{CJKunderline}'s
+%   argument no longer takes the rule past it.}
+% Give a new node the attributes of \meta{left} that \meta{right} carries as
+% well, with the same value.
+% A boundary between two characters belongs to neither of them: inside a span
+% both carry the attribute that marks it, and the span stays continuous, while
+% at its edge only one does, and a package that marks spans with attributes
+% reads the new node as the end of the span.
+% The attributes of this package are inherited as they were, because they
+% describe how the text is set and the glue between two characters takes the
+% policy of the one in front of it.
+% The attributes another package registered are compared one by one: the list
+% a node carries cannot be enumerated through the interface, so the registered
+% numbers are the ones this can see.
+% Assigning to the \meta{attr} field is reference counted and later
+% per-attribute changes are copy-on-write, so neither neighbour is modified.
+%    \begin{macrocode}
+local function inherit_common_attributes (new, left, right)
+  inherit_attributes(new, left)
+  if not (left and right and luatexbase.attributes) then
+    return
+  end
+  for _, id in pairs(luatexbase.attributes) do
+    if node.has_attribute(left, id) ~= node.has_attribute(right, id) then
+      node.unset_attribute(new, id)
+    end
+  end
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{make_glue}
 % Create a glue node from a skip register, inherit the attributes
 % of \meta{source}, and mark the node as inserted.
+% An optional \meta{other} gives the character on the other side of the
+% boundary, and the node then keeps only the attributes both sides carry.
 % The node keeps the stretch and shrink orders of the register.
 %    \begin{macrocode}
-local function make_glue (spec, source)
+local function make_glue (spec, source, other)
   if not spec then
     return nil
   end
   local s = spec
   local g = new_node("glue")
-  inherit_attributes(g, source)
+  if other then
+    inherit_common_attributes(g, source, other)
+  else
+    inherit_attributes(g, source)
+  end
   g.width         = s.width
   g.stretch       = s.stretch
   g.shrink        = s.shrink
@@ -7532,10 +7573,16 @@ end
 % \begin{macro}[int]{make_kern}
 % Create a kern node, inherit the attributes of \meta{source},
 % and mark the node as inserted.
+% An optional \meta{other} gives the character on the other side of the
+% boundary, and the node then keeps only the attributes both sides carry.
 %    \begin{macrocode}
-local function make_kern (width, source)
+local function make_kern (width, source, other)
   local k = new_node("kern")
-  inherit_attributes(k, source)
+  if other then
+    inherit_common_attributes(k, source, other)
+  else
+    inherit_attributes(k, source)
+  end
   k.kern = width
   if M.attr_inserted then
     set_attribute(k, M.attr_inserted, 1)
@@ -7708,6 +7755,8 @@ end
 % letter stays against it, and a mark behind it keeps the zero-width boundary
 % glue of a mark.  That is how \pkg{xeCJK} sets its half-width marks, whose
 % outside is spaced on both sides.
+% The glue and the kern keep only the attributes both characters carry, so a
+% decoration ends at the last character it covers rather than one glue further.
 %    \begin{macrocode}
 M.normal_spaced = {}
 
@@ -7782,8 +7831,8 @@ local function insert_boundary_glue (head, prev, prev_visible, prev_end,
   if prev_mark and cur_mark then
     local kern = pair_kern(prev_visible, cur, settings, style)
     if kern and kern ~= 0 then
-      local k = make_kern(kern, prev)
-      local g = spec and make_glue(spec, prev) or nil
+      local k = make_kern(kern, prev_visible or prev, cur)
+      local g = spec and make_glue(spec, prev_visible or prev, cur) or nil
       k.next  = g or cur
       if g then
         g.next = cur
@@ -7800,7 +7849,7 @@ local function insert_boundary_glue (head, prev, prev_visible, prev_end,
   if not spec then
     return head
   end
-  local g = make_glue(spec, prev or cur)
+  local g = make_glue(spec, prev_visible or prev or cur, cur)
   if not g then
     return head
   end

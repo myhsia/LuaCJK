@@ -462,9 +462,19 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   expanded when the box is built, because a literal expands its payload at
   shipout, when the variable belongs to another call.  `fntefcolor01` pins the
   literal in the box and the attribute of the leaders glue.
-- **Inserted nodes must inherit attributes.**  Glue, kern, and penalty nodes
-  created after TeX attached the attributes need `inherit_attributes(...)`, or
-  attribute-driven packages such as `lua-ul` see the span end there.
+- **An inserted node carries the attributes both neighbours carry.**  Glue and
+  kern nodes the spacing pass inserts are created after TeX attached the
+  attributes, and a package that marks a span with one (`lua-ul`) ends the span
+  at a node without it.  The node therefore takes only what the two characters
+  share, which is `inherit_common_attributes(...)`: inside a decoration both
+  sides carry it and the span stays whole, at its edge only one does and the
+  decoration stops at the last character it covers.  Inheriting from the
+  character in front alone took `\CJKunderline`'s rule over the `CJKecglue`
+  behind its argument, which covered the inter-script space of
+  `中\CJKunderline{ABC}文` (`decoration01`).  The comparison runs over the
+  numbers registered in `luatexbase.attributes`, because a node's attribute list
+  cannot be enumerated through the interface; this package's own attributes keep
+  following the character in front, since they describe how the text is set.
 - **A pass runs again on every box that holds the list.**  `hpack_filter` walks
   a list each time a box is packed from it, so a pass that inserts nodes must
   recognise its own work and leave it alone; the `inserted` attribute is that
