@@ -852,6 +852,12 @@ $ 天地玄黄 $ and 天地玄黄
 % 用 \tn{char} 请求的字符不会被删除，因为 \tn{char} 要的就是字形本身。
 % 盒子同样按它占的进距计：不占进距的盒子不把两侧的文字分开，
 % 所以 |\rlap|、|\llap| 与 |\clap| 覆盖在文字上的内容仍属于同一串。
+% 盒边的类别取自盒内最靠近这条边的文字：
+% 盒内的字距、间距胶与标尺都不遮住它，
+% 所以中西文胶按文字本身的类别加在盒外；
+% 只有无限伸长的胶（目录里 \cs{numberline} 的 \cs{hfil}）让文字到不了盒边，
+% 那时盒外不加胶。
+% 只有墨迹、没有文字的盒子按西文材料计，两侧都加胶。
 %
 % \begin{environment}{CJKfilltwosides}
 %   把各行排进一个 \env{minipage}，
@@ -2238,7 +2244,13 @@ $ 天地玄黄 $ and 天地玄黄
 % for the glyph itself.
 % A box is read by the advance it occupies in the same way: one that occupies
 % none does not separate the text around it, so what |\rlap|, |\llap| and
-% |\clap| set over the text stays in one run.
+% |\clap| set over the text stays in one run. A box otherwise takes the class
+% of the text nearest its edge: a kern, a spacing glue, or a rule inside it
+% does not hide that text, so the glue is added by the class of the text and
+% not by the skip the document wrote inside the box. Only a filling glue, such
+% as the \cs{hfil} of \cs{numberline}, leaves the edge without text, which
+% keeps the titles of a table of contents aligned. A box that holds no text
+% and has ink is Latin material, so a rule box takes the glue on both sides.
 %
 % \begin{environment}{CJKfilltwosides}
 %   Set the lines in a \env{minipage} whose lines are justified
@@ -5958,6 +5970,7 @@ local GLUE            = node.id("glue")
 local HLIST           = node.id("hlist")
 local VLIST           = node.id("vlist")
 local KERN            = node.id("kern")
+local RULE            = node.id("rule")
 local LIGATURE        = node.id("ligature")
 local PENALTY         = node.id("penalty")
 local MATH            = node.id("math")
@@ -7192,17 +7205,30 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{class_of_node}
-% Return the class at both edges of a node. A box carries the class of the
-% node at its edge, so filling glue or a kern between the last character and
-% the edge leaves the box with no class there; a box of no size is
-% transparent, and formulas count as Latin.
+% \changes{v0.0.5}{2026/11/23}{A box takes the class of the text nearest its
+%   edge, so a kern, a spacing glue, or a rule inside it no longer hides that
+%   text: \tn{mbox} around an italic \tn{textit} keeps the \keys{CJKecglue}
+%   beside its last letter, a box that holds no text takes the glue on both
+%   sides, and a filling glue still leaves the edge empty, which keeps the
+%   titles of a table of contents aligned.}
+% Return the class at both edges of a node. A horizontal box carries the class
+% of the text nearest its edge, so a kern, a spacing glue, or a rule between
+% the last character and the edge does not hide it; a filling glue does, since
+% the text does not reach the edge of a box it stretches, and that is what
+% keeps \cs{numberline}'s \cs{hfil} from spacing a CJK title away from the
+% English ones. A box that holds no text and has ink of its own is a Latin
+% atom, because an object box is not CJK material; a box of no size is
+% transparent, and formulas count as Latin. A vertical box keeps the older
+% rule, which reads the node at its edge alone.
 % \begin{macro}[int]{transparent_node}
 % Whether a node carries neither text nor advance, so that the text reaches
-% the edge past it.
+% the edge past it. A kern of no width, such as the italic correction that
+% follows the last letter of an italic box, carries no advance either.
 %    \begin{macrocode}
 local function transparent_node (n)
   return n.id == WHATSIT or n.id == MARK or n.id == INS
       or n.id == ADJUST or n.id == PENALTY
+      or (n.id == KERN and n.kern == 0)
 end
 
 %    \end{macrocode}
@@ -7343,11 +7369,87 @@ end
 %    \end{macrocode}
 % \end{macro}
 %    \begin{macrocode}
+local function filling_glue (n)
+  return n.id == GLUE
+     and ((n.stretch_order or 0) ~= 0 or (n.shrink_order or 0) ~= 0)
+end
+
+local function edge_transparent (n)
+  return transparent_node(n) or n.id == KERN or n.id == RULE
+      or (n.id == GLUE and not filling_glue(n))
+end
+
+local function has_text (list)
+  local n = list
+  while n do
+    if n.id == GLYPH or n.id == MATH then
+      return true
+    elseif n.id == HLIST or n.id == VLIST then
+      if has_text(n.head) then
+        return true
+      end
+    end
+    n = n.next
+  end
+  return false
+end
+
+local function first_box_class (list)
+  local n = list
+  while n do
+    if n.id == GLYPH then
+      return class_of_char(n.char, settings_of(n), n.font)
+    elseif n.id == HLIST then
+      return first_box_class(n.head)
+    elseif n.id == VLIST then
+      return first_visible_class(n.head)
+    elseif n.id == MATH then
+      return "LATIN"
+    elseif filling_glue(n) then
+      return nil
+    elseif not edge_transparent(n) then
+      return nil
+    end
+    n = n.next
+  end
+  return nil
+end
+
+local function last_box_class (list)
+  local n    = list
+  local last = nil
+  while n do
+    if n.id == GLYPH then
+      last = class_of_char(n.char, settings_of(n), n.font)
+    elseif n.id == HLIST then
+      last = last_box_class(n.head)
+    elseif n.id == VLIST then
+      last = last_visible_class(n.head)
+    elseif n.id == MATH then
+      last = "LATIN"
+    elseif filling_glue(n) then
+      last = nil
+    elseif not edge_transparent(n) then
+      last = nil
+    end
+    n = n.next
+  end
+  return last
+end
+
 local function class_of_node (n)
   if n.id == GLYPH then
     local c = class_of_char(n.char, settings_of(n), n.font)
     return c, c
-  elseif n.id == HLIST or n.id == VLIST then
+  elseif n.id == HLIST then
+    local first = first_box_class(n.head)
+    local last  = last_box_class(n.head)
+    if not first and not last
+       and (n.height ~= 0 or n.depth ~= 0) and not has_text(n.head) then
+      return "LATIN", "LATIN"
+    end
+    return first, last
+  elseif n.id == VLIST then
     return first_visible_class(n.head), last_visible_class(n.head)
   elseif n.id == MATH then
     return "LATIN", "LATIN"
@@ -7475,10 +7577,16 @@ end
 % so that a formula acts as one Latin atom at its left edge;
 % inside the formula the boundary rules are not applied.
 % A box is an atom as well, and the class at its edge is the class of the
-% node at that edge: filling glue or a kern means the box has no text there,
-% so no glue is added beside it. A box that occupies no advance is passed over,
-% so an empty box inside CJK text does not break the run, and the ink of an
-% overlaid one does not split it.
+% text nearest that edge: a kern, a spacing glue, or a rule between the last
+% character and the edge does not hide it, so the boundary glue is added by
+% the class of the text itself and not by a skip the document wrote inside
+% the box. A filling glue does hide the text, because the text does not reach
+% the edge of a box it stretches, and that is what keeps a
+% \cs{numberline}'s \cs{hfil} from spacing a CJK title away from an English
+% one. A box that holds no text and has ink is a Latin atom, so a rule box
+% takes the glue on both sides. A box that occupies no advance is passed
+% over, so an empty box inside CJK text does not break the run, and the ink
+% of an overlaid one does not split it.
 % A box whose own baseline \TeX\ has shifted is attached to the character in
 % front of it: the run ends at it, so it takes no glue on either side and
 % offers no break. That is the box \cs{textsuperscript} and

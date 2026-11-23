@@ -108,13 +108,17 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    order — so an `\hfill` or `\hfil` that stands after the same italic
    correction keeps its own subtype instead of becoming the inter-character
    glue and taking the fill of the line with it (`boundary01`).
-   A box is an atom, and the class at its edge is the class of the node *at*
-   that edge: filling glue (`\numberline`'s `\hfil`), a kern, or a rule means
-   the box has no text there, so no glue is added beside it, while a box that
-   occupies no advance is passed over, so `\rlap`, `\llap` and `\clap` overlay
-   the run instead of splitting it (`boundary01`).  Taking the class from the
-   last character *inside* the box instead is what pushed every Chinese TOC
-   title one `CJKecglue` to the right of its English counterpart.
+   A box is an atom, and the class at its edge is the class of the text
+   nearest that edge: a kern, a spacing glue, or a rule inside the box does
+   not hide that text, so the boundary glue is added by the class of the text
+   and not by a skip the document wrote inside the box (`boundary01`).  A
+   filling glue is the exception: the text does not reach the edge of a box it
+   stretches, so `\numberline`'s `\hfil` leaves the edge without a class and a
+   Chinese TOC title stays aligned with its English counterpart.  A box that
+   holds no text but has ink is a Latin atom, so `\mbox{\vrule}` takes the
+   glue on both sides; a box that occupies no advance is passed over, so
+   `\rlap`, `\llap` and `\clap` overlay the run instead of splitting it
+   (`boundary01`).
    A box whose own baseline TeX has shifted is attached to the character in
    front of it: the run ends at it, so it takes no glue on either side and
    offers no break.  That is the box `\textsuperscript` and `\textsubscript`
