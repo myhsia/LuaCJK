@@ -76,7 +76,22 @@
 }
 
 \TEST{the inside of a pair of half-width brackets takes no glue}{
+  \setbox0=\hbox{中(1)}
+  \shownodes
+}
+
+\TEST{a half-width closing bracket keeps the glue behind it}{
   \setbox0=\hbox{中(文)文}
+  \shownodes
+}
+
+\TEST{a half-width closing bracket gives a Latin letter no glue}{
+  \setbox0=\hbox{中]A}
+  \shownodes
+}
+
+\TEST{a half-width closing bracket gives a mark no CJK glue}{
+  \setbox0=\hbox{中]。}
   \shownodes
 }
 

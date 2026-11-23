@@ -338,11 +338,14 @@ vertical variants outside that table (`FE10`–`FE19`, `FE50`–`FE6A`, `2E3A`,
 and the listings table.  The ASCII brackets are the one exception: `(`, `[`, and
 `{` are `half-open` and `)`, `]`, and `}` are `half-close`, although they are
 Latin glyphs outside `CJK_RANGES`.  They keep their own advance (a compression
-style leaves them alone), do not hang, and take the CJK–Latin glue only in front
-of an opening one, so a pair hugs the text between it; neither side of a pair
-offers a break at all, because no glue stands there, and `PunctKinsoku` keeps a
-half-width opening bracket out of the line end and a closing one out of the line
-start wherever a break does exist (`punct02`).
+style leaves them alone), do not hang, and take the CJK–Latin glue on the
+outside of a pair — in front of an opening one, and behind a closing one when a
+CJK character follows — so a pair hugs the text between it and offers no break
+inside, while a Latin letter behind the closing bracket takes no glue and a mark
+behind it keeps the zero-width boundary glue of a mark.  A break does exist
+after the closing bracket, because the pair's outside glue stands there;
+`PunctKinsoku` keeps a half-width opening bracket out of the line end and a
+closing one out of the line start wherever a break exists (`punct02`).
 The ASCII closing marks — `!`, `"`, `%`, `'`, `,`, `.`, `:`, `;`, `?` — are the
 other exception and the group `latin-close`: a mark that ends an English phrase
 even inside CJK text.  It takes the zero-width boundary glue of any mark beside
