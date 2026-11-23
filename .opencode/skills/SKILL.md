@@ -111,7 +111,10 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    A box is an atom, and the class at its edge is the class of the text
    nearest that edge: a kern, a spacing glue, or a rule inside the box does
    not hide that text, so the boundary glue is added by the class of the text
-   and not by a skip the document wrote inside the box (`boundary01`).  A
+   and not by a skip the document wrote inside the box (`boundary01`).  That
+   holds for a vertical box as well, so the rule under `\underline`'s text does
+   not hide it and `中\underline{ABC}文` takes the glue on both sides, like the
+   run `\mbox` or `\CJKunderline` holds.  A
    filling glue is the exception: the text does not reach the edge of a box it
    stretches, so `\numberline`'s `\hfil` leaves the edge without a class and a
    Chinese TOC title stays aligned with its English counterpart.  A box that

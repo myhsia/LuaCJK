@@ -857,6 +857,8 @@ $ 天地玄黄 $ and 天地玄黄
 % 所以中西文胶按文字本身的类别加在盒外；
 % 只有无限伸长的胶（目录里 \cs{numberline} 的 \cs{hfil}）让文字到不了盒边，
 % 那时盒外不加胶。
+% 竖排的盒子同样按这条边读：|\underline| 这样的盒子末尾是它下面的标尺，
+% 标尺不遮住它盖着的文字，所以这条文字两侧都加胶。
 % 只有墨迹、没有文字的盒子按西文材料计，两侧都加胶。
 %
 % \begin{environment}{CJKfilltwosides}
@@ -2250,8 +2252,11 @@ $ 天地玄黄 $ and 天地玄黄
 % does not hide that text, so the glue is added by the class of the text and
 % not by the skip the document wrote inside the box. Only a filling glue, such
 % as the \cs{hfil} of \cs{numberline}, leaves the edge without text, which
-% keeps the titles of a table of contents aligned. A box that holds no text
-% and has ink is Latin material, so a rule box takes the glue on both sides.
+% keeps the titles of a table of contents aligned. A vertical box is read at
+% its edge by the same rule, so the rule under the text of an |\underline| does
+% not hide that text and the underlined run takes the glue on both sides. A box
+% that holds no text and has ink is Latin material, so a rule box takes the
+% glue on both sides.
 %
 % \begin{environment}{CJKfilltwosides}
 %   Set the lines in a \env{minipage} whose lines are justified
@@ -7214,15 +7219,20 @@ end
 %   beside its last letter, a box that holds no text takes the glue on both
 %   sides, and a filling glue still leaves the edge empty, which keeps the
 %   titles of a table of contents aligned.}
-% Return the class at both edges of a node. A horizontal box carries the class
-% of the text nearest its edge, so a kern, a spacing glue, or a rule between
-% the last character and the edge does not hide it; a filling glue does, since
-% the text does not reach the edge of a box it stretches, and that is what
-% keeps \cs{numberline}'s \cs{hfil} from spacing a CJK title away from the
-% English ones. A box that holds no text and has ink of its own is a Latin
-% atom, because an object box is not CJK material; a box of no size is
-% transparent, and formulas count as Latin. A vertical box keeps the older
-% rule, which reads the node at its edge alone.
+% \changes{v0.0.5}{2026/11/22}{A vertical box reads its edges by the same rule,
+%   so the rule that underlines a \tn{underline} no longer hides the text above
+%   it: the underlined Latin run takes the \keys{CJKecglue} on both of its
+%   sides, like the run a \tn{mbox} or \cs{CJKunderline} holds.}
+% Return the class at both edges of a node. A box carries the class of the text
+% nearest its edge, so a kern, a spacing glue, or a rule between the last
+% character and the edge does not hide it; a filling glue does, since the text
+% does not reach the edge of a box it stretches, and that is what keeps
+% \cs{numberline}'s \cs{hfil} from spacing a CJK title away from the English
+% ones. A box that holds no text and has ink of its own is a Latin atom,
+% because an object box is not CJK material; a box of no size is transparent,
+% and formulas count as Latin. A vertical box is read the same way, whichever
+% of its edges faces the text: an underline is a vertical box whose last node
+% is the rule, and the text it lies under is what the edge holds.
 % \begin{macro}[int]{transparent_node}
 % Whether a node carries neither text nor advance, so that the text reaches
 % the edge past it. A kern of no width, such as the italic correction that
@@ -7259,57 +7269,6 @@ end
 %    \begin{macrocode}
 local function attached_box (n)
   return (n.id == HLIST or n.id == VLIST) and n.shift ~= 0
-end
-
-%    \end{macrocode}
-% \end{macro}
-% \begin{macro}[int]{first_visible_class}
-% The class of the text at the start of a list: a glyph, a formula, or a box
-% inspected at its own edge. Glue, a kern, a rule, and a discretionary are not
-% text, so a list that starts with one has no class at that point, and a box
-% whose first edge has no class ends the search instead of yielding to a
-% character after it.
-%    \begin{macrocode}
-local function first_visible_class (list)
-  local n = list
-  while n do
-    if n.id == GLYPH then
-      return class_of_char(n.char, settings_of(n), n.font)
-    elseif n.id == HLIST or n.id == VLIST then
-      return first_visible_class(n.head)
-    elseif n.id == MATH then
-      return "LATIN"
-    elseif not transparent_node(n) then
-      return nil
-    end
-    n = n.next
-  end
-  return nil
-end
-
-%    \end{macrocode}
-% \end{macro}
-% \begin{macro}[int]{last_visible_class}
-% The class of the text at the end of a list, read the same way: a node that
-% is not text ends the text, so the class is nothing when something follows
-% the last character.
-%    \begin{macrocode}
-local function last_visible_class (list)
-  local n    = list
-  local last = nil
-  while n do
-    if n.id == GLYPH then
-      last = class_of_char(n.char, settings_of(n), n.font)
-    elseif n.id == HLIST or n.id == VLIST then
-      last = last_visible_class(n.head)
-    elseif n.id == MATH then
-      last = "LATIN"
-    elseif not transparent_node(n) then
-      last = nil
-    end
-    n = n.next
-  end
-  return last
 end
 
 %    \end{macrocode}
@@ -7405,7 +7364,7 @@ local function first_box_class (list)
     elseif n.id == HLIST then
       return first_box_class(n.head)
     elseif n.id == VLIST then
-      return first_visible_class(n.head)
+      return first_box_class(n.head)
     elseif n.id == MATH then
       return "LATIN"
     elseif filling_glue(n) then
@@ -7427,7 +7386,7 @@ local function last_box_class (list)
     elseif n.id == HLIST then
       last = last_box_class(n.head)
     elseif n.id == VLIST then
-      last = last_visible_class(n.head)
+      last = last_box_class(n.head)
     elseif n.id == MATH then
       last = "LATIN"
     elseif filling_glue(n) then
@@ -7444,7 +7403,7 @@ local function class_of_node (n)
   if n.id == GLYPH then
     local c = class_of_char(n.char, settings_of(n), n.font)
     return c, c
-  elseif n.id == HLIST then
+  elseif n.id == HLIST or n.id == VLIST then
     local first = first_box_class(n.head)
     local last  = last_box_class(n.head)
     if not first and not last
@@ -7452,8 +7411,6 @@ local function class_of_node (n)
       return "LATIN", "LATIN"
     end
     return first, last
-  elseif n.id == VLIST then
-    return first_visible_class(n.head), last_visible_class(n.head)
   elseif n.id == MATH then
     return "LATIN", "LATIN"
   end
