@@ -8,6 +8,9 @@
   ItalicFont = FandolKai-Regular.otf
 ]
 \LuaCJKsetup{CJKglue=10pt, CJKecglue=5pt}
+\makeatletter
+\setlength\@tempdima{3em}
+\makeatother
 
 \def\countfill#1{%
   \directlua{
@@ -107,24 +110,61 @@
   \TYPE{width: \the\wd\hfillboldbox}
 }
 
-\TEST{box last edge without text}{
+\TEST{box last edge reads the text past spacing}{
   \setbox0=\hbox{A\hbox{1}中}
-  \setbox2=\hbox{A\hbox{1\hfil}中}
+  \setbox2=\hbox{A\hbox{1\kern0pt}中}
   \setbox4=\hbox{A\hbox{1\kern1em}中}
-  \setbox6=\hbox{A\hbox{1}I}
+  \setbox6=\hbox{A\hbox{1\hskip1em}中}
+  \setbox8=\hbox{A\hbox{1}I}
   \TYPE{glyph edge: \the\wd0}
-  \TYPE{trailing fill: \the\wd2}
+  \TYPE{zero kern: \the\wd2}
   \TYPE{trailing kern: \the\wd4}
-  \TYPE{glyph edge Latin: \the\wd6}
+  \TYPE{trailing hskip: \the\wd6}
+  \TYPE{glyph edge Latin: \the\wd8}
+}
+
+\TEST{a filling glue ends the text at the edge}{
+  \setbox0=\hbox{A\hbox{1\hfil}中}
+  \setbox2=\hbox{中\mbox{1\hfil}文}
+  \setbox4=\hbox{中\mbox{1\hfil}}
+  \TYPE{trailing fill: \the\wd0}
+  \TYPE{boxed fill: \the\wd2}
+  \TYPE{boxed fill alone: \the\wd4}
+}
+
+\TEST{an italic correction does not hide the last letter}{
+  \setbox0=\hbox{\mbox{\textit{Fig. 1}}中}
+  \setbox2=\hbox{\mbox{\textit{Fig. 1}}}
+  \TYPE{with CJK: \the\wd0}
+  \TYPE{box alone: \the\wd2}
+  \TYPE{glue: \the\dimexpr\wd0-\wd2-1em\relax}
+}
+
+\TEST{a box that holds no text is Latin}{
+  \setbox0=\hbox{中\mbox{\vrule width 2pt height 4pt}文}
+  \setbox2=\hbox{\mbox{\vrule width 2pt height 4pt}}
+  \TYPE{with CJK: \the\wd0}
+  \TYPE{box alone: \the\wd2}
+  \TYPE{glue: \the\dimexpr\wd0-\wd2-2em\relax}
+}
+
+\TEST{a numberline filling glue takes no glue}{
+  \setbox0=\hbox{\numberline{1}中}
+  \setbox2=\hbox{\numberline{1}}
+  \TYPE{with CJK: \the\wd0}
+  \TYPE{box alone: \the\wd2}
+  \TYPE{difference: \the\dimexpr\wd0-\wd2\relax}
 }
 
 \TEST{box first edge without text}{
   \setbox0=\hbox{中\hbox{1}}
   \setbox2=\hbox{中\hbox{\hfil1}}
   \setbox4=\hbox{中I}
+  \setbox6=\hbox{中\hbox{\kern1em 1}}
   \TYPE{glyph edge: \the\wd0}
   \TYPE{leading fill: \the\wd2}
   \TYPE{Latin: \the\wd4}
+  \TYPE{leading kern: \the\wd6}
 }
 
 \TEST{zero-advance box boundary}{
