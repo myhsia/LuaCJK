@@ -1,4 +1,4 @@
-## [LuaCJK-v0.0.5](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.0.5)
+## [LuaCJK-v0.1.0](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.1.0)
 
 - `Baseline` moves the characters of the family in force where they are written, and the marks of the family `PunctFamily` names, so a family selected inside a group moves only that group and two declarations of one font keep their values in the same paragraph.
 - The punctuation group `latin-close` can be declared and removed like the others, so the spacing of the ASCII closing marks is a setting of the document and not only a default.
