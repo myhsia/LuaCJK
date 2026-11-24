@@ -59,7 +59,7 @@ Entry points:
 | --- | --- |
 | `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
-| `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.5`, `packtdszip = false` with `tdslocations` kept for `l3build install`, `ctanpkg`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
+| `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.1.0`, `packtdszip = false` with `tdslocations` kept for `l3build install`, `ctanpkg`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
 | `testfiles/NN.lvt` + `.tlg` | 78 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree and moves every `fontset = fandol` in that tree to `fontset = lxgw` |
@@ -890,7 +890,7 @@ l3build upload --dry-run           # the form, without publishing it
   new release edits that table and nothing else.
   `pkg` is `string.lower(module)`, the id the archive's top directory must
   carry, and `version` is the tag's version as written followed by the release
-  date, `v0.0.5 2026-11-22`: CTAN drops the leading `v` when it displays the
+  date, `v0.1.0 2026-11-25`: CTAN drops the leading `v` when it displays the
   record, and its maintainers ask that the date found in the package files be
   repeated there.  `date` is the one source of it, so `scripts/check-docs.sh`
   keeps the record and the `\changes` history in step.
