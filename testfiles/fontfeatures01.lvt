@@ -2,8 +2,8 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
-\setCJKfamilyfont{zhhei}{FandolHei-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
+\setCJKfamilyfont{zhhei}{LXGWNeoXiHei.ttf}
 
 \begin{document}
 
@@ -17,7 +17,7 @@
 \TEST{defaultCJKfontfeatures applies to a newly registered family}{
   \begingroup
     \defaultCJKfontfeatures{Script = CJK, Scale = 0.9}
-    \setCJKfamilyfont{zhsong}{FandolSong-Regular.otf}
+    \setCJKfamilyfont{zhsong}{LXGWNeoZhiSong.ttf}
     \setbox0=\hbox{中}
     \TYPE{width: \the\wd0}
   \endgroup
@@ -32,8 +32,8 @@
   \begingroup
     \LuaCJKDeclareSubCJKBlock{Kana}{"3040 -> "30FF}
     \defaultCJKfontfeatures{Script = CJK, Scale = 2}
-    \setCJKfamilyfont{zhkana}[Kana = FandolKai-Regular.otf]
-      {FandolSong-Regular.otf}
+    \setCJKfamilyfont{zhkana}[Kana = LXGWWenKaiGBLite-Regular.ttf]
+      {LXGWNeoZhiSong.ttf}
     \CJKfamily{zhkana}
     \setbox0=\hbox{あ}
     \TYPE{width: \the\wd0}
@@ -64,7 +64,7 @@
 
 \TEST{a shaping feature reaches the glyph of the CJK font}{
   \begingroup
-    \setCJKfamilyfont{zhhalf}{FandolSong-Regular.otf}
+    \setCJKfamilyfont{zhhalf}{LXGWNeoZhiSong.ttf}
     \CJKfamily{zhhalf}
     \setbox0=\hbox{。}
     \TYPE{plain: \the\wd0}

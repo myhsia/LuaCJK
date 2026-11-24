@@ -3,54 +3,54 @@ Don't change this file in any respect.
 ============================================================
 TEST 1: a formula uses the regular face of the family
 ============================================================
-GLYPH 20013 FandolSong
-GLYPH 25991 FandolSong
+GLYPH 20013 LXGW Neo ZhiSong
+GLYPH 25991 LXGW Neo ZhiSong
 ============================================================
 ============================================================
 TEST 2: the bold math version uses the bold face
 ============================================================
-GLYPH 20013 FandolSong Bold
-GLYPH 25991 FandolSong Bold
+GLYPH 20013 LXGW ZhenKai Slab GB Regular
+GLYPH 25991 LXGW ZhenKai Slab GB Regular
 ============================================================
 ============================================================
 TEST 3: the regular face is back outside the box
 ============================================================
-GLYPH 20013 FandolSong
-GLYPH 25991 FandolSong
+GLYPH 20013 LXGW Neo ZhiSong
+GLYPH 25991 LXGW Neo ZhiSong
 ============================================================
 ============================================================
 TEST 4: a group restores the math version
 ============================================================
-GLYPH 20013 FandolSong Bold
-GLYPH 25991 FandolSong Bold
-GLYPH 20013 FandolSong
-GLYPH 25991 FandolSong
+GLYPH 20013 LXGW ZhenKai Slab GB Regular
+GLYPH 25991 LXGW ZhenKai Slab GB Regular
+GLYPH 20013 LXGW Neo ZhiSong
+GLYPH 25991 LXGW Neo ZhiSong
 ============================================================
 ============================================================
 TEST 5: a bold text selection does not reach the formula
 ============================================================
-GLYPH 20013 FandolSong Bold
-GLYPH 25991 FandolSong
+GLYPH 20013 LXGW ZhenKai Slab GB Regular
+GLYPH 25991 LXGW Neo ZhiSong
 ============================================================
 ============================================================
 TEST 6: a family without a bold face keeps its regular one
 ============================================================
-GLYPH 20013 FandolSong
-GLYPH 25991 FandolSong
+GLYPH 20013 LXGW Neo ZhiSong
+GLYPH 25991 LXGW Neo ZhiSong
 ============================================================
 ============================================================
 TEST 7: setCJKmathfont selects the family of the formula
 ============================================================
-GLYPH 20013 FandolKai
-GLYPH 25991 FandolKai
-GLYPH 20013 FandolSong
-GLYPH 25991 FandolSong
+GLYPH 20013 LXGW WenKai GB Lite
+GLYPH 25991 LXGW WenKai GB Lite
+GLYPH 20013 LXGW Neo ZhiSong
+GLYPH 25991 LXGW Neo ZhiSong
 ============================================================
 ============================================================
 TEST 8: scripts and fractions keep the bold face
 ============================================================
-GLYPH 20013 FandolSong Bold
-GLYPH 25991 FandolSong Bold
-GLYPH 20013 FandolSong Bold
-GLYPH 25991 FandolSong Bold
+GLYPH 20013 LXGW ZhenKai Slab GB Regular
+GLYPH 25991 LXGW ZhenKai Slab GB Regular
+GLYPH 20013 LXGW ZhenKai Slab GB Regular
+GLYPH 25991 LXGW ZhenKai Slab GB Regular
 ============================================================

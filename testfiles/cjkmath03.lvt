@@ -9,11 +9,11 @@
 % version keeps the test log about the CJK family, not about Pagella.
 \setmathfont{TeX Gyre Pagella Math}[version = bold]
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}[BoldFont = FandolSong-Bold.otf]
-\setCJKfamilyfont{nobold}{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}[BoldFont = LXGWZhenKaiSlabGB-Regular.ttf]
+\setCJKfamilyfont{nobold}{LXGWNeoZhiSong.ttf}
 % Declare the family used for math once, so that the fontspec log of its
 % creation stays outside the test output.
-\setCJKfamilyfont{kaimath}{FandolKai-Regular.otf}
+\setCJKfamilyfont{kaimath}{LXGWWenKaiGBLite-Regular.ttf}
 \LuaCJKsetup{CJKmath = true}
 
 % Report the font of every CJK glyph of box 0, one glyph per line, so that a
@@ -81,7 +81,7 @@
 
 \TEST{setCJKmathfont selects the family of the formula}{
   \begingroup
-    \setCJKmathfont{FandolKai-Regular.otf}
+    \setCJKmathfont{LXGWWenKaiGBLite-Regular.ttf}
     \setbox0=\hbox{$中文$}
     \probe
   \endgroup

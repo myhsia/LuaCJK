@@ -3,7 +3,7 @@
 \documentclass{article}
 \usepackage{LuaCJK}
 \usepackage{shortvrb}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 \LuaCJKsetup{CJKglue = 10pt, CJKecglue = 5pt}
 
 % The three nodes that follow every punctuation mark of a horizontal box.

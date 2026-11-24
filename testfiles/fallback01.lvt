@@ -3,7 +3,7 @@
 \documentclass{article}
 \usepackage{LuaCJK}
 \setCJKmainfont{TeX Gyre Pagella}
-\setCJKfallbackfamilyfont{\CJKrmdefault}{FandolSong-Regular.otf}
+\setCJKfallbackfamilyfont{\CJKrmdefault}{LXGWNeoZhiSong.ttf}
 
 \def\psname#1{%
   \directlua{
@@ -75,7 +75,7 @@
   \begingroup
     \LuaCJKsetup{AutoFallBack = true}
     \setCJKfamilyfont{opts}{TeX Gyre Pagella}
-    \setCJKfallbackfamilyfont{opts}[Scale = 2]{FandolSong-Regular.otf}
+    \setCJKfallbackfamilyfont{opts}[Scale = 2]{LXGWNeoZhiSong.ttf}
     \setbox0=\hbox{\CJKfamily{opts}中}
     \TYPE{width: \the\wd0}
   \endgroup
@@ -86,8 +86,8 @@
     \LuaCJKsetup{AutoFallBack = true}
     \setCJKfamilyfont{boldfb}{TeX Gyre Pagella}[
       BoldFont = TeX Gyre Pagella Bold]
-    \setCJKfallbackfamilyfont{boldfb}{FandolSong-Regular.otf}[
-      BoldFont = FandolSong-Bold.otf]
+    \setCJKfallbackfamilyfont{boldfb}{LXGWNeoZhiSong.ttf}[
+      BoldFont = LXGWZhenKaiSlabGB-Regular.ttf]
     \setbox0=\hbox{\CJKfamily{boldfb}中}
     \psinfo
     \setbox0=\hbox{\CJKfamily{boldfb}\bfseries 中}
@@ -100,8 +100,8 @@
     \LuaCJKsetup{AutoFallBack = true}
     \setCJKfamilyfont{itfb}{TeX Gyre Pagella}[
       ItalicFont = TeX Gyre Pagella Italic]
-    \setCJKfallbackfamilyfont{itfb}{FandolSong-Regular.otf}[
-      ItalicFont = FandolKai-Regular.otf]
+    \setCJKfallbackfamilyfont{itfb}{LXGWNeoZhiSong.ttf}[
+      ItalicFont = LXGWWenKaiGBLite-Regular.ttf]
     \setbox0=\hbox{\CJKfamily{itfb}\itshape 中}
     \psinfo
   \endgroup
@@ -111,7 +111,7 @@
   \begingroup
     \LuaCJKsetup{AutoFallBack = true}
     \setCJKfamilyfont{bigfb}{TeX Gyre Pagella}
-    \setCJKfallbackfamilyfont{bigfb}{FandolSong-Regular.otf}
+    \setCJKfallbackfamilyfont{bigfb}{LXGWNeoZhiSong.ttf}
     \setbox0=\hbox{\CJKfamily{bigfb}中}
     \psinfo
     \setbox0=\hbox{\CJKfamily{bigfb}\large 中}

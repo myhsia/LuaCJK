@@ -20,8 +20,8 @@ direct: 30.0pt
 ============================================================
 TEST 4: font-switch box boundary
 ============================================================
-LaTeX Font Info:    Font shape `TU/FandolSong-Regular.otf(0)/bx/n' in size <10> not available
-(Font)              Font shape `TU/FandolSong-Regular.otf(0)/b/n' tried instead on input line ....
+LaTeX Font Info:    Font shape `TU/LXGWNeoZhiSong.ttf(0)/bx/n' in size <10> not available
+(Font)              Font shape `TU/LXGWNeoZhiSong.ttf(0)/b/n' tried instead on input line ....
 box: 50.0pt
 direct: 50.0pt
 ============================================================

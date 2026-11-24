@@ -2,7 +2,12 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
+% The base font joins a pair of em dashes into U+2E3A; these tests read the
+% pair as two marks, so the ligature is off.
+\setCJKmainfont[RawFeature = -ccmp]{LXGWNeoZhiSong.ttf}
+% The same face with the ligature on, for the one case that pins what the
+% joined glyph does.
+\newCJKfontfamily\joined{LXGWNeoZhiSong.ttf}
 
 % A break opportunity in TeX is a glue, kern, or penalty node, so the node
 % signature below is also the test whether a run may be broken.
@@ -53,6 +58,7 @@
 
 \TEST{a dash pair is joined without glue}{
   \setbox0=\hbox{中——文}\shownodes
+  \setbox0=\hbox{\joined 中——文}\shownodes
 }
 
 \TEST{an ellipsis pair is joined without glue}{

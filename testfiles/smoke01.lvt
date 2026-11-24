@@ -2,16 +2,16 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}[
-  BoldFont   = FandolSong-Bold.otf,
-  ItalicFont = FandolKai-Regular.otf
+\setCJKmainfont{LXGWNeoZhiSong.ttf}[
+  BoldFont   = LXGWZhenKaiSlabGB-Regular.ttf,
+  ItalicFont = LXGWWenKaiGBLite-Regular.ttf
 ]
-\setCJKsansfont{FandolHei-Regular.otf}
-\setCJKmonofont{FandolFang-Regular.otf}
-\setCJKfamilyfont{zhsong}{FandolSong-Regular.otf}[BoldFont = FandolSong-Bold.otf]
-\setCJKfamilyfont{zhhei}{FandolHei-Regular.otf}
-\setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
-\setCJKfamilyfont{zhfs}{FandolFang-Regular.otf}
+\setCJKsansfont{LXGWNeoXiHei.ttf}
+\setCJKmonofont{LXGWZhuqueFangsong-Regular.ttf}
+\setCJKfamilyfont{zhsong}{LXGWNeoZhiSong.ttf}[BoldFont = LXGWZhenKaiSlabGB-Regular.ttf]
+\setCJKfamilyfont{zhhei}{LXGWNeoXiHei.ttf}
+\setCJKfamilyfont{zhkai}{LXGWWenKaiGBLite-Regular.ttf}
+\setCJKfamilyfont{zhfs}{LXGWZhuqueFangsong-Regular.ttf}
 
 \def\showglyphfont{%
   \directlua{
@@ -56,14 +56,14 @@
 
 
 \TEST{newCJKfontfamily}{
-  \newCJKfontfamily\testhei{FandolHei-Regular.otf}
+  \newCJKfontfamily\testhei{LXGWNeoXiHei.ttf}
   \setbox0=\hbox{\testhei 中}
   \showglyphfont
 }
 
 \TEST{CJKfontspec}{
   \begingroup
-  \CJKfontspec{FandolKai-Regular.otf}
+  \CJKfontspec{LXGWWenKaiGBLite-Regular.ttf}
   \setbox0=\hbox{中}
   \showglyphfont
   \endgroup
@@ -71,7 +71,7 @@
 
 \TEST{CJKfontspec options before the font name}{
   \begingroup
-  \setbox0=\hbox{\CJKfontspec[Scale = 2]{FandolKai-Regular.otf}中}
+  \setbox0=\hbox{\CJKfontspec[Scale = 2]{LXGWWenKaiGBLite-Regular.ttf}中}
   \TYPE{width: \the\wd0}
   \showglyphfont
   \endgroup
@@ -79,7 +79,7 @@
 
 \TEST{a bracket after the font name is text}{
   \begingroup
-  \setbox0=\hbox{\CJKfontspec{FandolKai-Regular.otf}%
+  \setbox0=\hbox{\CJKfontspec{LXGWWenKaiGBLite-Regular.ttf}%
     [重点]}
   \TYPE{width: \the\wd0}
   \showglyphfont
@@ -88,7 +88,7 @@
 
 \TEST{newCJKfontfamily options after the font name}{
   \begingroup
-  \newCJKfontfamily\testkai{FandolKai-Regular.otf}[Scale = 2]
+  \newCJKfontfamily\testkai{LXGWWenKaiGBLite-Regular.ttf}[Scale = 2]
   \setbox0=\hbox{\testkai 中}
   \TYPE{width: \the\wd0}
   \showglyphfont

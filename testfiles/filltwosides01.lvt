@@ -3,7 +3,7 @@
 \documentclass{article}
 \usepackage{LuaCJK}
 \usepackage{LuaCJKfntef}
-\setCJKmainfont{FandolSong-Regular.otf}[ItalicFont=FandolKai-Regular.otf]
+\setCJKmainfont{LXGWNeoZhiSong.ttf}[ItalicFont=LXGWWenKaiGBLite-Regular.ttf]
 \showboxbreadth = 100
 \showboxdepth = 100
 

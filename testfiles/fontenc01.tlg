@@ -8,10 +8,10 @@ PSNAMES ec-lmr10
 ============================================================
 TEST 2: the CJK text keeps the CJK font
 ============================================================
-PSNAMES FandolSong-Regular
+PSNAMES LXGWNeoZhiSong
 ============================================================
 ============================================================
 TEST 3: a CJK character between two Latin ones keeps its font
 ============================================================
-PSNAMES ec-lmr10,FandolSong-Regular,ec-lmr10
+PSNAMES ec-lmr10,LXGWNeoZhiSong,ec-lmr10
 ============================================================

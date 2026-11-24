@@ -3,7 +3,7 @@
 \documentclass{article}
 \usepackage{LuaCJK}
 \LuaCJKDeclareSubCJKBlock{Kana}{"3040 -> "30FF}
-\setCJKmainfont{FandolSong-Regular.otf}[Kana = FandolKai-Regular.otf]
+\setCJKmainfont{LXGWNeoZhiSong.ttf}[Kana = LXGWWenKaiGBLite-Regular.ttf]
 
 \def\psnames{%
   \directlua{
@@ -52,7 +52,7 @@
 }
 
 \TEST{a family without the option keeps the main font}{
-  \setCJKfamilyfont{plain}{FandolSong-Regular.otf}
+  \setCJKfamilyfont{plain}{LXGWNeoZhiSong.ttf}
   \setbox0=\hbox{\CJKfamily{plain}中あ}
   \psnames
 }

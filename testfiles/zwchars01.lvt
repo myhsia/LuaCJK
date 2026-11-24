@@ -2,7 +2,7 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 
 % Report the nodes of box 0: a glyph by its code point, any other node by
 % its kind. Widths are left out so the signature does not follow a font.

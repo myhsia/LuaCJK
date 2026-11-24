@@ -2,7 +2,9 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
+% The base font joins a pair of em dashes into U+2E3A; these tests read the
+% pair as two marks, so the ligature is off.
+\setCJKmainfont[RawFeature = -ccmp]{LXGWNeoZhiSong.ttf}
 \LuaCJKsetup{CJKglue=0pt, CJKecglue=0pt}
 
 \begin{document}

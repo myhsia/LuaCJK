@@ -21,32 +21,32 @@
 
 \START
 
-\TEST{a document that declares no font is set in Fandol Song by default}{
+\TEST{a document that declares no font is set in LXGW Neo ZhiSong}{
   \setbox0=\hbox{中}
   \psname{0}
 }
 
-\TEST{the bold shape is Fandol Song Bold}{
+\TEST{the bold shape is faked in Neo ZhiSong}{
   \setbox0=\hbox{\bfseries 中}
   \psname{0}
 }
 
-\TEST{the heiti shortcut is Fandol Hei}{
+\TEST{the heiti shortcut is LXGW Neo XiHei}{
   \setbox2=\hbox{\heiti 中}
   \psname{2}
 }
 
-\TEST{the kaiti shortcut is Fandol Kai}{
+\TEST{the kaiti shortcut is LXGW WenKai}{
   \setbox4=\hbox{\kaishu 中}
   \psname{4}
 }
 
-\TEST{the sans serif family is Fandol Hei}{
+\TEST{the sans serif family is LXGW Neo XiHei}{
   \setbox4=\hbox{\textsf{中}}
   \psname{4}
 }
 
-\TEST{the monospaced family is Fandol Fang}{
+\TEST{the monospaced family is Zhuque Fangsong}{
   \setbox4=\hbox{\texttt{中}}
   \psname{4}
 }

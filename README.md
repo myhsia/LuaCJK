@@ -11,7 +11,7 @@ The `LuaCJK` package typesets Chinese, Japanese, and Korean (CJK) with the
 LuaTeX engine.
 
 It provides
-- A CJK font family layer, with sub-blocks, fallback fonts, the Fandol
+- A CJK font family layer, with sub-blocks, fallback fonts, the LXGW
 collection, and fake bold and slant.
 - CJK/CJK and CJK/Latin spacing, and the prohibitions that keep a line from
 breaking at the wrong place.
@@ -37,7 +37,7 @@ To load this package, write the line
 
 and then choose the CJK fonts, for example with
 
-    \setCJKmainfont{FandolSong-Regular.otf}
+    \setCJKmainfont{LXGWNeoZhiSong.ttf}
 
 A `ctex` document takes it through the `engine` option instead, and does not
 load the package separately:

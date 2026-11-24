@@ -7,7 +7,7 @@ TEST 1: ctex loads the LuaCJK engine file
 ============================================================
 TEST 2: a CJK character is set in the font of the fontset
 ============================================================
-GLYPHS 20013:FandolSong
+GLYPHS 20013:LXGW Neo ZhiSong
 ============================================================
 ============================================================
 TEST 3: the punct option selects a punctuation style
@@ -36,5 +36,5 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <7> on input line ....
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <5> on input line ....
-GLYPHS 20013:FandolSong
+GLYPHS 20013:LXGW Neo ZhiSong
 ============================================================

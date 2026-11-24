@@ -2,10 +2,10 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
-\setCJKsansfont{FandolHei-Regular.otf}
-\setCJKmonofont{FandolFang-Regular.otf}
-\setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
+\setCJKsansfont{LXGWNeoXiHei.ttf}
+\setCJKmonofont{LXGWZhuqueFangsong-Regular.ttf}
+\setCJKfamilyfont{zhkai}{LXGWWenKaiGBLite-Regular.ttf}
 
 \def\psname{%
   \directlua{

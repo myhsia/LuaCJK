@@ -8,10 +8,10 @@ CJ 12353=true 12419=true 20013=false
 ============================================================
 TEST 2: a fallback declared for the main family applies from the first line
 ============================================================
-PS FandolSong-Regular
+PS LXGWNeoZhiSong
 ============================================================
 ============================================================
 TEST 3: the punctuation family is the one the option names
 ============================================================
-PS FandolSong-Regular FandolKai-Regular
+PS LXGWNeoZhiSong LXGWWenKaiGBLite-Regular
 ============================================================

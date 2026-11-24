@@ -18,7 +18,7 @@
 #
 # The table reads the TITLE only, never the body.  A body is the reporter's
 # apparatus, and it is nearly the same in every report of one reporter: this
-# repository's are all `\usepackage[LoadFandol]{LuaCJK}` followed by
+# repository's are all `\usepackage{LuaCJK}` followed by
 # `\setCJKmainfont{…}`, so a body scan labelled a question about `lstlisting`
 # with `load` (#32) and a question about Japanese combining marks with `fonts`
 # (#34).  The title is the part the reporter chose to name the defect with.
@@ -101,7 +101,7 @@ listings	listing|lstlisting|LuaCJK-listings
 verbatim	verbatim|fancyvrb
 math	CJKmath|boldmath|amsmath|公式
 punct	PunctStyle|PunctWidth|setwidth|setkern|EditPunctStyle|标点|禁则
-load	LoadFandol
+load	LoadFandol|LoadLXGW
 fonts	CJKfontspec|newCJKfontfamily|fakebold|fakeslant|BoldFont|字体|加粗|addCJKfontfeatures|CharacterWidth|hwid|fontenc
 breaks	AllowBreakBetweenPuncts|kinsoku|nobreak|断行|换行|连字符|hyphen
 chars	DeclareCharClass|DeclarePunctClass|SubCJKBlock|CharClass|pifont|\bding\b

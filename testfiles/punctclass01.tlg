@@ -5,6 +5,7 @@ TEST 1: the shared punctuation and the dashes
 ============================================================
 PC 2013=dash 2014=dash 2015=dash 2018=open 2019=close 201C=open 201D=close 2025=ellipsis 2026=ellipsis 2027=middle
 PC 22EF=ellipsis
+PC 2E3A=dash 2E3B=dash
 ============================================================
 ============================================================
 TEST 2: the CJK punctuation
@@ -25,6 +26,6 @@ PC FFE0=close FFE1=open FFE5=open FFE6=open
 ============================================================
 TEST 5: the small and vertical variants outside the CJK table keep no class
 ============================================================
-PC 2E3A=nil 16FE0=nil FE10=nil FE15=nil FE17=nil FE19=nil
+PC 16FE0=nil FE10=nil FE15=nil FE17=nil FE19=nil
 PC FE50=nil FE52=nil FE54=nil FE69=nil FE6A=nil
 ============================================================

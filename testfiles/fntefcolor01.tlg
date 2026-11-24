@@ -52,7 +52,7 @@ TEST 9: the wave and the slash are stroked in the color of format
 ============================================================
 rules: black
 > \box...=
-\hbox(7.78+1.62)x10.0, direction TLT
+\hbox(8.12012+0.71777)x10.0, direction TLT
 .\leaders 10.0
 ..\hbox(0.0+0.0)x10.0, glue set - 0.2fil, direction TLT
 ...\glue 0.0 plus 1.0fil minus 1.0fil
@@ -81,14 +81,14 @@ rules: black
 .......\pdfrestore
 ...\glue 0.0 plus 1.0fil minus 1.0fil
 .\glue -10.0
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 ! OK.
 <argument> ...= red]{中}} \rulecolors \showbox 0 
                                                   \setbox 0=\hbox {\CJKxout ...
 l. ...}
 rules: black
 > \box...=
-\hbox(7.78+1.62)x10.0, direction TLT
+\hbox(8.12012+0.71777)x10.0, direction TLT
 .\leaders 10.0
 ..\hbox(0.0+0.0)x4.59999, direction TLT
 ...\hbox(0.0+0.0)x4.59999, direction TLT
@@ -114,7 +114,7 @@ rules: black
 ........\pdfliteral origin{S}
 .......\pdfrestore
 .\glue -10.0
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 ! OK.
 <argument> ...= red]{中}} \rulecolors \showbox 0 
 l. ...}
@@ -129,7 +129,7 @@ TEST 11: a drawn pattern follows the color of its text without format
 ============================================================
 rules: blue
 > \box...=
-\hbox(7.78+1.62)x10.0, direction TLT
+\hbox(8.12012+0.71777)x10.0, direction TLT
 .\leaders 10.0
 ..\hbox(0.0+0.0)x10.0, glue set - 0.2fil, direction TLT
 ...\glue 0.0 plus 1.0fil minus 1.0fil
@@ -158,7 +158,7 @@ rules: blue
 .......\pdfrestore
 ...\glue 0.0 plus 1.0fil minus 1.0fil
 .\glue -10.0
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 ! OK.
 <argument> ...wave {中}}} \rulecolors \showbox 0 
                                                   \setbox 0=\hbox {\CJKunder...
@@ -171,7 +171,7 @@ TEST 12: a color that colorlet redefines is followed
 rules: red red
 rules: blue blue
 > \box...=
-\hbox(7.78+1.62)x10.0, direction TLT
+\hbox(8.12012+0.71777)x10.0, direction TLT
 .\leaders 10.0
 ..\hbox(0.0+0.0)x10.0, glue set - 0.2fil, direction TLT
 ...\glue 0.0 plus 1.0fil minus 1.0fil
@@ -200,13 +200,13 @@ rules: blue blue
 .......\pdfrestore
 ...\glue 0.0 plus 1.0fil minus 1.0fil
 .\glue -10.0
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 ! OK.
 <argument> ...ve [format = mark]{中}} \showbox 0 
                                                   \colorlet {mark}{blue} \se...
 l. ...}
 > \box...=
-\hbox(7.78+1.62)x10.0, direction TLT
+\hbox(8.12012+0.71777)x10.0, direction TLT
 .\leaders 10.0
 ..\hbox(0.0+0.0)x10.0, glue set - 0.2fil, direction TLT
 ...\glue 0.0 plus 1.0fil minus 1.0fil
@@ -235,7 +235,7 @@ l. ...}
 .......\pdfrestore
 ...\glue 0.0 plus 1.0fil minus 1.0fil
 .\glue -10.0
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 ! OK.
 <argument> ...ve [format = mark]{中}} \showbox 0 
 l. ...}

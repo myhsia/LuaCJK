@@ -2,7 +2,7 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 
 % Report whether each code point of the comma-separated list is CJK.
 % The helper avoids the % and # characters, which TeX reads specially inside

@@ -1,6 +1,6 @@
 \input{regression-test}
 
-\documentclass[fontset=fandol, engine=luacjk]{ctexart}
+\documentclass[fontset = lxgw, engine=luacjk]{ctexart}
 
 % The narrow paragraphs below are meant to be overfull; keep TeX from
 % printing the box in the log.

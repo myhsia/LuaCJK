@@ -6,8 +6,8 @@
 \usepackage{unicode-math}
 \setmathfont{TeX Gyre Pagella Math}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
-\setCJKmathfont{FandolKai-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
+\setCJKmathfont{LXGWWenKaiGBLite-Regular.ttf}
 \LuaCJKsetup{CJKglue=0pt, CJKecglue=0pt, CJKmath=true}
 
 \def\probe{%
