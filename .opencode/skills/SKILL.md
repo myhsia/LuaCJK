@@ -121,7 +121,15 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    holds no text but has ink is a Latin atom, so `\mbox{\vrule}` takes the
    glue on both sides; a box that occupies no advance is passed over, so
    `\rlap`, `\llap` and `\clap` overlay the run instead of splitting it
-   (`boundary01`).  The source space in front of such a box belongs to the
+   (`boundary01`).  The box the edge reaches is read in turn, and when it has
+   no class itself the text behind it is the text nearest the edge: the frame
+   `xcolor` draws over a box as a second, classless sibling does not hide the
+   content it encloses, so `\fbox`, `\framebox`, `\fcolorbox` and `\colorbox`
+   all take the glue on both sides (`boundary01`).  A paragraph line begins
+   with the `local_par` marker, which is passed over the same way, so the first
+   character of a `\parbox` reaches the left edge and takes the glue there,
+   while `\parfillskip` leaves the right edge without text (`boundary01`).  The
+   source space in front of such a box belongs to the
    boundary of the two characters it stands between: the walk back goes over
    the box (`skippable`), which is what keeps a second glue from being spliced
    behind it, and `collapse_earlier_spaces` gives up the advance of a source
@@ -135,7 +143,11 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    raised or lowered boxes is attached the same way, because it holds no text
    on the baseline its own shift would name: that is the wrapper `\raisebox`
    and `\@makefnmark` put around the mark, so a footnote mark takes no glue and
-   its width is the one `\textsuperscript` gives (`boundary04`).
+   its width is the one `\textsuperscript` gives (`boundary04`).  A frame is not
+   a mark: what it shifts is a vertical box, since `\fbox`, `\framebox` and
+   `\fcolorbox` lower the frame so that its content stands on the baseline, so
+   the box keeps its boundary glue and the break that glue offers, while a
+   frame inside a raised box stays attached (`boundary04`).
    Each boundary reads the option snapshot of the CJK character it touches
    (`boundary_settings`), so the CJK/Latin glue is the CJK text's: a Latin run
    set with `\scriptsize` or `\large` keeps the `CJKecglue` of the surrounding

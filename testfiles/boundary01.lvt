@@ -259,6 +259,50 @@
   \TYPE{binary: \the\wd4}
 }
 
+\TEST{a framed box takes the glue on both sides}{
+  \setbox0=\hbox{中\fbox{$x$}}
+  \setbox2=\hbox{\fbox{$x$}}
+  \setbox4=\hbox{中}
+  \TYPE{fbox first: \the\dimexpr\wd0-\wd2-\wd4\relax}
+  \setbox0=\hbox{\fbox{$x$}文}
+  \setbox4=\hbox{文}
+  \TYPE{fbox last: \the\dimexpr\wd0-\wd2-\wd4\relax}
+  \setbox0=\hbox{中\framebox{$x$}}
+  \setbox2=\hbox{\framebox{$x$}}
+  \setbox4=\hbox{中}
+  \TYPE{framebox first: \the\dimexpr\wd0-\wd2-\wd4\relax}
+  \setbox0=\hbox{\framebox{$x$}文}
+  \setbox4=\hbox{文}
+  \TYPE{framebox last: \the\dimexpr\wd0-\wd2-\wd4\relax}
+}
+
+\TEST{a colour box takes the glue on both sides}{
+  \setbox0=\hbox{中\colorbox{yellow}{$x$}}
+  \setbox2=\hbox{\colorbox{yellow}{$x$}}
+  \setbox4=\hbox{中}
+  \TYPE{colorbox first: \the\dimexpr\wd0-\wd2-\wd4\relax}
+  \setbox0=\hbox{\colorbox{yellow}{$x$}文}
+  \setbox4=\hbox{文}
+  \TYPE{colorbox last: \the\dimexpr\wd0-\wd2-\wd4\relax}
+  \setbox0=\hbox{中\fcolorbox{red}{yellow}{$x$}}
+  \setbox2=\hbox{\fcolorbox{red}{yellow}{$x$}}
+  \setbox4=\hbox{中}
+  \TYPE{fcolorbox first: \the\dimexpr\wd0-\wd2-\wd4\relax}
+  \setbox0=\hbox{\fcolorbox{red}{yellow}{$x$}文}
+  \setbox4=\hbox{文}
+  \TYPE{fcolorbox last: \the\dimexpr\wd0-\wd2-\wd4\relax}
+}
+
+\TEST{a parbox reads the edge its text reaches}{
+  \setbox0=\hbox{中\parbox{2em}{abc}}
+  \setbox2=\hbox{\parbox{2em}{abc}}
+  \setbox4=\hbox{中}
+  \TYPE{first: \the\dimexpr\wd0-\wd2-\wd4\relax}
+  \setbox0=\hbox{\parbox{2em}{abc}文}
+  \setbox4=\hbox{文}
+  \TYPE{last: \the\dimexpr\wd0-\wd2-\wd4\relax}
+}
+
 \END
 
 \end{document}

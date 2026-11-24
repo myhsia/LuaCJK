@@ -883,6 +883,11 @@ $ 天地玄黄 $ and 天地玄黄
 % 那时盒外不加胶。
 % 竖排的盒子同样按这条边读：|\underline| 这样的盒子末尾是它下面的标尺，
 % 标尺不遮住它盖着的文字，所以这条文字两侧都加胶。
+% 盒边上的另一个盒子自己读不出类别时，它后面的文字就是最靠近这条边的文字：
+% \pkg{xcolor} 在盒外另画的边框不遮住盒内的文字。
+% 段落行的行首有一个记录段落设置的标记，它同样不遮住行首的字，
+% 所以 \cs{parbox} 的左边缘按其中第一行文字计；
+% 行末是 \cs{parfillskip}，文字到不了右边缘，那里不加胶。
 % 只有墨迹、没有文字的盒子按西文材料计，两侧都加胶。
 %
 % \begin{environment}{CJKfilltwosides}
@@ -1216,6 +1221,9 @@ a’a\quad 不亦说乎！
 % 基线被移动的盒子依附于它前面的字符：\cs{textsuperscript} 与
 % \cs{textsubscript} 就是这样排的。
 % 这种盒子两侧都不加胶，它前面也不提供断行机会，所以它的内容不会另起一行。
+% 有边框的盒子不是这种标记：\cs{fbox}、\cs{framebox} 与 \cs{fcolorbox}
+% 把竖排的框围着内容放低，所以它像其他盒子一样按盒内文字加胶，
+% 两侧也为胶提供断行机会。
 %
 % \begin{keyval}
 %   \item[\keys{CheckSingle}]\val{\TFF}
@@ -2307,8 +2315,14 @@ $ 天地玄黄 $ and 天地玄黄
 % keeps the titles of a table of contents aligned. A vertical box is read at
 % its edge by the same rule, so the rule under the text of an |\underline| does
 % not hide that text and the underlined run takes the glue on both sides. A box
-% that holds no text and has ink is Latin material, so a rule box takes the
-% glue on both sides.
+% that the edge reaches is read in turn, and one that has no class of its own
+% does not hide the text behind it: the frame \pkg{xcolor} draws over a box as
+% a second, classless box no longer hides the content it encloses. A paragraph
+% line begins with the marker \TeX\ writes for its paragraph settings, which is
+% passed over in the same way, so the first character of a \cs{parbox} reaches
+% the left edge, while \cs{parfillskip} ends the line and leaves the right edge
+% without text. A box that holds no text and has ink is Latin material, so a
+% rule box takes the glue on both sides.
 %
 % \begin{environment}{CJKfilltwosides}
 %   Set the lines in a \env{minipage} whose lines are justified
@@ -2666,6 +2680,9 @@ a’a\quad 不亦说乎！
 % \cs{textsuperscript} and \cs{textsubscript} set their content in one.
 % No glue is inserted beside such a box, and it offers no break before it,
 % so its content never starts a line of its own.
+% A framed box is not such a mark: \cs{fbox}, \cs{framebox} and \cs{fcolorbox}
+% lower a vertical frame around their content, so the box takes the glue of the
+% text it holds on both sides, and offers the break that glue gives.
 %
 % \begin{keyval}
 %   \item[\keys{CheckSingle}]\val{\TFF}
@@ -6061,6 +6078,7 @@ local HLIST           = node.id("hlist")
 local VLIST           = node.id("vlist")
 local KERN            = node.id("kern")
 local RULE            = node.id("rule")
+local LOCAL_PAR       = node.id("local_par")
 local LIGATURE        = node.id("ligature")
 local PENALTY         = node.id("penalty")
 local MATH            = node.id("math")
@@ -7307,6 +7325,11 @@ end
 %   so the rule that underlines a \tn{underline} no longer hides the text above
 %   it: the underlined Latin run takes the \keys{CJKecglue} on both of its
 %   sides, like the run a \tn{mbox} or \cs{CJKunderline} holds.}
+% \changes{v0.0.5}{2026/11/22}{A box the edge holds does not hide the text
+%   behind it when that box has no class of its own, and a paragraph line is
+%   read past its \texttt{local\_par} marker: \tn{parbox} takes the
+%   \keys{CJKecglue} at the edge its first character reaches, while its last
+%   edge stays empty, because \tn{parfillskip} does not let the text reach it.}
 % Return the class at both edges of a node. A box carries the class of the text
 % nearest its edge, so a kern, a spacing glue, or a rule between the last
 % character and the edge does not hide it; a filling glue does, since the text
@@ -7317,6 +7340,14 @@ end
 % and formulas count as Latin. A vertical box is read the same way, whichever
 % of its edges faces the text: an underline is a vertical box whose last node
 % is the rule, and the text it lies under is what the edge holds.
+% A box the edge reaches is read in turn, and when it has no class itself the
+% text behind it is the text nearest the edge: the frame that \pkg{xcolor}
+% draws over a box as a second, classless sibling does not hide the content it
+% encloses. A paragraph line begins with the marker \TeX\ writes for its
+% paragraph settings, \texttt{local\_par}, which is passed over in the same
+% way, so the first character of a \cs{parbox} reaches the left edge; the line
+% ends in \cs{parfillskip}, a filling glue, so the text does not reach the
+% right edge and the box takes no glue there.
 % \begin{macro}[int]{transparent_node}
 % Whether a node carries neither text nor advance, so that the text reaches
 % the edge past it. A kern of no width, such as the italic correction that
@@ -7364,6 +7395,11 @@ end
 %   only raised or lowered boxes, is attached like a shifted box: the mark of
 %   \tn{footnote} and \tn{raisebox} therefore take no glue on either side, as
 %   the box \tn{textsuperscript} builds already did.}
+% \changes{v0.0.5}{2026/11/22}{A framed box is an object of the line and not a
+%   mark: \tn{fbox}, \tn{framebox} and \tn{fcolorbox} lower a vertical box
+%   around their content, so they take the \keys{CJKecglue} on both sides like
+%   any other box, while the mark of \tn{raisebox} or a \tn{footnote} still
+%   takes none.}
 % Whether a box belongs to the character in front of it. \TeX\ writes the
 % shift of a raised or lowered box into the box node, and
 % \cs{textsuperscript} and \cs{textsubscript} build one, so the baseline of
@@ -7373,6 +7409,13 @@ end
 % everything it holds is raised or lowered.  Such a box belongs to the
 % character in front of it just the same, because it holds no text on the
 % baseline its own shift speaks of.
+% A wrapped mark is a line of text: the box that \cs{textsuperscript} or
+% \tn{raisebox} shifts holds characters, and so does a footnote mark. A frame
+% is not, because what it shifts is a vertical box: \tn{fbox}, \tn{framebox} and
+% \tn{fcolorbox} lower the frame so that its content stands on the baseline, and
+% a box that wraps a vertical list is a block of the line rather than a mark of
+% the character in front of it. Such a box keeps its boundary glue, and the
+% break that glue offers, which is what \pkg{xeCJK} gives a frame as well.
 %    \begin{macrocode}
 local function raised_only (list)
   local found = false
@@ -7382,6 +7425,8 @@ local function raised_only (list)
       return false
     elseif n.id == HLIST or n.id == VLIST then
       if n.shift == 0 and not raised_only(n.head) then
+        return false
+      elseif n.shift ~= 0 and n.head and n.head.id == VLIST then
         return false
       end
       found = true
@@ -7463,6 +7508,7 @@ end
 
 local function edge_transparent (n)
   return transparent_node(n) or n.id == KERN or n.id == RULE
+      or n.id == LOCAL_PAR
       or (n.id == GLUE and not filling_glue(n))
 end
 
@@ -7486,10 +7532,11 @@ local function first_box_class (list)
   while n do
     if n.id == GLYPH then
       return class_of_char(n.char, settings_of(n), n.font)
-    elseif n.id == HLIST then
-      return first_box_class(n.head)
-    elseif n.id == VLIST then
-      return first_box_class(n.head)
+    elseif n.id == HLIST or n.id == VLIST then
+      local c = first_box_class(n.head)
+      if c then
+        return c
+      end
     elseif n.id == MATH then
       return "LATIN"
     elseif filling_glue(n) then
@@ -7508,10 +7555,11 @@ local function last_box_class (list)
   while n do
     if n.id == GLYPH then
       last = class_of_char(n.char, settings_of(n), n.font)
-    elseif n.id == HLIST then
-      last = last_box_class(n.head)
-    elseif n.id == VLIST then
-      last = last_box_class(n.head)
+    elseif n.id == HLIST or n.id == VLIST then
+      local c = last_box_class(n.head)
+      if c then
+        last = c
+      end
     elseif n.id == MATH then
       last = "LATIN"
     elseif filling_glue(n) then
