@@ -885,6 +885,8 @@ $ 天地玄黄 $ and 天地玄黄
 % 标尺不遮住它盖着的文字，所以这条文字两侧都加胶。
 % 盒边上的另一个盒子自己读不出类别时，它后面的文字就是最靠近这条边的文字：
 % \pkg{xcolor} 在盒外另画的边框不遮住盒内的文字。
+% 彩色盒子的底色是它内容的背景，胶加在底色之前，
+% 所以底色只覆盖盒内的文字与留白，两侧的中西文胶都在底色之外。
 % 段落行的行首有一个记录段落设置的标记，它同样不遮住行首的字，
 % 所以 \cs{parbox} 的左边缘按其中第一行文字计；
 % 行末是 \cs{parfillskip}，文字到不了右边缘，那里不加胶。
@@ -2317,12 +2319,16 @@ $ 天地玄黄 $ and 天地玄黄
 % not hide that text and the underlined run takes the glue on both sides. A box
 % that the edge reaches is read in turn, and one that has no class of its own
 % does not hide the text behind it: the frame \pkg{xcolor} draws over a box as
-% a second, classless box no longer hides the content it encloses. A paragraph
-% line begins with the marker \TeX\ writes for its paragraph settings, which is
-% passed over in the same way, so the first character of a \cs{parbox} reaches
-% the left edge, while \cs{parfillskip} ends the line and leaves the right edge
-% without text. A box that holds no text and has ink is Latin material, so a
-% rule box takes the glue on both sides.
+% a second, classless box does not hide the content it encloses.
+% The background a colour box draws is part of that box: the glue stands in
+% front of the background, so the highlight covers the box and its padding and
+% both inter-character glues stay outside it.
+% A paragraph line begins with the marker \TeX\ writes for its paragraph
+% settings, which is passed over in the same way, so the first character of a
+% \cs{parbox} reaches the left edge, while \cs{parfillskip} ends the line and
+% leaves the right edge without text.
+% A box that holds no text and has ink is Latin material, so a rule box takes
+% the glue on both sides.
 %
 % \begin{environment}{CJKfilltwosides}
 %   Set the lines in a \env{minipage} whose lines are justified
@@ -8038,6 +8044,10 @@ end
 %   \keys{CJKecglue} between itself and the CJK character that follows it, so
 %   the outside of a pair of brackets is spaced on both sides while the pair
 %   still hugs the text it encloses.}
+% \changes{v0.0.5}{2026/11/22}{The glue stands in front of the background a
+%   colour box draws: the highlight of \tn{colorbox} covers the box it was
+%   asked to colour and not the space between the two characters, so it stops
+%   the same distance from the text on both sides.}
 % Insert the glue \cs{boundary_spec} gives, and the kern that spaces two
 % adjacent punctuation marks.
 % The kern is the one \cs{pair_kern} gives, and the glue follows it, so the
@@ -8049,7 +8059,49 @@ end
 % whatsit or penalty.
 % The glue and the kern keep only the attributes both characters carry, so a
 % decoration ends at the last character it covers rather than one glue further.
+% The node the glue goes in front of is the character behind the boundary,
+% unless that character is drawn over a background: \tn{colorbox} puts a box
+% of no advance in front of its content, holding a rule of the height, depth,
+% and width of that content, and the ink of such a background has to move with
+% the text it covers.  The glue therefore goes in front of the background, and
+% the highlight stops at the content on both sides; a box of no advance that
+% draws its own ink, such as \tn{rlap}, is not a background and stays where the
+% document put it.
+% The nodes are read forward from the character in front, because the pass
+% that removes what shaping left of a joiner or a variation selector relinks
+% the list without touching the backward links.
 %    \begin{macrocode}
+local function background_of (n, cur)
+  if not cur or (cur.id ~= HLIST and cur.id ~= VLIST) then
+    return false
+  end
+  if (n.id ~= HLIST and n.id ~= VLIST) or box_visible(n)
+     or n.height ~= cur.height or n.depth ~= cur.depth then
+    return false
+  end
+  local m = n.head
+  while m do
+    if m.id == RULE and m.width == cur.width then
+      return true
+    end
+    m = m.next
+  end
+  return false
+end
+
+local function boundary_start (prev_visible, prev, cur)
+  local before = prev_visible or prev
+  local n      = before and before.next or nil
+  while n and n ~= cur do
+    if background_of(n, cur) then
+      return n, before
+    end
+    before = n
+    n      = n.next
+  end
+  return cur, prev
+end
+
 local function insert_boundary_glue (head, prev, prev_visible, prev_end,
                                     cur, cur_start, settings)
   if not prev_end or not cur_start then
@@ -8063,18 +8115,19 @@ local function insert_boundary_glue (head, prev, prev_visible, prev_end,
   local cur_mark  = cur_punct and cur.id == GLYPH
       and not half_mark(cur_punct)
   local spec = boundary_spec(prev_visible, prev_end, cur, cur_start, settings)
+  local start, before = boundary_start(prev_visible, prev, cur)
 
   if prev_mark and cur_mark then
     local kern = pair_kern(prev_visible, cur, settings, style)
     if kern and kern ~= 0 then
       local k = make_kern(kern, prev_visible or prev, cur)
       local g = spec and make_glue(spec, prev_visible or prev, cur) or nil
-      k.next  = g or cur
+      k.next  = g or start
       if g then
-        g.next = cur
+        g.next = start
       end
-      if prev then
-        prev.next = k
+      if before then
+        before.next = k
       else
         head = k
       end
@@ -8089,9 +8142,9 @@ local function insert_boundary_glue (head, prev, prev_visible, prev_end,
   if not g then
     return head
   end
-  g.next = cur
-  if prev then
-    prev.next = g
+  g.next = start
+  if before then
+    before.next = g
   else
     head = g
   end

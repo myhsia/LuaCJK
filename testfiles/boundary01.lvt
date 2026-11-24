@@ -26,6 +26,31 @@
   }%
 }
 
+% The kinds of the nodes of a box, one letter each.
+\directlua{
+  function reportkinds (n)
+    local kinds = {}
+    kinds[node.id("glyph")]   = "g"
+    kinds[node.id("glue")]    = "u"
+    kinds[node.id("kern")]    = "k"
+    kinds[node.id("penalty")] = "p"
+    kinds[node.id("disc")]    = "d"
+    kinds[node.id("hlist")]   = "b"
+    kinds[node.id("vlist")]   = "b"
+    local cur, out, i = tex.box[n].head, {}, 0
+    while cur do
+      local kind = kinds[cur.id]
+      if kind then
+        i = i + 1
+        out[i] = kind
+      end
+      cur = cur.next
+    end
+    texio.write_nl("term and log", "LIST: " .. table.concat(out, " "))
+  end
+}
+\def\report#1{\directlua{reportkinds(\number#1)}}
+
 % Allocated rather than numbered: box 10 is \tn{voidb@x}, and \tn{leavevmode}
 % unpacks that register into the list.
 \newbox\hfillboldbox
@@ -301,6 +326,13 @@
   \setbox0=\hbox{\parbox{2em}{abc}文}
   \setbox4=\hbox{文}
   \TYPE{last: \the\dimexpr\wd0-\wd2-\wd4\relax}
+}
+
+\TEST{a colour box keeps its background out of the glue}{
+  \setbox0=\hbox{中\colorbox{yellow}{$x$}}
+  \report0
+  \setbox0=\hbox{中\rlap{*}A}
+  \report0
 }
 
 \END

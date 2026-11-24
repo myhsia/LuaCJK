@@ -125,7 +125,12 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    no class itself the text behind it is the text nearest the edge: the frame
    `xcolor` draws over a box as a second, classless sibling does not hide the
    content it encloses, so `\fbox`, `\framebox`, `\fcolorbox` and `\colorbox`
-   all take the glue on both sides (`boundary01`).  A paragraph line begins
+   all take the glue on both sides (`boundary01`).  The background a colour box
+   draws is part of the box it colours: it is a zero-advance box holding a rule
+   of the height, depth, and width of that box, and `boundary_start` puts the
+   glue in front of it, so the highlight covers the content and its padding and
+   both glues stay outside it, while an `\rlap` overlay, which draws its own
+   ink, stays where the document put it (`boundary01`).  A paragraph line begins
    with the `local_par` marker, which is passed over the same way, so the first
    character of a `\parbox` reaches the left edge and takes the glue there,
    while `\parfillskip` leaves the right edge without text (`boundary01`).  The
