@@ -1,6 +1,6 @@
 # LuaCJK
 
-A Chinese typesetting package for the LuaTeX engine, built on node callbacks.
+A CJK typesetting package for the LuaTeX engine, built on node callbacks.
 Everything ships from the single source `LuaCJK.dtx`: three LaTeX packages (`LuaCJK`, `LuaCJKfntef`, `LuaCJK-listings`),
 the `ctex` engine file `ctex-engine-luacjk.def`, three Lua modules, the manual
 `LuaCJK.pdf`, and `README.md`. `../ctex-kit` is read only, by
@@ -31,6 +31,11 @@ family and Zhuque Fangsong for the monospaced text and the fangsong family;
 both come from the `lxgw-fonts` TeX Live package. The tests keep Fandol,
 except the two halfwidth-mark tests of `kinsoku01`, which take LXGW WenKai
 because Fandol holds no halfwidth punctuation.
+The monospaced family falls back to Noto Serif CJK SC for a character Zhuque
+Fangsong does not hold — the Hangul of the introduction demo is the one case —
+which is why the driver passes `AutoFallBack = true` to LuaCJK: a `codemo`
+sets its source panel by re-reading the file in the monospaced family, so the
+panel needs the glyph as much as the result does.
 The manual is itself a `ctex` document: its driver loads `ctex` with
 `engine = luacjk`, `fontset = fandol` and `linespread = 1`, so LuaCJK arrives
 through the engine file and the prose takes `ctex`'s glue defaults, which is why

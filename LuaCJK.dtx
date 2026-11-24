@@ -48,7 +48,8 @@
 The `LuaCJK` Package
 ====================
 
-The `LuaCJK` package provides Chinese typesetting for the LuaTeX engine.
+The `LuaCJK` package typesets Chinese, Japanese, and Korean (CJK) with the
+LuaTeX engine.
 
 It provides
 - A CJK font family layer, with sub-blocks, fallback fonts, the Fandol
@@ -151,6 +152,7 @@ The Current Maintainer of this work is **Mingyu Xia**.
 %
 %<*driver>
 \DocumentMetadata{tagging = on, pdfversion = 1.7, lang = zh-CN}
+\PassOptionsToPackage{AutoFallBack = true}{LuaCJK}
 \documentclass[11pt, letterpaper]{l3doc}
 \setlength{\emergencystretch}{3em}
 \usepackage{latex-lab-testphase-l3doc}
@@ -206,6 +208,7 @@ The Current Maintainer of this work is **Mingyu Xia**.
       {LXGWZhuqueFangsong-Regular.ttf}
   }
 \LuaCJKdocsetup
+\setCJKfallbackfamilyfont{\CJKttdefault}{Noto Serif CJK SC}
 \AddToHook{env/codemo/after}{\LuaCJKdocsetup}
 \usepackage{LuaCJKfntef}
 \LuaCJKsetup{CJKmath = true, LatinPunct = true}
@@ -286,11 +289,11 @@ The Current Maintainer of this work is **Mingyu Xia**.
 % \maketitle
 %
 % \begin{abstract}
-%   \pkg{LuaCJK} 为 \LuaTeX\ 提供中文排版。
+%   \pkg{LuaCJK} 为 \LuaTeX\ 提供中日韩（CJK）文字的排版。
 %   它把当前的 CJK 字体记录在一个 \LuaTeX\ 属性里，
 %   并在文字定形之前把每个 CJK 字形放进该字体。
 %   \setlength \parindent {1.5em}\par
-%   \pkg{LuaCJK} provides Chinese typesetting for \LuaTeX.
+%   \pkg{LuaCJK} typesets Chinese, Japanese, and Korean (CJK) with \LuaTeX.
 %   It records the current CJK font in a \LuaTeX\ attribute
 %   and sets each CJK glyph in that font before the text is shaped.
 % \end{abstract}
@@ -304,12 +307,22 @@ The Current Maintainer of this work is **Mingyu Xia**.
 %
 % \section{简介}
 %
-% \pkg{LuaCJK} 是一个只用于 \LuaTeX\ 的中文排版宏包。它的主要接口是
+% \pkg{LuaCJK} 是一个只用于 \LuaTeX\ 的中日韩（CJK）排版宏包。它的主要接口是
 % \cs{setCJKmainfont}、\cs{setCJKsansfont}、\cs{setCJKmonofont}、
 % \cs{setCJKfamilyfont}、\cs{CJKfamily} 与 \cs{LuaCJKsetup}。
 %
 % 当前的 CJK 字体记录在一个 \LuaTeX\ 属性里，
 % 每个 CJK 字形在文字定形之前就放进该字体。
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+中文 日本語 한국어
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
 %
 % \section{加载}
 %
@@ -407,7 +420,7 @@ The Current Maintainer of this work is **Mingyu Xia**.
 % 主要的字体命令接受一个可选的 \pkg{fontspec} 选项列表。
 % 选项既可以写在字体名之前，也可以写在字体名之后。
 % 无论西文使用哪一种编码，CJK 字体都在 Unicode 编码下选取，
-% 所以用 \pkg{fontenc} 把西文设为 \texttt{T1} 之类的旧编码不会影响中文。
+% 所以用 \pkg{fontenc} 把西文设为 \texttt{T1} 之类的旧编码不会影响 CJK 字符。
 %
 % \begin{function}{\setCJKmainfont,\setCJKsansfont,\setCJKmonofont}
 %   \begin{syntax}
@@ -567,7 +580,7 @@ English 中文字体\\
 %   这条链按文字的字重、字形与字号解析，
 %   所以粗体里的字符取自后备字体的粗体字面，
 %   放大后的字符取自对应字号的字面。
-%   打开 \keys{CJKmath} 时，排在数学模式里的汉字也走同一条链：
+%   打开 \keys{CJKmath} 时，排在数学模式里的 CJK 字符也走同一条链：
 %   列表取自负则这个数学字体的 CJK 字族，字号取数学样式的字号。
 % \end{function}
 %
@@ -717,10 +730,10 @@ English 中文字体
 %</example>
 % \fi
 %
-% \subsection{数学模式中的汉字}
+% \subsection{数学模式中的 CJK 字符}
 %
 % \begin{keyval}
-%   \item[\keys{CJKmath}]\val{\TFF}: 是否允许在数学模式里直接输入汉字。
+%   \item[\keys{CJKmath}]\val{\TFF}: 是否允许在数学模式里直接输入 CJK 字符。
 %   打开时，这样的字符用它自己的一个数学字族的 CJK 字体排出，
 %   而不是到数学字体里去找，
 %   所以上标或分数里的字符会取那个数学样式的尺寸。
@@ -729,7 +742,7 @@ English 中文字体
 %   此时字符取数学版本（见 \tn{mathversion}）的字体：
 %   在 \texttt{bold} 版本里用字族的粗体，字族没有粗体时保持正体；
 %   字形取字族的正体，不随周围的正文。
-%   不打开它时，数学模式里的汉字会到数学字体里去找，通常就此消失，
+%   不打开它时，数学模式里的 CJK 字符会到数学字体里去找，通常就此消失，
 %   所以这种情况下 \pkg{LuaCJK} 给出一次性的警告。
 % \end{keyval}
 %
@@ -748,7 +761,7 @@ English 中文字体
 % 这样 \TeX\ 就能取它的文本、脚本或脚脚本尺寸。
 % 字族按数学版本选字体：\texttt{bold} 版本用 \cs{bfdefault}，其余版本用
 % \cs{mddefault}，字形的形状取 \cs{shapedefault}。
-% 所以 \cs{boldmath} 会把公式里的汉字换成粗体，而且只作用于当前分组；
+% 所以 \cs{boldmath} 会把公式里的 CJK 字符换成粗体，而且只作用于当前分组；
 % 字族没有粗体时保持正体，也不报警告。
 % 字族号取自 240--255 这一段，是 \LuaTeX\ 允许的 256 个字族里的最后十六个，
 % 正常文档不会用到那里；数学里用到的每一个后备字体也各占一个号，
@@ -759,7 +772,7 @@ English 中文字体
 % 所以含有 \tn{text} 的公式与不含它的公式一样大。
 % 数学参数不取自 CJK 字体，因为它没有
 % \texttt{MathConstants} 表：这些参数仍然是文档数学字体的，
-% 这就是为什么两个汉字组成的分数用的是周围数学的横线与间距。
+% 这就是为什么两个 CJK 字符组成的分数用的是周围数学的横线与间距。
 %
 % \iffalse
 %<*example>
@@ -789,7 +802,7 @@ $ 天地玄黄 $ and 天地玄黄
 %   初始值是 \texttt{0.3333em plus 0.1667em minus 0.1111em}，
 %   它同样跟随字号，字号取自与它相邻的 CJK 字符而不是拉丁文本：
 %   拉丁文本用 \cs{scriptsize} 或 \cs{large} 排时，
-%   两侧的间距仍是周围汉字的间距。
+%   两侧的间距仍是周围 CJK 字符的间距。
 %   \item[\keys{CJKspace}]\val{\TFF}: 是否保留源文件中 CJK 字符之间的空格。
 %   不保留时，空格换成字符之间的胶，断行与伸缩都随之保留。
 %   用 |\ | 或 \tn{nobreakspace} 写出的空格不是源文件中的空格，
@@ -827,7 +840,7 @@ $ 天地玄黄 $ and 天地玄黄
 %   列出的字符两侧都不加胶，
 %   这样拉丁文字中的连字符或斜线不会把周围的文字拉开。
 %   初始列表是 |/| 与 |-|。这个设置是全局的。
-%   反斜线不在列表里：它紧邻汉字时通常是排出的命令名的开头，
+%   反斜线不在列表里：它紧邻 CJK 字符时通常是排出的命令名的开头，
 %   那就该像其他拉丁字符一样加胶，而不像路径中的分隔符那样不加。
 % \end{function}
 %
@@ -1329,7 +1342,7 @@ abc汉字abc
 %   暂停只管材料自己的内部：材料里的字符不再被压缩、悬挂，
 %   也不再加字间胶，而材料与周围文字之间的边界照常加胶，
 %   按两侧字符的类别决定，与同样一串文字用文本字体排出时相同。
-%   所以紧挨着汉字的 \tn{verb} 与 \tn{texttt} 留出同样的中西文胶，
+%   所以紧挨着 CJK 字符的 \tn{verb} 与 \tn{texttt} 留出同样的中西文胶，
 %   紧挨着被暂停材料的标点仍按标点处理，断行机会也照旧。
 %   无论这个设置取什么值，\cs{LuaCJKVerbAddon} 都会在它所在的分组里
 %   把调整重新打开。
@@ -1500,7 +1513,7 @@ abc汉字abc
 % \begin{function}{\LuaCJKemdescent}
 %   当前字体 em 盒的深度，可以当作长度使用。
 %   CJK 的 em 盒是一个 em 的正方形，所以把高度为 \texttt{1em} 的对象
-%   放在这个深度上，就正好覆盖一个汉字所占的区域；
+%   放在这个深度上，就正好覆盖一个 CJK 字符所占的区域；
 %   字体没有 OpenType 度量时退回 \texttt{.12em}。
 % \end{function}
 %
@@ -1671,12 +1684,23 @@ abc汉字abc
 %
 % \section{Introduction}
 %
-% \pkg{LuaCJK} is a \LuaTeX-only package for Chinese typesetting. Its main
-% interface is \cs{setCJKmainfont}, \cs{setCJKsansfont}, \cs{setCJKmonofont},
-% \cs{setCJKfamilyfont}, \cs{CJKfamily}, and \cs{LuaCJKsetup}.
+% \pkg{LuaCJK} is a \LuaTeX-only package for typesetting Chinese, Japanese,
+% and Korean (CJK). Its main interface is \cs{setCJKmainfont},
+% \cs{setCJKsansfont}, \cs{setCJKmonofont}, \cs{setCJKfamilyfont},
+% \cs{CJKfamily}, and \cs{LuaCJKsetup}.
 %
 % The current CJK font is recorded in a \LuaTeX\ attribute,
 % and each CJK glyph is set in that font before the text is shaped.
+%
+% \iffalse
+%<*example>
+% \fi
+\begin{codemo}
+中文 日本語 한국어
+\end{codemo}
+% \iffalse
+%</example>
+% \fi
 %
 % \section{Loading}
 %

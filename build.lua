@@ -15,7 +15,11 @@ maintainid          = "myhsia"
 email               = "myhsia@outlook.com"
 repository          = "https://github.com/" .. maintainid .. "/" .. module
 summary             = "A LuaTeX CJK typesetting package"
-description         = "LuaCJK provides Chinese typesetting for the LuaTeX engine."
+description         = "LuaCJK is a package for typesetting documents in " ..
+                      "Chinese, Japanese or Korean with LuaTeX. It provides " ..
+                      "separate font families for CJK and Latin scripts, " ..
+                      "CJK-specific glue, punctuation compression and " ..
+                      "line-breaking prohibitions, and tagged-PDF output."
 
 --[==========================================================================[--
     Configuration: Check, Tag, Pack, Upload      Do NOT Modify if Unnecessary
@@ -164,7 +168,7 @@ uploadconfig        = {
   repository   = repository,
   bugtracker   = repository .. "/issues",
   development  = "https://github.com/" .. maintainid,
-  topic        = {"chinese", "luatex", "tagged-pdf"},
+  topic        = {"chinese", "japanese", "korean", "luatex", "tagged-pdf"},
   note         = slurp("CTAN-NOTE.md"),
   announcement = extract_changes.announcement{
     changelog = readfile("CHANGELOG.md"),
