@@ -1,7 +1,7 @@
 \input{regression-test}
 
 \documentclass{article}
-\usepackage[LoadFandol]{LuaCJK}
+\usepackage[LoadLXGW]{LuaCJK}
 \usepackage{pifont}
 
 % Print the font and the code point of every glyph in a box, in order, so that

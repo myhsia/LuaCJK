@@ -2,12 +2,12 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
-\setCJKfamilyfont{high}{FandolKai-Regular.otf}[Baseline = 0.3em]
-\setCJKfamilyfont{low}{FandolHei-Regular.otf}[Baseline = -1mm]
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
+\setCJKfamilyfont{high}{LXGWWenKaiGBLite-Regular.ttf}[Baseline = 0.3em]
+\setCJKfamilyfont{low}{LXGWNeoXiHei.ttf}[Baseline = -1mm]
 \setCJKfamilyfont{fb}{TeX Gyre Pagella}
-\setCJKfallbackfamilyfont{fb}{FandolFang-Regular.otf}[Baseline = 0.1em]
-\setCJKfamilyfont{pm}{FandolFang-Regular.otf}[Baseline = 0.25em]
+\setCJKfallbackfamilyfont{fb}{LXGWZhuqueFangsong-Regular.ttf}[Baseline = 0.1em]
+\setCJKfamilyfont{pm}{LXGWZhuqueFangsong-Regular.ttf}[Baseline = 0.25em]
 
 \def\psname{%
   \directlua{
@@ -88,7 +88,7 @@
 
 \TEST{Baseline survives addCJKfontfeatures}{
   \begingroup
-    \setCJKfamilyfont{addf}{FandolSong-Regular.otf}[Baseline = 0.2em]
+    \setCJKfamilyfont{addf}{LXGWNeoZhiSong.ttf}[Baseline = 0.2em]
     \CJKfamily{addf}
     \setbox0=\hbox{中}
     \psname
@@ -143,7 +143,7 @@
 }
 
 \TEST{a Baseline in a group shifts only that group}{
-  \setbox0=\hbox{甲{\CJKfontspec[Baseline = 5pt]{FandolSong-Regular.otf}乙}丙}
+  \setbox0=\hbox{甲{\CJKfontspec[Baseline = 5pt]{LXGWNeoZhiSong.ttf}乙}丙}
   \psall
 }
 

@@ -7,4 +7,4 @@ hard l3experimental
 soft listings
 soft fancyvrb
 soft unicode-data
-soft fandol
+soft lxgw-fonts

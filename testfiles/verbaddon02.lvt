@@ -3,7 +3,7 @@
 \documentclass{article}
 \usepackage{LuaCJK}
 \usepackage{fancyvrb}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 
 % fancyvrb sets every line into \hbox to \linewidth, so the natural width of
 % a line is taken where fancyvrb formats it.  A Verbatim environment cannot sit

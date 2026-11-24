@@ -1,7 +1,7 @@
 \input{regression-test}
 
 \documentclass{article}
-\usepackage[LoadFandol = true]{LuaCJK}
+\usepackage[LoadLXGW = true]{LuaCJK}
 
 \def\psname#1{%
   \directlua{
@@ -21,37 +21,37 @@
 
 \START
 
-\TEST{the main CJK font is Fandol Song}{
+\TEST{the main CJK font is LXGW Neo ZhiSong}{
   \setbox0=\hbox{中}
   \psname{0}
 }
 
-\TEST{the bold shape is Fandol Song Bold}{
+\TEST{the bold shape is faked in Neo ZhiSong}{
   \setbox0=\hbox{\bfseries 中}
   \psname{0}
 }
 
-\TEST{the heiti shortcut is Fandol Hei}{
+\TEST{the heiti shortcut is LXGW Neo XiHei}{
   \setbox2=\hbox{\heiti 中}
   \psname{2}
 }
 
-\TEST{the kaiti shortcut is Fandol Kai}{
+\TEST{the kaiti shortcut is LXGW WenKai}{
   \setbox4=\hbox{\kaishu 中}
   \psname{4}
 }
 
-\TEST{the fangsong shortcut is Fandol Fang}{
+\TEST{the fangsong shortcut is Zhuque Fangsong}{
   \setbox6=\hbox{\fangsong 中}
   \psname{6}
 }
 
-\TEST{the italic shape is Fandol Kai}{
+\TEST{the italic shape is LXGW WenKai}{
   \setbox8=\hbox{\itshape 中}
   \psname{8}
 }
 
-\TEST{emph sets the CJK text in Fandol Kai}{
+\TEST{emph sets the CJK text in LXGW WenKai}{
   \setbox10=\hbox{\emph{中}}
   \psname{10}
 }
@@ -61,7 +61,12 @@
   \psname{12}
 }
 
-\TEST{the heiti family has no italic face}{
+\TEST{the bold italic shape is ZhenKai Slab}{
+  \setbox16=\hbox{\songti\bfseries\itshape 中}
+  \psname{16}
+}
+
+\TEST{the heiti family takes fake slant}{
   \setbox14=\hbox{\heiti\itshape 中}
   \psname{14}
 }

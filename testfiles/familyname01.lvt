@@ -2,9 +2,9 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
-\setCJKsansfont{FandolHei-Regular.otf}
-\setCJKmonofont{FandolFang-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
+\setCJKsansfont{LXGWNeoXiHei.ttf}
+\setCJKmonofont{LXGWZhuqueFangsong-Regular.ttf}
 
 \def\psname{%
   \directlua{
@@ -49,7 +49,7 @@
 }
 
 \TEST{a family declared under the name of a font command}{
-  \setCJKfamilyfont{\CJKsfdefault}{FandolKai-Regular.otf}
+  \setCJKfamilyfont{\CJKsfdefault}{LXGWWenKaiGBLite-Regular.ttf}
   \setbox0=\hbox{\sffamily 中}
   \psname
 }

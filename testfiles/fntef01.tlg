@@ -6,7 +6,7 @@ TEST 1: underline keeps the text width
 Lua-only attribute luaul1 = ...
 underlined: 62.82pt
 plain: 62.82pt
-depth difference: 0.77997pt
+depth difference: 1.68219pt
 ============================================================
 ============================================================
 TEST 2: underline accepts the star and the dash
@@ -38,19 +38,19 @@ plain: 20.0pt
 TEST 6: effects in a paragraph
 ============================================================
 Overfull \hbox (5.0pt too wide) in paragraph at lines ...
-[]\TU/FandolSong-Regular.otf(0)/m/n/10 中 文 中
-\hbox(7.78+1.62)x40.0, direction TLT
+[]\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中 文 中
+\hbox(8.2666+0.71777)x40.0, direction TLT
 .\localpar
 ..\localinterlinepenalty=0
 ..\localbrokenpenalty=0
 ..\localleftbox=null
 ..\localrightbox=null
 .\hbox(0.0+0.0)x15.0, direction TLT
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 文
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 文
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 .\glue(\rightskip) 0.0
 LINES 3
 ============================================================
@@ -123,19 +123,19 @@ LEADER width=26214 height=154337 depth=-128123
 ============================================================
 TEST 17: the em descent is the font's em box and scales
 ============================================================
-descent: 2.0pt
-descent: 4.0pt
+descent: 1.20117pt
+descent: 2.40234pt
 ============================================================
 ============================================================
 TEST 18: a hidden paragraph keeps the lines of the visible one
 ============================================================
-hidden: 60.0pt43.78pt
-shown: 60.0pt43.78pt
+hidden: 60.0pt44.28125pt
+shown: 60.0pt44.28125pt
 LINES 4 GLYPHS 0
 ============================================================
 ============================================================
 TEST 19: a highlight on the em box is a square
 ============================================================
 span: 10.0pt
-RULE w=655360 h+d=655360 dp=131072
+RULE w=655360 h+d=655360 dp=78720
 ============================================================

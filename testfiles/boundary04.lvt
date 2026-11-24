@@ -2,7 +2,7 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 \LuaCJKsetup{CJKglue = 10pt, CJKecglue = 5pt}
 
 % The kinds of the nodes of a box, one letter each.

@@ -7,7 +7,7 @@
 \usepackage{unicode-math}
 \setmathfont{TeX Gyre Pagella Math}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 \LuaCJKsetup{CJKmath = true}
 
 % Report the size of every CJK glyph of box 0, descending into boxes.

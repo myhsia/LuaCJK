@@ -9,7 +9,7 @@ PROBE 73:LMRoman10-Regular 116:LMRoman10-Regular 8217:LMRoman10-Regular 115:LMRo
 ============================================================
 TEST 2: by default the apostrophe belongs to CJK
 ============================================================
-width: 20.0pt
+width: 13.18848pt
 ============================================================
 ============================================================
 TEST 3: LatinPunct keeps it in the Latin font
@@ -19,20 +19,20 @@ width: 12.78pt
 ============================================================
 TEST 4: the option can be turned off again
 ============================================================
-width: 20.0pt
+width: 13.18848pt
 ============================================================
 ============================================================
 TEST 5: a class declaration overrides LatinPunct
 ============================================================
-width: 26.66595pt
+width: 19.85443pt
 ============================================================
 ============================================================
 TEST 6: the middle dot and the midline ellipsis belong to CJK
 ============================================================
+width: 12.37793pt
+PROBE 97:LMRoman10-Regular 183:LXGW Neo ZhiSong 97:LMRoman10-Regular
 width: 20.0pt
-PROBE 97:LMRoman10-Regular 183:FandolSong 97:LMRoman10-Regular
-width: 20.0pt
-PROBE 97:LMRoman10-Regular 8943:FandolSong 97:LMRoman10-Regular
+PROBE 97:LMRoman10-Regular 8943:LXGW Neo ZhiSong 97:LMRoman10-Regular
 ============================================================
 ============================================================
 TEST 7: LatinPunct keeps the middle dot in the Latin font

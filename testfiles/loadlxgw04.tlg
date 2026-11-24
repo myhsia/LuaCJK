@@ -9,10 +9,10 @@ Package LuaCJK Warning: The default CJK family `zhnonexistent' is not declared;
 ============================================================
 TEST 2: the main text takes the declared family
 ============================================================
-PSNAME FandolHei-Regular
+PSNAME LXGWNeoXiHei
 ============================================================
 ============================================================
 TEST 3: the declared family is the sans serif one
 ============================================================
-PSNAME FandolHei-Regular
+PSNAME LXGWNeoXiHei
 ============================================================

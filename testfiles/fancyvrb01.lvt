@@ -3,7 +3,7 @@
 \documentclass{article}
 \usepackage{LuaCJK}
 \usepackage{fancyvrb}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 \LuaCJKsetup{CJKglue = 10pt, CJKecglue = 5pt}
 
 % fancyvrb sets every line into \hbox to \linewidth, so the natural width of a

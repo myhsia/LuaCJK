@@ -2,8 +2,8 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
-\setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
+\setCJKfamilyfont{zhkai}{LXGWWenKaiGBLite-Regular.ttf}
 
 \def\psnamesof#1{%
   \directlua{
@@ -37,13 +37,13 @@
 
 \LuaCJKsetup{PunctFamily = zhhei}
 \setbox8=\hbox{字。}
-\setCJKfamilyfont{zhhei}{FandolHei-Regular.otf}
+\setCJKfamilyfont{zhhei}{LXGWNeoXiHei.ttf}
 \setbox10=\hbox{字。}
 
 % A one-off family keeps the name \CJKfontspec gives it while the font is
 % registered, so the text takes that font and only the mark takes the
 % punctuation family.
-\setbox12=\hbox{\CJKfontspec{FandolFang-Regular.otf}字。}
+\setbox12=\hbox{\CJKfontspec{LXGWZhuqueFangsong-Regular.ttf}字。}
 
 \TEST{by default punctuation uses the main CJK font}{
   \psnamesof{0}

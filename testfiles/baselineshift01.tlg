@@ -3,85 +3,85 @@ Don't change this file in any respect.
 ============================================================
 TEST 1: a font without the key keeps the baseline
 ============================================================
-PS FandolSong-Regular size 655360 yoffset 0
+PS LXGWNeoZhiSong size 655360 yoffset 0
 ============================================================
 ============================================================
 TEST 2: Baseline raises the glyphs
 ============================================================
-PS FandolKai-Regular size 655360 yoffset 196610
+PS LXGWWenKaiGBLite-Regular size 655360 yoffset 196610
 ============================================================
 ============================================================
 TEST 3: Baseline takes a negative value
 ============================================================
-PS FandolHei-Regular size 655360 yoffset -186467
+PS LXGWNeoXiHei size 655360 yoffset -186467
 ============================================================
 ============================================================
 TEST 4: an em follows the size
 ============================================================
-PS FandolKai-Regular size 786432 yoffset 235932
+PS LXGWWenKaiGBLite-Regular size 786432 yoffset 235932
 ============================================================
 ============================================================
 TEST 5: the offset is applied once per glyph
 ============================================================
-PS FandolKai-Regular size 655360 yoffset 196610
+PS LXGWWenKaiGBLite-Regular size 655360 yoffset 196610
 ============================================================
 ============================================================
 TEST 6: a fallback font keeps its own Baseline
 ============================================================
-PS FandolFang-Regular size 655360 yoffset 65540
+PS ZhuqueFangsong-Regular size 655360 yoffset 65540
 ============================================================
 ============================================================
 TEST 7: Baseline survives addCJKfontfeatures
 ============================================================
-PS FandolSong-Regular size 655360 yoffset 131070
+PS LXGWNeoZhiSong size 655360 yoffset 131070
 Package fontspec Info: 
-(fontspec)             FandolSong-Regular scale = 1.2.
+(fontspec)             LXGWNeoZhiSong scale = 1.2.
 Package fontspec Info: 
-(fontspec)             FandolSong-Regular scale = 1.2.
+(fontspec)             LXGWNeoZhiSong scale = 1.2.
 Package fontspec Info: 
-(fontspec)             Font family 'FandolSong-Regular.otf(1)' created for font 'FandolSong-Regular.otf' with options [Script=CJK,Scale = 1.2].
+(fontspec)             Font family 'LXGWNeoZhiSong.ttf(1)' created for font 'LXGWNeoZhiSong.ttf' with options [Script=CJK,Scale = 1.2].
 (fontspec)              
 (fontspec)              This font family consists of the following NFSS series/shapes:
 (fontspec)              
-(fontspec)             - 'normal' (m/n) with NFSS spec.: <->s*[1.2]"[FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;"
-LaTeX Font Info:    Font shape `TU/FandolSong-Regular.otf(1)/m/n' will be
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->s*[1.2]"[LXGWNeoZhiSong.ttf]:mode=node;script=hani;language=dflt;"
+LaTeX Font Info:    Font shape `TU/LXGWNeoZhiSong.ttf(1)/m/n' will be
 (Font)              scaled to size 11.99997pt on input line ....
-PS FandolSong-Regular size 786430 yoffset 157283
+PS LXGWNeoZhiSong size 786430 yoffset 157283
 ============================================================
 ============================================================
 TEST 8: PunctFamily takes the Baseline of its family
 ============================================================
-PS FandolFang-Regular size 655360 yoffset 163840
+PS ZhuqueFangsong-Regular size 655360 yoffset 163840
 ============================================================
 ============================================================
 TEST 9: the text and its punctuation take their own offsets
 ============================================================
-PS FandolHei-Regular size 655360 yoffset -186467
-PS FandolFang-Regular size 655360 yoffset 163840
+PS LXGWNeoXiHei size 655360 yoffset -186467
+PS ZhuqueFangsong-Regular size 655360 yoffset 163840
 ============================================================
 ============================================================
 TEST 10: the offset is applied once when both families are the same
 ============================================================
-PS FandolFang-Regular size 655360 yoffset 163840
-PS FandolFang-Regular size 655360 yoffset 163840
+PS ZhuqueFangsong-Regular size 655360 yoffset 163840
+PS ZhuqueFangsong-Regular size 655360 yoffset 163840
 ============================================================
 ============================================================
 TEST 11: two declarations of one font take turns at their own offset
 ============================================================
-PS FandolFang-Regular size 655360 yoffset 65540
-PS FandolFang-Regular size 655360 yoffset 163840
-PS FandolFang-Regular size 655360 yoffset 65540
+PS ZhuqueFangsong-Regular size 655360 yoffset 65540
+PS ZhuqueFangsong-Regular size 655360 yoffset 163840
+PS ZhuqueFangsong-Regular size 655360 yoffset 65540
 ============================================================
 ============================================================
 TEST 12: two declarations of one font keep their offsets in one box
 ============================================================
-PS FandolFang-Regular size 655360 yoffset 163840
-PS FandolFang-Regular size 655360 yoffset 65540
+PS ZhuqueFangsong-Regular size 655360 yoffset 163840
+PS ZhuqueFangsong-Regular size 655360 yoffset 65540
 ============================================================
 ============================================================
 TEST 13: a Baseline in a group shifts only that group
 ============================================================
-PS FandolSong-Regular size 655360 yoffset 0
-PS FandolSong-Regular size 655360 yoffset 327680
-PS FandolSong-Regular size 655360 yoffset 0
+PS LXGWNeoZhiSong size 655360 yoffset 0
+PS LXGWNeoZhiSong size 655360 yoffset 327680
+PS LXGWNeoZhiSong size 655360 yoffset 0
 ============================================================

@@ -3,15 +3,15 @@ Don't change this file in any respect.
 ============================================================
 TEST 1: a redefined familydefault sets the main text in its CJK family
 ============================================================
-PSNAME FandolHei-Regular
+PSNAME LXGWNeoXiHei
 ============================================================
 ============================================================
 TEST 2: a normalfont keeps that family
 ============================================================
-PSNAME FandolHei-Regular
+PSNAME LXGWNeoXiHei
 ============================================================
 ============================================================
 TEST 3: the roman family keeps the roman CJK family
 ============================================================
-PSNAME FandolSong-Regular
+PSNAME LXGWNeoZhiSong
 ============================================================

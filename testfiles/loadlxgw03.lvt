@@ -1,7 +1,7 @@
 \input{regression-test}
 
 \documentclass{article}
-\usepackage[LoadFandol = false]{LuaCJK}
+\usepackage[LoadLXGW = false]{LuaCJK}
 
 % The font a CJK glyph is set in, or that there is none.
 \def\psname#1{%
@@ -29,7 +29,7 @@
 
 \START
 
-\TEST{a document with no font and LoadFandol off is reported}{
+\TEST{a document with no font and LoadLXGW off is reported}{
   \checkdefault
 }
 

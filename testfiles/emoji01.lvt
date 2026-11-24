@@ -2,7 +2,7 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 \newfontfamily\emojifont[Renderer=HarfBuzz]{NotoColorEmoji.ttf}
 
 % Report how many glyphs box 0 holds. A joined emoji sequence is one glyph

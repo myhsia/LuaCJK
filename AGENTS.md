@@ -28,21 +28,24 @@ Python 3 is available when a task needs it. The manual sets its CJK text in
 Noto Serif/Sans CJK SC (a system font, installed by CI's Linux leg from
 `.github/font-urls.txt`), with LXGW WenKai GB Lite for the italic and the kai
 family and Zhuque Fangsong for the monospaced text and the fangsong family;
-both come from the `lxgw-fonts` TeX Live package. The tests keep Fandol,
-except the two halfwidth-mark tests of `kinsoku01`, which take LXGW WenKai
-because Fandol holds no halfwidth punctuation.
+both come from the `lxgw-fonts` TeX Live package. The tests set their text in
+the LXGW faces — Neo ZhiSong as the main font, with Neo XiHei, WenKai, and
+Zhuque Fangsong — from that same package, so no test depends on Fandol, which
+is obsoleted on CTAN.
 The monospaced family falls back to Noto Serif CJK SC for a character Zhuque
 Fangsong does not hold — the Hangul of the introduction demo is the one case —
 which is why the driver passes `AutoFallBack = true` to LuaCJK: a `codemo`
 sets its source panel by re-reading the file in the monospaced family, so the
 panel needs the glyph as much as the result does.
 The manual is itself a `ctex` document: its driver loads `ctex` with
-`engine = luacjk`, `fontset = fandol` and `linespread = 1`, so LuaCJK arrives
+`engine = luacjk`, `fontset = lxgw` and `linespread = 1`, so LuaCJK arrives
 through the engine file and the prose takes `ctex`'s glue defaults, which is why
 line breaking in the manual differs from a plain LuaCJK document.  The fontset
 is explicit because `ctex` would otherwise pick the system's Chinese fonts and
 stop on a `windows` runner, which has no SimSun, SimHei, KaiTi or FangSong;
-`\LuaCJKdocsetup` replaces all five families afterwards.
+`\LuaCJKdocsetup` replaces all five families afterwards.  Fandol was the same
+kind of explicit choice until CTAN obsoleted it; the lxgw fontset comes from
+`.github/tl_packages` like every other font the manual needs from TeX Live.
 Entry points:
 
 - `l3build` (unpack, check, save, doc, tag, changelog, ctan, upload) for the
@@ -59,7 +62,7 @@ Entry points:
 | `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.0.5`, `packtdszip = false` with `tdslocations` kept for `l3build install`, `ctanpkg`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
 | `testfiles/NN.lvt` + `.tlg` | 78 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
-| `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), and appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree |
+| `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree and moves every `fontset = fandol` in that tree to `fontset = lxgw` |
 | `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, collapses only ASCII whitespace, and names the forge repository of the release link with `--repo`.  It also exports `newest` and `announcement`, which `build.lua` calls to turn the newest section of that changelog into the CTAN announcement |
 | `scripts/check-extract-changes.sh` | regenerates the six changelogs of `../ctex-kit` with the Lua extractor and compares them byte for byte: exit 0 all identical, 1 a difference, 2 cannot run; `--quiet` prints only the differences |
 | `scripts/check-charclass.lua` | compares the `CJK_RANGES` table of the `dtx` with `Scripts.txt`: it reports every code point whose script is Han, Hiragana, Katakana, Bopomofo, or Hangul that the table does not list, merging the code points into ranges.  The combining Bopomofo tone marks U+02EA and U+02EB are allowed to stay outside the table.  Exit 0 covered, 1 missing (the ranges are printed), 2 cannot run |
@@ -191,6 +194,16 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   their block names, and let `cjkrange01` fix the result.  The table is a
   policy (shared punctuation is CJK, the combining Bopomofo marks are not),
   so the script reports only what a script-based classification would add.
+- **A font that joins two em dashes hands the package U+2E3A.**  `CJK_RANGES`
+  lists the two- and three-em dashes U+2E3A and U+2E3B as shared CJK
+  punctuation, `PUNCT_CLASS` gives them the `dash` group, and the listings
+  table repeats the two code points with the rest of the BMP; a joined pair
+  therefore keeps the prohibition of `NoBreakLongPunct` and takes no glue
+  inside the run, where an unclassified glyph would take the CJK/Latin glue
+  on both sides.  LXGW Neo ZhiSong and Noto Serif CJK both join `——`, so a
+  test that reads the pair as two marks declares its font with
+  `RawFeature = -ccmp`; `longpunct01` pins the two-mark rule and the joined
+  glyph beside it.
 - **A code point below U+0100 in a legacy font is a slot, not a character.**
   `LuaCJK.is_cjk` and `punct_class` take the glyph's font as a third argument
   and ask `is_slot`, which caches one answer per font id: `encodingbytes == 2`
@@ -361,9 +374,9 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   used in math is registered as a math family of its own and shares the
   240--255 range with the CJK families, so a document with many of each is
   closer to the sixteen-number limit than its CJK families alone suggest.
-- **`LoadFandol` is the base font set, not a per-family default.**  It is on by
+- **`LoadLXGW` is the base font set, not a per-family default.**  It is on by
   default and acts at `\begin{document}` only when the document declared no CJK
-  family at all, so a document that set a font of its own never gets a Fandol
+  family at all, so a document that set a font of its own never gets an LXGW
   face it did not ask for; that is xeCJK's rule, and the baselines of the four
   tests that expect `Unknown CJK family 'zhfs'` depend on it.  What a partial
   declaration needs is a diagnosis, not a merge: a document that declared some
@@ -371,15 +384,23 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   at all, so `\@@_ensure_family_default:` warns and uses `\CJKrmdefault` or the
   first declared family, and a document that declared nothing with the option
   off is warned about as well.  Its roman family carries
-  `FandolKai-Regular.otf` as the italic face, which is what gives `\emph` and
-  `\itshape` an effect on CJK text, and the family is declared twice — as the
-  main family and as `zhsong` — so both declarations carry the option; the
-  other three families have no italic face.
+  `LXGWWenKaiGBLite-Regular.ttf` as the italic face and
+  `LXGWZhenKaiSlabGB-Regular.ttf` as the bold italic, which is what gives
+  `\emph` and `\itshape` an effect on CJK text, and the family is declared
+  twice — as the main family and as `zhsong` — so both declarations carry the
+  option.  Neo ZhiSong, Neo XiHei, and Zhuque Fangsong have no bold face of
+  their own, so their declarations ask for `AutoFakeBold`; Neo XiHei and
+  Zhuque Fangsong take `AutoFakeSlant` too, and the WenKai family takes ZhenKai
+  Slab as its bold face.  Those are per-family options on the declaration, so
+  a document's `\LuaCJKsetup{AutoFakeBold = false}` does not switch them off.
+  LXGW is the base set because Fandol was obsoleted on CTAN; the four lxgw
+  files arrive with TeX Live's `lxgw-fonts`, the same package the manual
+  already used.
 - **The default family is selected when the document starts.**  The hook at
   `\begin{document}` settles `\CJKfamilydefault`: an untouched default follows
   `\familydefault` — `\CJKrmdefault`, `\CJKsfdefault`, or `\CJKttdefault` for
-  the matching main family, and `\CJKrmdefault` otherwise — `LoadFandol`
-  declares the Fandol faces when the preamble declared nothing, a default that
+  the matching main family, and `\CJKrmdefault` otherwise — `LoadLXGW`
+  declares the LXGW faces when the preamble declared nothing, a default that
   no family carries is replaced, and `\@@_reset_family:` then selects the
   surviving family.  Without that last step the main text kept whichever family
   the last `\setCJKfamilyfont` had switched to, while `\normalfont` already
@@ -455,7 +476,7 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   What shaping leaves of a joiner, a variation selector, or a CJK character
   the font does not have is removed by `drop_orphans` before the spacing pass;
   it consults `missing_chars`, filled by `pre_shaping`, so the box a document
-  with no CJK font shows stays (`loadfandol03`).  A luaotfload without the
+  with no CJK font shows stays (`loadlxgw03`).  A luaotfload without the
   callback keeps the previous path in full — `rewrite_fonts` through
   `copy_glyph` after shaping, and every zero-width character removed at the
   input — and no test reaches it, because a callback type cannot be taken out
@@ -525,7 +546,9 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   the last curve on the other axis.  Read three operands per curve, a mark
   whose charstring is drawn that way measured its neighbour's blank: the
   opening double quotation mark of FandolSong stood 1.8pt in the margin
-  while its font had 0.6em of blank.
+  while its font had 0.6em of blank.  The suite no longer sets its text in
+  Fandol, but the reader still serves the CFF fonts a document may name, and
+  the TrueType `glyf` branch beside it reads the ten-byte header's bbox.
 - **Suspension is the verbatim hook.**  `\LuaCJKdisable` and `\LuaCJKenable`
   set the `disabled` attribute, which every pass checks per node; `\verb`,
   `verbatim`, `fancyvrb`, and `lstlisting` are already wired to it. A new
@@ -964,7 +987,11 @@ opinion.
 - `bash scripts/ctex-subset.sh` must print `ctex subset: 21/21 passed`, every
   log must be free of `luatexja`, and the script additionally greps for the
   glue strings that prove the `ctex` option plumbing reached LuaCJK.  It is a
-  CI job only: it needs a `ctex` checkout and three minutes.
+  CI job only: it needs a `ctex` checkout and three minutes.  The 21 files name
+  `fontset = fandol` in their own source, so the script rewrites that option to
+  `fontset = lxgw` in the run directory before compiling; this repository
+  depends on `lxgw-fonts` and not on Fandol, and the substitution is the second
+  adaptation of that test tree, beside the appended engine option.
 - The `ctex` baselines cannot be compared: they were produced with LuaTeX-ja
   and describe a different line-breaking implementation, so the subset script
   only compiles the files and checks for the fallback. `ctex01.lvt` covers
@@ -1009,7 +1036,7 @@ requests. Two jobs, each on `ubuntu-latest`, `macos-latest`, and
   That leg alone downloads the Noto CJK collections listed in
   `.github/font-urls.txt` (cached under the file's hash, copied into the
   system font directory, then `fc-cache -f`), because the manual is their only
-  consumer and the tests keep Fandol.
+  consumer and the tests take their own faces from `lxgw-fonts`.
   The doc step does not trust latexmk's exit code: latexmk counts LuaTeX's
   `unreferenced destination` warning as a broken reference, and
   `latex-lab-testphase-l3doc` creates four such destinations for the name
@@ -1044,8 +1071,8 @@ same tooling; a local full run — the manual for a demo's appearance, or
 `l3build ctan` at release — gets the same ctex from an `l3build install` of that
 branch into `TEXMFHOME` (`~/Library/texmf` on this Mac), and the remaining
 parity risks are a missing or surplus entry in `.github/tl_packages` and the
-fonts the manual needs (Noto CJK from `.github/font-urls.txt`, the two LXGW
-faces from `lxgw-fonts`).
+fonts the manual needs (Noto CJK from `.github/font-urls.txt`, the LXGW faces
+from `lxgw-fonts`).
 
 A second workflow, `ctan.yaml`, is not a test: publishing a GitHub release
 starts it, and it publishes that release to CTAN.
@@ -1161,7 +1188,7 @@ GitHub's side, so nothing here repeats it.
   every open issue and only fills what is missing.
 - **The table reads the title, never the body.**  A body is the reporter's
   apparatus, and it is nearly identical across the reports of one reporter —
-  every issue here opens with `\usepackage[LoadFandol]{LuaCJK}` and
+  every issue here opens with `\usepackage{LuaCJK}` and
   `\setCJKmainfont{…}` — so a body scan labelled a question about `lstlisting`
   with `load` (#32) and a question about Japanese combining marks with `fonts`
   (#34).  The title is the part the reporter chose to name the defect with, and
@@ -1178,7 +1205,7 @@ GitHub's side, so nothing here repeats it.
   the command or environment it *fails on* is the subsystem.
 - A keyword rule names the *file* the fix touches, never the topic the report
   mentions.  `PunctWidth` is `punct` although the reporter passes it as an
-  option, and `LoadFandol` is `load` although it loads fonts, because that is
+  option, and `LoadLXGW` is `load` although it loads fonts, because that is
   where the change goes.  A font feature, and the interface that sets one
   (`\addCJKfontfeatures`, `CharacterWidth`, `hwid`), is `fonts` for the same
   reason, `\hfill` names the glue whose subtype the spacing pass decides, so

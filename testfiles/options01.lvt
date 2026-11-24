@@ -2,7 +2,7 @@
 
 \documentclass{article}
 \usepackage[PunctStyle = banjiao, CJKmath = true]{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 
 \def\probe{%
   \directlua{

@@ -2,7 +2,7 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 
 % The report walks the table itself, so a code point a later release adds or
 % drops shows up in the baseline.  The helper lives on a test-local table and
@@ -61,6 +61,7 @@
 
 \TEST{the shared punctuation and the dashes}{
   \punctblocks{2010-2030, 22E0-22F0}
+  \punctblocks{2E3A-2E3B}
 }
 
 \TEST{the CJK punctuation}{
@@ -76,7 +77,7 @@
 }
 
 \TEST{the small and vertical variants outside the CJK table keep no class}{
-  \punctof{0x2E3A, 0x16FE0, 0xFE10, 0xFE15, 0xFE17, 0xFE19}
+  \punctof{0x16FE0, 0xFE10, 0xFE15, 0xFE17, 0xFE19}
   \punctof{0xFE50, 0xFE52, 0xFE54, 0xFE69, 0xFE6A}
 }
 

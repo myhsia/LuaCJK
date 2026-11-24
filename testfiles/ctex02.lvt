@@ -1,6 +1,6 @@
 \input{regression-test}
 
-\documentclass[fontset = fandol, engine = luacjk]{ctexart}
+\documentclass[fontset = lxgw, engine = luacjk]{ctexart}
 
 \ExplSyntaxOn
 

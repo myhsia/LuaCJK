@@ -9,64 +9,64 @@ version: v0.0.5
 TEST 2: main CJK font
 ============================================================
 width: 10.0pt
-GLYPH 20013 FandolSong
+GLYPH 20013 LXGW Neo ZhiSong
 ============================================================
 ============================================================
 TEST 3: bold CJK font
 ============================================================
-LaTeX Font Info:    Font shape `TU/FandolSong-Regular.otf(1)/bx/n' in size <10> not available
-(Font)              Font shape `TU/FandolSong-Regular.otf(1)/b/n' tried instead on input line ....
-GLYPH 20013 FandolSong Bold
+LaTeX Font Info:    Font shape `TU/LXGWNeoZhiSong.ttf(1)/bx/n' in size <10> not available
+(Font)              Font shape `TU/LXGWNeoZhiSong.ttf(1)/b/n' tried instead on input line ....
+GLYPH 20013 LXGW ZhenKai Slab GB Regular
 ============================================================
 ============================================================
 TEST 4: CJK family font
 ============================================================
-GLYPH 20013 FandolHei
+GLYPH 20013 LXGW Neo XiHei
 ============================================================
 ============================================================
 TEST 5: newCJKfontfamily
 ============================================================
-GLYPH 20013 FandolHei
+GLYPH 20013 LXGW Neo XiHei
 ============================================================
 ============================================================
 TEST 6: CJKfontspec
 ============================================================
-GLYPH 20013 FandolKai
+GLYPH 20013 LXGW WenKai GB Lite
 ============================================================
 ============================================================
 TEST 7: CJKfontspec options before the font name
 ============================================================
 Package fontspec Info: 
-(fontspec)             FandolKai-Regular scale = 2.
+(fontspec)             LXGWWenKaiGBLite-Regular scale = 2.
 Package fontspec Info: 
-(fontspec)             FandolKai-Regular scale = 2.
+(fontspec)             LXGWWenKaiGBLite-Regular scale = 2.
 Package fontspec Info: 
-(fontspec)             Font family 'FandolKai-Regular.otf(1)' created for font 'FandolKai-Regular.otf' with options [Script=CJK,Scale = 2].
+(fontspec)             Font family 'LXGWWenKaiGBLite-Regular.ttf(1)' created for font 'LXGWWenKaiGBLite-Regular.ttf' with options [Script=CJK,Scale = 2].
 (fontspec)              
 (fontspec)              This font family consists of the following NFSS series/shapes:
 (fontspec)              
-(fontspec)             - 'normal' (m/n) with NFSS spec.: <->s*[2]"[FandolKai-Regular.otf]:mode=node;script=hani;language=dflt;"
-LaTeX Font Info:    Font shape `TU/FandolKai-Regular.otf(1)/m/n' will be
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->s*[2]"[LXGWWenKaiGBLite-Regular.ttf]:mode=node;script=hani;language=dflt;"
+LaTeX Font Info:    Font shape `TU/LXGWWenKaiGBLite-Regular.ttf(1)/m/n' will be
 (Font)              scaled to size 20.0pt on input line ....
 width: 20.0pt
-GLYPH 20013 FandolKai
+GLYPH 20013 LXGW WenKai GB Lite
 ============================================================
 ============================================================
 TEST 8: a bracket after the font name is text
 ============================================================
 width: 25.56pt
 GLYPH 91 LMRoman10-Regular
-GLYPH 37325 FandolKai
-GLYPH 28857 FandolKai
+GLYPH 37325 LXGW WenKai GB Lite
+GLYPH 28857 LXGW WenKai GB Lite
 GLYPH 93 LMRoman10-Regular
 ============================================================
 ============================================================
 TEST 9: newCJKfontfamily options after the font name
 ============================================================
 Package fontspec Info: 
-(fontspec)             FandolKai-Regular scale = 2.
+(fontspec)             LXGWWenKaiGBLite-Regular scale = 2.
 width: 20.0pt
-GLYPH 20013 FandolKai
+GLYPH 20013 LXGW WenKai GB Lite
 ============================================================
 ============================================================
 TEST 10: CJKspace false

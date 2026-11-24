@@ -43,8 +43,8 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    the form of the font it was shaped in, which is why `か` + U+3099 used to
    come out as two glyphs while the precomposed `が` was one (`shaping01`).
    The price is that the CJK font's own features now apply: its ligatures
-   (Noto Serif CJK joins `——` into one two-em dash), `locl`, and variation
-   sequences.
+   (Noto Serif CJK and LXGW Neo ZhiSong join `——` into one two-em dash),
+   `locl`, and variation sequences.
    The fallback list is resolved on the TeX side at each font selection, in
    the series, shape, and size in force, and is keyed by the identifier of
    the main font: a bold or a scaled main font has an identifier of its own,
@@ -79,7 +79,7 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    kern that cancels the advance of its placeholder, and the box a CJK font
    draws for a character it does not have.  The second rule consults
    `missing_chars`, filled by `pre_shaping`, so a document that declares no
-   CJK font at all still shows the box (`loadfandol03`) while a character the
+   CJK font at all still shows the box (`loadlxgw03`) while a character the
    CJK font lacks takes no advance (`shaping01`).  Dropping the joiner before
    the walk is what keeps `中` + U+200D + `文` at `4E2D glue 6587`
    (`zwchars01`).
@@ -342,8 +342,12 @@ The groups are the lists of xeCJK: `OP` and `PR` are `open`; `CL`, `PO`, `EX`,
 and `IS` are `close`; the hyphens (`301C`, `30A0`, `FF5E`) are `dash`; and `NS`
 is read as `close` (`FF1A`, `FF1B`) or `middle` (`30FB`, `FF65`), because
 `middle` means the ink is centred in the box and those two are not.
+The two- and three-em dashes (`2E3A`, `2E3B`) are `dash` as well: a font that
+joins `——` hands the package one such glyph, and an unclassified one would take
+the CJK/Latin glue on both sides.  A test that needs the pair as two marks
+declares its font with `RawFeature = -ccmp`.
 A mark is listed only when `CJK_RANGES` holds it as well, so the small-form and
-vertical variants outside that table (`FE10`–`FE19`, `FE50`–`FE6A`, `2E3A`,
+vertical variants outside that table (`FE10`–`FE19`, `FE50`–`FE6A`,
 `16FE0`) keep no class; classing one is a `chars` change to both the range table
 and the listings table.  The ASCII brackets are the one exception: `(`, `[`, and
 `{` are `half-open` and `)`, `]`, and `}` are `half-close`, although they are
@@ -834,7 +838,7 @@ sub-blocks, and a per-font baseline shift,
 six punctuation styles plus the character-set and style editing keys,
 punctuation hanging and bound width, `CheckSingle`, `CJLineBreak`, `CJKmath`,
 `\LuaCJKnobreak`, `\LuaCJKVerbAddon`, `\LuaCJKShipoutHook`, `LocalConfig`,
-`LoadFandol`, eight decorations in `LuaCJKfntef` with fifteen options, tagged
+`LoadLXGW`, eight decorations in `LuaCJKfntef` with fifteen options, tagged
 PDF output, and `LuaCJK-listings`.
 
 The input characters are split in two at load time. U+180E, U+200B, U+2060, and
@@ -870,11 +874,14 @@ does so on its own. Picking a backend inside `ctex` is now a public option
   `Declare*` commands are global by design; the manual says so at each of them.
 - Emphasis reaches CJK text through the family's italic face, never through the
   Latin italic: a family that names no `ItalicFont` stays upright under
-  `\emph` and `\itshape` unless `AutoFakeSlant` is on.  The Fandol base set
-  gives its roman family `FandolKai-Regular.otf` — emphasis in Chinese is Kai,
-  which is what ctex's own fandol fontset does — and both the main declaration
-  and `zhsong` carry it, because one family name holds one feature set and the
-  later declaration would otherwise drop it.
+  `\emph` and `\itshape` unless `AutoFakeSlant` is on.  The LXGW base set
+  gives its roman family `LXGWWenKaiGBLite-Regular.ttf` as the italic face and
+  `LXGWZhenKaiSlabGB-Regular.ttf` as the bold italic — emphasis in Chinese is
+  Kai, which is what ctex's own lxgw fontset does — and both the main
+  declaration and `zhsong` carry it, because one family name holds one feature
+  set and the later declaration would otherwise drop it.  Neo ZhiSong, Neo
+  XiHei, and Zhuque Fangsong have no bold face, so their declarations carry
+  `AutoFakeBold`, and Neo XiHei and Zhuque Fangsong carry `AutoFakeSlant` too.
 - The user-facing prose keeps the terminology of the code (`CJKglue`,
   `PunctStyle`, `subtract`) rather than inventing translations, in both
   languages of the manual (see "The manual's two languages").

@@ -80,17 +80,17 @@ PROBE G g G g G
 TEST 16: no line starts with a full stop
 ============================================================
 Overfull \hbox (5.0pt too wide) in paragraph at lines ...
-[]\TU/FandolSong-Regular.otf(0)/m/n/10 字字
-\hbox(7.69+1.75)x30.0, direction TLT
+[]\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 字字
+\hbox(8.35938+0.62012)x30.0, direction TLT
 .\localpar
 ..\localinterlinepenalty=0
 ..\localbrokenpenalty=0
 ..\localleftbox=null
 ..\localrightbox=null
 .\hbox(0.0+0.0)x15.0, direction TLT
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 字
 .\glue 0.0
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 字
 .\glue(\rightskip) 0.0
 LINES 23383 23383 23383 / LAST 23383 23383 12290
 ============================================================
@@ -98,30 +98,30 @@ LINES 23383 23383 23383 / LAST 23383 23383 12290
 TEST 17: no line ends with an opening bracket
 ============================================================
 Overfull \hbox (5.0pt too wide) in paragraph at lines ...
-[]\TU/FandolSong-Regular.otf(0)/m/n/10 字字
-\hbox(7.69+1.75)x30.0, direction TLT
+[]\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 字字
+\hbox(8.35938+0.62012)x30.0, direction TLT
 .\localpar
 ..\localinterlinepenalty=0
 ..\localbrokenpenalty=0
 ..\localleftbox=null
 ..\localrightbox=null
 .\hbox(0.0+0.0)x15.0, direction TLT
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 字
 .\glue 0.0
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 字
 .\glue(\rightskip) 0.0
 Overfull \hbox (10.0pt too wide) in paragraph at lines ...
-\TU/FandolSong-Regular.otf(0)/m/n/10 字字 |「字 
-\hbox(7.69+1.75)x30.0, direction TLT
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 字字 |「字 
+\hbox(8.35938+0.62012)x30.0, direction TLT
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 字
 .\glue 0.0
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
-.\glue 5.92
-.\rule(0.0+0.0)x-5.92
-.\TU/FandolSong-Regular.otf(0)/m/n/10 「
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 字
+.\glue 6.69922
+.\rule(0.0+0.0)x-6.69922
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 「
 .\penalty 10000
 .\glue 0.0
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 字
 .\penalty 10000
 .\glue(\parfillskip) 0.0 plus 1.0fil
 .\glue(\rightskip) 0.0

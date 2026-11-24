@@ -1,34 +1,34 @@
 This is a generated file for the l3build validation system.
 Don't change this file in any respect.
 ============================================================
-TEST 1: a document that declares no font is set in Fandol Song by default
+TEST 1: a document that declares no font is set in LXGW Neo ZhiSong
 ============================================================
-PSNAME FandolSong-Regular
-============================================================
-============================================================
-TEST 2: the bold shape is Fandol Song Bold
-============================================================
-LaTeX Font Info:    Font shape `TU/FandolSong-Regular.otf(0)/bx/n' in size <10> not available
-(Font)              Font shape `TU/FandolSong-Regular.otf(0)/b/n' tried instead on input line ....
-PSNAME FandolSong-Bold
+PSNAME LXGWNeoZhiSong
 ============================================================
 ============================================================
-TEST 3: the heiti shortcut is Fandol Hei
+TEST 2: the bold shape is faked in Neo ZhiSong
 ============================================================
-PSNAME FandolHei-Regular
-============================================================
-============================================================
-TEST 4: the kaiti shortcut is Fandol Kai
-============================================================
-PSNAME FandolKai-Regular
+LaTeX Font Info:    Font shape `TU/LXGWNeoZhiSong.ttf(0)/bx/n' in size <10> not available
+(Font)              Font shape `TU/LXGWNeoZhiSong.ttf(0)/b/n' tried instead on input line ....
+PSNAME LXGWNeoZhiSong
 ============================================================
 ============================================================
-TEST 5: the sans serif family is Fandol Hei
+TEST 3: the heiti shortcut is LXGW Neo XiHei
 ============================================================
-PSNAME FandolHei-Regular
+PSNAME LXGWNeoXiHei
 ============================================================
 ============================================================
-TEST 6: the monospaced family is Fandol Fang
+TEST 4: the kaiti shortcut is LXGW WenKai
 ============================================================
-PSNAME FandolFang-Regular
+PSNAME LXGWWenKaiGBLite-Regular
+============================================================
+============================================================
+TEST 5: the sans serif family is LXGW Neo XiHei
+============================================================
+PSNAME LXGWNeoXiHei
+============================================================
+============================================================
+TEST 6: the monospaced family is Zhuque Fangsong
+============================================================
+PSNAME ZhuqueFangsong-Regular
 ============================================================

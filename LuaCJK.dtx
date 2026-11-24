@@ -52,7 +52,7 @@ The `LuaCJK` package typesets Chinese, Japanese, and Korean (CJK) with the
 LuaTeX engine.
 
 It provides
-- A CJK font family layer, with sub-blocks, fallback fonts, the Fandol
+- A CJK font family layer, with sub-blocks, fallback fonts, the LXGW
 collection, and fake bold and slant.
 - CJK/CJK and CJK/Latin spacing, and the prohibitions that keep a line from
 breaking at the wrong place.
@@ -78,7 +78,7 @@ To load this package, write the line
 
 and then choose the CJK fonts, for example with
 
-    \setCJKmainfont{FandolSong-Regular.otf}
+    \setCJKmainfont{LXGWNeoZhiSong.ttf}
 
 A `ctex` document takes it through the `engine` option instead, and does not
 load the package separately:
@@ -166,7 +166,7 @@ The Current Maintainer of this work is **Mingyu Xia**.
   pdfauthor    = Mingyu Xia
 }
 \newcommand \mail[1] {\href{mailto:#1}{\ttfamily #1}}
-\usepackage[engine = luacjk, fontset = fandol, linespread = 1]{ctex}
+\usepackage[engine = luacjk, fontset = lxgw, linespread = 1]{ctex}
 \setmainfont{texgyrepagella}[
   Extension      = .otf,
   UprightFont    = *-regular,
@@ -373,7 +373,7 @@ The Current Maintainer of this work is **Mingyu Xia**.
 %   \item \keys{AutoFakeBold, AutoFakeSlant, EmboldenFactor}
 %   与 \keys{SlantFactor} 在注册字族时起作用；
 %   \item \keys{LocalConfig} 在加载宏包时起作用，
-%   \keys{LoadFandol} 在 |\begin{document}| 处起作用。
+%   \keys{LoadLXGW} 在 |\begin{document}| 处起作用。
 % \end{itemize}
 % 声明 \cs{LuaCJKDeclareCharClass}、\cs{LuaCJKDeclarePunctClass}、
 % \cs{LuaCJKDeclareSubCJKBlock}、\cs{LuaCJKsetwidth} 与 \cs{LuaCJKsetkern}
@@ -434,10 +434,10 @@ The Current Maintainer of this work is **Mingyu Xia**.
 % \fi
 \begin{codemo}
 \setCJKmainfont[Scale = 1.2]
-  {FandolSong-Regular.otf}
+  {LXGWNeoZhiSong.ttf}
 English 中文字体\\
 \setCJKsansfont[Scale = 1.2]
-  {FandolKai-Regular.otf}
+  {LXGWWenKaiGBLite-Regular.ttf}
 \sffamily English 中文字体
 \end{codemo}
 % \iffalse
@@ -502,7 +502,7 @@ English 中文字体\\
 \begingroup
 \begin{codemo}
 \newCJKfontfamily[kai]\mykai
-  {FandolKai-Regular.otf}
+  {LXGWWenKaiGBLite-Regular.ttf}
 \mykai English 中文字体\\
 \songti English 中文字体
 \end{codemo}
@@ -544,8 +544,8 @@ English 中文字体\\
 \begingroup
 \begin{codemo}
 \LuaCJKDeclareSubCJKBlock{Kana}{3040 -> 30FF}
-\setCJKmainfont[Kana = FandolKai-Regular.otf]
-  {FandolSong-Regular.otf}
+\setCJKmainfont[Kana = LXGWWenKaiGBLite-Regular.ttf]
+  {LXGWNeoZhiSong.ttf}
 汉字 かんじ
 \end{codemo}
 \endgroup
@@ -595,9 +595,9 @@ English 中文字体\\
 % \fi
 \begingroup
 \begin{codemo}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 \setCJKfallbackfamilyfont{\CJKrmdefault}
-  {FandolKai-Regular.otf}
+  {LXGWWenKaiGBLite-Regular.ttf}
 \LuaCJKsetup{AutoFallBack = true}中あ
 \end{codemo}
 \endgroup
@@ -632,7 +632,7 @@ English 中文字体\\
 \begingroup
 \begin{codemo}
 \setCJKfamilyfont{high}[Baseline = .3em]
-  {FandolKai-Regular.otf}
+  {LXGWWenKaiGBLite-Regular.ttf}
 \songti 基线\quad\CJKfamily{high}基线
 \end{codemo}
 \endgroup
@@ -640,16 +640,20 @@ English 中文字体\\
 %</example>
 % \fi
 %
-% \subsection{加载 Fandol}
+% \subsection{加载 LXGW}
 %
 % \begin{keyval}
-%   \item[\keys{LoadFandol}]\val{\TTF}
+%   \item[\keys{LoadLXGW}]\val{\TTF}
 %   默认打开。当文档没有声明任何 CJK 字体时，在 |\begin{document}| 处加载
-%   四款 Fandol 字体：宋体作为主字体，
-%   黑体作为无衬线字体，仿宋作为等宽字体，
-%   并且把宋、黑、楷、仿宋全部注册为具名字族。
-%   宋体一族以楷体作为斜体，所以 \tn{emph} 与 \tn{itshape} 会把汉字改成楷体。
-%   已经声明了字体的文档保留自己的字体，所以 Fandol 不会混进来；
+%   LXGW 字体：霞鹜新致宋作为主字体，霞鹜新晰黑作为无衬线字体，
+%   朱雀仿宋作为等宽字体，
+%   并且把霞鹜新致宋、霞鹜新晰黑、霞鹜文楷、朱雀仿宋全部注册为具名字族。
+%   新致宋一族以文楷作为斜体，以霞鹜臻楷作为粗斜体，
+%   所以 \tn{emph} 与 \tn{itshape} 会把汉字改成楷体。
+%   新致宋与新晰黑都没有粗体，朱雀仿宋也没有，
+%   所以这些声明要求伪粗体，新晰黑与朱雀仿宋另外要求伪斜体；
+%   文楷一族则把霞鹜臻楷作为粗体。
+%   已经声明了字体的文档保留自己的字体，所以 LXGW 不会混进来；
 %   但若它恰好没有声明 \cs{CJKfamilydefault} 所用的那一族，
 %   正文就会用 \cs{CJKrmdefault} 那一族，若也没有则用最先声明的一族，
 %   并且给出警告。
@@ -685,7 +689,7 @@ English 中文字体\\
 \begingroup
 \begin{codemo}
 \LuaCJKsetup{AutoFakeBold = true}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 \textbf{English 中文字体}\\
 English 中文字体
 \end{codemo}
@@ -719,7 +723,7 @@ English 中文字体
 \begin{codemo}
 \defaultCJKfontfeatures{Scale = 1.5}
 \setCJKfamilyfont{big}
-  {FandolSong-Regular.otf}
+  {LXGWNeoZhiSong.ttf}
 \CJKfamily{big}中文字体\\
 \CJKfamily{zhsong}中文字体\\
 \addCJKfontfeatures{Scale = 1.2}
@@ -1752,7 +1756,7 @@ abc汉字abc
 %   \item \keys{AutoFakeBold, AutoFakeSlant, EmboldenFactor},
 %   and \keys{SlantFactor} act when a family is registered;
 %   \item \keys{LocalConfig} acts while the package is loaded,
-%   and \keys{LoadFandol} at |\begin{document}|.
+%   and \keys{LoadLXGW} at |\begin{document}|.
 % \end{itemize}
 % The declarations \cs{LuaCJKDeclareCharClass},
 % \cs{LuaCJKDeclarePunctClass}, \cs{LuaCJKDeclareSubCJKBlock},
@@ -1818,10 +1822,10 @@ abc汉字abc
 % \fi
 \begin{codemo}
 \setCJKmainfont[Scale = 1.2]
-  {FandolSong-Regular.otf}
+  {LXGWNeoZhiSong.ttf}
 English 中文字体\\
 \setCJKsansfont[Scale = 1.2]
-  {FandolKai-Regular.otf}
+  {LXGWWenKaiGBLite-Regular.ttf}
 \sffamily English 中文字体
 \end{codemo}
 % \iffalse
@@ -1889,7 +1893,7 @@ English 中文字体\\
 \begingroup
 \begin{codemo}
 \newCJKfontfamily[kai]\mykai
-  {FandolKai-Regular.otf}
+  {LXGWWenKaiGBLite-Regular.ttf}
   \mykai English 中文字体\\
   \songti English 中文字体
 \end{codemo}
@@ -1933,8 +1937,8 @@ English 中文字体\\
 \begingroup
 \begin{codemo}
 \LuaCJKDeclareSubCJKBlock{Kana}{3040 -> 30FF}
-\setCJKmainfont[Kana = FandolKai-Regular.otf]
-  {FandolSong-Regular.otf}
+\setCJKmainfont[Kana = LXGWWenKaiGBLite-Regular.ttf]
+  {LXGWNeoZhiSong.ttf}
 汉字 かんじ
 \end{codemo}
 \endgroup
@@ -1985,9 +1989,9 @@ English 中文字体\\
 % \fi
 \begingroup
 \begin{codemo}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 \setCJKfallbackfamilyfont{\CJKrmdefault}
-  {FandolKai-Regular.otf}
+  {LXGWWenKaiGBLite-Regular.ttf}
 \LuaCJKsetup{AutoFallBack = true}中あ
 \end{codemo}
 \endgroup
@@ -2022,7 +2026,7 @@ English 中文字体\\
 \begingroup
 \begin{codemo}
 \setCJKfamilyfont{high}[Baseline = .3em]
-  {FandolKai-Regular.otf}
+  {LXGWWenKaiGBLite-Regular.ttf}
 \songti 基线\quad\CJKfamily{high}基线
 \end{codemo}
 \endgroup
@@ -2030,17 +2034,22 @@ English 中文字体\\
 %</example>
 % \fi
 %
-% \subsection{Loading Fandol}
+% \subsection{Loading LXGW}
 %
 % \begin{keyval}
-%   \item[\keys{LoadFandol}]\val{\TTF}
-%   On by default. When the document declares no CJK font, load the four
-%   Fandol faces at |\begin{document}|: Song as the main font,
-%   Hei as the sans serif font, Fang as the monospaced font,
-%   and all of Song, Hei, Kai, and Fang as the named families.
-%   The Song family takes Kai as its italic face, so \tn{emph} and
-%   \tn{itshape} set the text in Kai.
-%   A document that declares fonts keeps its own, so Fandol does not mix into
+%   \item[\keys{LoadLXGW}]\val{\TTF}
+%   On by default. When the document declares no CJK font, load the LXGW
+%   faces at |\begin{document}|: LXGW Neo ZhiSong as the main font,
+%   LXGW Neo XiHei as the sans serif font, Zhuque Fangsong as the monospaced
+%   font, and Neo ZhiSong, Neo XiHei, WenKai, and Zhuque Fangsong as the named
+%   families.
+%   The Neo ZhiSong family takes WenKai as its italic face and ZhenKai Slab as
+%   its bold italic, so \tn{emph} and \tn{itshape} set the text in Kai.
+%   Neo ZhiSong, Neo XiHei, and Zhuque Fangsong have no bold face of their own,
+%   so their declarations ask for fake bold, Neo XiHei and Zhuque Fangsong ask
+%   for fake slant as well, and the WenKai family takes ZhenKai Slab as its
+%   bold face.
+%   A document that declares fonts keeps its own, so LXGW does not mix into
 %   it; when it does not declare the family \cs{CJKfamilydefault} names, its
 %   text takes the family \cs{CJKrmdefault} names, or the first declared family
 %   when that one is missing too, and a warning says so.
@@ -2078,7 +2087,7 @@ English 中文字体\\
 \begingroup
 \begin{codemo}
 \LuaCJKsetup{AutoFakeBold = true}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 \textbf{English 中文字体}\\
 English 中文字体
 \end{codemo}
@@ -2113,7 +2122,7 @@ English 中文字体
 \begin{codemo}
 \defaultCJKfontfeatures{Scale = 1.5}
 \setCJKfamilyfont{big}
-  {FandolSong-Regular.otf}
+  {LXGWNeoZhiSong.ttf}
 \CJKfamily{big}中文字体\\
 \CJKfamily{zhsong}中文字体\\
 \addCJKfontfeatures{Scale = 1.2}
@@ -3774,6 +3783,10 @@ abc汉字abc
 % \changes{v0.0.5}{2026/11/22}{The punctuation group \texttt{latin-close} can
 %   be declared and removed like the others, so the spacing of the ASCII
 %   closing marks is a setting of the document and not only a default.}
+% \changes{v0.0.5}{2026/11/22}{The two- and three-em dashes \texttt{U+2E3A}
+%   and \texttt{U+2E3B} are CJK characters of the dash group, so a font that
+%   joins a pair of em dashes into one glyph keeps the prohibition of
+%   \keys{NoBreakLongPunct}.}
 % Override the punctuation group of a range,
 % or with \texttt{none} remove the punctuation treatment from it.
 %    \begin{macrocode}
@@ -3952,7 +3965,7 @@ abc汉字abc
 %     \g_@@_autofake_bold_tl,   \g_@@_autofake_slant_tl,
 %     \g_@@_embolden_factor_tl, \g_@@_slant_factor_tl,
 %     \g_@@_fallback_prop,      \l_@@_auto_fallback_bool,
-%     \g_@@_load_fandol_bool,
+%     \g_@@_load_lxgw_bool,
 %     \l_@@_fallback_family_tl, \l_@@_fallback_ids_tl, \l_@@_fontid_tl,
 %     \g_@@_shift_decl_prop,    \g_@@_font_shift_prop,
 %     \g_@@_shift_pushed_prop,  \l_@@_shift_dim_tl,
@@ -3995,7 +4008,7 @@ abc汉字abc
 \tl_gset:Nn \g_@@_slant_factor_tl { 0.167 }
 \prop_new:N \g_@@_fallback_prop
 \bool_new:N \l_@@_auto_fallback_bool
-\bool_new:N \g_@@_load_fandol_bool
+\bool_new:N \g_@@_load_lxgw_bool
 \tl_new:N \l_@@_fallback_family_tl
 \tl_new:N \l_@@_fallback_key_tl
 \prop_new:N \g_@@_shift_decl_prop
@@ -4173,13 +4186,13 @@ abc汉字abc
     AutoFallBack / false.code:n      =
       { \bool_set_false:N \l_@@_auto_fallback_bool },
     AutoFallBack        .default:n   = { true  },
-    LoadFandol          .choice:,
-    LoadFandol / true   .code:n      =
-      { \bool_gset_true:N \g_@@_load_fandol_bool },
-    LoadFandol / false  .code:n      =
-      { \bool_gset_false:N \g_@@_load_fandol_bool },
-    LoadFandol          .default:n   = { true  },
-    LoadFandol          .initial:n   = { true  },
+    LoadLXGW            .choice:,
+    LoadLXGW / true     .code:n      =
+      { \bool_gset_true:N \g_@@_load_lxgw_bool },
+    LoadLXGW / false    .code:n      =
+      { \bool_gset_false:N \g_@@_load_lxgw_bool },
+    LoadLXGW            .default:n   = { true  },
+    LoadLXGW            .initial:n   = { true  },
     SlantFactor         .code:n      =
       {
         \tl_gset:Nn \g_@@_slant_factor_tl {#1}
@@ -4955,7 +4968,7 @@ abc汉字abc
 % \cs{CJKrmdefault} when that one is declared and by the first declared family
 % otherwise.
 % A document that declared nothing gets a warning of its own, because
-% \keys{LoadFandol} is off and there is no family to fall back to.
+% \keys{LoadLXGW} is off and there is no family to fall back to.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_ensure_family_default:
   {
@@ -4980,7 +4993,7 @@ abc汉字abc
   }
 \msg_new:nnn { LuaCJK } { no-cjk-font }
   {
-    No ~ CJK ~ font ~ is ~ set, ~ and ~ LoadFandol ~ is ~ off.\\
+    No ~ CJK ~ font ~ is ~ set, ~ and ~ LoadLXGW ~ is ~ off.\\
     Declare ~ one ~ with ~ \token_to_str:N \setCJKmainfont.
   }
 \msg_new:nnn { LuaCJK } { family-default-undefined }
@@ -5832,7 +5845,7 @@ abc汉字abc
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}[int]{\@@_load_fandol:}
+% \begin{macro}[int]{\@@_load_lxgw:}
 % \changes{v0.0.1}{2026/11/11}{Provide the \keys{LoadFandol} option, which
 %   supplies Fandol fonts when the document declares none.}
 % \changes{v0.0.3}{2026/11/20}{\keys{LoadFandol} is on by default, so a
@@ -5841,8 +5854,10 @@ abc汉字abc
 % \changes{v0.0.3}{2026/11/20}{\keys{LoadFandol} gives the roman family
 %   \texttt{FandolKai-Regular.otf} as its italic face, so \cs{emph} and
 %   \cs{itshape} set the text in Kai instead of leaving it upright.}
-% When the \keys{LoadFandol} option is on and the document
-% did not declare any CJK font, fall back to the four Fandol faces.
+% \changes{v0.0.5}{2026/11/22}{\keys{LoadLXGW} replaces \keys{LoadFandol} and
+%   supplies the LXGW family when the document declares no CJK font.}
+% When the \keys{LoadLXGW} option is on and the document
+% did not declare any CJK font, fall back to the LXGW faces.
 % This runs at |\begin{document}| so that a family declared anywhere
 % in the preamble still wins, and a document that declares some families but
 % not the default one is reported by \cs{@@_ensure_family_default:} instead.
@@ -5850,23 +5865,37 @@ abc汉字abc
 % the name \texttt{zhsong}, and both declarations carry the same options,
 % because a family name holds one set of features and the later declaration
 % would otherwise drop what the earlier one gave.
-% Fandol Song has no italic face, and emphasis in Chinese is set in Kai, so
-% the italic shape of the roman family is Fandol Kai; the other three families
-% have no italic face of their own.
+% Neo ZhiSong has no italic face, and emphasis in Chinese is set in Kai, so
+% the italic shape of the roman family is WenKai and its bold italic ZhenKai
+% Slab.
+% Neo ZhiSong, Neo XiHei, and Zhuque Fangsong have no bold face of their own,
+% so their declarations ask \pkg{fontspec} for fake bold, Neo XiHei and Zhuque
+% Fangsong ask for fake slant as well, and the WenKai family takes ZhenKai Slab
+% as its bold face.
 %    \begin{macrocode}
-\cs_new_protected:Npn \@@_load_fandol:
+\cs_new_protected:Npn \@@_load_lxgw:
   {
-    \setCJKmainfont{FandolSong-Regular.otf}
-      [ BoldFont = FandolSong-Bold.otf, ItalicFont = FandolKai-Regular.otf ]
-    \setCJKsansfont{FandolHei-Regular.otf}
-      [ BoldFont = FandolHei-Bold.otf ]
-    \setCJKmonofont{FandolFang-Regular.otf}
-    \setCJKfamilyfont{zhsong}{FandolSong-Regular.otf}
-      [ BoldFont = FandolSong-Bold.otf, ItalicFont = FandolKai-Regular.otf ]
-    \setCJKfamilyfont{zhhei}{FandolHei-Regular.otf}
-      [ BoldFont = FandolHei-Bold.otf ]
-    \setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
-    \setCJKfamilyfont{zhfs}{FandolFang-Regular.otf}
+    \setCJKmainfont{LXGWNeoZhiSong.ttf}
+      [ AutoFakeBold = 4,
+        ItalicFont     = LXGWWenKaiGBLite-Regular.ttf,
+        BoldItalicFont = LXGWZhenKaiSlabGB-Regular.ttf ]
+    \setCJKsansfont{LXGWNeoXiHei.ttf}
+      [ AutoFakeBold = 4, AutoFakeSlant ]
+    \setCJKmonofont{LXGWZhuqueFangsong-Regular.ttf}
+      [ AutoFakeBold = 4, AutoFakeSlant ]
+    \setCJKfamilyfont{zhsong}{LXGWNeoZhiSong.ttf}
+      [ AutoFakeBold = 4,
+        ItalicFont     = LXGWWenKaiGBLite-Regular.ttf,
+        BoldItalicFont = LXGWZhenKaiSlabGB-Regular.ttf ]
+    \setCJKfamilyfont{zhhei}{LXGWNeoXiHei.ttf}
+      [ AutoFakeBold = 4, AutoFakeSlant ]
+    \setCJKfamilyfont{zhkai}{LXGWWenKaiGBLite-Regular.ttf}
+      [ AutoFakeSlant,
+        BoldFont       = LXGWZhenKaiSlabGB-Regular.ttf,
+        ItalicFont     = LXGWWenKaiGBLite-Regular.ttf,
+        BoldItalicFont = LXGWZhenKaiSlabGB-Regular.ttf ]
+    \setCJKfamilyfont{zhfs}{LXGWZhuqueFangsong-Regular.ttf}
+      [ AutoFakeBold = 4, AutoFakeSlant ]
   }
 %    \end{macrocode}
 % \end{macro}
@@ -5933,7 +5962,7 @@ abc汉字abc
 % the Lua module is loaded, which \keys{CJLineBreak} needs.
 % The hook at |\begin{document}| then settles the family the document starts
 % in: \cs{CJKfamilydefault} follows \cs{CJKrmdefault} when the preamble did
-% not choose it, \keys{LoadFandol} supplies the four Fandol faces when the
+% not choose it, \keys{LoadLXGW} supplies the LXGW faces when the
 % preamble declared no family at all, a chosen default that no family carries
 % is replaced by one that does, and the family that survives is selected, so a
 % preamble that redefines \cs{CJKfamilydefault} sets the main text in that
@@ -5961,10 +5990,10 @@ abc汉字abc
           }
         \group_end:
       }
-    \bool_if:NT \g_@@_load_fandol_bool
+    \bool_if:NT \g_@@_load_lxgw_bool
       {
         \prop_if_empty:NT \g_@@_family_prop
-          { \@@_load_fandol: }
+          { \@@_load_lxgw: }
       }
     \@@_ensure_family_default:
     \@@_reset_family:
@@ -6327,6 +6356,7 @@ local CJK_RANGES = {
   { 0x1100,  0x11FF },  -- Hangul Jamo
   { 0x2014,  0x2014 },  -- em dash, shared with Latin
   { 0x2015,  0x2015 },  -- horizontal bar, shared with Latin
+  { 0x2E3A,  0x2E3B },  -- two- and three-em dashes, shared with Latin
   { 0x2018,  0x2019 },  -- single quotation marks
   { 0x201C,  0x201D },  -- double quotation marks
   { 0x2025,  0x2025 },  -- two dot leader, shared with Latin
@@ -6505,7 +6535,8 @@ local PUNCT_CLASS = {
   [0x00B7] = "middle",   [0x2027] = "middle",
   [0x30FB] = "middle",   [0xFF65] = "middle",
   [0x2013] = "dash",     [0x2014] = "dash",
-  [0x2015] = "dash",     [0x301C] = "dash",
+  [0x2015] = "dash",     [0x2E3A] = "dash",
+  [0x2E3B] = "dash",     [0x301C] = "dash",
   [0x30A0] = "dash",     [0xFF0D] = "dash",
   [0xFF5E] = "dash",
   [0x2025] = "ellipsis", [0x2026] = "ellipsis", [0x22EF] = "ellipsis",
@@ -12344,6 +12375,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   #1{"1100}{"11FF}%
   #1{"2014}{"2014}%
   #1{"2015}{"2015}%
+  #1{"2E3A}{"2E3B}%
   #1{"2018}{"2019}%
   #1{"201C}{"201D}%
   #1{"2025}{"2025}%

@@ -1,51 +1,56 @@
 This is a generated file for the l3build validation system.
 Don't change this file in any respect.
 ============================================================
-TEST 1: the main CJK font is Fandol Song
+TEST 1: the main CJK font is LXGW Neo ZhiSong
 ============================================================
-PSNAME FandolSong-Regular
-============================================================
-============================================================
-TEST 2: the bold shape is Fandol Song Bold
-============================================================
-LaTeX Font Info:    Font shape `TU/FandolSong-Regular.otf(0)/bx/n' in size <10> not available
-(Font)              Font shape `TU/FandolSong-Regular.otf(0)/b/n' tried instead on input line ....
-PSNAME FandolSong-Bold
+PSNAME LXGWNeoZhiSong
 ============================================================
 ============================================================
-TEST 3: the heiti shortcut is Fandol Hei
+TEST 2: the bold shape is faked in Neo ZhiSong
 ============================================================
-PSNAME FandolHei-Regular
-============================================================
-============================================================
-TEST 4: the kaiti shortcut is Fandol Kai
-============================================================
-PSNAME FandolKai-Regular
+LaTeX Font Info:    Font shape `TU/LXGWNeoZhiSong.ttf(0)/bx/n' in size <10> not available
+(Font)              Font shape `TU/LXGWNeoZhiSong.ttf(0)/b/n' tried instead on input line ....
+PSNAME LXGWNeoZhiSong
 ============================================================
 ============================================================
-TEST 5: the fangsong shortcut is Fandol Fang
+TEST 3: the heiti shortcut is LXGW Neo XiHei
 ============================================================
-PSNAME FandolFang-Regular
-============================================================
-============================================================
-TEST 6: the italic shape is Fandol Kai
-============================================================
-PSNAME FandolKai-Regular
+PSNAME LXGWNeoXiHei
 ============================================================
 ============================================================
-TEST 7: emph sets the CJK text in Fandol Kai
+TEST 4: the kaiti shortcut is LXGW WenKai
 ============================================================
-PSNAME FandolKai-Regular
+PSNAME LXGWWenKaiGBLite-Regular
+============================================================
+============================================================
+TEST 5: the fangsong shortcut is Zhuque Fangsong
+============================================================
+PSNAME ZhuqueFangsong-Regular
+============================================================
+============================================================
+TEST 6: the italic shape is LXGW WenKai
+============================================================
+PSNAME LXGWWenKaiGBLite-Regular
+============================================================
+============================================================
+TEST 7: emph sets the CJK text in LXGW WenKai
+============================================================
+PSNAME LXGWWenKaiGBLite-Regular
 ============================================================
 ============================================================
 TEST 8: the songti shortcut keeps the italic face
 ============================================================
-PSNAME FandolKai-Regular
+PSNAME LXGWWenKaiGBLite-Regular
 ============================================================
 ============================================================
-TEST 9: the heiti family has no italic face
+TEST 9: the bold italic shape is ZhenKai Slab
 ============================================================
-LaTeX Font Warning: Font shape `TU/FandolHei-Regular.otf(0)/m/it' undefined
-(Font)              using `TU/FandolHei-Regular.otf(0)/m/n' instead on input line ....
-PSNAME FandolHei-Regular
+LaTeX Font Info:    Font shape `TU/LXGWNeoZhiSong.ttf(0)/bx/it' in size <10> not available
+(Font)              Font shape `TU/LXGWNeoZhiSong.ttf(0)/b/it' tried instead on input line ....
+PSNAME LXGWZhenKaiSlabGB-Regular
+============================================================
+============================================================
+TEST 10: the heiti family takes fake slant
+============================================================
+PSNAME LXGWNeoXiHei
 ============================================================

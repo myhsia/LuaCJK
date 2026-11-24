@@ -3,7 +3,7 @@
 \documentclass{article}
 \usepackage{fancyvrb}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 \LuaCJKsetup{CJKglue = 10pt, CJKecglue = 5pt}
 
 \newbox\verbline

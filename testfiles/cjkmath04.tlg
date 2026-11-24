@@ -3,28 +3,28 @@ Don't change this file in any respect.
 ============================================================
 TEST 1: a character in math takes the fallback font
 ============================================================
-GLYPH 20013 FandolSong 655360
+GLYPH 20013 LXGW Neo ZhiSong 655360
 ============================================================
 ============================================================
 TEST 2: the text takes the same font
 ============================================================
-GLYPH 20013 FandolSong 655360
+GLYPH 20013 LXGW Neo ZhiSong 655360
 ============================================================
 ============================================================
 TEST 3: a script character takes the fallback at the script size
 ============================================================
-GLYPH 20013 FandolSong 458752
+GLYPH 20013 LXGW Neo ZhiSong 458752
 ============================================================
 ============================================================
 TEST 4: a fraction takes the fallback at the script size
 ============================================================
-GLYPH 20013 FandolSong 458752
-GLYPH 25991 FandolSong 458752
+GLYPH 20013 LXGW Neo ZhiSong 458752
+GLYPH 25991 LXGW Neo ZhiSong 458752
 ============================================================
 ============================================================
 TEST 5: the bold math version takes the bold fallback
 ============================================================
-GLYPH 20013 FandolSong Bold 655360
+GLYPH 20013 LXGW ZhenKai Slab GB Regular 655360
 ============================================================
 ============================================================
 TEST 6: AutoFallBack=false keeps the main font in math
@@ -34,5 +34,5 @@ Missing character: There is no 中 (U+4E2D) in font "name:TeX Gyre Pagella:mode=
 ============================================================
 TEST 7: a fallback declared in the document reaches the next formula
 ============================================================
-GLYPH 20013 FandolSong 655360
+GLYPH 20013 LXGW Neo ZhiSong 655360
 ============================================================

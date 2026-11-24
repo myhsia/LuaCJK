@@ -79,7 +79,7 @@ RUNS 1
 ============================================================
 TEST 13: format and textformat can be combined
 ============================================================
-LaTeX Font Warning: Font shape `TU/FandolSong-Regular.otf(0)/bx/n' undefined
-(Font)              using `TU/FandolSong-Regular.otf(0)/m/n' instead on input line ....
+LaTeX Font Warning: Font shape `TU/LXGWNeoZhiSong.ttf(0)/bx/n' undefined
+(Font)              using `TU/LXGWNeoZhiSong.ttf(0)/m/n' instead on input line ....
 width: 10.0pt
 ============================================================
