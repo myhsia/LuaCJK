@@ -7,7 +7,8 @@
 The `LuaCJK` Package
 ====================
 
-The `LuaCJK` package provides Chinese typesetting for the LuaTeX engine.
+The `LuaCJK` package typesets Chinese, Japanese, and Korean (CJK) with the
+LuaTeX engine.
 
 It provides
 - A CJK font family layer, with sub-blocks, fallback fonts, the Fandol
