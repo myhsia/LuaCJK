@@ -121,7 +121,13 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    holds no text but has ink is a Latin atom, so `\mbox{\vrule}` takes the
    glue on both sides; a box that occupies no advance is passed over, so
    `\rlap`, `\llap` and `\clap` overlay the run instead of splitting it
-   (`boundary01`).
+   (`boundary01`).  The source space in front of such a box belongs to the
+   boundary of the two characters it stands between: the walk back goes over
+   the box (`skippable`), which is what keeps a second glue from being spliced
+   behind it, and `collapse_earlier_spaces` gives up the advance of a source
+   space that another one stands in front of with nothing visible between, so a
+   space on each side of the box is one space as it is when the box is absent;
+   an explicit `\ ` or `~` keeps its own advance (`boundary03`).
    A box whose own baseline TeX has shifted is attached to the character in
    front of it: the run ends at it, so it takes no glue on either side and
    offers no break.  That is the box `\textsuperscript` and `\textsubscript`
