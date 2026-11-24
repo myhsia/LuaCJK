@@ -10,7 +10,7 @@ metadata:
 
 # LuaCJK
 
-LuaCJK sets Chinese text through LuaTeX node callbacks:
+LuaCJK sets CJK text through LuaTeX node callbacks:
 a CJK glyph carries its font in a LuaTeX attribute and is replaced before
 line breaking and box packing. This skill carries the architecture:
 which callback does what, what each attribute means, how a punctuation
@@ -760,7 +760,8 @@ alone.
 The Chinese prose is set by LuaCJK itself: the driver's Noto Serif CJK SC gives
 it its CJK font (with LXGW WenKai GB Lite as the CJK italic and the kai
 family, Noto Sans CJK SC as the hei family, and Zhuque Fangsong as the
-monospaced and fangsong face), full-width punctuation is CJK punctuation and
+monospaced and fangsong face, which falls back to Noto Serif CJK SC for a
+character it does not hold), full-width punctuation is CJK punctuation and
 is compressed and hung by the punctuation passes.  The manual is a `ctex`
 document, though: its driver loads `ctex` with `engine = luacjk` and
 `linespread = 1`, so the glue defaults come from the engine file — the
