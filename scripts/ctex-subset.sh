@@ -45,8 +45,15 @@ cp build/unpacked/*.sty "$run/"
 cp build/unpacked/ctex-engine-luacjk.def "$run/"
 cp build/unpacked/*.lua "$run/"
 cp "$ctex_kit"/ctex/test/support/* "$run/"
-# The test tree of ctex brings its own ctexopts.cfg (it selects a fontset);
-# append the engine choice so that both settings apply.
+# The test tree of ctex brings its own ctexopts.cfg, and every .lvt of it names
+# `fontset = fandol`; Fandol is obsoleted on CTAN and this repository no longer
+# depends on it, so both are moved to the lxgw fontset, which the `lxgw-fonts`
+# TeX Live package provides.
+use_lxgw() {
+  sed -i.bak 's/fontset *= *fandol/fontset = lxgw/g' "$1" && rm -f "$1.bak"
+}
+use_lxgw "$run/ctexopts.cfg"
+# Append the engine choice so that both settings apply.
 printf '%s\n' '\keys_set:nn { ctex / option } { engine = luacjk }' \
   >> "$run/ctexopts.cfg"
 
@@ -70,6 +77,7 @@ cd "$run"
 for name in $tests; do
   total=$((total + 1))
   cp "$ctex_kit/ctex/test/testfiles/$name.lvt" .
+  use_lxgw "$name.lvt"
   echo "== $name =="
   if ! lualatex -interaction=nonstopmode -halt-on-error \
        "$name.lvt" >"$name.out" 2>&1; then

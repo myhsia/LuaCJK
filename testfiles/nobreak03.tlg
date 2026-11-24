@@ -115,24 +115,24 @@ plain-quad LINES 2 DISCS
 TEST 9: LuaCJKnobreak forbids it
 ============================================================
 Overfull \hbox (10.0pt too wide) in paragraph at lines ...
-[]\TU/FandolSong-Regular.otf(0)/m/n/10 张 三 李 四  
-\hbox(7.6+1.54)x40.0, direction TLT
+[]\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 张 三 李 四  
+\hbox(8.28125+0.71289)x40.0, direction TLT
 .\localpar
 ..\localinterlinepenalty=0
 ..\localbrokenpenalty=0
 ..\localleftbox=null
 ..\localrightbox=null
 .\hbox(0.0+0.0)x0.0, direction TLT
-.\TU/FandolSong-Regular.otf(0)/m/n/10 张
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 张
 .\penalty 10000
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 三
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 三
 .\penalty 10000
 .\glue 10.0
-.\TU/FandolSong-Regular.otf(0)/m/n/10 李
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 李
 .\penalty 10000
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 四
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 四
 .\penalty 10000
 .\glue(\parfillskip) 0.0 plus 1.0fil
 .\glue(\rightskip) 0.0 plus 1.0fil
@@ -142,24 +142,24 @@ marked-quad LINES 1 DISCS
 TEST 10: the glue of an hspace is forbidden as well
 ============================================================
 Overfull \hbox (20.0pt too wide) in paragraph at lines ...
-[]\TU/FandolSong-Regular.otf(0)/m/n/10 张 三 李 四  
-\hbox(7.6+1.54)x40.0, direction TLT
+[]\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 张 三 李 四  
+\hbox(8.28125+0.71289)x40.0, direction TLT
 .\localpar
 ..\localinterlinepenalty=0
 ..\localbrokenpenalty=0
 ..\localleftbox=null
 ..\localrightbox=null
 .\hbox(0.0+0.0)x0.0, direction TLT
-.\TU/FandolSong-Regular.otf(0)/m/n/10 张
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 张
 .\penalty 10000
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 三
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 三
 .\penalty 10000
 .\glue 20.0
-.\TU/FandolSong-Regular.otf(0)/m/n/10 李
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 李
 .\penalty 10000
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 四
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 四
 .\penalty 10000
 .\glue(\parfillskip) 0.0 plus 1.0fil
 .\glue(\rightskip) 0.0 plus 1.0fil
@@ -179,9 +179,9 @@ group LINES 2 DISCS 50
 TEST 13: the paragraph of the report keeps its run together
 ============================================================
 Overfull \hbox (3.05397pt too wide) in paragraph at lines ...
-\TU/FandolSong-Regular.otf(0)/m/n/10 字 \TU/lmr/m/n/10 well-known \TU/FandolSong-Regular.otf(0)/m/n/10 字 
-\hbox(7.69+1.75)x70.0, glue set - 1.0, direction TLT
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 字 \TU/lmr/m/n/10 well-known \TU/LXGWNeoZhiSong.ttf(0)/m/n/10 字 
+\hbox(8.35938+0.62012)x70.0, glue set - 1.0, direction TLT
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 字
 .\penalty 10000
 .\glue 3.33298 plus 1.66702 minus 1.111
 .\TU/lmr/m/n/10 w
@@ -200,7 +200,7 @@ Overfull \hbox (3.05397pt too wide) in paragraph at lines ...
 .\TU/lmr/m/n/10 n
 .\penalty 10000
 .\glue 3.33298 plus 1.66702 minus 1.111
-.\TU/FandolSong-Regular.otf(0)/m/n/10 字
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 字
 .\glue(\rightskip) 0.0 plus 1.0fil
 paragraph LINES 3 DISCS 10000
 ============================================================

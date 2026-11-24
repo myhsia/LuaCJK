@@ -2,7 +2,7 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 
 % Report every glyph of box 0 with its horizontal offset and the kern that
 % follows it. The offset is what places the ink inside the shortened advance.
@@ -73,6 +73,8 @@
   \endgroup
 }
 
+% Neo ZhiSong joins the pair into U+2E3A, so the box holds one two-em
+% glyph, whose advance a fixed width style leaves alone.
 \TEST{a dash keeps its advance under a fixed width style}{
   \begingroup
     \LuaCJKsetup{PunctStyle = banjiao}

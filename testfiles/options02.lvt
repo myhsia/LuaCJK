@@ -4,8 +4,8 @@
 \usepackage[AutoFallBack = true, PunctFamily = zhkai,
             CJLineBreak = strict]{LuaCJK}
 \setCJKmainfont{TeX Gyre Pagella}
-\setCJKfamilyfont{zhkai}{FandolKai-Regular.otf}
-\setCJKfallbackfamilyfont{\CJKrmdefault}{FandolSong-Regular.otf}
+\setCJKfamilyfont{zhkai}{LXGWWenKaiGBLite-Regular.ttf}
+\setCJKfallbackfamilyfont{\CJKrmdefault}{LXGWNeoZhiSong.ttf}
 
 \def\psnamesof#1{%
   \directlua{

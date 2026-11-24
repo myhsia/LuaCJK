@@ -25,7 +25,7 @@ WIDTH 1966080 / 30pt
 ============================================================
 TEST 5: a character the CJK font lacks leaves no advance
 ============================================================
-Missing character: There is no 𿿿 (U+3FFFF) in font [FandolSong-Regular.otf]:mode=node;script=hani;language=dflt;!
+Missing character: There is no 𿿿 (U+3FFFF) in font [LXGWNeoZhiSong.ttf]:mode=node;script=hani;language=dflt;!
 WIDTH 0 / 0pt
 NODES 3FFFF
 ============================================================

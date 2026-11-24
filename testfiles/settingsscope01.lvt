@@ -2,7 +2,7 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 
 % Report the first glue of the first line of box #1.
 \def\ccglueof#1{%

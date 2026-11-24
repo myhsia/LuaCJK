@@ -4,7 +4,7 @@
 \usepackage{LuaCJK}
 \usepackage{xcolor}
 \usepackage{LuaCJKfntef}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 
 \directlua{
   local attr = oberdiek.luacolor.getattribute()

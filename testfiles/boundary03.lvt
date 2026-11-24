@@ -3,7 +3,7 @@
 \documentclass{article}
 \usepackage{LuaCJK}
 \usepackage{xcolor}
-\setCJKmainfont[BoldFont = FandolSong-Bold.otf]{FandolSong-Regular.otf}
+\setCJKmainfont[BoldFont = LXGWZhenKaiSlabGB-Regular.ttf]{LXGWNeoZhiSong.ttf}
 \LuaCJKsetup{CJKglue = 10pt, CJKecglue = 5pt, CJKspace = false}
 
 % The nodes of a horizontal box, one token each.

@@ -1,8 +1,8 @@
 \input{regression-test}
 
 \documentclass{article}
-\usepackage[LoadFandol]{LuaCJK}
-\setCJKsansfont{FandolHei-Regular.otf}
+\usepackage[LoadLXGW]{LuaCJK}
+\setCJKsansfont{LXGWNeoXiHei.ttf}
 
 \def\psname#1{%
   \directlua{

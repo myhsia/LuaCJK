@@ -6,13 +6,13 @@ TEST 1: the plain underline covers the whole span
 Lua-only attribute luaul1 = ...
 width: 20.0pt
 > \box...=
-\hbox(7.78+2.39996)x20.0, direction TLT
+\hbox(8.2666+2.39996)x20.0, direction TLT
 .\leaders 20.0 plus 0.96002
 ..\rule(-1.99997+2.39996)x0.4
 .\glue -20.0 plus -0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 文
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 文
 ! OK.
 <argument> ...TYPE {width: \the \wd 0} \showbox 0 
 l. ...}
@@ -22,15 +22,15 @@ TEST 2: subtract insets both ends by half an em
 ============================================================
 width: 20.0pt
 > \box...=
-\hbox(7.78+2.39996)x20.0, direction TLT
+\hbox(8.2666+2.39996)x20.0, direction TLT
 .\kern5.0 (font)
 .\leaders 10.0 plus 0.96002
 ..\rule(-1.99997+2.39996)x0.4
 .\kern5.0 (font)
 .\glue -20.0 plus -0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 文
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 文
 ! OK.
 <argument> ...TYPE {width: \the \wd 0} \showbox 0 
 l. ...}
@@ -39,15 +39,15 @@ l. ...}
 TEST 3: subtract takes a length
 ============================================================
 > \box...=
-\hbox(7.78+2.39996)x20.0, direction TLT
+\hbox(8.2666+2.39996)x20.0, direction TLT
 .\kern2.0 (font)
 .\leaders 16.0 plus 0.96002
 ..\rule(-1.99997+2.39996)x0.4
 .\kern2.0 (font)
 .\glue -20.0 plus -0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 文
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 文
 ! OK.
 <argument> ...subtract = 2pt]{中文}} \showbox 0 
 l. ...}
@@ -56,13 +56,13 @@ l. ...}
 TEST 4: a fully inset span draws no rule
 ============================================================
 > \box...=
-\hbox(7.78+1.62)x20.0, direction TLT
+\hbox(8.2666+0.71777)x20.0, direction TLT
 .\kern20.0 (font)
 .\glue 0.0 plus 0.96002
 .\glue -20.0 plus -0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 文
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 文
 ! OK.
 <argument> ...subtract = 1em]{中文}} \showbox 0 
 l. ...}
@@ -72,19 +72,19 @@ TEST 5: skip leaves out the punctuation
 ============================================================
 width: 30.0pt
 > \box...=
-\hbox(7.78+2.39996)x30.0, direction TLT
+\hbox(8.2666+2.39996)x30.0, direction TLT
 .\leaders 10.0 plus 0.64001
 ..\rule(-1.99997+2.39996)x0.4
 .\kern10.0 (font)
 .\leaders 10.0 plus 1.28003
 ..\rule(-1.99997+2.39996)x0.4
 .\glue -30.0 plus -1.92004
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 .\penalty 10000
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 ，
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 ，
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 文
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 文
 ! OK.
 <argument> ...TYPE {width: \the \wd 0} \showbox 0 
 l. ...}
@@ -93,7 +93,7 @@ l. ...}
 TEST 6: skip and subtract can be combined
 ============================================================
 > \box...=
-\hbox(7.78+2.39996)x30.0, direction TLT
+\hbox(8.2666+2.39996)x30.0, direction TLT
 .\kern2.0 (font)
 .\leaders 8.0 plus 0.51201
 ..\rule(-1.99997+2.39996)x0.4
@@ -102,12 +102,12 @@ TEST 6: skip and subtract can be combined
 ..\rule(-1.99997+2.39996)x0.4
 .\kern2.0 (font)
 .\glue -30.0 plus -1.92004
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 .\penalty 10000
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 ，
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 ，
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 文
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 文
 ! OK.
 <argument> ...tract = 2pt]{中，文}} \showbox 0 
 l. ...}
@@ -116,13 +116,13 @@ l. ...}
 TEST 7: the next command starts from the defaults
 ============================================================
 > \box...=
-\hbox(7.78+2.39996)x20.0, direction TLT
+\hbox(8.2666+2.39996)x20.0, direction TLT
 .\leaders 20.0 plus 0.96002
 ..\rule(-1.99997+2.39996)x0.4
 .\glue -20.0 plus -0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 文
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 文
 ! OK.
 <argument> ...{\CJKunderline {中文}} \showbox 0 
 l. ...}
@@ -160,7 +160,7 @@ NODES leaders:1310720 glue:-1310720 glyph glue:0 glyph
 ============================================================
 TEST 13: hidden keeps the dimensions and drops the text
 ============================================================
-width: 20.0pt, height: 7.78pt, depth: 2.39996pt
+width: 20.0pt, height: 8.2666pt, depth: 2.39996pt
 NODES leaders:1310720 glue:-1310720 kern:655360 glue:0 kern:655360
 ============================================================
 ============================================================
@@ -178,10 +178,10 @@ INK glyph 2 rule 1
 ============================================================
 TEST 15: drawn decorations do not add height or depth
 ============================================================
-plain: 7.78pt, 1.62pt
-dots: 7.78pt, 1.62pt
-wave: 7.78pt, 1.62pt
-slash: 7.78pt, 1.62pt
+plain: 8.2666pt, 0.71777pt
+dots: 8.2666pt, 0.71777pt
+wave: 8.2666pt, 0.71777pt
+slash: 8.2666pt, 0.71777pt
 ============================================================
 ============================================================
 TEST 16: each decoration keeps its own settings
@@ -231,31 +231,31 @@ NODES leaders:1310720 kern:655360 leaders:655360 glue:-2621440 glyph glue:655360
 TEST 23: a pattern built from em units is rebuilt per font size
 ============================================================
 > \box...=
-\hbox(7.78+1.99997)x10.0, direction TLT
+\hbox(8.12012+1.99997)x10.0, direction TLT
 .\leaders 10.0
 ..\rule(-0.99991+1.99997)x0.0
 .\glue -10.0
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 ! OK.
 <argument> ...rule {.5em}{.1em}}{中}} \showbox 0 
                                                   \setbox 0=\hbox {\Large \C...
 l. ...}
 > \box...=
-\hbox(11.2032+2.87994)x14.4, direction TLT
+\hbox(11.69296+2.87994)x14.4, direction TLT
 .\leaders 14.4
 ..\rule(-1.43987+2.87994)x0.0
 .\glue -14.4
-.\TU/FandolSong-Regular.otf(0)/m/n/14.4 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/14.4 中
 ! OK.
 <argument> ...rule {.5em}{.1em}}{中}} \showbox 0 
                                                   \setbox 0=\hbox {\CJKunder...
 l. ...}
 > \box...=
-\hbox(7.78+1.99997)x10.0, direction TLT
+\hbox(8.12012+1.99997)x10.0, direction TLT
 .\leaders 10.0
 ..\rule(-0.99991+1.99997)x0.0
 .\glue -10.0
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 ! OK.
 <argument> ...rule {.5em}{.1em}}{中}} \showbox 0 
 l. ...}
@@ -264,21 +264,21 @@ l. ...}
 TEST 24: a rule sized in em keeps its thickness when the size changes
 ============================================================
 > \box...=
-\hbox(7.78+1.62)x10.0, direction TLT
+\hbox(8.12012+0.71777)x10.0, direction TLT
 .\leaders 10.0
 ..\rule(3.20003+-2.80003)x0.4
 .\glue -10.0
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 ! OK.
 <argument> ...0=\hbox {\CJKsout {中}} \showbox 0 
                                                   \setbox 0=\hbox {\Large \C...
 l. ...}
 > \box...=
-\hbox(11.2032+2.3328)x14.4, direction TLT
+\hbox(11.69296+1.0336)x14.4, direction TLT
 .\leaders 14.4
 ..\rule(4.52003+-4.12004)x0.4
 .\glue -14.4
-.\TU/FandolSong-Regular.otf(0)/m/n/14.4 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/14.4 中
 ! OK.
 <argument> ... {\Large \CJKsout {中}} \showbox 0 
 l. ...}
@@ -287,7 +287,7 @@ l. ...}
 TEST 25: a drawn pattern is repeated with leaders
 ============================================================
 > \box...=
-\hbox(7.78+1.78)x40.0, direction TLT
+\hbox(8.28125+0.71777)x40.0, direction TLT
 .\leaders 40.0 plus 2.88007
 ..\hbox(0.0+0.0)x10.0, glue set - 0.2fil, direction TLT
 ...\glue 0.0 plus 1.0fil minus 1.0fil
@@ -316,19 +316,19 @@ TEST 25: a drawn pattern is repeated with leaders
 .......\pdfrestore
 ...\glue 0.0 plus 1.0fil minus 1.0fil
 .\glue -40.0 plus -2.88007
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 文
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 文
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 测
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 测
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 试
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 试
 ! OK.
 <argument> ...nderwave {中文测试}} \showbox 0 
                                                   \setbox 0=\hbox {\CJKxout ...
 l. ...}
 > \box...=
-\hbox(7.78+1.62)x20.0, direction TLT
+\hbox(8.2666+0.71777)x20.0, direction TLT
 .\leaders 20.0 plus 0.96002
 ..\hbox(0.0+0.0)x4.59999, direction TLT
 ...\hbox(0.0+0.0)x4.59999, direction TLT
@@ -354,9 +354,9 @@ l. ...}
 ........\pdfliteral origin{S}
 .......\pdfrestore
 .\glue -20.0 plus -0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 中
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 .\glue 0.0 plus 0.96002
-.\TU/FandolSong-Regular.otf(0)/m/n/10 文
+.\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 文
 ! OK.
 <argument> ...hbox {\CJKxout {中文}} \showbox 0 
 l. ...}
@@ -365,8 +365,8 @@ l. ...}
 TEST 26: a decoration is divided into whole patterns when its width is final
 ============================================================
 > \box...=
-\vbox(7.78+1.78)x41.0, direction TLT
-.\hbox(7.78+1.78)x41.0, glue set 0.34721, direction TLT
+\vbox(8.28125+0.71777)x41.0, direction TLT
+.\hbox(8.28125+0.71777)x41.0, glue set 0.34721, direction TLT
 ..\leaders 0.0
 ...\hbox(0.0+0.0)x10.0, glue set - 0.2fil, direction TLT
 ....\glue 0.0 plus 1.0fil minus 1.0fil
@@ -498,13 +498,13 @@ TEST 26: a decoration is divided into whole patterns when its width is final
 ...\glue 0.0 plus 1.0fil minus 1.0fil
 ...\pdfliteral origin <lua data reference ...>
 ..\glue -40.0 plus -2.88007
-..\TU/FandolSong-Regular.otf(0)/m/n/10 中
+..\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 中
 ..\glue 0.0 plus 0.96002
-..\TU/FandolSong-Regular.otf(0)/m/n/10 文
+..\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 文
 ..\glue 0.0 plus 0.96002
-..\TU/FandolSong-Regular.otf(0)/m/n/10 测
+..\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 测
 ..\glue 0.0 plus 0.96002
-..\TU/FandolSong-Regular.otf(0)/m/n/10 试
+..\TU/LXGWNeoZhiSong.ttf(0)/m/n/10 试
 ..\penalty 10000
 ..\glue(\parfillskip) 0.0
 ..\glue(\rightskip) 0.0

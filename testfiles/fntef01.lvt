@@ -3,8 +3,8 @@
 \documentclass{article}
 \usepackage{LuaCJK}
 \usepackage{LuaCJKfntef}
-\setCJKmainfont{FandolSong-Regular.otf}
-\setCJKsansfont{FandolHei-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
+\setCJKsansfont{LXGWNeoXiHei.ttf}
 
 \begin{document}
 

@@ -2,7 +2,7 @@
 
 \documentclass{article}
 \usepackage[LocalConfig = local]{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 
 \begin{document}
 

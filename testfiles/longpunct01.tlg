@@ -4,6 +4,7 @@ Don't change this file in any respect.
 TEST 1: a dash pair is joined without glue
 ============================================================
 NODES 4E2D penalty glue 2014 2014 glue 6587
+NODES 4E2D penalty glue 2E3A glue 6587
 ============================================================
 ============================================================
 TEST 2: an ellipsis pair is joined without glue

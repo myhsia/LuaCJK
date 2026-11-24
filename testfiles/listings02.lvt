@@ -5,7 +5,7 @@
 \usepackage{xcolor}
 \usepackage{luacolor}
 \usepackage{listings}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 \lstset{basicstyle=\ttfamily, columns=fixed}
 
 % The colour of a glyph is the value of luacolor's attribute, resolved

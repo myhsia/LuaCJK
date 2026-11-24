@@ -3,32 +3,32 @@ Don't change this file in any respect.
 ============================================================
 TEST 1: the family named by CJKrmdefault
 ============================================================
-PS FandolSong-Regular
+PS LXGWNeoZhiSong
 ============================================================
 ============================================================
 TEST 2: the family named by CJKsfdefault
 ============================================================
-PS FandolHei-Regular
+PS LXGWNeoXiHei
 ============================================================
 ============================================================
 TEST 3: the family named by CJKttdefault
 ============================================================
-PS FandolFang-Regular
+PS ZhuqueFangsong-Regular
 ============================================================
 ============================================================
 TEST 4: a family that is not declared is reported by its expansion
 ============================================================
 Package LuaCJK Warning: Unknown CJK family `zhnonexistent' is being ignored.
-PS FandolSong-Regular
+PS LXGWNeoZhiSong
 ============================================================
 ============================================================
 TEST 5: a family declared under the name of a font command
 ============================================================
 Package fontspec Info: 
-(fontspec)             Font family 'FandolKai-Regular.otf(0)' created for font 'FandolKai-Regular.otf' with options [Script=CJK].
+(fontspec)             Font family 'LXGWWenKaiGBLite-Regular.ttf(0)' created for font 'LXGWWenKaiGBLite-Regular.ttf' with options [Script=CJK].
 (fontspec)              
 (fontspec)              This font family consists of the following NFSS series/shapes:
 (fontspec)              
-(fontspec)             - 'normal' (m/n) with NFSS spec.: <->"[FandolKai-Regular.otf]:mode=node;script=hani;language=dflt;"
-PS FandolKai-Regular
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->"[LXGWWenKaiGBLite-Regular.ttf]:mode=node;script=hani;language=dflt;"
+PS LXGWWenKaiGBLite-Regular
 ============================================================

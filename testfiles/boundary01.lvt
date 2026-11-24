@@ -3,9 +3,9 @@
 \documentclass{article}
 \usepackage{LuaCJK}
 \usepackage{xcolor,hyperref}
-\setCJKmainfont{FandolSong-Regular.otf}[
-  BoldFont   = FandolSong-Bold.otf,
-  ItalicFont = FandolKai-Regular.otf
+\setCJKmainfont{LXGWNeoZhiSong.ttf}[
+  BoldFont   = LXGWZhenKaiSlabGB-Regular.ttf,
+  ItalicFont = LXGWWenKaiGBLite-Regular.ttf
 ]
 \LuaCJKsetup{CJKglue=10pt, CJKecglue=5pt}
 \makeatletter

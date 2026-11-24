@@ -12,20 +12,20 @@ width: 50.0pt
 ============================================================
 TEST 2: the default position centres the box like a parbox
 ============================================================
-height: 13.15001pt, parbox: 13.15001pt
-depth: 8.15pt, parbox: 8.15pt
+height: 12.90918pt, parbox: 12.90918pt
+depth: 7.90918pt, parbox: 7.90918pt
 ============================================================
 ============================================================
 TEST 3: the t position puts the first line on the surrounding baseline
 ============================================================
-height: 7.78pt, parbox: 7.78pt
-depth: 13.52pt, parbox: 13.52pt
+height: 8.12012pt, parbox: 8.12012pt
+depth: 12.69824pt, parbox: 12.69824pt
 ============================================================
 ============================================================
 TEST 4: the b position puts the last line on the surrounding baseline
 ============================================================
-height: 19.78pt, parbox: 19.78pt
-depth: 1.52pt, parbox: 1.52pt
+height: 20.12012pt, parbox: 20.12012pt
+depth: 0.69824pt, parbox: 0.69824pt
 ============================================================
 ============================================================
 TEST 5: a zero width keeps the surrounding line width
@@ -36,7 +36,7 @@ width: 345.0pt
 TEST 6: each line is filled to the width
 ============================================================
 width: 50.0pt
-depth: 8.265pt
+depth: 7.94336pt
 line 1: glyph glue[4] glyph glue[2] glue[0]
 line 2: glyph glue[4] glyph glue[2] glue[0]
 ============================================================
@@ -44,12 +44,12 @@ line 2: glyph glue[4] glyph glue[2] glue[0]
 TEST 7: the environment works in a table cell
 ============================================================
 width: 128.99004pt
-height: 19.67pt, depth: 14.66998pt
+height: 19.50429pt, depth: 14.50429pt
 ============================================================
 ============================================================
 TEST 8: the text after the environment joins the box on its line
 ============================================================
-height: 7.6pt, depth: 2.29pt
+height: 8.0957pt, depth: 2.0044pt
 items: hlist
 line: local_par hlist vlist glyph rule glue glyph glue glyph penalty glue glue
 ============================================================
@@ -72,6 +72,6 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <8> on input line ....
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <6> on input line ....
-width: 60.0pt, height: 16.30501pt
+width: 60.0pt, height: 16.15431pt
 box: hlist glue kern rule kern hlist
 ============================================================

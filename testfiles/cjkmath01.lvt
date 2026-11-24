@@ -6,8 +6,8 @@
 \usepackage{unicode-math}
 \setmathfont{TeX Gyre Pagella Math}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
-\setCJKmathfont{FandolKai-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
+\setCJKmathfont{LXGWWenKaiGBLite-Regular.ttf}
 \LuaCJKsetup{CJKmath=true}
 
 \def\probe{%
@@ -53,7 +53,7 @@
 
 \TEST{setCJKmathfont selects another font}{
   \begingroup
-    \setCJKmathfont{FandolSong-Regular.otf}
+    \setCJKmathfont{LXGWNeoZhiSong.ttf}
     \setbox0=\hbox{$中$}
     \probe
   \endgroup

@@ -13,8 +13,8 @@
 % The CJK main font has no CJK glyph at all, so every CJK character needs the
 % fallback font, in the text and in a formula alike.
 \setCJKmainfont{TeX Gyre Pagella}
-\setCJKfallbackfamilyfont{\CJKrmdefault}{FandolSong-Regular.otf}[
-  BoldFont = FandolSong-Bold.otf]
+\setCJKfallbackfamilyfont{\CJKrmdefault}{LXGWNeoZhiSong.ttf}[
+  BoldFont = LXGWZhenKaiSlabGB-Regular.ttf]
 % Declared without a fallback, and given one inside the document.
 \setCJKfamilyfont{late}{TeX Gyre Pagella}
 \LuaCJKsetup{AutoFallBack = true, CJKmath = true}
@@ -83,8 +83,8 @@
 \TEST{a fallback declared in the document reaches the next formula}{
   \begingroup
     \CJKfamily{late}
-    \setCJKfallbackfamilyfont{late}{FandolSong-Regular.otf}[
-      BoldFont = FandolSong-Bold.otf]
+    \setCJKfallbackfamilyfont{late}{LXGWNeoZhiSong.ttf}[
+      BoldFont = LXGWZhenKaiSlabGB-Regular.ttf]
     \setbox0=\hbox{$中$}
     \probe
   \endgroup

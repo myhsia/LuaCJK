@@ -2,10 +2,11 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
-% Fandol holds no halfwidth punctuation, so the last two tests set the marks
-% in LXGW WenKai, which does; the probe reads the node list, never the ink.
-\newCJKfontfamily\marksfamily{LXGWWenKaiGBLite-Regular.ttf}
+% The base font joins a pair of em dashes into U+2E3A; these tests read the
+% pair as two marks, so the ligature is off.
+\setCJKmainfont[RawFeature = -ccmp]{LXGWNeoZhiSong.ttf}
+% Neo ZhiSong holds the halfwidth punctuation of the last two tests;
+% the probe reads the node list, never the ink.
 \LuaCJKsetup{CJKglue=0pt, CJKecglue=0pt}
 
 \def\probe{%
@@ -230,16 +231,16 @@
 }
 
 \TEST{a halfwidth closing mark cannot start a line}{
-  \setbox0=\hbox{\marksfamily 字｡}
+  \setbox0=\hbox{字｡}
   \probe
-  \setbox0=\hbox{\marksfamily 字､}
+  \setbox0=\hbox{字､}
   \probe
-  \setbox0=\hbox{\marksfamily 字｣}
+  \setbox0=\hbox{字｣}
   \probe
 }
 
 \TEST{a halfwidth opening mark cannot end a line}{
-  \setbox0=\hbox{\marksfamily ｢字}
+  \setbox0=\hbox{｢字}
   \probe
 }
 

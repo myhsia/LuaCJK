@@ -2,7 +2,7 @@
 
 \documentclass{article}
 \usepackage{LuaCJK}
-\setCJKmainfont{FandolSong-Regular.otf}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
 \LuaCJKsetup{CJKglue=1pt, CJKecglue=5pt}
 
 % The report is the node list itself: the glue, kern, and penalty the passes

@@ -3,15 +3,15 @@ Don't change this file in any respect.
 ============================================================
 TEST 1: the main text takes the family the preamble chose
 ============================================================
-PSNAME FandolHei-Regular
+PSNAME LXGWNeoXiHei
 ============================================================
 ============================================================
 TEST 2: the family survives a normalfont
 ============================================================
-PSNAME FandolHei-Regular
+PSNAME LXGWNeoXiHei
 ============================================================
 ============================================================
 TEST 3: the sans serif family is the same one
 ============================================================
-PSNAME FandolHei-Regular
+PSNAME LXGWNeoXiHei
 ============================================================
