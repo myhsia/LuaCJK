@@ -66,9 +66,22 @@
 \setbox6=\vbox{\hsize=90pt \noindent 中中中中。
 文}
 
+% A box of no advance is not a boundary of its own: the space in front of it
+% belongs to the boundary of the two characters it stands between.  The boxes
+% are declared before the block that keeps the source spaces, because a
+% register that is not allocated takes the next number.
+\newbox\keptspacebox
+\newbox\nospacebox
+\newbox\leftspacebox
+\newbox\rightspacebox
+\newbox\twospacesbox
+\newbox\boxlatinbox
+\newbox\plainlatinbox
+
 \begingroup
   \LuaCJKsetup{CJKspace = true}
   \global\setbox8=\hbox{中 中}
+  \global\setbox\keptspacebox=\hbox{中 \mbox{} 文}
 \endgroup
 
 % Allocated rather than numbered: box 10 is \tn{voidb@x}, and \tn{nobreakspace}
@@ -90,6 +103,12 @@
 \setbox\tildelatinbox=\hbox{中~A}
 \setbox\colortildelatinbox=\hbox{中~\textcolor{red}{A}}
 \setbox\colorsourcebox=\hbox{中 \textcolor{red}{中}}
+\setbox\nospacebox=\hbox{中\mbox{}文}
+\setbox\leftspacebox=\hbox{中 \mbox{}文}
+\setbox\rightspacebox=\hbox{中\mbox{} 文}
+\setbox\twospacesbox=\hbox{中 \mbox{} 文}
+\setbox\boxlatinbox=\hbox{中 \mbox{}A}
+\setbox\plainlatinbox=\hbox{中 A}
 
 \begin{document}
 
@@ -141,6 +160,27 @@
   \report{\number\colorsourcebox}
   \TYPE{plain:   \the\wd0}
   \TYPE{colored: \the\wd\colorsourcebox}
+}
+
+\TEST{an empty box does not separate the two sides of a boundary}{
+  \report{\number\nospacebox}
+  \report{\number\leftspacebox}
+  \report{\number\rightspacebox}
+  \report{\number\twospacesbox}
+  \TYPE{none:   \the\wd\nospacebox}
+  \TYPE{left:   \the\wd\leftspacebox}
+  \TYPE{right:  \the\wd\rightspacebox}
+  \TYPE{both:   \the\wd\twospacesbox}
+  \TYPE{direct: \the\wd0}
+  \report{\number\keptspacebox}
+  \TYPE{kept:   \the\wd\keptspacebox}
+}
+
+\TEST{an empty box in front of Latin text keeps the source space}{
+  \report{\number\boxlatinbox}
+  \report{\number\plainlatinbox}
+  \TYPE{with box: \the\wd\boxlatinbox}
+  \TYPE{direct:   \the\wd\plainlatinbox}
 }
 
 \END

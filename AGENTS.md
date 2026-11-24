@@ -356,6 +356,14 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   next character is passed over, so the color change `\textcolor` inserts does
   not hide the space: it stays the boundary, and no second glue joins it
   (`boundary03`).  A penalty ends that search, because it has its own rule.
+- **A node of no advance does not end a run, so a space beside it is the
+  boundary's space.**  `skippable` is `transparent_node` plus a box that
+  `box_visible` rejects; `handle_boundary` walks back over it to the glue in
+  front, retimes that glue, and splices nothing behind the box, and
+  `collapse_earlier_spaces` zeroes the advance of a source space that another
+  one stands in front of, so two spaces around such a box are one space — an
+  explicit `\ ` or `~` keeps its own.  `中 \mbox{} 文` is therefore spaced as
+  `中文`, and an empty box adds no `CJKglue` of its own (`boundary03`).
 - **Options and `\LuaCJKsetup` share one key path.**  Every key is defined in
   `LuaCJK / options` and read by `\ProcessKeyOptions`, so a new key is a
   package option for free. Do not add a second path or a separate option

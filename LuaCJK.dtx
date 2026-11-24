@@ -873,6 +873,9 @@ $ 天地玄黄 $ and 天地玄黄
 % 用 \tn{char} 请求的字符不会被删除，因为 \tn{char} 要的就是字形本身。
 % 盒子同样按它占的进距计：不占进距的盒子不把两侧的文字分开，
 % 所以 |\rlap|、|\llap| 与 |\clap| 覆盖在文字上的内容仍属于同一串。
+% 这样的盒子两侧的源码空格也属于同一个边界：
+% 紧邻后一个字符的空格成为这个边界的胶，它前面的空格不再占宽，
+% 所以两个空格与直接相邻时相同，仍是一个空格。
 % 盒边的类别取自盒内最靠近这条边的文字：
 % 盒内的字距、间距胶与标尺都不遮住它，
 % 所以中西文胶按文字本身的类别加在盒外；
@@ -2292,7 +2295,11 @@ $ 天地玄黄 $ and 天地玄黄
 % for the glyph itself.
 % A box is read by the advance it occupies in the same way: one that occupies
 % none does not separate the text around it, so what |\rlap|, |\llap| and
-% |\clap| set over the text stays in one run. A box otherwise takes the class
+% |\clap| set over the text stays in one run. The source spaces on either side
+% of such a box belong to that one boundary as well: the space next to the
+% character behind the box becomes its glue and the space in front of the box
+% gives up its advance, so two spaces around it are one space, as they are when
+% no box stands between them. A box otherwise takes the class
 % of the text nearest its edge: a kern, a spacing glue, or a rule inside it
 % does not hide that text, so the glue is added by the class of the text and
 % not by the skip the document wrote inside the box. Only a filling glue, such
@@ -7338,6 +7345,20 @@ end
 
 %    \end{macrocode}
 % \end{macro}
+% \begin{macro}[int]{skippable}
+% Whether the text reaches past a node: a node that carries neither text nor
+% advance, or a box that occupies none.
+% The spacing pass walks back over such a node to the material in front of it,
+% so an empty box is not a boundary of its own and a source space beside it is
+% the space of the boundary it stands in.
+%    \begin{macrocode}
+local function skippable (n)
+  return transparent_node(n)
+      or ((n.id == HLIST or n.id == VLIST) and not box_visible(n))
+end
+
+%    \end{macrocode}
+% \end{macro}
 % \begin{macro}[int]{attached_box}
 % \changes{v0.0.5}{2026/11/23}{A box that holds nothing on its own baseline,
 %   only raised or lowered boxes, is attached like a shifted box: the mark of
@@ -7697,7 +7718,8 @@ end
 % one. A box that holds no text and has ink is a Latin atom, so a rule box
 % takes the glue on both sides. A box that occupies no advance is passed
 % over, so an empty box inside CJK text does not break the run, and the ink
-% of an overlaid one does not split it.
+% of an overlaid one does not split it; a source space beside it is the space
+% of the boundary it stands in, and the pass walks back over the box to it.
 % A box whose own baseline \TeX\ has shifted is attached to the character in
 % front of it: the run ends at it, so it takes no glue on either side and
 % offers no break. That is the box \cs{textsuperscript} and
@@ -7727,6 +7749,11 @@ end
 % \changes{v0.0.5}{2026/11/24}{A suspended run takes the glue its two classes
 %   give at its edge: \cs{verb} beside a CJK character is spaced as the same
 %   characters in a text font are, while the material itself is left alone.}
+% \changes{v0.0.5}{2026/11/24}{A source space beside a box that occupies no
+%   advance belongs to the boundary of the two characters the box stands
+%   between: the space in front of the box becomes the inter-character glue, so
+%   an \cs{mbox} between two CJK characters takes no \keys{CJKglue} of its own,
+%   and two spaces on either side of it are one space.}
 % Decide what to do at the boundary between two visible nodes.
 % Only source-generated glue is a candidate for replacement;
 % other glue is left alone, and a discretionary is opaque, so neither is
@@ -7744,6 +7771,9 @@ end
 % character is passed over: a color change in front of the character does not
 % hide the space, which stays the boundary and is never joined by a second
 % glue.  A penalty ends that search, because it has a boundary rule of its own.
+% A box that occupies no advance is passed over the same way, so a source space
+% in front of an empty box is the boundary of the characters the box stands
+% between, and no glue is spliced behind the box.
 % A boundary that touches a suspended run takes the glue its two classes give,
 % because \keys{Verb} leaves the material alone and not the text around it:
 % the edge is spaced as the same characters would be in a text font, and the
@@ -8062,6 +8092,52 @@ end
 
 %    \end{macrocode}
 % \end{macro}
+% \begin{macro}[int]{explicit_space}
+% Whether a space was written with |\ | or \tn{nobreakspace}: the attribute
+% set around that token is the only record of it.
+%    \begin{macrocode}
+local function explicit_space (n)
+  return M.attr_explicit_space ~= nil
+     and (has_attribute(n, M.attr_explicit_space) or 0) ~= 0
+end
+
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}[int]{collapse_earlier_spaces}
+% Give up the advance of a source space that stands in front of another one,
+% with nothing visible between the two.
+% Two source spaces are one space, and \TeX\ makes one glue of them when they
+% are adjacent; a whatsit, a mark, or a box that occupies no advance is
+% invisible to the boundary rules, so the collapse applies across it as well,
+% and the space nearest the character is the one that carries the boundary.
+% The advance is dropped rather than the node, so the boundary keeps the break
+% opportunity of both spaces, and the node is marked as one this package has
+% dealt with, so a list that is packed twice is not collapsed twice.
+%    \begin{macrocode}
+local function collapse_earlier_spaces (glue)
+  local n = glue.prev
+  while n do
+    if n.id == PENALTY then
+      return
+    elseif skippable(n) then
+      n = n.prev
+    elseif n.id == GLUE and n.subtype == SPACESKIP
+           and not explicit_space(n) and not is_inserted(n) then
+      n.width   = 0
+      n.stretch = 0
+      n.shrink  = 0
+      if M.attr_inserted then
+        set_attribute(n, M.attr_inserted, 1)
+      end
+      n = n.prev
+    else
+      return
+    end
+  end
+end
+
+%    \end{macrocode}
+% \end{macro}
 % \begin{macro}[int]{handle_source_space}
 % Remove or retime a space typed in the source.
 % Only a space that came from the source is a candidate; an explicit
@@ -8084,16 +8160,19 @@ end
 % that mark is read.  Such a space keeps its advance, on either side of the
 % boundary it stands at, because \pkg{xeCJK} sets it as a space too and
 % \keys{CJKspace} is about the source.
+% A source space that another source space stands in front of, with nothing
+% visible between the two, is the second of one run of spaces, so the one in
+% front of it gives up its advance first.
 %    \begin{macrocode}
 local function handle_source_space (head, glue, prev_visible, prev_end, cur,
                                     cur_start, settings)
   if glue.subtype ~= SPACESKIP then
     return head
   end
-  if M.attr_explicit_space
-     and (has_attribute(glue, M.attr_explicit_space) or 0) ~= 0 then
+  if explicit_space(glue) then
     return head
   end
+  collapse_earlier_spaces(glue)
   local prev_cjk = prev_end == "CJK"
   local cur_cjk  = cur_start == "CJK"
   if prev_cjk and cur_cjk then
@@ -8221,9 +8300,9 @@ local function handle_boundary (head, prev, prev_visible, prev_end,
         head, prev, prev_visible, prev_end, cur, start_class, settings)
     end
   elseif prev and prev.id == DISC then
-  elseif prev and transparent_node(prev) then
+  elseif prev and skippable(prev) then
     local n = prev
-    while n and n.id ~= PENALTY and transparent_node(n) do
+    while n and n.id ~= PENALTY and skippable(n) do
       n = n.prev
     end
     if n and n.id == GLUE then
