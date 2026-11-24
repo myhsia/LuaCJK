@@ -55,6 +55,10 @@
 \newbox\raisedbox
 \newbox\raisedrunbox
 \newbox\markbox
+\newbox\framemathbox
+\newbox\framecjkbox
+\newbox\raisedframebox
+\newbox\framelinebox
 
 \setbox\scriptbox=\hbox{中\textsuperscript{2}}
 \setbox\subscriptbox=\hbox{中\textsubscript{2}}
@@ -66,10 +70,14 @@
 \def\@thefnmark{1}
 \setbox\markbox=\hbox{中\@makefnmark}
 \makeatother
+\setbox\framemathbox=\hbox{中\fbox{$x$}}
+\setbox\framecjkbox=\hbox{中\fbox{甲}}
+\setbox\raisedframebox=\hbox{中\raisebox{1ex}{\fbox{abc}}}
 \begingroup
   \LuaCJKsetup{CJKglue = 0pt}
   \global\setbox\scriptlinebox=\vbox{\hsize=3em \noindent 中中中\textsuperscript{2}\par}
   \global\setbox\plainlinebox=\vbox{\hsize=3em \noindent 中中中\mbox{2}\par}
+  \global\setbox\framelinebox=\vbox{\hsize=3em \noindent 中中中\fbox{2}\par}
 \endgroup
 
 \begin{document}
@@ -117,6 +125,25 @@
 
 \TEST{a box on the baseline still breaks}{
   \lines\plainlinebox
+}
+
+\TEST{a framed box is not a mark}{
+  \report\framemathbox
+  \TYPE{width: \the\wd\framemathbox}
+}
+
+\TEST{a frame reads the CJK character it holds}{
+  \report\framecjkbox
+  \TYPE{width: \the\wd\framecjkbox}
+}
+
+\TEST{a frame inside a raised box stays attached}{
+  \report\raisedframebox
+  \TYPE{width: \the\wd\raisedframebox}
+}
+
+\TEST{a framed box offers the break its glue gives}{
+  \lines\framelinebox
 }
 
 \END
