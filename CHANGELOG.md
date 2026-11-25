@@ -1,3 +1,7 @@
+## [LuaCJK-v0.1.1](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.1.1)
+
+- A paragraph that begins with a box hangs the opening mark inside it as well, so `\mbox` around the mark leaves its blank in the indentation, as a line of plain text does.
+
 ## [LuaCJK-v0.1.0](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.1.0)
 
 - `Baseline` moves the characters of the family in force where they are written, and the marks of the family `PunctFamily` names, so a family selected inside a group moves only that group and two declarations of one font keep their values in the same paragraph.
