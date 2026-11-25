@@ -108,6 +108,24 @@
   \endgroup
 }
 
+\TEST{a paragraph that begins with a box hangs the mark inside it}{
+  \setbox0=\vbox{\hsize=4em \mbox{“字字”}\par}
+  \showlines
+}
+
+\TEST{the indentation carries that blank as well}{
+  \begingroup
+    \parindent=1em
+    \setbox0=\vbox{\hsize=4em \mbox{‘字字’}\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{a box the line begins with hangs by the mark at its edge}{
+  \setbox0=\vbox{\hsize=3em 中文中\mbox{“字字”}\par}
+  \showlines
+}
+
 \TEST{a line a forced break starts leaves its blank}{
   \setbox0=\vbox{\hsize=6em 字字字字\\‘字字\par}
   \showlines
