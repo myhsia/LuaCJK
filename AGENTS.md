@@ -294,6 +294,23 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   mark hangs by the blank it has.  A width the document sets with
   `\LuaCJKsetwidth` or `PunctWidth` is used as it stands — that is what makes
   `0pt` an advance — with the class moving the ink (`punctgeom01`).
+- **A break-prohibited span is identified, not flagged.**  The `nobreak`
+  attribute holds the identifier of the outermost `\LuaCJKnobreak` that marks a
+  node, and a break is forbidden only where the two values agree, so two
+  arguments beside each other keep the break between them while an argument
+  written inside another one belongs to the span around it (`nobreak03`).  A
+  span takes its identifier only where none is in force, which is what makes a
+  nested call join the outer one; the value `1` belongs to the span of
+  `\LuaCJKVerbAddon`, so the first argument of a document carries `2`.  A glue
+  the document writes inside an argument is forbidden by carrying any mark, not
+  by agreeing with the other side.
+- **A prohibition belongs to the character it protects.**  `CJLineBreak` in
+  `strict` stops a small kana from starting a line, so the decision reads the
+  settings snapshot of the character that would start the line and not the one
+  in front of the break: a group that selects `strict` covers the small kana set
+  inside it and no character outside, which is what xeCJK does
+  (`cjlinebreak01`).  `PunctKinsoku` and `AllowBreakBetweenPuncts` still read
+  the character in front, which is the side the package has always read.
 - **Every behavior change needs a test.**  Add or extend a `.lvt`, run
   `l3build save <name>`, then read the `.tlg` diff and confirm the numbers are
   the values you designed, not merely "whatever came out". `save` takes bare

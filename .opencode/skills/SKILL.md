@@ -236,8 +236,11 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    spaces; a glue the document wrote is read as well when it carries the
    `nobreak` attribute, which is how a `\quad` or an `\hspace` inside
    `\LuaCJKnobreak` keeps its place on the line (`nobreak03`).
-   A break is forbidden when the material on both sides of it carries the mark,
-   or when a node the document wrote carries it; the glue and kerns the spacing
+   A break is forbidden when the material on both sides of it lies in one span,
+   or when a node the document wrote carries the mark; the identifier of a span
+   is its own, so two `\LuaCJKnobreak` arguments beside each other keep the break
+   between them, while a call inside another one joins the span already in force.
+   The glue and kerns the spacing
    pass inserts take the attributes both neighbours carry, so a mark there
    belongs to a decoration when the span is whole and to neither side when it
    ends, and the boundary between the argument and the text around it belongs to
@@ -314,7 +317,7 @@ Sixteen attributes carry the per-node state; all are read through
 | `xecglue` | whether the CJK/Latin glue is suppressed at this space |
 | `inserted` | marks the nodes LuaCJK created, so they are not examined twice |
 | `disabled` | `\LuaCJKdisable` state |
-| `nobreak` | `\LuaCJKnobreak` and `\LuaCJKVerbAddon` state: a break whose two sides carry it is forbidden, and so is a break at a glue or kern the document wrote with it; a mark a node inherits from the character in front of it is a decoration's record and not a prohibition |
+| `nobreak` | identifier of the outermost break-prohibited span (`\LuaCJKnobreak`, and `1` for `\LuaCJKVerbAddon`): a break whose two sides carry the same value is forbidden, and so is a break at a glue or kern the document wrote inside a span; a mark a node inherits from the character in front of it is a decoration's record and not a prohibition |
 | `settings` | number of the option snapshot that applies to this node |
 | `attached` | the character is a joiner or a variation selector, so `drop_orphans` removes what shaping left of it |
 | `LuaCJKfntef/settings` | number of the decoration settings entry |
@@ -437,7 +440,10 @@ whether a character was found at all.
 `CJLineBreak = strict` adds one rule of its own, from the Unicode
 `Line_Break = CJ` set: those characters may not start a line. The set is read
 from `LineBreak.txt` on the first use of the key, so the default pays nothing
-for it; the key is independent of `PunctKinsoku`.
+for it; the key is independent of `PunctKinsoku`. The rule belongs to the
+character that would start the line, so it reads that character's snapshot: a
+group that selects `strict` protects the small kana set inside it and no
+character outside (`cjlinebreak01`).
 
 A mark is spaced by its own advance alone: at a boundary between a mark and
 Latin text the spacing pass inserts a glue of zero width, so the mark's ink

@@ -1238,6 +1238,7 @@ a’a\quad 不亦说乎！
 %   模式下，Unicode 的 \texttt{Line\_Break} 属性为
 %   \texttt{CJ} 的字符（小假名之类）不能出现在行首。
 %   这个模式只增加禁则，不取消任何禁则。
+%   禁则属于不能起行的那个字符，起作用的是这个字符所在分组的设置。
 %   初始值是 \texttt{normal}，它把这些字符当作其他 CJK 字符。
 %   这个集合从 \pkg{unicode-data} 宏包集的 \file{LineBreak.txt} 读取，
 %   所以严格模式需要这个宏包集。
@@ -1264,7 +1265,8 @@ a’a\quad 不亦说乎！
 %   把 \meta{text} 保持在一行之内。参数的节点被打上标记，
 %   相邻两个字符之间的断开被禁止，参数里由 \cs{quad} 或
 %   \cs{hspace} 写出的胶也一样；参数与前后文之间的边界属于那段文字，
-%   照旧可以断开。标记随当前分组结束。
+%   照旧可以断开，两个相邻的参数是两个整体，它们之间也照旧可以断开。
+%   标记随当前分组结束。
 % \end{function}
 %
 % \iffalse
@@ -2702,6 +2704,8 @@ a’a\quad 不亦说乎！
 %   mode a character whose Unicode \texttt{Line\_Break} property is
 %   \texttt{CJ} (the small kana and the like) may not start a line.
 %   The mode only adds prohibitions; it does not remove any.
+%   The prohibition belongs to the character that may not start the line, so
+%   the setting of the group that character is set in decides.
 %   The initial value is \texttt{normal}, which treats those characters
 %   like other CJK characters.
 %   The set is read from \file{LineBreak.txt} of the \pkg{unicode-data}
@@ -2730,7 +2734,8 @@ a’a\quad 不亦说乎！
 %   line-breaking pass forbids a break between two of them, including a glue
 %   the argument writes with \cs{quad} or \cs{hspace}; the boundary between the
 %   argument and the text around it belongs to that text, so it keeps the break
-%   the text offers. The marking ends with the current group.
+%   the text offers, and two adjacent arguments are two units for the same
+%   reason. The marking ends with the current group.
 % \end{function}
 %
 % \iffalse
@@ -4324,6 +4329,18 @@ abc汉字abc
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{variable}[int]{\g_@@_nobreak_id_int}
+% The identifier of the next break-prohibited span.
+% A span takes one when its \cs{LuaCJKnobreak} starts outside every other span,
+% so a call inside one joins the span already in force.
+% The value 1 marks the span of \cs{LuaCJKVerbAddon}, which an argument inside
+% it joins as well, so the first argument of a document carries 2.
+%    \begin{macrocode}
+\int_new:N \g_@@_nobreak_id_int
+\int_gset:Nn \g_@@_nobreak_id_int { 1 }
+%    \end{macrocode}
+% \end{variable}
+%
 % \begin{macro}{\LuaCJKnobreak}
 % \changes{v0.0.1}{2026/11/11}{Provide \cs{LuaCJKnobreak} and the
 %   \keys{PunctWidth} option; neither this prohibition nor that of
@@ -4339,16 +4356,30 @@ abc汉字abc
 %   argument alone: a break at either edge of the argument is the business of
 %   the text around it, and the glue the package inserts behind the last
 %   character no longer carries the prohibition.}
-% Keep the argument on one line: the marked nodes on both sides of a break
-% forbid it, and so does a glue the document writes with the mark, whether it
-% is a \cs{quad}, an \cs{hspace}, or an \cs{hfill}.  The boundary between the
-% argument and the text around it is not marked on both sides, so it keeps the
-% break the text offers.
+% \changes{v0.1.1}{2026/11/30}{Every \cs{LuaCJKnobreak} marks its argument as a
+%   span of its own, so two arguments beside each other keep the line break
+%   between them, while an argument written inside another one still belongs to
+%   the span around it.}
+% Keep the argument on one line.
+% The nodes of the argument carry the identifier of the span that encloses
+% them, and a break is forbidden only where the two identifiers agree, so a
+% break inside the argument is forbidden, and so is a break at a glue the
+% document writes there, whether it is a \cs{quad}, an \cs{hspace}, or an
+% \cs{hfill}.
+% The boundary between the argument and the text around it carries no mark or
+% carries another span, so it keeps the break the text offers; two arguments
+% written one after the other are two spans for the same reason.
+% A call inside another one joins the span already in force, which is what
+% keeps the whole content of an outer argument on one line.
 %    \begin{macrocode}
 \NewDocumentCommand \LuaCJKnobreak { +m }
   {
     \group_begin:
-      \g_@@_nobreak_attr = 1
+      \int_compare:nNnT \g_@@_nobreak_attr < { 1 }
+        {
+          \int_gincr:N \g_@@_nobreak_id_int
+          \g_@@_nobreak_attr = \int_use:N \g_@@_nobreak_id_int
+        }
       #1
     \group_end:
   }
@@ -8541,6 +8572,9 @@ end
 %   a break in front of a run of them is forbidden, so the run travels to the
 %   next line whole, while the break between the marks of a run stays the
 %   business of the \texttt{NoBreakLongPunct} set.}
+% \changes{v0.1.1}{2026/11/30}{\keys{CJLineBreak} reads the settings of the
+%   character that would start the line, so a group that selects \texttt{strict}
+%   no longer forbids a break in front of a small kana written outside it.}
 % Add the prohibitions where the settings of the text ask for them.
 % The break points the pass reads are the glue \pkg{LuaCJK} inserts and the
 % source spaces, because the punctuation rules are about those places alone;
@@ -8548,18 +8582,25 @@ end
 % point as well, which is what keeps a \cs{quad} or an \cs{hspace} inside the
 % argument on the same line.
 % The mark that counts is the document's own: a break is forbidden when the
-% material on both sides of it is marked, or when a node the document wrote
-% carries the mark itself.  The glue and the kerns the package inserts take the
-% attributes of the character in front of them, so a mark there records the
-% decoration a span carries and says nothing about the break, and the boundary
-% between the argument and the text around it belongs to that text.
+% material on both sides of it lies in one span, or when a node the document
+% wrote carries a mark itself.  The identifier of a span is its own, so two
+% arguments beside each other are two spans and the break between them stays,
+% while the value agrees throughout one argument and a call inside another one
+% joins the span already in force.  The glue and the kerns the package inserts
+% take the attributes of the character in front of them, so a mark there records
+% the decoration a span carries and says nothing about the break, and the
+% boundary between the argument and the text around it belongs to that text.
 % A box is read at the edge that faces the break, the way the spacing pass
 % reads it, so that a mark at the edge of the box is neither a line start nor
 % a line end.
+% The rule \keys{CJLineBreak} adds belongs to the character that would start
+% the line, so it reads that character's snapshot: a group that selects
+% \texttt{strict} protects the small kana set inside it and no character
+% outside.
 %    \begin{macrocode}
 %    \end{macrocode}
 % \begin{macro}[int]{no_break_mark}
-% Whether a node carries the attribute of \cs{LuaCJKnobreak}.
+% Whether a node is marked by a break-prohibited span.
 %    \begin{macrocode}
 local function no_break_mark (n)
   if not (M.attr_nobreak and n) then
@@ -8567,6 +8608,22 @@ local function no_break_mark (n)
   end
   local value = has_attribute(n, M.attr_nobreak)
   return value ~= nil and value ~= 0
+end
+
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}[int]{same_break_span}
+% Whether two nodes lie in one break-prohibited span: both are marked and the
+% identifiers agree.
+% The identifier is the one of the outermost \cs{LuaCJKnobreak} that marks the
+% node, so two arguments beside each other are two spans, and an argument
+% inside another one belongs to the span around it.
+%    \begin{macrocode}
+local function same_break_span (a, b)
+  if not (no_break_mark(a) and no_break_mark(b)) then
+    return false
+  end
+  return has_attribute(a, M.attr_nobreak) == has_attribute(b, M.attr_nobreak)
 end
 
 %    \end{macrocode}
@@ -8589,7 +8646,7 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{forbid_marked_disc}
-% Forbid the break at a discretionary whose two sides are both marked, the way
+% Forbid the break at a discretionary whose two sides lie in one span, the way
 % the break at a glue is forbidden.
 % \TeX\ gives a discretionary the attributes of the character in front of it,
 % so the node's own attributes are the mark of that character and not a
@@ -8597,7 +8654,7 @@ end
 % edge of the argument leaves the marked text on one side only.
 %    \begin{macrocode}
 local function forbid_marked_disc (disc, left)
-  if no_break_mark(left) and no_break_mark(next_glyph(disc.next)) then
+  if same_break_span(left, next_glyph(disc.next)) then
     disc.penalty = 10000
   end
 end
@@ -8665,10 +8722,12 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{edge_mark}
-% The punctuation group and the character at one edge of a visible node:
-% a glyph is its own edge, and a box is read at the edge that faces the
+% The punctuation group, the character, and the glyph at one edge of a visible
+% node: a glyph is its own edge, and a box is read at the edge that faces the
 % break, so a mark inside a box takes part in the rules.  A formula carries
 % no mark.
+% The glyph is returned because \keys{CJLineBreak} reads the settings snapshot
+% of the character that would start the line, which a box does not carry.
 %    \begin{macrocode}
 local function edge_mark (n, at_end)
   if n.id == GLYPH then
@@ -8741,17 +8800,20 @@ local function apply_kinsoku (head)
       forbid_marked_disc(cur, last)
     elseif last and (is_break_point(cur)
                      or (cur.id == GLUE and no_break_mark(cur))) then
-      local nxt                  = next_visible(cur.next)
-      local settings             = settings_of(last)
-      local prev_mark, prev_char = edge_mark(last, true)
-      local next_mark, next_char = nil, nil
+      local nxt                             = next_visible(cur.next)
+      local settings                        = settings_of(last)
+      local prev_mark, prev_char            = edge_mark(last, true)
+      local next_mark, next_char, next_node = nil, nil, nil
       if nxt then
-        next_mark, next_char = edge_mark(nxt, false)
+        next_mark, next_char, next_node = edge_mark(nxt, false)
       end
-      local cj                   = settings.cj_strict and next_char and M.cj[next_char]
-      local cur_marked           = no_break_mark(cur) and not is_inserted(cur)
+      local next_settings                   = settings_of(next_node)
+      local cj                              = next_settings.cj_strict
+                                              and next_char and M.cj[next_char]
+      local cur_marked                      = no_break_mark(cur)
+                                              and not is_inserted(cur)
       if nxt and (cur_marked
-                  or (no_break_mark(last) and no_break_mark(nxt)) or cj
+                  or same_break_span(last, nxt) or cj
                   or (settings.kinsoku
                       and not disabled(last) and not disabled(nxt)
                       and forbids_break(prev_mark, prev_char,
