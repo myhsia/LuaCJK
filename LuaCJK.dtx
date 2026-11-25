@@ -9930,6 +9930,11 @@ end
 % item, so the label takes an advance in the line without being part of the
 % paragraph, and a mark that begins the item hangs into it the way it hangs
 % into the indentation of a paragraph.
+% A box that carries text of the paragraph is the head itself: the mark it
+% holds at the edge that faces the line is the mark the line begins with, read
+% the way a break reads it, so a paragraph whose first item is a box hangs that
+% mark as well, and \cs{mbox} around the opening mark of a paragraph leaves its
+% blank in the indentation exactly as plain text does.
 %    \begin{macrocode}
 local function open_hang (n)
   local lead, _, glyph = edge_mark(n, false)
@@ -9954,7 +9959,7 @@ local function head_lead (head)
       return cur, prev
     elseif cur.id == HLIST or cur.id == VLIST then
       if cur.head and cur.width ~= 0 and not item_label(cur) then
-        return nil, nil
+        return cur, prev
       end
     elseif cur.id == GLUE then
       if cur.width ~= indent or cur.stretch ~= 0 or cur.shrink ~= 0 then
@@ -10015,6 +10020,9 @@ end
 %   paragraph hangs the mark it ends with as well, so every line of it stops at
 %   the same edge instead of the last one standing the width of that blank
 %   further in.}
+% \changes{v0.1.1}{2026/11/30}{A paragraph that begins with a box hangs the
+%   opening mark inside it as well, so \cs{mbox} around the mark leaves its
+%   blank in the indentation, as a line of plain text does.}
 % Bracket every break point that a mark ends or starts, so the line measures
 % the hang and the text inside a line does not move. A break that a preceding
 % penalty already forbids is left alone, so a fixed width does not carry a rule

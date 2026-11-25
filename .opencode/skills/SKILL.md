@@ -205,7 +205,9 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    of `\parindent`) or after the label box of a list item, and after the penalty
    that holds a break the document forced. The label box is the box the list
    writes in front of the item's text and follows with a penalty of zero, which
-   is how `head_lead` tells it from a box that carries text of the paragraph.
+   is how `head_lead` tells it from a box that carries text of the paragraph:
+   that one is the head itself, so a `\mbox` around the opening mark of a
+   paragraph hangs the mark inside it (`hang01`).
    Only the `pre_linebreak_filter` path runs it: a box packed by `hpack_filter`
    cannot break a line, and a line box that is packed again would take the pair
    twice.  The two hand-bracketed boundaries are left out when `\leftskip`

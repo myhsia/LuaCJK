@@ -59,7 +59,7 @@ Entry points:
 | --- | --- |
 | `LuaCJK.dtx` | the single source: user documentation, the `\changes` history, implementation, and the code of every derived file |
 | `LuaCJK.ins` | DocStrip map from the `dtx` blocks to the derived files |
-| `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.1.0`, `packtdszip = false` with `tdslocations` kept for `l3build install`, `ctanpkg`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
+| `build.lua` | `l3build` configuration: module `LuaCJK`, version `v0.1.1`, `packtdszip = false` with `tdslocations` kept for `l3build install`, `ctanpkg`, the `uploadconfig` table the CTAN form is read from (its announcement is built from the newest `CHANGELOG.md` section and its note from `CTAN-NOTE.md`), the `update_tag` hack, `docinit_hook` (copies the generated README back to the root and trims its trailing whitespace), and `tex()`, which runs `latexmk -pdflua` on the `dtx` directly, sets `LUAINPUTS` so that the documentation can load the generated Lua modules, and registers the `glo`→`gls` custom dependency with `makeindex -s gglo.ist`, the only way the change history gets its `.gls`, plus a `changelog` target that regenerates `CHANGELOG.md` from the `\changes` entries with `scripts/extract-changes.lua` |
 | `testfiles/NN.lvt` + `.tlg` | 78 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree and moves every `fontset = fandol` in that tree to `fontset = lxgw` |
@@ -529,18 +529,20 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   of `\parindent`, not a glue, and the first line of a list item begins with the
   label box, which the list follows with a penalty of zero, so `head_lead` walks
   over both with the whatsit and local-paragraph nodes and over a penalty that
-  does not force a break, and stops at any other box that has ink and an advance
-  of its own.  The two hand-bracketed boundaries are skipped when `\leftskip`
-  carries a fill: a centered or flush-right paragraph starts its lines at the
-  centering position rather than at the edge of the measure, so the rule would
-  move the whole line instead of leaving the blank in a margin that is not
-  there.  The hang at a break stays in every case, because the line breaker has
-  already counted it when it decides that the mark fits, and it is what keeps
-  the ink of a line end on the right edge there.  The last line of such a
-  paragraph is the fourth boundary: no glue ends it, so the bare rule goes
-  behind the last mark, and it is put there only when `\leftskip` carries a
-  fill, because otherwise the trailing fill absorbs it and the ink does not
-  move (`hang01`).
+  does not force a break.  The walk stops at the first box that carries text of
+  the paragraph, and that box is the head: the mark at its edge is read the way
+  a break reads it, so `\mbox` around the opening mark of a paragraph leaves the
+  blank in the indentation instead of carrying it inside the line.  The two
+  hand-bracketed boundaries are skipped when `\leftskip` carries a fill: a
+  centered or flush-right paragraph starts its lines at the centering position
+  rather than at the edge of the measure, so the rule would move the whole line
+  instead of leaving the blank in a margin that is not there.  The hang at a
+  break stays in every case, because the line breaker has already counted it
+  when it decides that the mark fits, and it is what keeps the ink of a line end
+  on the right edge there.  The last line of such a paragraph is the fourth
+  boundary: no glue ends it, so the bare rule goes behind the last mark, and it
+  is put there only when `\leftskip` carries a fill, because otherwise the
+  trailing fill absorbs it and the ink does not move (`hang01`).
 - **A Type 2 charstring number belongs to the charstring that holds it.**
   `cff_box` hands the charstring being interpreted to the number reader,
   because a subroutine carries its own operands; read from the outer
