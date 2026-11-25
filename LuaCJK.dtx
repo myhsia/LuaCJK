@@ -3264,15 +3264,17 @@ abc汉字abc
 %     \g_@@_explicit_space_attr,
 %                            \c_@@_explicit_space_attr_int,
 %     \g_@@_shift_attr,      \c_@@_shift_attr_int,
-%     \g_@@_punct_shift_attr,\c_@@_punct_shift_attr_int
+%     \g_@@_punct_shift_attr,\c_@@_punct_shift_attr_int,
+%     \g_@@_shifted_attr,    \c_@@_shifted_attr_int
 %   }
 % The attributes record, per node, the CJK font, the space and glue
 % policies, whether the node was inserted by \pkg{LuaCJK}, the CJK math font,
 % whether the adjustments are suspended, whether a formula sets one opening or
 % closing delimiter, whether the character is one
 % that attaches to the character in front of it, whether a space is one
-% the document wrote with |\ | or \tn{nobreakspace}, and the \keys{Baseline}
-% offset of the family that sets the character, in scaled points.
+% the document wrote with |\ | or \tn{nobreakspace}, the \keys{Baseline}
+% offset of the family that sets the character in scaled points, and whether
+% that offset has been added to the glyph yet.
 % The integer constants hold the allocated attribute numbers for the Lua side.
 %    \begin{macrocode}
 \clist_map_inline:nn
@@ -3281,7 +3283,8 @@ abc汉字abc
     disabled, punct_font, settings,  nobreak,    attached,
     math_bracket,
     explicit_space,
-    shift,    punct_shift
+    shift,    punct_shift,
+    shifted
   }
   {
     \exp_args:Nc \newattribute { g_@@_#1_attr }
@@ -5954,6 +5957,7 @@ abc汉字abc
                             =  \int_use:N   \c_@@_explicit_space_attr_int ;
     LuaCJK.attr_shift       =  \int_use:N   \c_@@_shift_attr_int ;
     LuaCJK.attr_punct_shift =  \int_use:N   \c_@@_punct_shift_attr_int ;
+    LuaCJK.attr_shifted     =  \int_use:N   \c_@@_shifted_attr_int ;
     LuaCJK.name_ccglue      = "\cs_to_str:N \l_@@_ccglue_skip" ;
     LuaCJK.name_ecglue      = "\cs_to_str:N \l_@@_ecglue_skip" ;
   }
@@ -7070,12 +7074,17 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
-% \begin{macro}[int]{shift_of, attribute_shift}
+% \begin{macro}[int]{shift_of, attribute_shift, apply_shift}
 % The vertical offset a CJK glyph takes, in scaled points.
 % The text and the marks read the attribute their family filled, and a
 % sub-block or fallback font reads the table that arrived with its
 % identifier; an attribute the node does not carry, or one set to zero, is no
 % offset at all.
+% \texttt{apply\_shift} adds that offset to the glyph and records the addition
+% in the \texttt{shifted} attribute.
+% The usual path meets a glyph once, but a node can reach a second list, as one
+% does when a packed box is unboxed into another, and the record is what keeps
+% a second visit from adding the offset twice.
 %    \begin{macrocode}
 local function attribute_shift (n, attr)
   if not attr then
@@ -7094,6 +7103,19 @@ local function shift_of (n, kind, target)
     return attribute_shift(n, M.attr_punct_shift)
   end
   return M.yoffset[target]
+end
+
+local function apply_shift (n, kind, target)
+  if M.attr_shifted and has_attribute(n, M.attr_shifted) then
+    return
+  end
+  local sp = shift_of(n, kind, target)
+  if sp then
+    n.yoffset = (n.yoffset or 0) + sp
+    if M.attr_shifted then
+      set_attribute(n, M.attr_shifted, 1)
+    end
+  end
 end
 
 %    \end{macrocode}
@@ -7116,15 +7138,23 @@ end
 %   attaches to its base, a variation sequence selects its glyph, and the
 %   font's own ligatures and \texttt{locl} forms appear. An older
 %   \pkg{luaotfload} keeps the previous behavior.}
+% \changes{v0.1.1}{2026/11/25}{The \keys{Baseline} of a family lifts a CJK
+%   character that is already set in the family's own font, which is what a
+%   document that selects that font itself with \cs{fontspec} gets.}
 % Set each CJK glyph in the font that sets it, before the list is shaped, and
 % let a character that attaches to the one in front of it follow that font.
 % The substitution comes before shaping because shaping is what attaches a
 % mark to its base and what a variation selector and a joiner act on; a glyph
 % copied into another font afterwards keeps the form of the font it was
 % shaped in.
-% A glyph already in its font is left alone, so the pass is idempotent across
-% the two lists it sees, the paragraph and each line packed from it, and the
-% \keys{Baseline} shift is added once.
+% A glyph already in its font keeps it, and the font is the only thing the pass
+% leaves alone: the \keys{Baseline} offset is added whether the glyph has to be
+% moved or is already set in its family's font, because a document that
+% selects that font itself through \cs{fontspec} puts the characters there
+% before the pass runs.
+% The addition is recorded in the \texttt{shifted} attribute, so a glyph whose
+% node reaches a second list, as one does when a packed box is unboxed into
+% another, takes the offset once.
 % The shift is the one the glyph carries, or the one its fallback font
 % arrived with, so a family selected inside a group moves only its own
 % characters.
@@ -7152,15 +7182,14 @@ local function pre_shaping (head)
         end
       elseif is_cjk(cur.char, settings_of(cur), cur.font) then
         local target, kind = target_font(cur)
-        if target and target > 0 and target ~= cur.font then
-          if not has_char(target, cur.char) then
-            missing_chars[target * 0x200000 + cur.char] = true
+        if target and target > 0 then
+          apply_shift(cur, kind, target)
+          if target ~= cur.font then
+            if not has_char(target, cur.char) then
+              missing_chars[target * 0x200000 + cur.char] = true
+            end
+            cur.font = target
           end
-          local shift = shift_of(cur, kind, target)
-          if shift then
-            cur.yoffset = (cur.yoffset or 0) + shift
-          end
-          cur.font = target
         end
       end
       last = cur
@@ -7235,10 +7264,11 @@ end
 % Copy a glyph node, changing only its font.
 % Only the fallback for a \pkg{luaotfload} without
 % \texttt{pre\_shaping\_filter} uses it.
-% The \keys{Baseline} offset arrives as the third argument, because the step
-% that chose the font decides where it comes from.
+% The \keys{Baseline} offset has already been added to the node by
+% \texttt{apply\_shift}, so the copy carries it and the record in the
+% \texttt{shifted} attribute with the other fields.
 %    \begin{macrocode}
-local function copy_glyph (n, fid, shift)
+local function copy_glyph (n, fid)
   local g = new_node("glyph")
   g.font = fid
   for _, field in ipairs {
@@ -7248,9 +7278,6 @@ local function copy_glyph (n, fid, shift)
     "data",     "subtype",
   } do
     g[field] = n[field]
-  end
-  if shift then
-    g.yoffset = (g.yoffset or 0) + shift
   end
   return g
 end
@@ -7268,6 +7295,9 @@ end
 % \texttt{pre\_shaping\_filter}; the package then behaves as it did before the
 % substitution moved in front of shaping, and every zero-width character is
 % removed at the input, so no attached character reaches this point.
+% The \keys{Baseline} offset is added first, because here it is this pass and
+% not \texttt{pre\_shaping} that meets the glyph; a glyph already in its
+% font keeps it and takes the offset all the same.
 % A glyph that the old font did not have may sit next to the placeholder
 % \pkg{luaotfload} emitted for it; the placeholder is freed at the same
 % time, because it would otherwise add an advance of its own.
@@ -7279,22 +7309,25 @@ local function rewrite_fonts (head)
     local nxt = cur.next
     if cur.id == GLYPH and is_cjk(cur.char, settings_of(cur), cur.font) then
       local target, kind = target_font(cur)
-      if target and target > 0 and target ~= cur.font then
-        if nxt and nxt.id == GLYPH and nxt.font == cur.font
-           and placeholder(nxt.char) then
-          local after = nxt.next
-          free_node(nxt)
-          nxt = after
+      if target and target > 0 then
+        apply_shift(cur, kind, target)
+        if target ~= cur.font then
+          if nxt and nxt.id == GLYPH and nxt.font == cur.font
+             and placeholder(nxt.char) then
+            local after = nxt.next
+            free_node(nxt)
+            nxt = after
+          end
+          local g = copy_glyph(cur, target)
+          g.next  = nxt
+          if prev then
+            prev.next = g
+          else
+            head = g
+          end
+          free_node(cur)
+          cur = g
         end
-        local g = copy_glyph(cur, target, shift_of(cur, kind, target))
-        g.next  = nxt
-        if prev then
-          prev.next = g
-        else
-          head = g
-        end
-        free_node(cur)
-        cur = g
       end
     end
     prev = cur
