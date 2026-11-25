@@ -85,3 +85,19 @@ PS LXGWNeoZhiSong size 655360 yoffset 0
 PS LXGWNeoZhiSong size 655360 yoffset 327680
 PS LXGWNeoZhiSong size 655360 yoffset 0
 ============================================================
+============================================================
+TEST 14: a glyph already in its family font is shifted
+============================================================
+Package fontspec Info: 
+(fontspec)             Font family 'LXGWNeoZhiSong.ttf(2)' created for font 'LXGWNeoZhiSong.ttf' with options [Script = CJK].
+(fontspec)              
+(fontspec)              This font family consists of the following NFSS series/shapes:
+(fontspec)              
+(fontspec)             - 'normal' (m/n) with NFSS spec.: <->"[LXGWNeoZhiSong.ttf]:mode=node;script=hani;language=dflt;"
+PS LXGWNeoZhiSong size 655360 yoffset 196610
+============================================================
+============================================================
+TEST 15: the offset is added once to such a glyph
+============================================================
+PS LXGWNeoZhiSong size 655360 yoffset 196610
+============================================================
