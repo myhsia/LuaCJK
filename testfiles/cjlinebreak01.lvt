@@ -71,6 +71,20 @@
   \countpenalties
 }
 
+\TEST{the prohibition belongs to the character that would start the line}{
+  \setbox0=\hbox{中{\LuaCJKsetup{CJLineBreak = strict}中}ゃ}
+  \countpenalties
+}
+
+\LuaCJKsetup{CJLineBreak = strict}
+
+\TEST{a group that sets normal on the left does not lift it}{
+  \setbox0=\hbox{中{\LuaCJKsetup{CJLineBreak = normal}中}ゃ}
+  \countpenalties
+}
+
+\LuaCJKsetup{CJLineBreak = normal}
+
 \END
 
 \end{document}

@@ -1,6 +1,8 @@
 ## [LuaCJK-v0.1.1](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.1.1)
 
+- Every `\LuaCJKnobreak` marks its argument as a span of its own, so two arguments beside each other keep the line break between them, while an argument written inside another one still belongs to the span around it.
 - The `Baseline` of a family lifts a CJK character that is already set in the family's own font, which is what a document that selects that font itself with `\fontspec` gets.
+- `CJLineBreak` reads the settings of the character that would start the line, so a group that selects `strict` no longer forbids a break in front of a small kana written outside it.
 - A paragraph that begins with a box hangs the opening mark inside it as well, so `\mbox` around the mark leaves its blank in the indentation, as a line of plain text does.
 
 ## [LuaCJK-v0.1.0](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.1.0)

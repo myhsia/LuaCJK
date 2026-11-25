@@ -39,6 +39,19 @@
 \def\reportbox#1{%
   \directlua{report(tex.box[0], "#1")}%
 }
+\def\countpenalties{%
+  \directlua{
+    local n = tex.box[0].head
+    local c = 0
+    while n do
+      if n.id == node.id("penalty") and n.penalty >= 10000 then
+        c = c + 1
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "PENALTIES " .. tostring(c))
+  }%
+}
 \def\narrow#1{\setbox0=\vbox{\hsize=40pt \raggedright #1\par}}
 
 \begin{document}
@@ -118,6 +131,21 @@
 \TEST{the argument itself still travels together}{
   \narrow{请\LuaCJKnobreak{张三李四}签字}
   \reportbox{together}
+}
+
+\TEST{two arguments beside each other keep the break between them}{
+  \setbox0=\vbox{\hsize=2em \parindent=0pt \LuaCJKnobreak{姓名}\LuaCJKnobreak{电话}\par}
+  \reportbox{adjacent}
+}
+
+\TEST{the break inside each of them stays forbidden}{
+  \setbox0=\hbox{\LuaCJKnobreak{姓名}\LuaCJKnobreak{电话}}
+  \countpenalties
+}
+
+\TEST{a nested argument belongs to the span around it}{
+  \setbox0=\hbox{\LuaCJKnobreak{姓\LuaCJKnobreak{名}电}}
+  \countpenalties
 }
 
 \END
