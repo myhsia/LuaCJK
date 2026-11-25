@@ -67,7 +67,7 @@ Entry points:
 | `scripts/check-extract-changes.sh` | regenerates the six changelogs of `../ctex-kit` with the Lua extractor and compares them byte for byte: exit 0 all identical, 1 a difference, 2 cannot run; `--quiet` prints only the differences |
 | `scripts/check-charclass.lua` | compares the `CJK_RANGES` table of the `dtx` with `Scripts.txt`: it reports every code point whose script is Han, Hiragana, Katakana, Bopomofo, or Hangul that the table does not list, merging the code points into ranges.  The combining Bopomofo tone marks U+02EA and U+02EB are allowed to stay outside the table.  Exit 0 covered, 1 missing (the ranges are printed), 2 cannot run |
 | `scripts/check-bilingual.lua` | compares the two `documentation` parts of the `dtx`: the ordered structure (environment nesting, the documented objects and their arguments, section levels, list items) and the multiset of interface references (`\cs`, `\keys`, `\pkg`, `\file`, `\env`, `\tn`, `\val`, `\texttt`, `\meta`, `\oarg`, `\marg`, `\parg` and the `|…|` spans), and refuses a part in the wrong order.  Prose and section titles are not compared.  Exit 0 agree, 1 differ (the differences are printed), 2 cannot run |
-| `scripts/check-docs.sh` | compares the facts in the two guides with their sources: the layout table against `git ls-files` (both directions), version, test count, DocStrip blocks, installed file types, attribute and decoration counts, `\RequirePackage` against `DEPENDS.txt` (a package loaded from the listings guard must be `soft`), `DEPENDS.txt` against `.github/tl_packages`, the subset count, the changelog facts (the newest `\changes` version and date against `build.lua`, the first line of `CHANGELOG.md` against the released version), the ranges of the listings character table against the Basic Multilingual Plane part of `CJK_RANGES`, and the two languages of the user part through `scripts/check-bilingual.lua`.  A `\RequirePackage` name is resolved to its TeX Live package with `tlmgr search --global --file`, falling back to `expl3 -> l3kernel` and `l3draw -> l3experimental` when `tlmgr` is absent |
+| `scripts/check-docs.sh` | compares the facts in the two guides with their sources: the layout table against `git ls-files` (both directions), version, test count, DocStrip blocks, installed file types, attribute and decoration counts, `\RequirePackage` against `DEPENDS.txt` (a package loaded from the listings guard must be `soft`), `DEPENDS.txt` against `.github/tl_packages`, the subset count, the changelog facts (the newest `\changes` version against `build.lua`'s, and its latest date no later than the release date; the first line of `CHANGELOG.md` against the released version), the ranges of the listings character table against the Basic Multilingual Plane part of `CJK_RANGES`, and the two languages of the user part through `scripts/check-bilingual.lua`.  A `\RequirePackage` name is resolved to its TeX Live package with `tlmgr search --global --file`, falling back to `expl3 -> l3kernel` and `l3draw -> l3experimental` when `tlmgr` is absent |
 | `scripts/check-test-logs.sh` | reports every TeX error the last `l3build check` left in `build/check/*.log`, one `file:line:text` record per line; exit 0 when every log is clean, 1 when something is printed, 2 when there is no log to read.  The `.tlg` comparison cannot see an error: `nonstopmode` skips the undefined token and the run continues, so a test passes with `! Undefined control sequence` in its log.  Three headlines are expected and allowed, because a test provokes each on purpose: `! OK.` from `\showbox`, the unknown `luaul` key of `fntefopts01`, and the preamble paragraph of `verb02` and `boundary03` |
 | `scripts/triage-issues.sh` | lists the open issues that carry no subsystem label.  The type of an issue is GitHub's native issue type (`Bug`, `Feature`, `Task`), which is not a label, so an issue is reported when none of its labels is one of the twenty-one subsystems.  Exit 0 none left, 1 some reported, 2 cannot ask GitHub (no `gh`, no `jq`, not authenticated, no remote, no network).  `--explain` prints the label an ordered keyword table suggests for every open issue, labelled or not, and exits 0; `--apply` adds the suggestion to each issue that has no subsystem label yet and exits 0, or 2 when GitHub refuses an edit; `--number <n>` restricts the run to one issue, which is what the workflow uses so that two runs cannot race.  The table reads the title only, and an issue that matches no rule is printed as `unclassified` and keeps no label |
 | `scripts/session-check.sh` | the declared session check, a wrapper because a repository may declare one: it runs `check-extract-changes.sh --quiet` and `triage-issues.sh` and prints one summary line for each that needs attention, so the `upkeep` plugin reports both.  Exit 0 silent, 1 with those lines, 2 only when neither part can run |
@@ -326,10 +326,15 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   documented object.  A feature states what it does in the present tense in the
   release that ships it; only a later release says that it now behaves
   differently.  The version and the date
-  stay on the first line and only the text wraps.  An unreleased change keeps
-  the newest entry's version and date, so `date` in `build.lua` is not
-  advanced on its own: `scripts/check-docs.sh` compares the newest entry with
-  both fields, and a later date is reachable only through a new version.
+  stay on the first line and only the text wraps.  The date is when the change
+  was made — the pull request's date, or the commit's author date when there is
+  none (`git log -1 --format=%ad --date=short`) — never the release date, so the
+  entries of one version differ and each records when it happened.  `date` in
+  `build.lua` is the release date, chosen at release time; it may not be earlier
+  than the latest entry of the newest version, which is what
+  `scripts/check-docs.sh` enforces.  A release therefore edits `build.lua`'s
+  `date` and nothing else in the sources: re-dating the entries to the release
+  day erases when each change was made.
   Commands are `\cs{…}`, keys
   `\keys{…}`, packages `\pkg{…}`, files `\file{…}`, environments `\env{…}`,
   other literals `\texttt{…}`, and the two argument forms `\oarg{…}` and
@@ -894,6 +899,10 @@ l3build upload --dry-run           # the form, without publishing it
 
 - The tag is `LuaCJK-v<version>`, the spelling the CHANGELOG heading and its
   release link use.
+- A release edits `build.lua`'s `date` and nothing else in the sources.  The
+  `\changes` dates record when each change was made and are not touched; the
+  release date only has to be no earlier than the latest of them, which
+  `scripts/check-docs.sh` enforces.
 - `l3build ctan` writes `luacjk-ctan.zip`: the flat package directory
   `luacjk/` with `LuaCJK.dtx`, `LuaCJK.ins`, `README.md`, `LICENSE` and
   `LuaCJK.pdf`, and nothing else.  `packtdszip = false` keeps the tds archive
@@ -1005,8 +1014,9 @@ opinion.
   after touching the extractor and when ctex-kit's script has changed.
 - `l3build changelog` must leave `git diff --exit-code CHANGELOG.md` clean,
   and `bash scripts/check-docs.sh` checks the changelog facts: the newest
-  `\changes` version and date against `build.lua`, and the first line of
-  `CHANGELOG.md` against the released version.
+  `\changes` version against `build.lua`'s, its latest date no later than the
+  release date there, and the first line of `CHANGELOG.md` against the released
+  version.
 - The manual is held to CI's `doc` step, on the Linux leg: no `^!` error, no
   `Reference ... undefined`, no `Missing character`, and no `multiply defined`
   label or `duplicate destination` warning in `build/doc/LuaCJK.log`: the two

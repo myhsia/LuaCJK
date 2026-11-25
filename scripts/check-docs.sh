@@ -282,13 +282,20 @@ newest=$(printf '%s\n' "$entries" |
 [ "$newest" = "$bl_version" ] ||
   report "the newest \\changes version is not the released version" \
          "$dtx: ${newest:-<none>}" "build.lua: ${bl_version:-<none>}"
-newest_dates=$(printf '%s\n' "$entries" |
-                 grep -F "\\changes{$newest}" |
-                 sed -n 's/.*}{\([0-9][0-9]*\/[0-9][0-9]*\/[0-9][0-9]*\)}.*/\1/p' |
-                 sort -u | tr '\n' ' ' | sed 's/ $//')
-[ "$newest_dates" = "${bl_date//-//}" ] ||
-  report "the newest \\changes date is not the release date" \
-         "$dtx: ${newest_dates:-<none>}" "build.lua: ${bl_date//-//}"
+late=$(printf '%s\n' "$entries" |
+         grep -F "\\changes{$newest}" |
+         awk -v rel="$(printf '%s' "$bl_date" | tr -d '-')" '
+           match($0, /\{[0-9][0-9]*\/[0-9][0-9]*\/[0-9][0-9]*\}/) {
+             d = substr($0, RSTART + 1, RLENGTH - 2)
+             gsub(/\//, "", d)
+             if (d + 0 > rel + 0) print
+           }')
+if [ -z "$bl_date" ]; then
+  report "build.lua has no date" "build.lua: ${bl_date:-<none>}"
+elif [ -n "$late" ]; then
+  report "a \\changes entry of $newest is later than the release date" "$late" \
+         "build.lua: $bl_date"
+fi
 head -1 CHANGELOG.md | grep -qF "LuaCJK-$bl_version" ||
   report "CHANGELOG.md does not start with the released version" \
          "CHANGELOG.md: $(head -1 CHANGELOG.md)" "build.lua: $bl_version"
