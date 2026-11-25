@@ -52,17 +52,21 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    `\g_@@_fallback_pushed_prop` records, per identifier, the family whose
    list is installed, so a selection that resolves to a known identifier
    costs one property lookup rather than another `\lua_now:e`.
-   A glyph that changes font takes that font's `Baseline` with it: the pass
-   adds the offset (scaled points) to the glyph's `yoffset`.  Applying it only
-   where the font changes is what makes the pass idempotent, since it runs on
-   the paragraph and again on each line packed from it.  The offset comes from
-   the step `target_font` took: the text reads the `shift` attribute and a mark
-   the `punct_shift` one, which `\@@_update_font:` fills at every font
-   selection with the value of the family in force, evaluated at the size in
-   force.  Being attributes, they follow the group, so a family selected inside
-   a group moves only that group's characters, and two declarations that name
-   the same font keep their own offsets in one paragraph; a table keyed by font
-   identifier could do neither, because every declaration that supplies the
+   A glyph takes its font's `Baseline` with it: the pass adds the offset
+   (scaled points) to the glyph's `yoffset`, whether the font has to change or
+   the glyph is already set in the family's own instance — a document that
+   selects that font itself with `\fontspec[Script = CJK]` puts it there
+   before the pass runs, so the font-change test cannot decide the shift.
+   `apply_shift` records the addition in the `shifted` attribute, which is
+   what makes the pass idempotent: luaotfload shapes a line once, but a glyph
+   node can reach a new list through `\unhbox` and be seen again.  The offset
+   comes from the step `target_font` took: the text reads the `shift` attribute
+   and a mark the `punct_shift` one, which `\@@_update_font:` fills at every
+   font selection with the value of the family in force, evaluated at the size
+   in force.  Being attributes, they follow the group, so a family selected
+   inside a group moves only that group's characters, and two declarations that
+   name the same font keep their own offsets in one paragraph; a table keyed by
+   font identifier could do neither, because every declaration that supplies the
    font shares the identifier.  A fallback font is the exception: it is chosen
    here, when the text is shaped, and only its identifier says which one
    applies, so `M.yoffset[fid]` carries its offset, filled by
@@ -70,10 +74,11 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    it changed (`baselineshift01`).
    A luaotfload without `pre_shaping_filter` keeps the package's previous
    behavior: `rewrite_fonts` copies each shaped glyph into its font in
-   `process` instead, `copy_glyph` adds the `Baseline` there, and every
-   zero-width character is removed at the input.  No test reaches that path,
-   because the callback type cannot be taken out of a live callback list; a
-   probe that edits the flag in an unpacked copy is how it is checked by hand.
+   `process` instead, and `apply_shift` has already added the `Baseline` and
+   recorded it, so the copy carries both; every zero-width character is
+   removed at the input.  No test reaches that path, because the callback type
+   cannot be taken out of a live callback list; a probe that edits the flag in
+   an unpacked copy is how it is checked by hand.
 1. `drop_orphans` — remove what shaping left of the characters that must not
    reach the spacing pass: a glyph carrying the `attached` attribute, with the
    kern that cancels the advance of its placeholder, and the box a CJK font
@@ -292,7 +297,7 @@ document's math font, because the CJK font has no `MathConstants` table.
 
 ### Attributes
 
-Fifteen attributes carry the per-node state; all are read through
+Sixteen attributes carry the per-node state; all are read through
 `node.has_attribute`/`has_attribute`:
 
 | attribute | meaning |
@@ -303,6 +308,7 @@ Fifteen attributes carry the per-node state; all are read through
 | `punct_font` | font identifier for punctuation (`PunctFamily`) |
 | `shift` | the `Baseline` of the family in force, in scaled points, positive upwards |
 | `punct_shift` | the `Baseline` of the family `PunctFamily` names, in scaled points |
+| `shifted` | the offset has been added to this glyph, so a later visit does not add it again |
 | `cjk_space` | whether a source space inside CJK text is kept |
 | `explicit_space` | the space is one the document wrote with `\ ` or `~`, not a source space |
 | `xecglue` | whether the CJK/Latin glue is suppressed at this space |

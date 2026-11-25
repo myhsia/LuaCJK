@@ -147,6 +147,25 @@
   \psall
 }
 
+\TEST{a glyph already in its family font is shifted}{
+  \begingroup
+    \setCJKfamilyfont{same}[Baseline = 0.3em]{LXGWNeoZhiSong.ttf}
+    \setbox0=\hbox{\CJKfamily{same}%
+      {\fontspec[Script = CJK]{LXGWNeoZhiSong.ttf}中}}
+    \psname
+  \endgroup
+}
+
+\TEST{the offset is added once to such a glyph}{
+  \begingroup
+    \setCJKfamilyfont{same}[Baseline = 0.3em]{LXGWNeoZhiSong.ttf}
+    \setbox2=\hbox{\CJKfamily{same}%
+      {\fontspec[Script = CJK]{LXGWNeoZhiSong.ttf}中}}
+    \setbox0=\hbox{\unhbox2}
+    \psname
+  \endgroup
+}
+
 \END
 
 \end{document}

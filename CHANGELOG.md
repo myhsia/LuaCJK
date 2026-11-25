@@ -1,5 +1,6 @@
 ## [LuaCJK-v0.1.1](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.1.1)
 
+- The `Baseline` of a family lifts a CJK character that is already set in the family's own font, which is what a document that selects that font itself with `\fontspec` gets.
 - A paragraph that begins with a box hangs the opening mark inside it as well, so `\mbox` around the mark leaves its blank in the indentation, as a line of plain text does.
 
 ## [LuaCJK-v0.1.0](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.1.0)
