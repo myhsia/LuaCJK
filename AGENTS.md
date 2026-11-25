@@ -455,9 +455,13 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   that is why it crosses the boundary in `\g_@@_shift_value_tl`.  Carrying it
   on the node is what makes a family selected inside a group move only that
   group's characters, and two declarations of one font keep their own offsets
-  in one paragraph (`baselineshift01`).  A fallback font is the exception: it is
-  chosen when the text is shaped, so its offset stays in the table `M.yoffset`,
-  keyed by identifier and filled by `\@@_push_shift:nnn`;
+  in one paragraph (`baselineshift01`).  Lua adds the offset with
+  `apply_shift`, which records the addition in the `shifted` attribute: a glyph
+  node can be seen by a pass a second time — `\unhbox` of a packed box puts it
+  in a list that is packed again — and the record is what stops the offset from
+  being added twice (`baselineshift01`).  A fallback font is the exception: it
+  is chosen when the text is shaped, so its offset stays in the table
+  `M.yoffset`, keyed by identifier and filled by `\@@_push_shift:nnn`;
   `\g_@@_shift_pushed_prop` holds the value Lua has per identifier and the push
   happens only when it changed — a change also clears
   `\g_@@_fallback_pushed_prop`, so a list that shares the instance is resolved
@@ -477,16 +481,22 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   glyph in place and the font's own features apply: a combining mark attaches
   to its base (`shaping01`), a variation sequence selects its glyph, and a
   font that joins two em dashes does so on its own, which is why the manual no
-  longer lists `PoZheHaoLigature` as absent.  The `Baseline` shift is added
-  only where the font actually changes, which is what keeps the pass
-  idempotent across the paragraph and again on each line packed from it — a
-  second copy of the shift would move every shifted line twice.
+  longer lists `PoZheHaoLigature` as absent.  A glyph that is already in the
+  font of its family keeps that font, and it takes the `Baseline` offset all
+  the same: a document that selects that font itself with `\fontspec` and the
+  features that declare it (`Script = CJK`) puts the CJK characters in the
+  family's own instance before the pass runs, so the font-change test cannot be
+  what decides the shift.  The addition is recorded in the `shifted`
+  attribute: luaotfload shapes a line only once, but a glyph node can reach a
+  new list through `\unhbox` and be seen again, and the record is what keeps
+  its offset from being added twice.
   What shaping leaves of a joiner, a variation selector, or a CJK character
   the font does not have is removed by `drop_orphans` before the spacing pass;
   it consults `missing_chars`, filled by `pre_shaping`, so the box a document
   with no CJK font shows stays (`loadlxgw03`).  A luaotfload without the
   callback keeps the previous path in full — `rewrite_fonts` through
-  `copy_glyph` after shaping, and every zero-width character removed at the
+  `copy_glyph` after shaping, with the same `apply_shift` in front of the
+  copy, and every zero-width character removed at the
   input — and no test reaches it, because a callback type cannot be taken out
   of a live callback list; check that path by hand with a probe against an
   unpacked copy whose `M.shaping` is forced to `false`.
