@@ -269,7 +269,10 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    whatsit, mark, insertion, adjustment, penalty — and the kerns the package
    inserted, so a `\textcolor` between two characters no longer hides the
    break point; the penalty is spliced in front of the glue and left out when
-   a penalty already stands there (`checksingle01`).
+   a penalty already stands there (`checksingle01`). A box at the end of the
+   paragraph is read at its trailing edge, and its characters count: its list
+   is packed, so they cannot be split there, and three of them need no
+   penalty (`checksingle01`).
 
 `post_linebreak_filter` is not used: the hang of a line-final mark is part of
 the measure (see "The punctuation model"), so nothing has to be adjusted after

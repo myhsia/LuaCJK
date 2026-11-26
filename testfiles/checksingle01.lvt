@@ -7,19 +7,24 @@
 
 \def\linecounts{%
   \directlua{
+    local function count (list)
+      local c = 0
+      local m = list
+      while m do
+        if m.id == node.id("glyph") then
+          c = c + 1
+        elseif m.id == node.id("hlist") or m.id == node.id("vlist") then
+          c = c + count(m.head)
+        end
+        m = m.next
+      end
+      return c
+    end
     local n = tex.box[0].head
     local lines = {}
     while n do
       if n.id == node.id("hlist") then
-        local c = 0
-        local m = n.head
-        while m do
-          if m.id == node.id("glyph") then
-            c = c + 1
-          end
-          m = m.next
-        end
-        table.insert(lines, c)
+        table.insert(lines, count(n.head))
       end
       n = n.next
     end
@@ -69,6 +74,30 @@
 \TEST{a color change does not hide the one before it}{
   \LuaCJKsetup{CheckSingle = true}
   \setbox0=\vbox{\hsize=4em 字字字字字字字\textcolor{red}{字}字\par}
+  \linecounts
+}
+
+\TEST{a box at the end does not hide the last character}{
+  \LuaCJKsetup{CheckSingle = true}
+  \setbox0=\vbox{\hsize=4em \raggedright \parindent=0pt 本题应选\underline{乙}\par}
+  \linecounts
+}
+
+\TEST{the two characters of a box count with it}{
+  \LuaCJKsetup{CheckSingle = true}
+  \setbox0=\vbox{\hsize=4em \raggedright \parindent=0pt 本题应\underline{选乙}\par}
+  \linecounts
+}
+
+\TEST{three characters in a box need no penalty}{
+  \LuaCJKsetup{CheckSingle = true}
+  \setbox0=\vbox{\hsize=4em \raggedright \parindent=0pt 本题\underline{应选乙}\par}
+  \linecounts
+}
+
+\TEST{a box before the final mark is read as well}{
+  \LuaCJKsetup{CheckSingle = true}
+  \setbox0=\vbox{\hsize=4em \raggedright \parindent=0pt 本题应选\underline{乙}。\par}
   \linecounts
 }
 
