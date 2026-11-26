@@ -972,6 +972,9 @@ $ 天地玄黄 $ and 天地玄黄
 %   所以它的开头与 |\\| 强制换行之后的一行都不悬挂，否则整行会一起挪动；
 %   行尾照旧悬挂，段落最后一行也悬挂，墨迹落在右侧的对齐边上，
 %   于是这种段落的每一行都停在同一条边上。
+%   标点在一个盒子里时，盒子在标点之后若有墨迹（例如 \cs{fbox} 的框线），
+%   行的边就是盒子自己的边，标点不悬挂；
+%   盒子正好止于标点的进距时悬挂照旧，\cs{mbox} 即属此类。
 %   \texttt{0pt} 把整个进距都悬挂出去，\texttt{false} 恢复这个默认值。
 %   \item[\keys{LatinPunct}]\val{\TFF}: 把引号
 %   （U+2018、U+2019、U+201C、U+201D）、间隔号（U+00B7）、
@@ -2428,6 +2431,10 @@ $ 天地玄黄 $ and 天地玄黄
 %   the rule would move the whole line; the end of a line still hangs, and so
 %   does the last line of the paragraph, which puts the ink of the mark on the
 %   alignment edge and makes every line of it stop at the same place.
+%   A mark inside a box hangs only when nothing inked follows it in that box:
+%   the frame of \cs{fbox} is the edge the line ends at, so the mark it holds
+%   does not hang, while the \cs{mbox} that ends at the mark hangs its blank as
+%   plain text does.
 %   \texttt{0pt} hangs the whole advance;
 %   \texttt{false} returns to that default.
 %   \item[\keys{LatinPunct}]\val{\TFF}: Treat the quotation marks
@@ -7641,59 +7648,104 @@ end
 
 %    \end{macrocode}
 % \end{macro}
-% \begin{macro}[int]{first_punct}
-% The punctuation group of the first visible character of a list, the
-% character itself, and whether a character was found at all, so that a box
-% with no text can be skipped.  A formula counts as material with no mark.
+% \begin{macro}[int]{edge_inked, inked_rule}
+% Whether the edge of a list carries ink: a glyph or a formula does, a rule
+% that has a size does, and a box does when the edge of its own content does.
+% A glue, a kern, and the other nodes that paint nothing do not, and they do
+% not hide the ink in front of them either, since the question is only whether
+% ink ends the box.
 %    \begin{macrocode}
-local function first_punct (list)
-  local n = list
+local function inked_rule (n)
+  return n.height > 0 or n.depth > 0 or n.width > 0
+end
+
+local function edge_inked (list)
+  local ink = false
+  local n   = list
   while n do
-    if n.id == GLYPH then
-      return punct_class(n.char, settings_of(n), n.font), n, true
-    elseif n.id == HLIST or n.id == VLIST then
-      local p, g, found = first_punct(n.head)
-      if found then
-        return p, g, true
+    if n.id == GLYPH or n.id == MATH then
+      ink = true
+    elseif n.id == RULE then
+      if inked_rule(n) then
+        ink = true
       end
-    elseif n.id == MATH then
-      return nil, nil, true
+    elseif n.id == HLIST or n.id == VLIST then
+      ink = edge_inked(n.head)
     end
     n = n.next
   end
-  return nil, nil, false
+  return ink
+end
+
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}[int]{first_punct}
+% The punctuation group of the first visible character of a list, the
+% character itself, whether ink stands in front of it inside the box, and
+% whether a character was found at all, so that a box with no text can be
+% skipped.  A formula counts as material with no mark.
+%    \begin{macrocode}
+local function first_punct (list)
+  local ink = false
+  local n   = list
+  while n do
+    if n.id == GLYPH then
+      return punct_class(n.char, settings_of(n), n.font), n, ink, true
+    elseif n.id == HLIST or n.id == VLIST then
+      local p, g, i, found = first_punct(n.head)
+      if found then
+        return p, g, ink or i, true
+      end
+      ink = ink or edge_inked(n.head)
+    elseif n.id == MATH then
+      return nil, nil, ink, true
+    elseif n.id == RULE and inked_rule(n) then
+      ink = true
+    end
+    n = n.next
+  end
+  return nil, nil, ink, false
 end
 
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{last_punct}
-% The same for the last visible character of a list.
+% The same for the last visible character of a list, and whether ink follows
+% it inside the box.
 %    \begin{macrocode}
 local function last_punct (list)
   local n     = list
   local punct = nil
   local glyph = nil
+  local ink   = false
   local found = false
   while n do
     if n.id == GLYPH then
       punct = punct_class(n.char, settings_of(n), n.font)
       glyph = n
+      ink   = false
       found = true
     elseif n.id == HLIST or n.id == VLIST then
-      local p, g, deep = last_punct(n.head)
+      local p, g, i, deep = last_punct(n.head)
       if deep then
         punct = p
         glyph = g
+        ink   = i
         found = true
+      else
+        ink = ink or edge_inked(n.head)
       end
     elseif n.id == MATH then
       punct = nil
       glyph = nil
+      ink   = false
       found = true
+    elseif found and n.id == RULE and inked_rule(n) then
+      ink = true
     end
     n = n.next
   end
-  return punct, glyph, found
+  return punct, glyph, ink, found
 end
 
 %    \end{macrocode}
@@ -8870,23 +8922,26 @@ end
 % no mark.
 % The glyph is returned because \keys{CJLineBreak} reads the settings snapshot
 % of the character that would start the line, which a box does not carry.
+% Whether ink stands between the mark and the edge of the box is returned as
+% well, because a hang is the mark's own blank and a box that ends in a frame
+% or in another character has its own ink at the edge the line ends at.
 %    \begin{macrocode}
 local function edge_mark (n, at_end)
   if n.id == GLYPH then
-    return punct_class(n.char, settings_of(n), n.font), n.char, n
+    return punct_class(n.char, settings_of(n), n.font), n.char, n, false
   elseif n.id == HLIST or n.id == VLIST then
-    local mark, g = nil, nil
+    local mark, g, ink
     if at_end then
-      mark, g = last_punct(n.head)
+      mark, g, ink = last_punct(n.head)
     else
-      mark, g = first_punct(n.head)
+      mark, g, ink = first_punct(n.head)
     end
     if g then
-      return mark, g.char, g
+      return mark, g.char, g, ink
     end
-    return nil, nil, nil
+    return nil, nil, nil, false
   end
-  return nil, nil, nil
+  return nil, nil, nil, false
 end
 
 %    \end{macrocode}
@@ -10172,10 +10227,13 @@ end
 % the way a break reads it, so a paragraph whose first item is a box hangs that
 % mark as well, and \cs{mbox} around the opening mark of a paragraph leaves its
 % blank in the indentation exactly as plain text does.
+% A box that carries ink in front of that mark leaves nothing to hang: the ink
+% of a frame is the edge the line starts at, so \tn{fbox} around the mark stops
+% at the indentation instead of moving its frame into it.
 %    \begin{macrocode}
 local function open_hang (n)
-  local lead, _, glyph = edge_mark(n, false)
-  if not (glyph and not disabled(glyph) and lead == "open"
+  local lead, _, glyph, ink = edge_mark(n, false)
+  if not (glyph and not ink and not disabled(glyph) and lead == "open"
           and style_of(settings_of(glyph)).hang) then
     return 0, nil
   end
@@ -10260,6 +10318,11 @@ end
 % \changes{v0.1.1}{2026/11/25}{A paragraph that begins with a box hangs the
 %   opening mark inside it as well, so \cs{mbox} around the mark leaves its
 %   blank in the indentation, as a line of plain text does.}
+% \changes{v0.1.1}{2026/11/26}{A mark inside a box hangs only when nothing
+%   inked stands between it and the edge of that box, so \tn{fbox} and
+%   \tn{framebox} stop at the alignment edge instead of moving their whole
+%   frame past it, while \cs{mbox} around a mark keeps its blank in the
+%   margin.}
 % Bracket every break point that a mark ends or starts, so the line measures
 % the hang and the text inside a line does not move. A break that a preceding
 % penalty already forbids is left alone, so a fixed width does not carry a rule
@@ -10282,6 +10345,13 @@ end
 % margin and the rule leaves the position of the ink alone -- in a justified or
 % a ragged-right paragraph the trailing fill absorbs it, so the line would only
 % carry a node that does nothing.
+% A mark inside a box hangs only when nothing inked stands between it and the
+% edge of that box.  The blank of a mark is the space its font leaves in the
+% advance, and that space ends the line only where the mark's advance does: a
+% frame rule, or another character, is the ink the edge of the line meets, so
+% \tn{fbox} and \tn{framebox} keep their own edge on the measure instead of
+% carrying the whole box past it, while the \cs{mbox} around a mark still
+% leaves its blank in the margin the way plain text does.
 %    \begin{macrocode}
 local function finite_skip (s)
   return not s or (s.stretch_order == 0 and s.shrink_order == 0)
@@ -10318,14 +10388,14 @@ local function hang_bounds (head)
       end
     elseif is_break_point(cur) and last and cur.id == GLUE
            and not (prev and prev.id == PENALTY and prev.penalty >= 10000) then
-      local nxt                       = next_visible(cur.next)
-      local tail, _, tail_glyph       = edge_mark(last, true)
-      local w_end                     = 0
-      local w_start, lead_glyph       = 0, nil
+      local nxt                           = next_visible(cur.next)
+      local tail, _, tail_glyph, tail_ink = edge_mark(last, true)
+      local w_end                         = 0
+      local w_start, lead_glyph           = 0, nil
       if nxt then
         w_start, lead_glyph = open_hang(nxt)
       end
-      if tail_glyph and not disabled(tail_glyph)
+      if tail_glyph and not tail_ink and not disabled(tail_glyph)
          and (tail == "close" or tail == "middle")
          and style_of(settings_of(tail_glyph)).hang then
         w_end = hang_amount(tail_glyph, tail, settings_of(tail_glyph))
@@ -10362,8 +10432,8 @@ local function hang_bounds (head)
     cur  = cur.next
   end
   if last and not left then
-    local tail, _, glyph = edge_mark(last, true)
-    if glyph and not disabled(glyph)
+    local tail, _, glyph, ink = edge_mark(last, true)
+    if glyph and not ink and not disabled(glyph)
        and (tail == "close" or tail == "middle")
        and style_of(settings_of(glyph)).hang then
       local w_end = hang_amount(glyph, tail, settings_of(glyph))

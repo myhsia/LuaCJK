@@ -589,16 +589,21 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   does not force a break.  The walk stops at the first box that carries text of
   the paragraph, and that box is the head: the mark at its edge is read the way
   a break reads it, so `\mbox` around the opening mark of a paragraph leaves the
-  blank in the indentation instead of carrying it inside the line.  The two
-  hand-bracketed boundaries are skipped when `\leftskip` carries a fill: a
-  centered or flush-right paragraph starts its lines at the centering position
-  rather than at the edge of the measure, so the rule would move the whole line
-  instead of leaving the blank in a margin that is not there.  The hang at a
-  break stays in every case, because the line breaker has already counted it
-  when it decides that the mark fits, and it is what keeps the ink of a line end
-  on the right edge there.  The last line of such a paragraph is the fourth
-  boundary: no glue ends it, so the bare rule goes behind the last mark, and it
-  is put there only when `\leftskip` carries a fill, because otherwise the
+  blank in the indentation instead of carrying it inside the line.  A mark
+  inside a box hangs only when nothing inked stands between it and the edge of
+  that box: `last_punct` and `first_punct` report that with the mark they find,
+  and a frame rule or another character there ends the line at the box's own
+  edge, so `\fbox` and `\framebox` keep their frame on the alignment edge while
+  an `\mbox` that ends at the mark still hangs its blank as plain text does
+  (`hang01`).  The two hand-bracketed boundaries are skipped when `\leftskip`
+  carries a fill: a centered or flush-right paragraph starts its lines at the
+  centering position rather than at the edge of the measure, so the rule would
+  move the whole line instead of leaving the blank in a margin that is not
+  there.  The hang at a break stays in every case, because the line breaker
+  has already counted it when it decides that the mark fits, and it is what
+  keeps the ink of a line end on the right edge there.  The last line of such
+  a paragraph is the fourth boundary: no glue ends it, so the bare rule goes
+  behind the last mark when `\leftskip` carries a fill, since otherwise the
   trailing fill absorbs it and the ink does not move (`hang01`).
 - **A Type 2 charstring number belongs to the charstring that holds it.**
   `cff_box` hands the charstring being interpreted to the number reader,
