@@ -38,3 +38,19 @@ TEST 7: LuaCJKdisable skips kinsoku penalties
 PENALTIES 0
 enabled width: 45.0pt
 ============================================================
+============================================================
+TEST 8: a digit after LuaCJKdisable stays in the text
+============================================================
+GLYPH 65 LMRoman10-Regular
+GLYPH 49 LMRoman10-Regular
+GLYPH 50 LMRoman10-Regular
+GLYPH 66 LMRoman10-Regular
+============================================================
+============================================================
+TEST 9: a digit after LuaCJKenable stays in the text
+============================================================
+GLYPH 65 LMRoman10-Regular
+GLYPH 51 LMRoman10-Regular
+GLYPH 52 LMRoman10-Regular
+GLYPH 66 LMRoman10-Regular
+============================================================

@@ -112,6 +112,11 @@ aaab
 # 检查用户输入的数据
 \end{lstlisting}}
 
+\newbox\flexbox
+\setbox\flexbox=\vbox{\begin{lstlisting}[columns=fullflexible]
+x1 = 12
+\end{lstlisting}}
+
 \START
 
 \TEST{LuaCJK-listings is loaded together with listings}{
@@ -140,6 +145,10 @@ aaab
 
 \TEST{a run of CJK characters breaks between characters with breaklines}{
   \listinglines{\number\breakbox}
+}
+
+\TEST{a word block keeps the number that follows it with fullflexible}{
+  \listingorder{\number\flexbox}
 }
 
 \TEST{lstinline is left alone}{

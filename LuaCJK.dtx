@@ -4396,13 +4396,23 @@ abc汉字abc
 % \changes{v0.0.1}{2026/11/05}{Provide \cs{LuaCJKdisable} and
 %   \cs{LuaCJKenable} to suspend the typographic adjustments while keeping CJK
 %   font selection; the state is recorded per node.}
+% \changes{v0.1.1}{2026/11/26}{\cs{LuaCJKdisable} and \cs{LuaCJKenable} end the
+%   value of the attribute they set, so a digit that follows either command
+%   stays in the text instead of joining the value.}
 % Set the node attribute that makes the Lua callbacks skip
 % the adjustments. The attribute follows the \TeX\ grouping.
+% The value ends with \tn{scan_stop}: \TeX\ reads a number until a token
+% cannot continue it, and the body of the command is followed by whatever the
+% document writes next, so a digit there continues the value instead of being
+% set. \pkg{listings} calls \cs{LuaCJKdisable} from its \texttt{OutputBox}
+% hook, where a word block follows the command at once, so with
+% \texttt{columns = fullflexible} the first number of a line joined the value
+% and disappeared from the page.
 %    \begin{macrocode}
 \NewDocumentCommand \LuaCJKdisable { }
-  { \g_@@_disabled_attr = 1 }
+  { \g_@@_disabled_attr = 1 \scan_stop: }
 \NewDocumentCommand \LuaCJKenable { }
-  { \g_@@_disabled_attr = 0 }
+  { \g_@@_disabled_attr = 0 \scan_stop: }
 %    \end{macrocode}
 % \end{macro}
 %
@@ -4450,6 +4460,8 @@ abc汉字abc
 %   span of its own, so two arguments beside each other keep the line break
 %   between them, while an argument written inside another one still belongs to
 %   the span around it.}
+% \changes{v0.1.1}{2026/11/26}{The span identifier of \cs{LuaCJKnobreak} ends
+%   its value, so an argument that begins with a digit keeps it.}
 % Keep the argument on one line.
 % The nodes of the argument carry the identifier of the span that encloses
 % them, and a break is forbidden only where the two identifiers agree, so a
@@ -4461,6 +4473,9 @@ abc汉字abc
 % written one after the other are two spans for the same reason.
 % A call inside another one joins the span already in force, which is what
 % keeps the whole content of an outer argument on one line.
+% The identifier ends with \tn{scan_stop} for the reason \cs{LuaCJKdisable}
+% gives: the argument follows the assignment at once, so a digit at the start
+% of it would continue the value instead of being set.
 %    \begin{macrocode}
 \NewDocumentCommand \LuaCJKnobreak { +m }
   {
@@ -4468,7 +4483,7 @@ abc汉字abc
       \int_compare:nNnT \g_@@_nobreak_attr < { 1 }
         {
           \int_gincr:N \g_@@_nobreak_id_int
-          \g_@@_nobreak_attr = \int_use:N \g_@@_nobreak_id_int
+          \g_@@_nobreak_attr = \int_use:N \g_@@_nobreak_id_int \scan_stop:
         }
       #1
     \group_end:

@@ -102,6 +102,16 @@
   \TYPE{enabled width: \the\wd2}
 }
 
+\TEST{a digit after LuaCJKdisable stays in the text}{
+  \setbox0=\hbox{A\LuaCJKdisable 12B}
+  \probe
+}
+
+\TEST{a digit after LuaCJKenable stays in the text}{
+  \setbox0=\hbox{A\LuaCJKenable 34B}
+  \probe
+}
+
 \END
 
 \end{document}
