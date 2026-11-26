@@ -1328,7 +1328,9 @@ GitHub's side, so nothing here repeats it.
   (`\addCJKfontfeatures`, `CharacterWidth`, `hwid`), is `fonts` for the same
   reason, `\hfill` names the glue whose subtype the spacing pass decides, so
   it is `spacing`, and `CJKfilltwosides` is the layout environment, so its
-  name is `layout`.
+  name is `layout`.  `CheckSingle` and `WidowPenalty` are `breaks`, and their
+  rule comes first: #215 underlines its last character, so the table read it as
+  `fntef`, while the defect is the widow penalty of `apply_check_single`.
 - **A code point is `chars`, and that rule comes last.**  A title whose only
   hook is a code point (`U+2027 的排版`) is about the character table, which is
   where a code point becomes CJK.  First match wins, so the code-point rule is
