@@ -96,6 +96,7 @@ subsystems='["core","fonts","chars","punct","spacing","breaks","verbatim",
 # and an option name is a rule only when it is the subject of the report, which
 # is what reading the title guarantees.
 rules=$(cat <<'RULES'
+breaks	CheckSingle|WidowPenalty
 fntef	LuaCJKfntef|CJKunderline|CJKunderwave|CJKunderdot|CJKunderanyline|CJKunderanysymbol|CJKsout|下划线|波浪线|删除线|着重号|双线|单线|format=
 listings	listing|lstlisting|LuaCJK-listings
 verbatim	verbatim|fancyvrb

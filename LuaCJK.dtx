@@ -1247,6 +1247,10 @@ a’a\quad 不亦说乎！
 %   \item[\keys{CheckSingle}]\val{\TFF}
 %   打开时，末字符是 CJK 的段落的最后两个断行点被设为不可断开，
 %   这样单个字符就不会孤零零地落在最后一行上。初始值是 \meta{false}。
+%   段落以盒子结尾时，盒内末尾的字符就是段落的末字符，
+%   所以 |\underline{乙}| 排在段末也受到保护；
+%   盒子里的内容已经不能断开，于是若干汉字按它们所在的那一个整体计入，
+%   盒中已有三个汉字时不再插入惩罚。
 %   \item[\keys{WidowPenalty}]\val{penalty}: \texttt{CheckSingle} 使用的惩罚值。
 %   初始值是 \texttt{10000}；
 %   较小的值在值得这个代价时允许断开。
@@ -2746,6 +2750,10 @@ a’a\quad 不亦说乎！
 %   When on, the last two break points of a paragraph whose final character
 %   is CJK are made unbreakable, so a single character cannot end up alone
 %   on the last line. The initial value is \meta{false}.
+%   A box at the end of the paragraph does not hide its text: the character
+%   the box ends with is the final character, so |\underline{乙}| is
+%   protected too. What a box holds is already unbreakable, so its characters
+%   count as the one unit they travel as, and three of them insert no penalty.
 %   \item[\keys{WidowPenalty}]\val{penalty}: The penalty used by
 %   \texttt{CheckSingle}. The initial value is \texttt{10000};
 %   a lower value allows the break when it is worth the cost.
@@ -10517,8 +10525,20 @@ end
 %   hides the break point from \keys{CheckSingle}: a color change, a mark, and
 %   the other nodes that carry no text are passed over, so they no longer
 %   leave a single character on the last line.}
+% \changes{v0.1.1}{2026/11/26}{A box at the end of a paragraph no longer hides
+%   its characters from \keys{CheckSingle}: the character a \tn{underline} or
+%   an \tn{mbox} ends with is the last character of the paragraph, and the
+%   characters a box holds count as the one unit they travel as.}
 % Insert the widow penalties. Only a paragraph whose last visible node
-% is a CJK glyph is examined, and only when its settings ask for it.
+% is a CJK glyph, or a box that ends with one, is examined, and only when its
+% settings ask for it.
+% A box is read from its own list, because the text of \tn{underline} and of an
+% \tn{mbox} sits in one and the character it holds is the character that ends
+% the paragraph; a formula inside the box ends the text, and everything else a
+% box holds — a rule, a kern, a glue, a whatsit — carries no character.
+% What a box ends with is also counted as the characters it holds, not as one
+% character: its list is already packed, so no break can be taken inside it,
+% and three characters in a box travel together without a penalty.
 % The scan back to the previous character passes over what carries no text —
 % a whatsit such as a color change, a mark, an insertion, the adjustment of a
 % box, a penalty, and a kern this package inserted — so such a node does not
@@ -10527,6 +10547,37 @@ end
 % left out when a penalty already stands in front of that glue, so a second
 % run over the same list adds nothing.
 %    \begin{macrocode}
+local function trailing_cjk (list)
+  local items = {}
+  local node  = list
+  while node do
+    items[#items + 1] = node
+    node = node.next
+  end
+  local count = 0
+  local glyph
+  for i = #items, 1, -1 do
+    local item = items[i]
+    if item.id == GLYPH then
+      if not is_cjk(item.char, settings_of(item), item.font) then
+        return count, glyph
+      end
+      count = count + 1
+      glyph = glyph or item
+    elseif item.id == HLIST or item.id == VLIST then
+      local inner, deep = trailing_cjk(item.head)
+      if inner == 0 then
+        return count, glyph
+      end
+      count = count + inner
+      glyph = glyph or deep
+    elseif item.id == MATH then
+      return count, glyph
+    end
+  end
+  return count, glyph
+end
+
 local function apply_check_single (head)
   local trail = {}
   local node  = head
@@ -10534,29 +10585,37 @@ local function apply_check_single (head)
     trail[#trail + 1] = node
     node = node.next
   end
-  local last
+  local last, chars, last_glyph
   for i = #trail, 1, -1 do
     local item = trail[i]
-    if item.id == GLYPH then
-      if is_cjk(item.char, settings_of(item), item.font) then
-        last = i
+    if item.id == GLYPH or item.id == HLIST or item.id == VLIST then
+      local n = 0
+      local glyph
+      if item.id == GLYPH then
+        glyph = item
+        if is_cjk(item.char, settings_of(item), item.font) then
+          n = 1
+        end
+      else
+        n, glyph = trailing_cjk(item.head)
       end
-      break
-    elseif item.id == HLIST or item.id == VLIST then
+      if n > 0 then
+        last, chars, last_glyph = i, n, glyph
+      end
       break
     end
   end
   if not last then
     return head
   end
-  local settings = settings_of(trail[last])
+  local settings = settings_of(last_glyph)
   if not settings.check_single then
     return head
   end
   local penalty  = settings.widow_penalty
   local inserted = 0
   local i        = last
-  while i > 1 and inserted < 2 do
+  while i > 1 and inserted < 2 and chars < 3 do
     local j = i - 1
     while j >= 1 and (trail[j].id == GLUE or transparent_node(trail[j])
                       or (trail[j].id == KERN and is_inserted(trail[j]))) do
@@ -10565,18 +10624,27 @@ local function apply_check_single (head)
     if j < 1 then
       break
     end
-    local glyph = trail[j]
-    if glyph.id ~= GLYPH or not is_cjk(glyph.char, settings_of(glyph), glyph.font) then
+    local item  = trail[j]
+    local n     = 0
+    local glyph
+    if item.id == GLYPH then
+      if is_cjk(item.char, settings_of(item), item.font) then
+        n, glyph = 1, item
+      end
+    elseif item.id == HLIST or item.id == VLIST then
+      n, glyph = trailing_cjk(item.head)
+    end
+    if n == 0 then
       break
     end
     local at    = nil
     local taken = false
     for k = j + 1, i - 1 do
-      local item = trail[k]
-      if item.id == GLUE then
+      local between = trail[k]
+      if between.id == GLUE then
         at = k
         break
-      elseif item.id == PENALTY then
+      elseif between.id == PENALTY then
         taken = true
       end
     end
@@ -10588,6 +10656,7 @@ local function apply_check_single (head)
       trail[at - 1].next = p
     end
     inserted = inserted + 1
+    chars    = chars + n
     i        = j
   end
   return head
