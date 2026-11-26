@@ -647,6 +647,16 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   `\FV@UseVerbatim` set.  Neither inline command can be wrapped to mark itself:
   a token after `\Verb` is scanned into its text, and `\FVC@Verb` ends its group
   from inside the box it sets (`fancyvrb01`, `fancyvrb02`).
+- **An attribute assignment ends where the scanner stops, not where the command
+  ends.**  `\g_@@_disabled_attr = 1` is followed by whatever the document writes
+  next, so a digit there continues the value: `A{\LuaCJKdisable 12}B` assigned
+  `112` and set `AB`, and `listings` with `columns = fullflexible` lost the first
+  number of a line because its `OutputBox` hook puts the word block straight
+  behind the command (issue #219).  `\scan_stop:` is what ends the value, as it
+  already did for `\g_@@_explicit_space_attr`, and every command that sets an
+  attribute and can be followed by text needs it: `\LuaCJKdisable`,
+  `\LuaCJKenable`, and the span identifier of `\LuaCJKnobreak`, whose argument
+  follows the assignment at once (`disable01`, `nobreak01`, `listings01`).
 - **A rule decoration adjusts `lua-ul`, it does not draw.**  `lua-ul` emits a
   leaders glue of width *w*, stretch *st*, and shrink *sh*, followed by a glue
   of width *-w*, stretch *-st*, and shrink *-sh*; the adjustment replaces the

@@ -3,7 +3,9 @@
 - With `breaklines`, a run of CJK characters inside an `lstlisting` block is set one character at a time, so a line breaks between two of them; the run is still one token, so `emph` and `keywords` still highlight the whole word.
 - A declared sub-block adds its ranges to the CJK character class, so a block declared outside the built-in CJK ranges (the circled numbers `U+2460` to `U+2473`, say) reaches the font the family gives it instead of staying in the Latin font.
 - `PunctFamily` expands the family name it is given, so a family can be named by `\CJKsfdefault` or another macro that holds the name.
+- `\LuaCJKdisable` and `\LuaCJKenable` end the value of the attribute they set, so a digit that follows either command stays in the text instead of joining the value.
 - Every `\LuaCJKnobreak` marks its argument as a span of its own, so two arguments beside each other keep the line break between them, while an argument written inside another one still belongs to the span around it.
+- The span identifier of `\LuaCJKnobreak` ends its value, so an argument that begins with a digit keeps it.
 - A family that `PunctFamily` names but no declaration provides warns once, so the fallback of the punctuation to the text font is no longer silent.
 - The `Baseline` of a family lifts a CJK character that is already set in the family's own font, which is what a document that selects that font itself with `\fontspec` gets.
 - A source space between two long punctuation marks adds no advance and no stretch, so justification cannot pull a run of dashes or ellipses apart.

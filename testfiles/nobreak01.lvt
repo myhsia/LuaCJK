@@ -18,6 +18,24 @@
   }%
 }
 
+\def\chars{%
+  \directlua{
+    local out = {}
+    local function walk(n)
+      while n do
+        if n.id == node.id("glyph") then
+          table.insert(out, n.char)
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          walk(n.head)
+        end
+        n = n.next
+      end
+    end
+    walk(tex.box[0].head)
+    texio.write_nl("term and log", "CHARS " .. table.concat(out, ","))
+  }%
+}
+
 \begin{document}
 
 \START
@@ -69,6 +87,11 @@
 \TEST{the break in front of the argument is free as well}{
   \setbox0=\hbox{中中\LuaCJKnobreak{中}}
   \countpenalties
+}
+
+\TEST{a digit that begins the argument stays in the text}{
+  \setbox0=\hbox{\LuaCJKnobreak{34中中中}}
+  \chars
 }
 
 \END
