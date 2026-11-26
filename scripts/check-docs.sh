@@ -300,6 +300,15 @@ head -1 CHANGELOG.md | grep -qF "LuaCJK-$bl_version" ||
   report "CHANGELOG.md does not start with the released version" \
          "CHANGELOG.md: $(head -1 CHANGELOG.md)" "build.lua: $bl_version"
 
+# --- 10b. the $Id line that l3build tag writes ----------------------------
+id_line=$(grep -m1 '\\GetIdInfo' "$dtx" | tr -d '\r')
+id_version=$(printf '%s\n' "$id_line" | sed -n 's/.*\.dtx \([^ ]*\) [^ ]* .*/\1/p')
+id_date=$(printf '%s\n' "$id_line" | sed -n 's/.*\.dtx [^ ]* \([^ ]*\) .*/\1/p')
+[ "$id_version" = "$bl_version" ] && [ "$id_date" = "$bl_date" ] ||
+  report "the \\GetIdInfo line does not match build.lua" \
+         "$dtx: ${id_version:-<none>} ${id_date:-<none>}" \
+         "build.lua: ${bl_version:-<none>} ${bl_date:-<none>}"
+
 # --- 11. the two documentation languages ----------------------------------
 if ! bilingual=$(texlua scripts/check-bilingual.lua "$dtx" 2>&1); then
   fail=$((fail + 1))
