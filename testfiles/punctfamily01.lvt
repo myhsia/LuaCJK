@@ -37,6 +37,8 @@
 
 \LuaCJKsetup{PunctFamily = zhhei}
 \setbox8=\hbox{字。}
+% The same unknown family again: the warning is said once per name.
+\setbox14=\hbox{字。}
 \setCJKfamilyfont{zhhei}{LXGWNeoXiHei.ttf}
 \setbox10=\hbox{字。}
 
@@ -44,6 +46,12 @@
 % registered, so the text takes that font and only the mark takes the
 % punctuation family.
 \setbox12=\hbox{\CJKfontspec{LXGWZhuqueFangsong-Regular.ttf}字。}
+
+% The family a macro holds is reached by its expanded name, which is the one
+% the declaration above registered.
+\LuaCJKsetup{PunctFamily = false}
+\LuaCJKsetup{PunctFamily = \CJKsfdefault}
+\setbox16=\hbox{字。}
 
 \TEST{by default punctuation uses the main CJK font}{
   \psnamesof{0}
@@ -63,6 +71,7 @@
 
 \TEST{an unknown family falls back to the main font}{
   \psnamesof{8}
+  \psnamesof{14}
 }
 
 \TEST{the family is picked up once it is declared}{
@@ -71,6 +80,10 @@
 
 \TEST{a PunctFamily does not stop \CJKfontspec from switching the text}{
   \psnamesof{12}
+}
+
+\TEST{a family named by a macro is expanded}{
+  \psnamesof{16}
 }
 
 \END
