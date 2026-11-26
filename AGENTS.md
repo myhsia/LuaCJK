@@ -693,6 +693,33 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   `\hbox to .5em` plus `\hss` and a path below the baseline is lowered again
   with `\raise`. Without the zeroed box a decoration opens up every decorated
   line.
+- **A decoration places its ink, and a group of them shares one band.**
+  The ink of a rule, a double line, a strike-out, a symbol or the emphasis dots
+  is a rule or a box the pass can measure, so `ink_of` and `ink_bounds` report
+  its canonical top and its bottom below the baseline; the dots carry that
+  geometry in their entry, because their ink is written into the text.  With
+  `commute` off the inks of one group of nested decorations are packed into the
+  band their canonical positions make — top is the shallowest top, bottom the
+  deepest bottom, grown to the sum of the heights when they do not fit — in
+  nesting order from the top, the leftover shared as equal gaps.  The two
+  writings then occupy one band and differ only in order, and a `depth` deeper
+  than the group's shallowest ink is overridden, which is the price of that
+  symmetry.  The spans are intervals of one list and not brackets, so `collect`
+  keeps the ones still open with the width at which each ends and builds a tree
+  of frames, `place` packs one group, and the walk that writes the list reads
+  each frame's offset.  The frame of a pair is found by its position in that
+  tree, never by using the node as a table key: the userdata LuaTeX hands out
+  for one node is not stable, and a lookup keyed by it silently returns nil.
+  A shifted ink is written in the rule's height and depth, in a leader box's
+  `shift` (positive downwards), or in the box of the dots.  A group whose
+  outermost decoration leaves `commute` alone is not packed at all, so a
+  document that never sets the key pays one walk over its spans and nothing
+  else.  A drawing — the wave, the slash — reaches the page as PDF literals, so
+  the nodes do not say where its ink is: it has no canonical interval, takes no
+  part in the packing, and keeps its position.  A decoration written inside a
+  box is in the box's own list, where the decoration around it cannot be seen,
+  so its ink does not move either: the manual tells the reader to box the text
+  rather than the decoration.
 - **The emphasis dots put their ink in the text.**  A leaders pattern cannot
   follow a character when the inter-character glue stretches and cannot skip
   Latin, so `\CJKunderdot` gives its pair an empty leader box and the pass

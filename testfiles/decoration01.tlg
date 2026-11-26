@@ -199,31 +199,60 @@ TEST 18: a nested decoration does not cut the inset short
 NODES kern:655360 leaders:655360 kern:655360 glue:-1966080 leaders:1966080 glue:-1966080 glyph glue:0 glyph glue:0 glyph
 ============================================================
 ============================================================
-TEST 19: a decoration ends at the last character it covers
+TEST 19: commuting decorations share one ink height
+============================================================
+INKPOS rule -131070/157284 box 0/0/0
+INKPOS box 0/0/0 rule -131070/157284
+============================================================
+============================================================
+TEST 20: commute = false puts the ink a decoration covers below its own
+============================================================
+INKPOS rule -131070/157284 box 0/0/0
+INKPOS box 0/0/0 rule -183576/209790
+============================================================
+============================================================
+TEST 21: commute = false stacks two rules of one kind
+============================================================
+INKPOS rule -131070/157284 rule -157284/183498
+============================================================
+============================================================
+TEST 22: commute = false packs a group into the band its inks make
+============================================================
+INKPOS rule -170470/196684 box 0/0/0
+============================================================
+============================================================
+TEST 23: the commute key is local to its group
+============================================================
+INKPOS rule -131070/157284 box 0/0/0
+INKPOS rule -131070/157284 box 0/0/0
+INKPOS rule -131070/157284 box 0/0/0
+============================================================
+============================================================
+TEST 24: a decoration ends at the last character it covers
 ============================================================
 argument: 21.8pt
 NODES glyph glue:218430 leaders:1428685 glue:-1428685 glyph glyph glyph glue:218430 glyph
 ============================================================
 ============================================================
-TEST 20: the boundary inside a decoration keeps it whole
+TEST 25: the boundary inside a decoration keeps it whole
 ============================================================
 argument: 34.16595pt
 NODES glyph glue:0 leaders:2239100 glue:-2239100 glyph glue:218430 glyph glue:218430 glyph glue:0 glyph
 ============================================================
 ============================================================
-TEST 21: a wave ends at the last character it covers
+TEST 26: a wave ends at the last character it covers
 ============================================================
 argument: 21.8pt
 NODES glyph glue:218430 leaders:1428685 glue:-1428685 glyph glyph glyph glue:218430 glyph
 ============================================================
 ============================================================
-TEST 22: settings do not leak to another decoration
+TEST 27: settings do not leak to another decoration
 ============================================================
 span: 20.0pt
 LEADERS 1310720
 ============================================================
 ============================================================
-TEST 23: a decoration keeps the width, stretch, and shrink of its text
+TEST 28: a decoration keeps the width, stretch, and shrink of its text
 ============================================================
 DIM w=3276800 st=262144 sh=0
 DIM w=3276800 st=262144 sh=0
@@ -232,13 +261,13 @@ DIM w=3276800 st=262144 sh=0
 DIM w=3276800 st=262144 sh=0
 ============================================================
 ============================================================
-TEST 24: a kern inside the text moves the cut of skip
+TEST 29: a kern inside the text moves the cut of skip
 ============================================================
 NODES leaders:1310720 kern:655360 leaders:655360 glue:-2621440 glyph kern:655360 glue:0 glyph glue:0 glyph
 NODES leaders:1310720 kern:655360 leaders:655360 glue:-2621440 glyph glue:655360 glyph glue:0 glyph
 ============================================================
 ============================================================
-TEST 25: a pattern built from em units is rebuilt per font size
+TEST 30: a pattern built from em units is rebuilt per font size
 ============================================================
 > \box...=
 \hbox(8.12012+1.99997)x10.0, direction TLT
@@ -271,7 +300,7 @@ l. ...}
 l. ...}
 ============================================================
 ============================================================
-TEST 26: a rule sized in em keeps its thickness when the size changes
+TEST 31: a rule sized in em keeps its thickness when the size changes
 ============================================================
 > \box...=
 \hbox(8.12012+0.71777)x10.0, direction TLT
@@ -294,7 +323,7 @@ l. ...}
 l. ...}
 ============================================================
 ============================================================
-TEST 27: a drawn pattern is repeated with leaders
+TEST 32: a drawn pattern is repeated with leaders
 ============================================================
 > \box...=
 \hbox(8.28125+0.71777)x40.0, direction TLT
@@ -372,7 +401,7 @@ l. ...}
 l. ...}
 ============================================================
 ============================================================
-TEST 28: a decoration is divided into whole patterns when its width is final
+TEST 33: a decoration is divided into whole patterns when its width is final
 ============================================================
 > \box...=
 \vbox(8.28125+0.71777)x41.0, direction TLT
@@ -523,13 +552,13 @@ TEST 28: a decoration is divided into whole patterns when its width is final
 l. ...}
 ============================================================
 ============================================================
-TEST 29: the copies of a drawn pattern start where its span starts
+TEST 34: the copies of a drawn pattern start where its span starts
 ============================================================
 copies 8, width 674474
 the span starts -1 sp from the first copy
 ============================================================
 ============================================================
-TEST 30: the copies of a symbol start where its span starts
+TEST 35: the copies of a symbol start where its span starts
 ============================================================
 copies 3, width 655360
 the span starts 0 sp from the first copy

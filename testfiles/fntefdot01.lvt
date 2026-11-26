@@ -250,6 +250,16 @@
   \dotcount{0}
 }
 
+\TEST{the dots clear the ink that covers them when asked}{
+  \setbox0=\hbox{\CJKunderline[depth = .5em]{\CJKunderdot{中}}}
+  \dotgeometry{0}
+  \begingroup
+    \LuaCJKfntefsetup{commute = false}
+    \setbox0=\hbox{\CJKunderline[depth = .5em]{\CJKunderdot{中}}}
+    \dotgeometry{0}
+  \endgroup
+}
+
 \TEST{the dots scale with the font size}{
   \setbox0=\hbox{\CJKunderdot{中}}
   \dotgeometry{0}

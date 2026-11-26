@@ -69,6 +69,30 @@
   }%
 }
 
+\def\inkpos{%
+  \directlua{
+    local out = {}
+    local i = 0
+    local function add (s) i = i + 1; out[i] = s end
+    local n = tex.box[0].head
+    while n do
+      if n.id == node.id("glue")
+         and (n.subtype == 100 or n.subtype == 101 or n.subtype == 102)
+         and n.leader then
+        local l = n.leader
+        if l.id == node.id("rule") then
+          add("rule " .. tostring(l.height) .. "/" .. tostring(l.depth))
+        elseif l.id == node.id("hlist") then
+          add("box " .. tostring(l.height) .. "/" .. tostring(l.depth)
+            .. "/" .. tostring(l.shift or 0))
+        end
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "INKPOS " .. table.concat(out, " "))
+  }%
+}
+
 \begin{document}
 
 \START
@@ -179,6 +203,51 @@
 \TEST{a nested decoration does not cut the inset short}{
   \setbox0=\hbox{\CJKunderline[subtract = 1em]{\CJKunderline{一二三}}}
   \nodes
+}
+
+\TEST{commuting decorations share one ink height}{
+  \setbox0=\hbox{\CJKunderline{\CJKunderdot{中}}}
+  \inkpos
+  \setbox0=\hbox{\CJKunderdot{\CJKunderline{中}}}
+  \inkpos
+}
+
+\TEST{commute = false puts the ink a decoration covers below its own}{
+  \begingroup
+    \LuaCJKfntefsetup{commute = false}
+    \setbox0=\hbox{\CJKunderline{\CJKunderdot{中}}}
+    \inkpos
+    \setbox0=\hbox{\CJKunderdot{\CJKunderline{中}}}
+    \inkpos
+  \endgroup
+}
+
+\TEST{commute = false stacks two rules of one kind}{
+  \begingroup
+    \LuaCJKfntefsetup{commute = false}
+    \setbox0=\hbox{\CJKunderline{\CJKunderline{中}}}
+    \inkpos
+  \endgroup
+}
+
+\TEST{commute = false packs a group into the band its inks make}{
+  \begingroup
+    \LuaCJKfntefsetup{commute = false}
+    \setbox0=\hbox{\CJKunderline[depth = .5em]{\CJKunderdot{中}}}
+    \inkpos
+  \endgroup
+}
+
+\TEST{the commute key is local to its group}{
+  \setbox0=\hbox{\CJKunderline{\CJKunderwave{中}}}
+  \inkpos
+  \begingroup
+    \LuaCJKfntefsetup{commute = false}
+    \setbox0=\hbox{\CJKunderline{\CJKunderwave{中}}}
+    \inkpos
+  \endgroup
+  \setbox0=\hbox{\CJKunderline{\CJKunderwave{中}}}
+  \inkpos
 }
 
 \TEST{a decoration ends at the last character it covers}{
