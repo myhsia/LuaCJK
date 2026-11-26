@@ -179,7 +179,11 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    between two marks is retimed to that same glue and the blank rides in its
    width, so a line break in the source no longer spaces the two marks apart;
    because a break discards the glue, the compression leaves with it
-   (`punct01`).
+   (`punct01`).  A run of long punctuation is the exception, because its marks
+   take no glue: a source space between two of them keeps only a blank
+   `\LuaCJKsetkern` sets and no stretch, while the node stays the break
+   opportunity `NoBreakLongPunct` forbids, so a newline in the source cannot
+   pull an em dash pair apart (`longpunct01`).
    A penalty that prohibits the break (`\penalty 10000`, `\nobreak`) does not
    end the run: the glue goes *after* it, where the prohibition still covers
    the break the glue offers, so `中文\nobreak ABC` keeps its `CJKecglue` and

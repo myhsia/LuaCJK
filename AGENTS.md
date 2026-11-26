@@ -284,6 +284,11 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   retimed to that glue and the blank rides in its width — never in a kern of
   its own — so a newline in the source cannot space two marks apart, and a
   break at the boundary discards the compression with the glue (`punct01`).
+  A run of long punctuation is the exception: its marks take no glue at all, so
+  a source space between two of them keeps only a blank `\LuaCJKsetkern` sets
+  and no stretch, while the node stays the break opportunity that
+  `NoBreakLongPunct` forbids, so justification cannot pull an em dash pair
+  apart (`longpunct01`).
 - **A fixed-width style takes the blank, never the ink.**  A ratio style reads
   the advance and the place of the ink from the outline: the smaller of the two
   blanks stays on both sides and the rest of the outer blank is taken, so a
