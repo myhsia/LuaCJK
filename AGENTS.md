@@ -194,6 +194,11 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   their block names, and let `cjkrange01` fix the result.  The table is a
   policy (shared punctuation is CJK, the combining Bopomofo marks are not),
   so the script reports only what a script-based classification would add.
+  A code point can become CJK without the table: `\LuaCJKDeclareCharClass`
+  names one, and a declared sub-block adds its ranges to the class, so
+  `\LuaCJKDeclareSubCJKBlock` over a range the table does not list (U+2460 to
+  U+2473, the circled numbers) reaches the font its family gives it.
+  Cancelling a block keeps the class and drops only that font.
 - **A font that joins two em dashes hands the package U+2E3A.**  `CJK_RANGES`
   lists the two- and three-em dashes U+2E3A and U+2E3B as shared CJK
   punctuation, `PUNCT_CLASS` gives them the `dash` group, and the listings

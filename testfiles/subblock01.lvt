@@ -3,7 +3,10 @@
 \documentclass{article}
 \usepackage{LuaCJK}
 \LuaCJKDeclareSubCJKBlock{Kana}{"3040 -> "30FF}
-\setCJKmainfont{LXGWNeoZhiSong.ttf}[Kana = LXGWWenKaiGBLite-Regular.ttf]
+\LuaCJKDeclareSubCJKBlock{Steps}{"2460 -> "2473}
+\setCJKmainfont{LXGWNeoZhiSong.ttf}
+  [Kana = LXGWWenKaiGBLite-Regular.ttf,
+   Steps = LXGWWenKaiGBLite-Regular.ttf]
 
 \def\psnames{%
   \directlua{
@@ -48,6 +51,30 @@
     \psnames
   \endgroup
   \setbox0=\hbox{中あ}
+  \psnames
+}
+
+\TEST{a block outside the CJK ranges is CJK and takes its font}{
+  \setbox0=\hbox{中①}
+  \psnames
+}
+
+\TEST{CancelSubCJKBlock keeps the class and the main font}{
+  \LuaCJKCancelSubCJKBlock{Steps}
+  \setbox0=\hbox{中①}
+  \psnames
+  \LuaCJKRestoreSubCJKBlock{Steps}
+}
+
+\TEST{an explicit class declaration wins over the block}{
+  \LuaCJKDeclareCharClass{Default}{"2460 -> "2473}
+  \setbox0=\hbox{中①}
+  \psnames
+}
+
+\TEST{ResetCharClass brings the block class back}{
+  \LuaCJKResetCharClass
+  \setbox0=\hbox{中①}
   \psnames
 }
 
