@@ -1,8 +1,10 @@
 name: CTAN upload
 
+# The automatic path is the Release workflow, which builds the archive and
+# sends it in the same job: a release created with the default token does not
+# start another workflow, so `release: published` could never fire for it.
+# This workflow stays for a manual re-upload of an existing release.
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       tag:

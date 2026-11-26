@@ -63,7 +63,7 @@ Entry points:
 | `testfiles/NN.lvt` + `.tlg` | 78 regression tests and their baselines, one pair per feature |
 | `testsupport/` | files the tests may `\input`: `luacjk-local.cfg` (for `LocalConfig`), and nothing else |
 | `scripts/ctex-subset.sh` | compiles 21 `ctex` `.lvt` files with the shipped engine file, ignoring their `.tlg` (those are LuaTeX-ja baselines), appends `engine = luacjk` to the `ctexopts.cfg` of the `ctex` test tree and moves every `fontset = fandol` in that tree to `fontset = lxgw` |
-| `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, collapses only ASCII whitespace, and names the forge repository of the release link with `--repo`.  It also exports `newest` and `announcement`, which `build.lua` calls to turn the newest section of that changelog into the CTAN announcement |
+| `scripts/extract-changes.lua` | a Lua port of ctex-kit's `scripts/extract-changes.py`: it turns the `\changes` entries of a `.dtx` into the markdown list of `CHANGELOG.md`.  It takes explicit file names, understands `\keys`, `\oarg` and `\marg`, writes UTF-8 with LF, collapses only ASCII whitespace, and names the forge repository of the release link with `--repo`.  It also exports `newest` and `announcement`, which `build.lua` calls to turn the newest section of that changelog into the CTAN announcement; `--newest <changelog>` prints that section, which is how the release workflow composes the GitHub release notes |
 | `scripts/check-extract-changes.sh` | regenerates the six changelogs of `../ctex-kit` with the Lua extractor and compares them byte for byte: exit 0 all identical, 1 a difference, 2 cannot run; `--quiet` prints only the differences |
 | `scripts/check-charclass.lua` | compares the `CJK_RANGES` table of the `dtx` with `Scripts.txt`: it reports every code point whose script is Han, Hiragana, Katakana, Bopomofo, or Hangul that the table does not list, merging the code points into ranges.  The combining Bopomofo tone marks U+02EA and U+02EB are allowed to stay outside the table.  Exit 0 covered, 1 missing (the ranges are printed), 2 cannot run |
 | `scripts/check-bilingual.lua` | compares the two `documentation` parts of the `dtx`: the ordered structure (environment nesting, the documented objects and their arguments, section levels, list items) and the multiset of interface references (`\cs`, `\keys`, `\pkg`, `\file`, `\env`, `\tn`, `\val`, `\texttt`, `\meta`, `\oarg`, `\marg`, `\parg` and the `|…|` spans), and refuses a part in the wrong order.  Prose and section titles are not compared.  Exit 0 agree, 1 differ (the differences are printed), 2 cannot run |
@@ -73,7 +73,8 @@ Entry points:
 | `scripts/session-check.sh` | the declared session check, a wrapper because a repository may declare one: it runs `check-extract-changes.sh --quiet` and `triage-issues.sh` and prints one summary line for each that needs attention, so the `upkeep` plugin reports both.  Exit 0 silent, 1 with those lines, 2 only when neither part can run |
 | `.github/font-urls.txt` | the Noto CJK release URLs the Linux leg of the `l3build` job downloads for the manual; the hash of the file is the cache key, so changing a URL invalidates the cache |
 | `.github/workflows/test.yaml` | the CI workflow |
-| `.github/workflows/ctan.yaml` | publishes a release to CTAN: on a published release it checks out the tag, refuses to run unless `build.lua`'s version is the tag's, downloads that release's own `luacjk-ctan.zip` so that the archive CTAN receives is the published one, and runs `l3build upload`; a manual run takes the latest release with the current branch's form |
+| `.github/workflows/ctan.yaml` | the manual re-upload path: `workflow_dispatch` only, since a release created with the workflow token cannot start a workflow; it checks out the given tag, refuses unless `build.lua`'s version is the tag's, downloads that release's `luacjk-ctan.zip` and runs `l3build upload` |
+| `.github/workflows/release.yaml` | the release itself, on `push` of `LuaCJK-v*`: guards the version against the tag, installs TeX Live, ctex-kit and the Noto fonts, runs `l3build ctan`, judges the manual and the archive, uploads to CTAN, and publishes the GitHub release with the same `luacjk-ctan.zip` and `build/doc/LuaCJK.pdf`; a manual run only builds and prints |
 | `.github/workflows/triage.yaml` | labels and types a new issue: on `issues: opened` and `reopened` it runs `scripts/triage-issues.sh --apply --number <n>`, and once a day (`schedule`) it runs `--apply` over every open issue, filling only what is missing; it needs the default token, `issues: write`; an issue the label table cannot place keeps no label, and the session check reports it |
 | `.github/tl_packages` | the package list CI installs; a dependency must be added **or removed** here or the Ubuntu job fails first; the tagged manual and `tagging01` need `latex-lab` and `tagpdf`, and `emoji01` renders `NotoColorEmoji.ttf`, which is `noto-emoji` |
 | `CHANGELOG.md` | user-visible changes, newest first, generated from the `\changes` entries by `l3build changelog` |
@@ -974,14 +975,21 @@ of ctex-kit.
 ## Release
 
 A release is one tag, one GitHub release and one CTAN upload, all from the
-same commit, and the tag goes on the commit whose CI run is green.
+same commit, and the tag goes on the commit whose CI run is green.  The release
+workflow does the building, the publishing and the upload; locally only the
+version and date are prepared.
 
 ```bash
 l3build tag && l3build changelog   # both must leave `git diff --exit-code` clean
 bash scripts/check-docs.sh
-l3build ctan                       # check, doc, then the two archives
-l3build upload --dry-run           # the form, without publishing it
+git push                            # then wait for CI to pass
+git tag -a LuaCJK-v<version> -m … && git push origin LuaCJK-v<version>
 ```
+
+Pushing the tag starts `release.yaml`, which builds `luacjk-ctan.zip` and the
+manual, checks them, uploads the archive to CTAN, and publishes the GitHub
+release with those same files.  `l3build ctan` locally stays for debugging the
+manual, not for releasing.
 
 - The tag is `LuaCJK-v<version>`, the spelling the CHANGELOG heading and its
   release link use.
@@ -1014,7 +1022,7 @@ l3build upload --dry-run           # the form, without publishing it
   new release edits that table and nothing else.
   `pkg` is `string.lower(module)`, the id the archive's top directory must
   carry, and `version` is the tag's version as written followed by the release
-  date, `v0.1.0 2026-11-25`: CTAN drops the leading `v` when it displays the
+  date, `v0.1.1 2026-11-26`: CTAN drops the leading `v` when it displays the
   record, and its maintainers ask that the date found in the package files be
   repeated there.  `date` is the one source of it, so `scripts/check-docs.sh`
   keeps the record and the `\changes` history in step.
@@ -1040,24 +1048,28 @@ l3build upload --dry-run           # the form, without publishing it
   `https://ctan.org/submit/validate`, so it checks the form and publishes
   nothing.  A rehearsal with no network at all needs a `curl` stand-in on
   `PATH`, as the global `repo-rules` skill describes.
-- The submission is `ctan.yaml`, not a local command: publishing a GitHub
-  release starts it, it uploads that release's own `luacjk-ctan.zip`, and the
-  form and the note come from the same commit as the archive.
+- The submission is `release.yaml`, not a local command: pushing the tag runs
+  `l3build ctan`, judges the manual, uploads the archive to CTAN and publishes
+  the GitHub release with the same two files, so the bytes CTAN receives, the
+  bytes the release carries and the bytes CI built are one set.
+  It has to be one job: a release created with the workflow token does not
+  start another workflow, so an upload hanging off `release: published` would
+  never run.  CTAN asks for no credentials, which is what makes this possible.
   `update` is unset there on purpose — `l3build` sends `true` and falls back
   to `false` when CTAN answers that the package does not exist, so one table
   serves the first release and every later one.
-  A manual run takes the latest release with the current branch's form, which
-  is how a release cut before the workflow existed is uploaded; the version
-  guard is what keeps the two from disagreeing.
+  A manual run of `release.yaml` only builds and prints: it publishes nothing,
+  so it cannot burn a version on CTAN.
+  `ctan.yaml` remains as a manual re-upload of an existing release.
   Once CTAN has taken an upload, `CTAN-NOTE.md` is emptied and committed.
-- The GitHub release attaches `luacjk-ctan.zip` and `LuaCJK.pdf`, and takes
-  the release section of `CHANGELOG.md` as its notes.
-
-This is the one place a full build runs locally. `l3build ctan` is the only
-producer of those two assets, and `ctan.yaml` downloads the published archive
-rather than building one; the full check and the manual are already green in the
-CI run of the commit being tagged, so the run adds the archives and not a second
-opinion.
+- The GitHub release attaches `luacjk-ctan.zip` and `LuaCJK.pdf`, and its
+  notes are the newest section of `CHANGELOG.md` — its bullets, without the
+  `## [LuaCJK-v…]` heading — followed by a Files and Requirements block the
+  workflow appends; `texlua scripts/extract-changes.lua --newest CHANGELOG.md`
+  prints exactly that section, which is what the workflow runs.
+The release workflow is now the one place a full build runs: it builds the two
+assets with `l3build ctan`, sends the archive to CTAN and publishes the release
+with the same files.  A local `l3build ctan` is for debugging the manual only.
 
 ## Validation
 
@@ -1210,17 +1222,21 @@ parity risks are a missing or surplus entry in `.github/tl_packages` and the
 fonts the manual needs (Noto CJK from `.github/font-urls.txt`, the LXGW faces
 from `lxgw-fonts`).
 
-A second workflow, `ctan.yaml`, is not a test: publishing a GitHub release
-starts it, and it publishes that release to CTAN.
-It checks out the release tag, fails unless `build.lua`'s version is the tag
-with the `LuaCJK-` prefix removed, installs nothing but `l3build`, downloads
-the release's own `luacjk-ctan.zip` — so the archive CTAN receives is byte for
-byte the published one — and runs `l3build upload` with `y` on stdin, because
-the upload confirmation is the only prompt a complete form still has.
-A manual run uploads the latest release using the current branch's form, which
-is how a release published before the workflow existed is submitted; the
-version guard is what stops the two from disagreeing.
-On failure it keeps `luacjk-ctan.curlopt`, the exact request, as an artifact.
+A third workflow, `release.yaml`, is not a test either: pushing a `LuaCJK-v*`
+tag starts it, and it builds, uploads and publishes the release.
+It refuses to run unless `build.lua`'s version is the tag with the `LuaCJK-`
+prefix removed, installs TeX Live, the ctex-kit branch and the Noto fonts, runs
+`l3build ctan`, applies the manual's five criteria and `check-test-logs.sh`,
+then runs `l3build upload` with `y` on stdin — the upload confirmation is the
+only prompt a complete form still has — and finally `gh release create` with
+`luacjk-ctan.zip` and `build/doc/LuaCJK.pdf`.  The archive CTAN receives is
+therefore the archive the release carries, built once in that job.
+It is one workflow on purpose: a release created with the workflow token does
+not start another one, so an upload triggered by `release: published` would
+never run; CTAN asks for no credentials, which is what lets the same job send
+it.  A manual run only builds and prints, so it cannot burn a version.
+`ctan.yaml` remains for re-uploading an existing release by hand, and it keeps
+`luacjk-ctan.curlopt`, the exact request, as an artifact when it fails.
 
 A change in ctex-kit cannot be seen by a workflow of this repository, so it is
 not a CI job: `scripts/session-check.sh` is the session check declared below,

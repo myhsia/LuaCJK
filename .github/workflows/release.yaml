@@ -1,0 +1,197 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "LuaCJK-v*"
+  workflow_dispatch:
+
+# The release, its assets and the CTAN upload happen here and nowhere else.
+# A release created with the default token does not start another workflow, so
+# the upload cannot hang off `release: published`; and CTAN asks for no
+# credentials, so the same job that builds the archive can send it.
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve the tag
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -eu
+          version=$(sed -n 's/^version *= *"\(.*\)"/\1/p' build.lua)
+          if [ "$EVENT" = "push" ] && [ "$REF_TYPE" = "tag" ]; then
+            expected="${REF_NAME#LuaCJK-}"
+            if [ "$version" != "$expected" ]; then
+              echo "::error::build.lua says ${version}, ${REF_NAME} expects ${expected}"
+              exit 1
+            fi
+            echo "real=true" >> "$GITHUB_ENV"
+            echo "tag=${REF_NAME}" >> "$GITHUB_ENV"
+          else
+            # A manual run is a rehearsal: it builds and prints everything and
+            # publishes nothing, so it cannot burn a version on CTAN.
+            echo "real=false" >> "$GITHUB_ENV"
+            echo "tag=LuaCJK-${version}" >> "$GITHUB_ENV"
+            echo "::notice::manual run: nothing is uploaded or published"
+          fi
+
+      - name: Install TeX Live
+        uses: zauguin/install-texlive@v4
+        with:
+          package_file: .github/tl_packages
+
+      - name: Install ctex-kit with the engine option
+        shell: bash
+        run: |
+          # See the same step in the test workflow: the manual selects the
+          # backend with ctex's `engine` option, which TeX Live does not ship.
+          git clone --depth 1 --branch feat/1122-engine-option \
+            https://github.com/CTeX-org/ctex-kit.git "$RUNNER_TEMP/ctex-kit"
+          cd "$RUNNER_TEMP/ctex-kit/ctex"
+          l3build install
+
+      - name: Cache CJK fonts
+        id: font-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.font-cache
+          key: luacjk-fonts-${{ runner.os }}-${{ hashFiles('.github/font-urls.txt') }}-v1
+
+      - name: Install Noto fonts
+        run: |
+          FONT_CACHE="${{ github.workspace }}/.font-cache"
+          FONT_DIR=/usr/share/fonts/truetype
+          mkdir -p "$FONT_CACHE"
+          if [ ! -f "$FONT_CACHE/.done" ]; then
+            cd "$FONT_CACHE"
+            while IFS= read -r url || [ -n "$url" ]; do
+              url="$(printf '%s' "$url" | tr -d '\r')"
+              case "$url" in ''|'#'*) continue ;; esac
+              curl -LO "$url"
+            done < "${{ github.workspace }}/.github/font-urls.txt"
+            for f in *OTC.zip; do unzip -ojd . "$f" "*.ttc"; done
+            rm -f *.zip
+            touch .done
+            cd - >/dev/null
+          fi
+          cp "$FONT_CACHE"/*.ttc "$FONT_DIR/"
+          fc-cache -f
+
+      - name: Check the guide facts
+        run: bash scripts/check-docs.sh
+
+      - name: CHANGELOG.md must be up to date
+        run: |
+          l3build changelog
+          git add -N -- CHANGELOG.md
+          if git diff --exit-code -- CHANGELOG.md; then
+            echo "CHANGELOG.md agrees with the \\changes entries"
+          else
+            echo "::error::CHANGELOG.md is stale: run l3build changelog and commit the result."
+            exit 1
+          fi
+
+      - name: Build the archive and the manual
+        run: l3build ctan
+
+      - name: Judge the manual and the archive
+        run: |
+          fail=0
+          if [ ! -s build/doc/LuaCJK.pdf ]; then
+            echo "::error::l3build ctan wrote no manual"
+            fail=1
+          fi
+          for pattern in '^!' '[Rr]eference .* undefined' 'Missing character' \
+                         'multiply defined' 'duplicate destination'; do
+            if grep -nE "$pattern" build/doc/LuaCJK.log; then
+              echo "::error::the manual's log matches: $pattern"
+              fail=1
+            fi
+          done
+          bash scripts/check-test-logs.sh || fail=1
+          python3 - <<'PY'
+          import hashlib, sys, zipfile
+          data = open("luacjk-ctan.zip", "rb").read()
+          archive = zipfile.ZipFile("luacjk-ctan.zip")
+          names = sorted(archive.namelist())
+          print("luacjk-ctan.zip", len(data), "bytes",
+                "sha256", hashlib.sha256(data).hexdigest())
+          for name in names:
+              print("  ", name)
+          bad = [n for n in names
+                 if n.endswith(".tds.zip") or n.split("/")[0] != "luacjk"]
+          if bad:
+              print("::error::unexpected entries in the archive:", bad)
+              sys.exit(1)
+          PY
+          exit $fail
+
+      - name: Compose the release notes
+        run: |
+          texlua scripts/extract-changes.lua --newest CHANGELOG.md > release-notes.md
+          cat >> release-notes.md <<'EOF'
+
+          ## Files
+
+          - `luacjk-ctan.zip` — the CTAN upload: the package directory `luacjk/`
+            with `LuaCJK.dtx`, `LuaCJK.ins`, `README.md`, `LICENSE` and
+            `LuaCJK.pdf`.
+          - `LuaCJK.pdf` — the manual.
+
+          ## Requirements
+
+          TeX Live 2026 or later with LuaLaTeX; `DEPENDS.txt` in the sources
+          lists the runtime dependencies.
+          EOF
+
+      - name: Upload to CTAN
+        if: env.real == 'true'
+        run: printf 'y\n' | l3build upload
+
+      - name: Keep the request when the upload fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctan-request
+          path: luacjk-ctan.curlopt
+          if-no-files-found: ignore
+
+      - name: Publish the release
+        if: env.real == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$tag" --verify-tag \
+            --title "LuaCJK ${tag#LuaCJK-}" \
+            --notes-file release-notes.md \
+            luacjk-ctan.zip build/doc/LuaCJK.pdf
+
+      - name: Summarise
+        if: always()
+        run: |
+          {
+            echo "### ${tag}"
+            echo
+            echo "- real run: \`${real}\`"
+            if [ -s luacjk-ctan.zip ]; then
+              echo "- archive: $(wc -c < luacjk-ctan.zip) bytes"
+              sha256sum luacjk-ctan.zip || shasum -a 256 luacjk-ctan.zip
+            fi
+            if [ -s release-notes.md ]; then
+              echo "- notes: $(grep -c '^- ' release-notes.md) bullets"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

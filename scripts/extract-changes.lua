@@ -4,6 +4,7 @@
 
 -- Usage: texlua scripts/extract-changes.lua <dtx...> all|<version>
 --            [--repo <owner>/<name>] [-o <file>]
+--        texlua scripts/extract-changes.lua --newest <changelog>
 -- Exit: 0 written, 1 a bad argument, 2 cannot run.
 -- The module also exports `newest` and `announcement`, which build.lua uses
 -- to turn the newest section of CHANGELOG.md into the CTAN announcement.
@@ -419,6 +420,7 @@ end
 
 function M.main(argv)
   local paths, output, repo = {}, nil, "CTeX-org/ctex-kit"
+  local newest_file = nil
   local i = 1
   while i <= #argv do
     local arg = argv[i]
@@ -428,14 +430,29 @@ function M.main(argv)
     elseif arg == "--repo" then
       repo = argv[i + 1]
       i = i + 2
+    elseif arg == "--newest" then
+      newest_file = argv[i + 1]
+      i = i + 2
     else
       paths[#paths + 1] = arg
       i = i + 1
     end
   end
+  if newest_file then
+    local handle = io.open(newest_file, "rb")
+    if not handle then
+      io.stderr:write("cannot read " .. newest_file .. "\n")
+      return 2
+    end
+    local content = handle:read("*a")
+    handle:close()
+    io.write(M.newest(content), "\n")
+    return 0
+  end
   if #paths < 2 then
     io.stderr:write("usage: extract-changes.lua <dtx...> all|<version>" ..
-                    " [--repo <owner>/<name>] [-o <file>]\n")
+                    " [--repo <owner>/<name>] [-o <file>]\n" ..
+                    "       extract-changes.lua --newest <changelog>\n")
     return 2
   end
   local target = paths[#paths]
