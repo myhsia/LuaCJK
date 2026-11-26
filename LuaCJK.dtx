@@ -1691,8 +1691,8 @@ abc汉字abc
 %   \texttt{locl} 形式也会出现；间距、标点进距与禁则仍然来自
 %   \pkg{LuaCJK} 自己。
 %   \item 在 \pkg{LuaCJKfntef} 里，\keys{format} 接受颜色名而不是代码，
-%   而且装饰由 \pkg{lua-ul} 画出，所以 \texttt{ulem} 的选项列表不存在，
-%   \tn{underLine} 直接配置。
+%   装饰由 \pkg{lua-ul} 画出、由本包的键配置，所以 \texttt{ulem} 的选项列表
+%   不存在。
 % \end{itemize}
 %
 % \subsection{未提供的功能}
@@ -3196,8 +3196,8 @@ abc汉字abc
 %   one two-em dash for instance. The spacing, the punctuation advance, and the
 %   prohibitions still come from \pkg{LuaCJK} itself.
 %   \item In \pkg{LuaCJKfntef}, \keys{format} takes a color name rather than
-%   code, and the decoration is drawn by \pkg{lua-ul}, so the \texttt{ulem}
-%   option list does not exist and \tn{underLine} is configured directly.
+%   code, and the decoration is drawn by \pkg{lua-ul} but configured through
+%   the keys of the package, so the \texttt{ulem} option list does not exist.
 % \end{itemize}
 %
 % \subsection{Not available}
@@ -10712,12 +10712,16 @@ luatexbase.add_to_callback("hyphenate", M.hyphenate, "LuaCJK.hyphenate")
 % dot behind each CJK character, centred on the advance of that character.
 %
 % \begin{variable}[int]
-%   {LuaCJKfntef.attr, LuaCJKfntef.settings, LuaCJKfntef.dot_attr,
-%   LuaCJKfntef.color_attr}
+%   {LuaCJKfntef.attr, LuaCJKfntef.settings, LuaCJKfntef.settings_by_key,
+%   LuaCJKfntef.dot_attr, LuaCJKfntef.color_attr}
 % The attribute that carries the number of a settings entry, and the entry
 % itself: the inset at both ends, whether punctuation is skipped, and the
 % geometry of the emphasis dots.
-% A separate entry per call keeps two decorations in one paragraph apart.
+% An entry is keyed by the string the \TeX{} side builds from the same values,
+% so two calls that set a decoration the same way share one entry while two
+% that set it differently keep their own; the key is also part of the cache key
+% of a decoration type, which is what lets a leaders pair name the entry of the
+% call that built it.
 % The dots carry an attribute of their own, so that a box the pass sees
 % twice is not dotted twice, and the number of \pkg{luacolor}'s attribute,
 % which is what colors a rule.
@@ -10737,11 +10741,12 @@ local VLIST    = node.id("vlist")
 local RULE     = node.id("rule")
 local WHATSIT  = node.id("whatsit")
 
-M.attr       = M.attr     or nil
-M.settings   = M.settings or {}
-M.next_id    = M.next_id  or 1
-M.dot_attr   = M.dot_attr or luatexbase.new_attribute("LuaCJKfntef.dot")
-M.color_attr = luatexbase.attributes
+M.attr            = M.attr     or nil
+M.settings        = M.settings or {}
+M.settings_by_key = M.settings_by_key or {}
+M.next_id         = M.next_id  or 1
+M.dot_attr        = M.dot_attr or luatexbase.new_attribute("LuaCJKfntef.dot")
+M.color_attr      = luatexbase.attributes
   and luatexbase.attributes["LuaCol@Attribute"]
 
 %    \end{macrocode}
@@ -10802,17 +10807,25 @@ end
 % symbol: the side of one dot, the distance from the baseline to its top,
 % and the color attribute of \keys{format}, zero when the dots follow the
 % color of their text.
+% \meta{key} identifies those settings: a call whose key is already known
+% selects the entry it registered, and only a new key registers one.  The
+% attribute is written either way, because the text carries the entry of the
+% innermost decoration and the pairs read the attribute of their own type.
 %    \begin{macrocode}
-function M.new_settings (subtract, skip, hidden, dots, size, top, color)
-  local id       = M.next_id
-  M.next_id      = id + 1
-  if dots then
-    dots = { size = size or 0, top = top or 0, color = color or 0 }
-  else
-    dots = nil
+function M.new_settings (key, subtract, skip, hidden, dots, size, top, color)
+  local id = M.settings_by_key[key]
+  if not id then
+    id        = M.next_id
+    M.next_id = id + 1
+    if dots then
+      dots = { size = size or 0, top = top or 0, color = color or 0 }
+    else
+      dots = nil
+    end
+    M.settings[id]         = { subtract = subtract, skip = skip,
+                               hidden = hidden, dots = dots }
+    M.settings_by_key[key] = id
   end
-  M.settings[id] = { subtract = subtract, skip = skip, hidden = hidden,
-                     dots = dots }
   if M.attr then
     tex.setattribute(M.attr, id)
   end
@@ -10849,6 +10862,26 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{nested_pair}
+% Whether \meta{n} opens the leaders pair of a decoration that is nested inside
+% the span a walk is measuring: a leaders glue followed by the glue that gives
+% its width back.
+% \pkg{lua-ul} inserts the pair of an inner decoration inside the span of the
+% outer one, and the two nodes cancel in width, stretch, and shrink, so a walk
+% steps over both at once.  Counting the leaders glue alone ended the walk at
+% the first nested decoration, which is why an outer \cs{CJKunderdot} found no
+% character to dot.
+%    \begin{macrocode}
+local function nested_pair (n)
+  return n.id == GLUE
+     and (n.subtype == LEADERS or n.subtype == CLEADERS
+          or n.subtype == XLEADERS)
+     and n.next and n.next.id == GLUE and n.next.width == -n.width
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{segments}
 % The intervals of a span of width \meta{w} that the decoration may cover:
 % the first and the last \meta{inset} are taken off, and with
@@ -10862,12 +10895,17 @@ local function segments (w, start, inset, skip_punct)
     local x = 0
     local g = start
     while g and x < w do
-      local width = node_width(g)
-      if g.id == GLYPH and kind(g.char) then
-        cuts[#cuts + 1] = { x, math.min(x + width, w) }
+      local nxt = g.next
+      if nested_pair(g) then
+        nxt = nxt.next
+      else
+        local width = node_width(g)
+        if g.id == GLYPH and kind(g.char) then
+          cuts[#cuts + 1] = { x, math.min(x + width, w) }
+        end
+        x = x + width
       end
-      x = x + width
-      g = g.next
+      g = nxt
     end
   end
   local result = {}
@@ -10889,9 +10927,15 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{settings_at}
-% The settings of the decoration whose leaders pair ends just
-% before \meta{node}: the number is read from that node,
-% because the pair itself is inserted before the marked text.
+% The settings of the decoration that \meta{node} belongs to, read from the
+% attribute the node carries, or nil when it carries none.
+%
+% The pass asks this of the leaders glue of a pair and never of the text:
+% \pkg{lua-ul} inserts the pair before the span, so the first node of the span
+% is the one the innermost decoration marked, which is the outer call only when
+% nothing is nested inside it.  The leaders glue carries the attribute list of
+% the type the call built, and a type is cached per settings entry, so it names
+% the entry of its own call.
 %    \begin{macrocode}
 local function settings_at (node_)
   if not node_ or not M.attr then
@@ -11038,6 +11082,8 @@ end
 % so the walk stops at the width of that pair.
 % A box of the span has its own dimensions, so \texttt{hide_list} takes its
 % ink out instead, and the box is left in the list where it stands.
+% The pair of an inner decoration is dropped whole: it cancels in width, and
+% the ink of that decoration goes with the text the span covers.
 %    \begin{macrocode}
 local function hide_text (start, w)
   local x, height, depth = 0, 0, 0
@@ -11045,33 +11091,42 @@ local function hide_text (start, w)
   local n    = start
   while n and x < w do
     local nxt = n.next
-    local width = node_width(n)
-    if n.id == GLYPH then
-      height = math.max(height, n.height or 0)
-      depth  = math.max(depth,  n.depth  or 0)
-      local k = node.new("kern")
-      k.kern  = width
-      copy_attributes(k, n)
-      k.next  = nxt
+    if nested_pair(n) then
+      nxt = nxt.next
       if prev then
-        prev.next = k
+        prev.next = nxt
       else
-        start = k
+        start = nxt
       end
-      node.free(n)
-      prev = k
     else
-      if n.id == HLIST or n.id == VLIST then
+      local width = node_width(n)
+      if n.id == GLYPH then
         height = math.max(height, n.height or 0)
         depth  = math.max(depth,  n.depth  or 0)
-        if n.id == VLIST
-           or node.has_attribute(n, M.dot_attr) == nil then
-          n.head = hide_list(n.head)
+        local k = node.new("kern")
+        k.kern  = width
+        copy_attributes(k, n)
+        k.next  = nxt
+        if prev then
+          prev.next = k
+        else
+          start = k
         end
+        node.free(n)
+        prev = k
+      else
+        if n.id == HLIST or n.id == VLIST then
+          height = math.max(height, n.height or 0)
+          depth  = math.max(depth,  n.depth  or 0)
+          if n.id == VLIST
+             or node.has_attribute(n, M.dot_attr) == nil then
+            n.head = hide_list(n.head)
+          end
+        end
+        prev = n
       end
-      prev = n
+      x = x + width
     end
-    x = x + width
     n = nxt
   end
   if height ~= 0 or depth ~= 0 then
@@ -11140,7 +11195,8 @@ end
 % box unchanged, because the centre is measured from the start of the span
 % and not from the start of the box. A character that already carries a dot
 % behind it is passed over, because the pass also runs when a box is packed a
-% second time.
+% second time.  A decoration nested in the span adds no width of its own, so
+% the walk steps over its pair and goes on with the characters below it.
 %    \begin{macrocode}
 local function insert_dots (start, w, settings, dots, offset, low, high)
   offset = offset or 0
@@ -11152,24 +11208,28 @@ local function insert_dots (start, w, settings, dots, offset, low, high)
   local x        = 0
   local n        = start
   while n and x < w do
-    local nxt   = n.next
-    local width = node_width(n)
-    if n.id == GLYPH and width > 0
-       and LuaCJK.is_cjk(n.char, LuaCJK.settings_of(n), n.font) then
-      local centre = offset + x + width / 2
-      local dotted = nxt and nxt.id == HLIST
-                     and node.has_attribute(nxt, M.dot_attr) ~= nil
-      if centre >= low and centre <= high and not dotted
-         and not (settings.skip and kind(n.char)) then
-        local dot = dot_box(n, dots)
-        dot.next = nxt
-        n.next   = dot
+    local nxt = n.next
+    if nested_pair(n) then
+      nxt = nxt.next
+    else
+      local width = node_width(n)
+      if n.id == GLYPH and width > 0
+         and LuaCJK.is_cjk(n.char, LuaCJK.settings_of(n), n.font) then
+        local centre = offset + x + width / 2
+        local dotted = nxt and nxt.id == HLIST
+                       and node.has_attribute(nxt, M.dot_attr) ~= nil
+        if centre >= low and centre <= high and not dotted
+           and not (settings.skip and kind(n.char)) then
+          local dot = dot_box(n, dots)
+          dot.next = nxt
+          n.next   = dot
+        end
+      elseif n.id == HLIST then
+        insert_dots(n.head, n.width or 0, settings, dots, offset + x,
+          low, high)
       end
-    elseif n.id == HLIST then
-      insert_dots(n.head, n.width or 0, settings, dots, offset + x,
-        low, high)
+      x = x + width
     end
-    x = x + width
     n = nxt
   end
 end
@@ -11282,11 +11342,14 @@ end
 % \end{macro}
 %
 % \begin{macro}[int]{adjust}
-% Walk a horizontal list and rewrite every leaders pair whose following node
+% Walk a horizontal list and rewrite every leaders pair whose own leaders glue
 % carries a settings entry.
 % A pair of the emphasis dots keeps the nodes \pkg{lua-ul} made, because its
 % leader box is empty and there is no pattern to place; what the pass adds is
 % the ink, one dot behind each CJK character of the span.
+% The entry is read from the pair and not from the text it covers, so the
+% outer of two nested decorations keeps its own inset, its own \keys{skip}, and
+% its own dots instead of the ones the inner call left on the characters.
 %    \begin{macrocode}
 local function adjust (head)
   if not M.attr then
@@ -11302,7 +11365,7 @@ local function adjust (head)
        and n.next
        and n.next.id == GLUE and n.next.width == -n.width then
       local neg      = n.next
-      local settings = settings_at(neg.next)
+      local settings = settings_at(n)
       if settings and settings.dots then
         insert_dots(neg.next, n.width, settings, settings.dots, 0)
         if settings.hidden then
@@ -11620,14 +11683,18 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 %   a character or a rule inside a box of the span carries no ink, so a
 %   fraction is hidden like a plain number and keeps its width, height, and
 %   depth.}
+% \changes{v0.1.1}{2026/11/26}{A decoration draws with the settings of its own
+%   call, so a \keys{skip}, a \keys{subtract}, or a \keys{hidden} reaches a span
+%   that another decoration of the same kind built the type for, a decoration
+%   nested inside another one keeps its own inset, and a key that the command
+%   does not use is accepted and ignored instead of being handed to \pkg{lua-ul}.}
 % Underline the argument. The optional argument takes
-% \keys{thickness, depth, textformat}, and any other key is passed on to
-% \pkg{lua-ul}, which understands
-% \texttt{top}, \texttt{bottom}, and \texttt{height}.
+% \keys{thickness, depth, textformat}, and any other key is accepted and
+% ignored, like the key of any other decoration.
 % \begin{variable}[int]
 %   {
 %     \l_@@_fntef_depth_dim,     \l_@@_fntef_thickness_dim,
-%     \l_@@_fntef_textformat_tl, \l_@@_fntef_pass_tl,
+%     \l_@@_fntef_textformat_tl, \l_@@_fntef_settings_key_tl,
 %     \l_@@_fntef_top_dim,       \l_@@_fntef_bottom_dim,
 %     \l_@@_fntef_top_given_bool, \l_@@_fntef_bottom_given_bool,
 %     \l_@@_fntef_color_key_tl,  \l_@@_fntef_silent_bool,
@@ -11639,7 +11706,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % The requested geometry, the format of the text,
 % the color that an underline type is cached by,
 % the color operations of a drawn pattern,
-% and the keys that \pkg{lua-ul} receives.
+% and the name of the settings entry of the call.
 % The emphasis dots add whether the ink is a dot per CJK character rather
 % than a pattern, the side and the position of one dot, and the color
 % attribute of the dots when \keys{format} is given.
@@ -11665,7 +11732,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \tl_new:N \l_@@_fntef_color_key_tl
 \tl_new:N \l_@@_fntef_color_ops_tl
 \tl_new:N \g_@@_fntef_color_ops_tl
-\tl_new:N \l_@@_fntef_pass_tl
+\tl_new:N \l_@@_fntef_settings_key_tl
 \dim_new:N \l_@@_fntef_top_dim
 \dim_new:N \l_@@_fntef_bottom_dim
 \dim_new:N \l_@@_fntef_gap_dim
@@ -11733,6 +11800,13 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \keys{symbol}, the pass puts one dot under each CJK character rather than
 % repeating a pattern, so the entry carries the side of a dot, the distance
 % from the baseline to its top, and the color attribute of \keys{format}.
+%
+% The seven values also make \cs{l_@@_fntef_settings_key_tl}, the name of the
+% entry: a call that sets a decoration the way an earlier one did selects the
+% entry registered then instead of registering a second one with the same
+% content.  The name is part of the cache key of the type a call builds, so the
+% leaders pair of a decoration names the entry of its own call, whatever the
+% text inside it carries.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_push_settings:
   {
@@ -11754,7 +11828,11 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
             \group_end:
           }
       }
-      { \tl_set:Nn \l_@@_fntef_dots_js_tl { false } }
+      {
+        \tl_set:Nn \l_@@_fntef_dots_js_tl { false }
+        \dim_zero:N \l_@@_fntef_dots_size_dim
+        \dim_zero:N \l_@@_fntef_dots_top_dim
+      }
     \bool_lazy_all:nTF
       {
         { \dim_compare_p:nNn { \l_@@_fntef_subtract_dim } = { 0pt } }
@@ -11763,6 +11841,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         { \str_if_eq_p:Vn \l_@@_fntef_dots_js_tl { false } }
       }
       {
+        \tl_clear:N \l_@@_fntef_settings_key_tl
         \lua_now:e
           {
             tex.setattribute
@@ -11776,10 +11855,20 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         \bool_if:NTF \l_@@_fntef_hidden_bool
           { \tl_set:Nn \l_@@_fntef_hidden_js_tl { true  } }
           { \tl_set:Nn \l_@@_fntef_hidden_js_tl { false } }
+        \tl_set:Ne \l_@@_fntef_settings_key_tl
+          {
+            \dim_to_decimal_in_sp:n { \l_@@_fntef_subtract_dim } /
+            \l_@@_fntef_skip_js_tl / \l_@@_fntef_hidden_js_tl /
+            \l_@@_fntef_dots_js_tl /
+            \dim_to_decimal_in_sp:n { \l_@@_fntef_dots_size_dim } /
+            \dim_to_decimal_in_sp:n { \l_@@_fntef_dots_top_dim } /
+            \int_use:N \g_@@_fntef_dots_color_int
+          }
         \lua_now:e
           {
             LuaCJKfntef.new_settings
-              ( \dim_to_decimal_in_sp:n { \l_@@_fntef_subtract_dim } ,
+              ( [[ \l_@@_fntef_settings_key_tl ]] ,
+                \dim_to_decimal_in_sp:n { \l_@@_fntef_subtract_dim } ,
                 \l_@@_fntef_skip_js_tl ,
                 \l_@@_fntef_hidden_js_tl ,
                 \l_@@_fntef_dots_js_tl ,
@@ -11799,11 +11888,6 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         \dim_set:Nn \l_@@_fntef_bottom_dim
           { -\l_@@_fntef_depth_dim - \l_@@_fntef_thickness_dim }
       }
-    \tl_put_left:Nx \l_@@_fntef_pass_tl
-      {
-        top    = \dim_use:N \l_@@_fntef_top_dim ,
-        bottom = \dim_use:N \l_@@_fntef_bottom_dim ,
-      }
     \@@_fntef_push_settings:
     \dim_set:Nn \l_@@_fntef_rule_height_dim
       { \l_@@_fntef_top_dim }
@@ -11811,55 +11895,39 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
       { -\l_@@_fntef_bottom_dim }
   }
 %    \end{macrocode}
-% \begin{macro}[int]{\@@_fntef_formatted_underline:}
-% A colored rule needs its own underline type: \pkg{luacolor} colors
-% by attribute, while \tn{color} would emit whatsits in front
-% of \tn{leaders}. The type is cached by color and geometry,
-% so a document builds one type per distinct combination.
+% \begin{macro}[int]{\@@_fntef_underline:}
+% Build the type of the underline and use it: one rule of the height and the
+% depth that the keys asked for, cached by geometry like every other
+% decoration.  A colored rule needs the type of its own: \pkg{luacolor} colors
+% by attribute, while \tn{color} would emit whatsits in front of \tn{leaders},
+% which is what \cs{@@_fntef_use_leader_type:nn} does for a \keys{format}.
 %    \begin{macrocode}
-\cs_new_protected:Npn \@@_fntef_formatted_underline:
+\cs_new_protected:Npn \@@_fntef_underline:
   {
+    \tl_set:Ne \l_@@_fntef_any_code_tl
+      {
+        \exp_not:N \tex_leaders:D \exp_not:N \tex_vrule:D
+          height \dim_use:N \l_@@_fntef_rule_height_dim
+          depth  \dim_use:N \l_@@_fntef_rule_depth_dim
+      }
     \tl_set:Ne \l_@@_fntef_cache_key_tl
       {
-        \l_@@_fntef_format_tl
-        | \dim_use:N \l_@@_fntef_rule_height_dim
-        | \dim_use:N \l_@@_fntef_rule_depth_dim
+        underline |
+        \dim_use:N \l_@@_fntef_rule_height_dim |
+        \dim_use:N \l_@@_fntef_rule_depth_dim
       }
-    \luaul_set_color:n { \l_@@_fntef_format_tl }
-    \prop_get:NVNF \g_@@_fntef_format_prop
-      \l_@@_fntef_cache_key_tl \l_@@_fntef_cache_name_tl
-      {
-        \int_gincr:N \g_@@_fntef_format_int
-        \tl_set:Ne \l_@@_fntef_cache_name_tl
-          { LuaCJKfntef / ul / \int_use:N \g_@@_fntef_format_int }
-        \exp_args:Nc \newunderlinetype { \l_@@_fntef_cache_name_tl }
-          [ \dim_to_decimal_in_sp:n { 1ex } @ \luaul_context_color: ]
-          {
-            \luaul_apply_color:
-            \tex_leaders:D \tex_vrule:D
-              height \l_@@_fntef_rule_height_dim
-              depth \l_@@_fntef_rule_depth_dim
-          }
-        \prop_gput:NVV \g_@@_fntef_format_prop
-          \l_@@_fntef_cache_key_tl \l_@@_fntef_cache_name_tl
-      }
-    \use:c { \l_@@_fntef_cache_name_tl }
+    \exp_args:NV \@@_fntef_use_leader_type:nn
+      \l_@@_fntef_cache_key_tl \l_@@_fntef_any_code_tl
   }
 %    \end{macrocode}
 % \end{macro}
 %    \begin{macrocode}
-\cs_new_protected:Npn \@@_fntef_underLine:nn #1#2
-  { \underLine [ #1 ] { #2 } }
 \NewDocumentCommand \CJKunderline { s t- o +m }
   {
     \group_begin:
       \@@_fntef_prepare_underline:n {#3}
-      \tl_if_empty:NTF \l_@@_fntef_format_tl
-        {
-          \exp_args:NV \@@_fntef_underLine:nn
-            \l_@@_fntef_pass_tl { \@@_fntef_body:n {#4} }
-        }
-        { \@@_fntef_formatted_underline: { \@@_fntef_body:n {#4} } }
+      \@@_fntef_underline:
+      \@@_fntef_body:n {#4}
     \group_end:
   }
 %    \end{macrocode}
@@ -11875,7 +11943,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         sout |
         \dim_use:N \l_@@_fntef_height_dim |
         \dim_use:N \l_@@_fntef_thickness_dim |
-        \l_@@_fntef_format_tl
+        \l_@@_fntef_format_tl |
+        \l_@@_fntef_settings_key_tl
       }
     \tl_if_empty:NF \l_@@_fntef_format_tl
       { \luaul_set_color:n { \l_@@_fntef_format_tl } }
@@ -12055,16 +12124,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     sep       .dim_set:N          = \l_@@_fntef_symbol_sep_dim,
     sep       .value_required:n   = true,
     textformat.tl_set:N           = \l_@@_fntef_textformat_tl,
-    unknown   .code:n             =
-      {
-        \tl_put_right:Nx \l_@@_fntef_pass_tl
-          {
-            \l_keys_key_str
-            \tl_if_empty:NF \l_keys_value_tl
-              { = \exp_not:V \l_keys_value_tl }
-            ,
-          }
-      },
+    unknown   .code:n             = { },
   }
 \cs_new_protected:Npn \@@_fntef_reset_decoration:
   {
@@ -12080,7 +12140,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \dim_set:Nn \l_@@_fntef_thickness_dim { .4pt }
     \dim_set:Nn \l_@@_fntef_gap_dim       { 1.1pt }
     \dim_set:Nn \l_@@_fntef_height_dim    { .3em }
-    \clist_map_inline:nn { format, symbol, textformat, pass }
+    \clist_map_inline:nn { format, symbol, textformat }
       { \tl_clear:c { l_@@_fntef_##1_tl } }
     \dim_set:Nn \l_@@_fntef_symbol_sep_dim { .1em }
   }
@@ -12487,6 +12547,13 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % |\colorlet{mark}{blue}| gives two keys, and the second decoration is drawn
 % in blue instead of reusing the type that the first one built.
 %
+% The key carries the settings entry of the call as well, because the pair the
+% type builds has to name the entry of its own call: the attribute list a leader
+% carries is the one captured when the type was defined, and a type shared by
+% two calls with different settings would hand both of them the first one's
+% inset, \keys{skip}, \keys{hidden}, and dots.  Two calls with the same settings
+% share one entry, so the type is still built once for them.
+%
 % The name of the type already carries a counter, so the context that
 % \pkg{lua-ul} puts in the name of the type it defines is a constant: one
 % that expands again when the type is used would rebuild the type with
@@ -12526,6 +12593,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         \exp_not:n {#1}
         | \dim_to_decimal_in_sp:n { 1em }
         | \l_@@_fntef_color_key_tl
+        | \l_@@_fntef_settings_key_tl
       }
     \prop_get:NVNF \g_@@_fntef_format_prop
       \l_@@_fntef_cache_key_tl \l_@@_fntef_cache_name_tl
@@ -12633,6 +12701,10 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % \changes{v0.0.4}{2026/11/22}{A CJK character inside a box gets its dot
 %   wherever the box sits in the span, so \cs{mbox} no longer drops the dot of
 %   a character in the middle of the text.}
+% \changes{v0.1.1}{2026/11/26}{A decoration nested inside \cs{CJKunderdot}
+%   keeps the dots: the span of the dots is measured with the pair of an inner
+%   decoration stepped over, and the dots of a call no longer depend on which
+%   decoration the characters inside it belong to.}
 % Emphasise with dots below the glyphs. The optional argument takes the key
 % set of \cs{CJKunderline}, like the other decorations.
 % A symbol given with \keys{symbol} is a pattern repeated along the span, as
@@ -12661,18 +12733,25 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % text itself, which is also where \keys{subtract} and \keys{skip} act:
 % a character whose centre lies in the part that \keys{subtract} takes off
 % gets no dot, and \keys{skip} leaves the punctuation undotted.
-% \begin{macro}[int]{\@@_fntef_dots}
+% \begin{macro}[int]{\@@_fntef_dots:}
 % The underline type of the dots: a leader box of nothing, which leaves the
-% pair without a pattern to repeat.
+% pair without a pattern to repeat.  It is cached like every other type, so its
+% leaders glue names the settings entry of the call that built it.
 %    \begin{macrocode}
-\newunderlinetype \@@_fntef_dots { \tex_leaders:D \hbox:n { } }
+\cs_new_protected:Npn \@@_fntef_dots:
+  {
+    \tl_set:Nn \l_@@_fntef_any_code_tl { \tex_leaders:D \hbox:n { } }
+    \tl_set:Nn \l_@@_fntef_cache_key_tl { dots }
+    \exp_args:NV \@@_fntef_use_leader_type:nn
+      \l_@@_fntef_cache_key_tl \l_@@_fntef_any_code_tl
+  }
 %    \end{macrocode}
 % \end{macro}
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_underdot:n #1
   {
     \group_begin:
-      \@@_fntef_dots
+      \@@_fntef_dots:
       #1
     \group_end:
   }

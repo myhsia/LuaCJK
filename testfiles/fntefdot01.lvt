@@ -221,6 +221,35 @@
   \dotcount{0}
 }
 
+\TEST{the dots survive an underline written inside them}{
+  \setbox0=\hbox{\CJKunderdot{\CJKunderline{中文}}}
+  \dotcount{0}
+}
+
+\TEST{the dots of a partial span stay inside it}{
+  \setbox0=\hbox{\CJKunderline{\CJKunderdot{中}文}}
+  \dotcount{0}
+  \setbox0=\hbox{\CJKunderdot{\CJKunderline{中}文}}
+  \dotcount{0}
+}
+
+\TEST{a nested decoration does not cut subtract short}{
+  \setbox0=\hbox{\CJKunderdot[subtract = 1em]{\CJKunderline{一二三}}}
+  \dotcount{0}
+  \dotalignment{0}
+}
+
+\TEST{the skip of the inner decoration does not reach the dots}{
+  \setbox0=\hbox{\CJKunderdot{\CJKunderline[skip]{中，文}}}
+  \dotcount{0}
+}
+
+\TEST{hidden hides a nested decoration as well}{
+  \setbox0=\hbox{\CJKunderline[hidden]{\CJKunderdot{中}}}
+  \glyphcount{0}
+  \dotcount{0}
+}
+
 \TEST{the dots scale with the font size}{
   \setbox0=\hbox{\CJKunderdot{中}}
   \dotgeometry{0}
