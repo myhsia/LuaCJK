@@ -1406,6 +1406,23 @@ abc汉字abc
 % 所以被装饰的文字可以包含任意命令、CJK 与拉丁文字，
 % 也仍然可以被断字并跨行断开。
 %
+% \begin{function}{\LuaCJKfntefsetup}
+%   \begin{syntax}
+%     \tn{LuaCJKfntefsetup} \marg{keyval list}
+%   \end{syntax}
+%   设置整个包共用的键。键 \keys{commute} 取 \TFF，初始 \texttt{true}：
+%   对易时每条装饰的墨迹各按自己的键放置，两条装饰的嵌套次序不改变结果；
+%   不对易时，一组嵌套装饰的墨迹排进它们各自位置合成的那一段里，
+%   次序按嵌套——外层在上、里层在下，余下的空白在相邻两条之间均分。
+%   于是两种写法占的高度相同，只是先后不同，次序与 \pkg{xeCJK} 相同；
+%   外层键给出的 \keys{depth} 比组里最浅的墨迹更深时，整组以最浅的那条为准。
+%   写在分组里时，它只作用于该分组中开始的装饰。
+%   波浪与斜删除线是画出来的图案，节点列表看不出墨迹在哪里，
+%   所以它们不参加排布，保持原位。
+%   装饰写在一个盒子里时也一样：盒子单独排版，包住它的装饰不在同一行里，
+%   盒里的墨迹不动；把盒子放在文字上而不是装饰上，两条装饰就都在同一行里。
+% \end{function}
+%
 % \begin{function}{\CJKunderline}
 %   \begin{syntax}
 %     \tn{CJKunderline} \oarg{options} \marg{text}
@@ -2900,6 +2917,28 @@ abc汉字abc
 % emphasis dots, and strike-through. It builds on \pkg{lua-ul},
 % so the decorated text may contain arbitrary commands, CJK and Latin text,
 % and may still be hyphenated and broken between lines.
+%
+% \begin{function}{\LuaCJKfntefsetup}
+%   \begin{syntax}
+%     \tn{LuaCJKfntefsetup} \marg{keyval list}
+%   \end{syntax}
+%   Set the keys of the package as a whole. The key \keys{commute} takes
+%   \TFF and is \texttt{true} initially: with it every decoration puts its ink
+%   where its own keys say, so the order in which two decorations are nested
+%   does not change the result; without it the inks of one group of nested
+%   decorations are packed into the band their own positions make, outermost
+%   first, the rest of the band shared as equal gaps between two neighbours.
+%   The two writings then have the same extent and differ only in order, the
+%   order \pkg{xeCJK} gives; a \keys{depth} deeper than the group's shallowest
+%   ink is overridden, because the whole group follows the shallowest one. In a
+%   group the key covers the decorations started inside that group alone. The
+%   wave and the slash are drawings whose ink the node list does not place, so
+%   they take no part in the packing and keep their position. The same holds for
+%   a decoration written inside a box: the box is typeset on its own, so the
+%   decoration around it is not in the same list and the ink inside the box does
+%   not move; put the box around the text instead, and both decorations stay in
+%   one list.
+% \end{function}
 %
 % \begin{function}{\CJKunderline}
 %   \begin{syntax}
@@ -10811,8 +10850,11 @@ end
 % selects the entry it registered, and only a new key registers one.  The
 % attribute is written either way, because the text carries the entry of the
 % innermost decoration and the pairs read the attribute of their own type.
+% \meta{commute} is the \keys{commute} mode of the call: with \texttt{false}
+% the pass places the ink this decoration covers below its own.
 %    \begin{macrocode}
-function M.new_settings (key, subtract, skip, hidden, dots, size, top, color)
+function M.new_settings (key, subtract, skip, hidden, dots, size, top, color,
+                         commute)
   local id = M.settings_by_key[key]
   if not id then
     id        = M.next_id
@@ -10823,7 +10865,8 @@ function M.new_settings (key, subtract, skip, hidden, dots, size, top, color)
       dots = nil
     end
     M.settings[id]         = { subtract = subtract, skip = skip,
-                               hidden = hidden, dots = dots }
+                               hidden = hidden, dots = dots,
+                               commute = commute }
     M.settings_by_key[key] = id
   end
   if M.attr then
@@ -10857,6 +10900,71 @@ local function node_width (n)
     return n.kern or 0
   end
   return n.width or 0
+end
+
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{ink_span, ink_bounds, ink_of}
+% How far below the baseline the ink of a decoration reaches: the top and the
+% bottom of everything its leaders paint, walked through the boxes it sits in
+% and through their shifts, which \LuaTeX{} stores positive downwards.
+% A box that paints nothing itself is taken at its own dimensions.
+% The entry of the emphasis dots carries their geometry instead, because their
+% ink is written into the text and not into the leader box.
+% A drawing is the exception: its ink reaches the page as PDF literals, so the
+% nodes say nothing about where it is.  \texttt{drawn} reports such a box with
+% no ink of its own, and the pair is then reported as having no measurable
+% extent.
+%    \begin{macrocode}
+local drawn
+
+local function ink_span (n, shift, acc)
+  if n.id == GLYPH or n.id == RULE then
+    acc.top    = math.min(acc.top,    shift - (n.height or 0))
+    acc.bottom = math.max(acc.bottom, shift + (n.depth  or 0))
+    acc.found  = true
+  elseif n.id == HLIST or n.id == VLIST then
+    local inner = { top = math.huge, bottom = -math.huge, found = false }
+    local m = n.head
+    while m do
+      ink_span(m, shift + (n.shift or 0), inner)
+      m = m.next
+    end
+    if not inner.found then
+      inner.top    = shift - (n.height or 0)
+      inner.bottom = shift + (n.depth  or 0)
+    end
+    acc.top    = math.min(acc.top,    inner.top)
+    acc.bottom = math.max(acc.bottom, inner.bottom)
+    acc.found  = true
+  end
+end
+
+local function ink_bounds (n)
+  if not n then
+    return nil
+  end
+  local acc = { top = math.huge, bottom = -math.huge, found = false }
+  ink_span(n, 0, acc)
+  if not acc.found then
+    return nil
+  end
+  return acc.top, acc.bottom
+end
+
+local function ink_of (settings, leaders)
+  if settings and settings.dots then
+    local top = settings.dots.top
+    return top - settings.dots.size, top
+  end
+  if drawn and leaders and leaders.id == HLIST then
+    local literal, ink = drawn(leaders)
+    if literal and not ink then
+      return nil
+    end
+  end
+  return ink_bounds(leaders)
 end
 
 %    \end{macrocode}
@@ -11250,8 +11358,12 @@ end
 % width instead: \TeX\ fills such a rule to the whole width of the glue, so the
 % rule covers the interval exactly and grows with the glue, where a repeated
 % rule box would leave the last fraction of the interval empty.
+%
+% The ink of a pair whose decoration asked for room is shifted down by
+% \meta{offset} before it is written: a rule takes it in its height and depth,
+% and a leader box in its shift, which is positive downwards.
 %    \begin{macrocode}
-local function replace_pair (head, prev, leaders, settings)
+local function replace_pair (head, prev, leaders, settings, offset)
   local w     = leaders.width
   local neg   = leaders.next
   local subtract = settings and settings.subtract or 0
@@ -11265,8 +11377,8 @@ local function replace_pair (head, prev, leaders, settings)
   if rule then
     block = node.copy(rule)
     block.width  = 0
-    block.height = rule.height - down
-    block.depth  = rule.depth + down
+    block.height = rule.height - down - offset
+    block.depth  = rule.depth + down + offset
     block.next   = nil
   end
   local covered = {}
@@ -11313,6 +11425,16 @@ local function replace_pair (head, prev, leaders, settings)
     if block then
       piece.leader = node.copy(block)
       copy_attributes(piece, piece.leader)
+    elseif offset ~= 0 and piece.leader then
+      if piece.leader.id == RULE then
+        local rule_ = node.copy(piece.leader)
+        rule_.height = rule_.height - offset
+        rule_.depth  = rule_.depth  + offset
+        piece.leader = rule_
+      else
+        piece.leader       = node.copy(piece.leader)
+        piece.leader.shift = (piece.leader.shift or 0) + offset
+      end
     end
     append(piece)
     cursor = part[2]
@@ -11341,6 +11463,97 @@ end
 %    \end{macrocode}
 % \end{macro}
 %
+% \begin{macro}[int]{collect, place}
+% The spans of one list, and the ink each of them draws.
+% A decoration whose entry has \keys{commute} off does not commute with the
+% decorations it covers: the inks of one group are packed inside the band their
+% own positions make, outermost first, with the leftover shared as equal gaps.
+% That needs every ink of the group before the first of them is placed, which is
+% why the pass collects the spans first and writes them afterwards.
+%
+% The spans are intervals of the list — \pkg{lua-ul} writes the pair of an inner
+% decoration inside the span of the outer one — so the ones still open are kept
+% with the width at which each ends, and each span becomes a frame that holds
+% its children.  \texttt{ink\_of} gives the canonical top and bottom of its ink;
+% a drawing has none, keeps its place, and is left out of the packing.
+%    \begin{macrocode}
+local function collect (head)
+  local roots, order, open = { }, { }, { }
+  local x = 0
+  local n = head
+  while n do
+    local nxt = n.next
+    while #open > 0 and x >= open[#open].stop do
+      table.remove(open)
+    end
+    if n.id == GLUE
+       and (n.subtype == LEADERS or n.subtype == CLEADERS
+            or n.subtype == XLEADERS)
+       and n.next
+       and n.next.id == GLUE and n.next.width == -n.width then
+      local parent = open[#open]
+      local frame  = { settings = settings_at(n), children = { } }
+      frame.top, frame.bottom = ink_of(frame.settings, n.leader)
+      if frame.top then
+        frame.height = frame.bottom - frame.top
+      end
+      frame.stop = x + n.width
+      order[#order + 1] = frame
+      if parent then
+        parent.children[#parent.children + 1] = frame
+      else
+        roots[#roots + 1] = frame
+      end
+      open[#open + 1] = frame
+      nxt = n.next.next
+    else
+      x = x + node_width(n)
+    end
+    n = nxt
+  end
+  return roots, order
+end
+
+% Pack one group into its band and give every span its offset.
+%    \begin{macrocode}
+local function place (root)
+  local order = { }
+  local function flatten (frame)
+    order[#order + 1] = frame
+    for _, child in ipairs(frame.children) do
+      flatten(child)
+    end
+  end
+  flatten(root)
+  local top, bottom, heights, inked = nil, nil, 0, 0
+  for _, frame in ipairs(order) do
+    if frame.height then
+      top     = top and math.min(top, frame.top) or frame.top
+      bottom  = bottom and math.max(bottom, frame.bottom) or frame.bottom
+      heights = heights + frame.height
+      inked   = inked + 1
+    end
+  end
+  if not top then
+    return
+  end
+  if bottom < top + heights then
+    bottom = top + heights
+  end
+  local gap    = inked > 1 and (bottom - top - heights) / (inked - 1) or 0
+  local cursor = top
+  for _, frame in ipairs(order) do
+    if frame.height then
+      frame.offset = cursor - frame.top
+      cursor       = cursor + frame.height + gap
+    else
+      frame.offset = 0
+    end
+  end
+end
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}[int]{adjust}
 % Walk a horizontal list and rewrite every leaders pair whose own leaders glue
 % carries a settings entry.
@@ -11350,13 +11563,24 @@ end
 % The entry is read from the pair and not from the text it covers, so the
 % outer of two nested decorations keeps its own inset, its own \keys{skip}, and
 % its own dots instead of the ones the inner call left on the characters.
+% The offset comes from the frame of the span, and only a group whose outermost
+% decoration has \keys{commute} off is packed: the flag is a setting of the
+% package, so the members of a group share it, and a group that is not packed
+% costs one walk over its spans and no measurement at all.
 %    \begin{macrocode}
 local function adjust (head)
   if not M.attr then
     return head
   end
+  local roots, order = collect(head)
+  for _, root in ipairs(roots) do
+    if root.settings and root.settings.commute == false then
+      place(root)
+    end
+  end
   local prev = nil
   local n    = head
+  local i    = 0
   while n do
     local nxt = n.next
     if n.id == GLUE
@@ -11366,15 +11590,24 @@ local function adjust (head)
        and n.next.id == GLUE and n.next.width == -n.width then
       local neg      = n.next
       local settings = settings_at(n)
+      local w        = n.width
+      i = i + 1
+      local frame  = order[i]
+      local offset = frame and frame.offset or 0
       if settings and settings.dots then
-        insert_dots(neg.next, n.width, settings, settings.dots, 0)
+        local dots = settings.dots
+        if offset ~= 0 then
+          dots = { size = dots.size, top = dots.top + offset,
+                   color = dots.color }
+        end
+        insert_dots(neg.next, w, settings, dots, 0)
         if settings.hidden then
-          neg.next = hide_text(neg.next, n.width)
+          neg.next = hide_text(neg.next, w)
         end
         n    = neg
         nxt  = neg.next
       elseif settings or box_rule(n.leader) then
-        head = replace_pair(head, prev, n, settings)
+        head = replace_pair(head, prev, n, settings, offset)
         n    = neg
         nxt  = neg.next
       end
@@ -11417,9 +11650,11 @@ end
 % Whether a leader box holds a drawing rather than ink of its own.
 % A drawing reaches the page as PDF literals, so the box holds whatsits and no
 % glyph and no rule; the dots and the symbols hold a rule or a glyph, and a
-% symbol wrapped in an \texttt{ActualText} sequence holds both.
+% symbol wrapped in an \texttt{ActualText} sequence holds both.  The name is
+% declared with the ink walk, which asks a box this question before it trusts
+% the dimensions it reads.
 %    \begin{macrocode}
-local function drawn (box)
+drawn = function (box)
   if not box or box.id ~= HLIST then
     return false
   end
@@ -11658,6 +11893,27 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
   { LuaCJKfntef.attr = \int_use:N \c_@@_fntef_settings_attr_int }
 %    \end{macrocode}
 %
+% \begin{macro}{\LuaCJKfntefsetup}
+% \changes{v0.1.1}{2026/11/26}{Provide \cs{LuaCJKfntefsetup} with the key
+%   \keys{commute}, which packs the inks of a group of nested decorations into
+%   the band their own positions make, so the nesting order decides which ink
+%   is below which instead of every ink keeping the height its keys give.}
+% The keys of the package as a whole, as opposed to the keys of one decoration.
+% \cs{l_@@_fntef_commute_bool} is a local variable, so a setting in a group
+% covers the decorations started inside that group and no other.
+%    \begin{macrocode}
+\bool_new:N \l_@@_fntef_commute_bool
+\bool_set_true:N \l_@@_fntef_commute_bool
+\keys_define:nn { LuaCJKfntef / options }
+  {
+    commute  .bool_set:N = \l_@@_fntef_commute_bool,
+    commute  .default:n  = { true },
+  }
+\NewDocumentCommand \LuaCJKfntefsetup { m }
+  { \keys_set:nn { LuaCJKfntef / options } {#1} }
+%    \end{macrocode}
+% \end{macro}
+%
 % \begin{macro}{\CJKunderline}
 % \changes{v0.0.1}{2026/11/05}{Provide \pkg{LuaCJKfntef}, a \pkg{lua-ul} based
 %   companion package providing \cs{CJKunderline}, \cs{CJKunderdot}, and
@@ -11801,12 +12057,16 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % repeating a pattern, so the entry carries the side of a dot, the distance
 % from the baseline to its top, and the color attribute of \keys{format}.
 %
-% The seven values also make \cs{l_@@_fntef_settings_key_tl}, the name of the
-% entry: a call that sets a decoration the way an earlier one did selects the
-% entry registered then instead of registering a second one with the same
-% content.  The name is part of the cache key of the type a call builds, so the
-% leaders pair of a decoration names the entry of its own call, whatever the
-% text inside it carries.
+% The seven values and the \keys{commute} flag also make
+% \cs{l_@@_fntef_settings_key_tl}, the name of the entry: a call that sets a
+% decoration the way an earlier one did selects the entry registered then
+% instead of registering a second one with the same content.  The name is part
+% of the cache key of the type a call builds, so the leaders pair of a
+% decoration names the entry of its own call, whatever the text inside it
+% carries.
+% A decoration whose ink must stay clear of the ink it covers has to say so
+% even when every other setting is at its default, so \keys{commute} is part of
+% the test that lets a call write no entry at all.
 %    \begin{macrocode}
 \cs_new_protected:Npn \@@_fntef_push_settings:
   {
@@ -11839,6 +12099,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
         { \str_if_eq_p:Vn \l_@@_fntef_skip_tl { 0 } }
         { \bool_not_p:n { \l_@@_fntef_hidden_bool } }
         { \str_if_eq_p:Vn \l_@@_fntef_dots_js_tl { false } }
+        { \l_@@_fntef_commute_bool }
       }
       {
         \tl_clear:N \l_@@_fntef_settings_key_tl
@@ -11862,7 +12123,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
             \l_@@_fntef_dots_js_tl /
             \dim_to_decimal_in_sp:n { \l_@@_fntef_dots_size_dim } /
             \dim_to_decimal_in_sp:n { \l_@@_fntef_dots_top_dim } /
-            \int_use:N \g_@@_fntef_dots_color_int
+            \int_use:N \g_@@_fntef_dots_color_int /
+            \bool_if:NTF \l_@@_fntef_commute_bool { true } { false }
           }
         \lua_now:e
           {
@@ -11874,7 +12136,8 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
                 \l_@@_fntef_dots_js_tl ,
                 \dim_to_decimal_in_sp:n { \l_@@_fntef_dots_size_dim } ,
                 \dim_to_decimal_in_sp:n { \l_@@_fntef_dots_top_dim } ,
-                \int_use:N \g_@@_fntef_dots_color_int )
+                \int_use:N \g_@@_fntef_dots_color_int ,
+                \bool_if:NTF \l_@@_fntef_commute_bool { true } { false } )
           }
       }
   }

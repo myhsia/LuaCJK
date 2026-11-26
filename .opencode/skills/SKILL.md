@@ -705,6 +705,35 @@ from the edge of its box.
 `skip` leaves the punctuation undotted, and `hidden` still runs after the dots
 are written, so a hidden span keeps them while its glyphs become kerns.
 
+### A group of decorations shares one band
+
+By default the two decorations of `\CJKunderline{\CJKunderdot{…}}` and of
+`\CJKunderdot{\CJKunderline{…}}` are the same page: every ink sits where its own
+keys put it, so the two operators commute. `\LuaCJKfntefsetup{commute = false}`
+(the key is a local boolean, so a group scopes it) packs the inks of one group of
+nested decorations into the band their canonical positions make: top is the
+shallowest top, bottom the deepest bottom (grown to the sum of the heights when
+they do not fit), the inks are laid out from the top in nesting order, and the
+leftover is shared as equal gaps. The two writings then occupy one band and
+differ only in order — xeCJK's order — and a `depth` deeper than the group's
+shallowest ink is overridden.
+
+The pass needs every ink of a group before it places the first one, so
+`collect` builds a tree of frames from the spans (intervals of one list, not
+brackets) and `place` packs it; the walk that writes the list reads each frame's
+offset by the position of the pair in that tree, never by using the node as a
+table key, because the userdata LuaTeX hands out for one node is not stable.
+`ink_bounds` measures a leader box by walking it and accumulating the shifts
+LuaTeX stores positive downwards, taking a box that paints nothing at its own
+dimensions; the dots carry their interval in the settings entry. A *drawing*
+(the wave, the slash) paints through PDF literals, so `drawn` reports such a box
+as inkless: it has no interval, does not join the packing, and keeps its
+position. A decoration inside a box is in the box's own list, so the decoration
+around it is invisible to the pass and its ink does not move; boxing the text
+rather than the decoration keeps both in one list. A group whose outermost
+decoration leaves `commute` alone is not packed, so the default pays only the
+walk.
+
 ### Drawn decorations stay out of the metrics
 
 The wave and the xout slash are drawings rather than leaders of a rule. Each is
