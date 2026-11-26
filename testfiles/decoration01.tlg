@@ -189,31 +189,41 @@ TEST 16: each decoration keeps its own settings
 NODES kern:327680 leaders:655360 kern:327680 glue:-1310720 glyph glue:0 glyph glue:218430 glyph glue:218430 leaders:655360 glue:-655360 glyph
 ============================================================
 ============================================================
-TEST 17: a decoration ends at the last character it covers
+TEST 17: a decoration after a plain one keeps its own settings
+============================================================
+NODES leaders:655360 glue:-655360 glyph glue:218430 glyph glue:218430 kern:327680 leaders:655360 kern:327680 glue:-1310720 glyph glue:0 glyph
+============================================================
+============================================================
+TEST 18: a nested decoration does not cut the inset short
+============================================================
+NODES kern:655360 leaders:655360 kern:655360 glue:-1966080 leaders:1966080 glue:-1966080 glyph glue:0 glyph glue:0 glyph
+============================================================
+============================================================
+TEST 19: a decoration ends at the last character it covers
 ============================================================
 argument: 21.8pt
 NODES glyph glue:218430 leaders:1428685 glue:-1428685 glyph glyph glyph glue:218430 glyph
 ============================================================
 ============================================================
-TEST 18: the boundary inside a decoration keeps it whole
+TEST 20: the boundary inside a decoration keeps it whole
 ============================================================
 argument: 34.16595pt
 NODES glyph glue:0 leaders:2239100 glue:-2239100 glyph glue:218430 glyph glue:218430 glyph glue:0 glyph
 ============================================================
 ============================================================
-TEST 19: a wave ends at the last character it covers
+TEST 21: a wave ends at the last character it covers
 ============================================================
 argument: 21.8pt
 NODES glyph glue:218430 leaders:1428685 glue:-1428685 glyph glyph glyph glue:218430 glyph
 ============================================================
 ============================================================
-TEST 20: settings do not leak to another decoration
+TEST 22: settings do not leak to another decoration
 ============================================================
 span: 20.0pt
 LEADERS 1310720
 ============================================================
 ============================================================
-TEST 21: a decoration keeps the width, stretch, and shrink of its text
+TEST 23: a decoration keeps the width, stretch, and shrink of its text
 ============================================================
 DIM w=3276800 st=262144 sh=0
 DIM w=3276800 st=262144 sh=0
@@ -222,13 +232,13 @@ DIM w=3276800 st=262144 sh=0
 DIM w=3276800 st=262144 sh=0
 ============================================================
 ============================================================
-TEST 22: a kern inside the text moves the cut of skip
+TEST 24: a kern inside the text moves the cut of skip
 ============================================================
 NODES leaders:1310720 kern:655360 leaders:655360 glue:-2621440 glyph kern:655360 glue:0 glyph glue:0 glyph
 NODES leaders:1310720 kern:655360 leaders:655360 glue:-2621440 glyph glue:655360 glyph glue:0 glyph
 ============================================================
 ============================================================
-TEST 23: a pattern built from em units is rebuilt per font size
+TEST 25: a pattern built from em units is rebuilt per font size
 ============================================================
 > \box...=
 \hbox(8.12012+1.99997)x10.0, direction TLT
@@ -261,7 +271,7 @@ l. ...}
 l. ...}
 ============================================================
 ============================================================
-TEST 24: a rule sized in em keeps its thickness when the size changes
+TEST 26: a rule sized in em keeps its thickness when the size changes
 ============================================================
 > \box...=
 \hbox(8.12012+0.71777)x10.0, direction TLT
@@ -284,7 +294,7 @@ l. ...}
 l. ...}
 ============================================================
 ============================================================
-TEST 25: a drawn pattern is repeated with leaders
+TEST 27: a drawn pattern is repeated with leaders
 ============================================================
 > \box...=
 \hbox(8.28125+0.71777)x40.0, direction TLT
@@ -305,7 +315,7 @@ TEST 25: a drawn pattern is repeated with leaders
 .......\hbox(0.0+0.0)x0.0, direction TLT
 ........\hbox(0.0+0.0)x0.0, direction TLT
 .........\savepos
-.........\write1{\new@label@record{draw.1}{{xpos}{\__property_code_xpos: }{ypos}{\__property_code_ypos: }{abspage}{\__property_code_abspage: }}}
+.........\write1{\new@label@record{draw.3}{{xpos}{\__property_code_xpos: }{ypos}{\__property_code_ypos: }{abspage}{\__property_code_abspage: }}}
 .........\savepos
 ........\pdfliteral direct{0 g 0 G}
 ........\pdfliteral origin{0.39851 w}
@@ -345,7 +355,7 @@ l. ...}
 .......\hbox(0.0+0.0)x0.0, direction TLT
 ........\hbox(0.0+0.0)x0.0, direction TLT
 .........\savepos
-.........\write1{\new@label@record{draw.2}{{xpos}{\__property_code_xpos: }{ypos}{\__property_code_ypos: }{abspage}{\__property_code_abspage: }}}
+.........\write1{\new@label@record{draw.4}{{xpos}{\__property_code_xpos: }{ypos}{\__property_code_ypos: }{abspage}{\__property_code_abspage: }}}
 .........\savepos
 ........\pdfliteral direct{0 g 0 G}
 ........\pdfliteral origin{0.39851 w}
@@ -362,7 +372,7 @@ l. ...}
 l. ...}
 ============================================================
 ============================================================
-TEST 26: a decoration is divided into whole patterns when its width is final
+TEST 28: a decoration is divided into whole patterns when its width is final
 ============================================================
 > \box...=
 \vbox(8.28125+0.71777)x41.0, direction TLT
@@ -384,7 +394,7 @@ TEST 26: a decoration is divided into whole patterns when its width is final
 ........\hbox(0.0+0.0)x0.0, direction TLT
 .........\hbox(0.0+0.0)x0.0, direction TLT
 ..........\savepos
-..........\write1{\new@label@record{draw.1}{{xpos}{\__property_code_xpos: }{ypos}{\__property_code_ypos: }{abspage}{\__property_code_abspage: }}}
+..........\write1{\new@label@record{draw.3}{{xpos}{\__property_code_xpos: }{ypos}{\__property_code_ypos: }{abspage}{\__property_code_abspage: }}}
 ..........\savepos
 .........\pdfliteral direct{0 g 0 G}
 .........\pdfliteral origin{0.39851 w}
@@ -513,13 +523,13 @@ TEST 26: a decoration is divided into whole patterns when its width is final
 l. ...}
 ============================================================
 ============================================================
-TEST 27: the copies of a drawn pattern start where its span starts
+TEST 29: the copies of a drawn pattern start where its span starts
 ============================================================
 copies 8, width 674474
 the span starts -1 sp from the first copy
 ============================================================
 ============================================================
-TEST 28: the copies of a symbol start where its span starts
+TEST 30: the copies of a symbol start where its span starts
 ============================================================
 copies 3, width 655360
 the span starts 0 sp from the first copy

@@ -10,6 +10,8 @@
 - `CJLineBreak` reads the settings of the character that would start the line, so a group that selects `strict` no longer forbids a break in front of a small kana written outside it.
 - A paragraph that begins with a box hangs the opening mark inside it as well, so `\mbox` around the mark leaves its blank in the indentation, as a line of plain text does.
 - A mark inside a box hangs only when nothing inked stands between it and the edge of that box, so `\fbox` and `\framebox` stop at the alignment edge instead of moving their whole frame past it, while `\mbox` around a mark keeps its blank in the margin.
+- A decoration draws with the settings of its own call, so a `skip`, a `subtract`, or a `hidden` reaches a span that another decoration of the same kind built the type for, a decoration nested inside another one keeps its own inset, and a key that the command does not use is accepted and ignored instead of being handed to `lua-ul`.
+- A decoration nested inside `\CJKunderdot` keeps the dots: the span of the dots is measured with the pair of an inner decoration stepped over, and the dots of a call no longer depend on which decoration the characters inside it belong to.
 
 ## [LuaCJK-v0.1.0](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.1.0)
 

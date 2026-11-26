@@ -56,9 +56,9 @@
   \TYPE{depth: \the\dp0}
 }
 
-\TEST{an unknown key is reported by lua-ul}{
+\TEST{an unknown key is accepted and ignored}{
   \setbox0=\hbox{\CJKunderline[no-such-key = 1]{中}}
-  \TYPE{survived}
+  \TYPE{survived: \the\wd0}
 }
 
 \TEST{the double underline takes gap and thickness}{

@@ -555,9 +555,19 @@ would with no decoration.  The stretch of the pair mirrors the text under it,
 so each piece takes its share in proportion to its width and the last piece
 takes the remainder.  A `kern` node has no `width` field in LuaTeX, so every
 interval is measured through `node_width`, which reads `kern` for a kern.
-The settings of one call live in `LuaCJKfntef.settings`, numbered by the
-decoration attribute, so two decorations in one paragraph keep their own
-settings.
+The settings of one call live in `LuaCJKfntef.settings`, keyed by a string the
+TeX side builds from those settings, so two decorations in one paragraph keep
+their own.  A pair names its entry through the attribute list of its own leaders
+glue, which is the list captured when the type was defined, so the type is part
+of the key: the text under the pair carries the innermost decoration's entry,
+which is the outer call's only when nothing is nested inside it.
+
+Lua-ul inserts the pair of an inner decoration inside the span of the outer one,
+and the leaders glue and the glue that gives its width back cancel, so
+`segments`, `insert_dots`, and `hide_text` step over both nodes at once.  A walk
+that counted the leaders glue alone ended at the first nested decoration, so an
+outer `\CJKunderdot` found no character to dot; `hide_text` drops the pair whole,
+because the ink of the inner decoration is covered by the hidden span.
 
 A colored rule cannot use `\color`, which emits whatsits in front of
 `\leaders`; it goes through `luacolor`'s attribute coloring
@@ -574,11 +584,14 @@ surrounding text — and the current font size, without which a pattern written
 in `em` units keeps the size of the first call.  Without the color a second call
 inherits the color of the first.  The key holds those resolved operations rather
 than the name the document wrote, because `\colorlet` may redefine a name
-between two calls.  The name of the type already carries a counter, which is why
+between two calls.  It also carries the settings entry of the call, so a type is
+not shared by two calls whose `subtract`, `skip`, `hidden`, or dots differ, while
+two calls that set a decoration the same way still share one entry and one type.
+The name of the type already carries a counter, which is why
 the `lua-ul` context can be the constant `LuaCJKfntef`; a context that expands
 again when the type is used would rebuild it with whatever color is current at
-that moment.  The single rule and the strike-out carry their own color in the
-same way, in `\@@_fntef_formatted_underline:` and `\@@_fntef_use_sout:`.
+that moment.  The underline and the strike-out carry their own color in the
+same way, in `\@@_fntef_underline:` and `\@@_fntef_use_sout:`.
 
 Every decoration parses one key set: a pair goes to the keys, and a bare item
 that names no key is a color and means `format`, so `[red]` and `[subtract]`

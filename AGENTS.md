@@ -656,21 +656,35 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   rule-based decoration must keep the whole invariant.  A piece whose leader
   box holds nothing but one rule gets a rule of zero width, which `\leaders`
   fills to the width of the glue.
-- **A decoration's underline type keeps the color and the font size it was
-  built with.**  `luacolor` colors a rule by attribute, and `lua-ul` puts the
-  attributes of the built box on every leader it inserts, so a type cached by
-  geometry alone keeps the color of the first call.  The cache key therefore
-  carries the color — the operations that `\luaul_context_color:` holds after
-  `\luaul_set_color:n`, which is what `lua-ul` puts in the context of its own
-  type, when `format` is set, otherwise the value of `luacolor`'s attribute,
-  which is the color of the surrounding text — and the font size, because
-  `lua-ul` scans the pattern box once per type, so a pattern written in `em`
-  units would otherwise keep the size of the first call.  The key holds the
+- **A decoration's underline type keeps the color, the font size, and the
+  settings entry it was built with.**  `luacolor` colors a rule by attribute,
+  and `lua-ul` puts the attributes of the built box on every leader it inserts,
+  so a type cached by geometry alone keeps the color of the first call.
+  The cache key therefore carries the color — the operations that
+  `\luaul_context_color:` holds after `\luaul_set_color:n`, which is what
+  `lua-ul` puts in the context of its own type, when `format` is set, otherwise
+  the value of `luacolor`'s attribute, which is the color of the surrounding
+  text — the font size, because `lua-ul` scans the pattern box once per type, so
+  a pattern written in `em` units would otherwise keep the size of the first
+  call, and the settings key.  The key holds the
   resolved operations and not the name the document wrote, because a name can
   be redefined: `\colorlet{mark}{blue}` after `red` must build a second type.
+  The settings key is what identifies the call: the pass reads a pair's entry
+  from the attribute list of its own leaders glue, since the text under the pair
+  carries the innermost decoration's entry, so two calls with different
+  `subtract`, `skip`, `hidden`, or dots must not share a type.  Two calls that
+  set a decoration the same way share both the entry and the type.
   The `lua-ul` context is the constant `LuaCJKfntef`: the type name already
   carries a counter, while a context that expands again at use time rebuilds
   the type with whatever color is current then.
+- **A span is measured with a nested decoration stepped over.**  `lua-ul`
+  inserts the pair of an inner decoration inside the span of the outer one, and
+  the leaders glue and the glue that gives its width back cancel, so the walks
+  that measure a span (`segments`, `insert_dots`, `hide_text`) step over the two
+  nodes at once.  Counting the leaders glue alone ended the walk at the first
+  nested decoration, so an outer `\CJKunderdot` found no character to dot and a
+  `\CJKunderline[hidden]` hid nothing; `hide_text` drops the pair whole, because
+  the ink of the inner decoration is covered by the hidden span.
 - **A drawn decoration stays out of the line metrics.**  The wave and the
   xout slash are built at use time in
   `\l_@@_fntef_pattern_box`, which is then set to zero height and depth.

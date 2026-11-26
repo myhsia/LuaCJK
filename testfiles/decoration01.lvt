@@ -171,6 +171,16 @@
   \nodes
 }
 
+\TEST{a decoration after a plain one keeps its own settings}{
+  \setbox0=\hbox{\CJKunderline{中}x\CJKunderline[subtract]{中中}}
+  \nodes
+}
+
+\TEST{a nested decoration does not cut the inset short}{
+  \setbox0=\hbox{\CJKunderline[subtract = 1em]{\CJKunderline{一二三}}}
+  \nodes
+}
+
 \TEST{a decoration ends at the last character it covers}{
   \setbox2=\hbox{ABC}
   \TYPE{argument: \the\wd2}

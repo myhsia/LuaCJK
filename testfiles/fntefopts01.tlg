@@ -28,15 +28,9 @@ TEST 5: other keys are passed to lua-ul
 depth: 15.0pt
 ============================================================
 ============================================================
-TEST 6: an unknown key is reported by lua-ul
+TEST 6: an unknown key is accepted and ignored
 ============================================================
-! LaTeX Error: The key 'luaul/generic/no-such-key' is unknown and is being ignored.
-For immediate help type H <return>.
- ...                                              
-l. ...}
-The module 'luaul/generic' does not have a key called 'luaul/generic/no-such-key'.
-Check that you have spelled the key name correctly.
-survived
+survived: 10.0pt
 ============================================================
 ============================================================
 TEST 7: the double underline takes gap and thickness
