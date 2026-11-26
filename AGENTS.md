@@ -450,11 +450,15 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   token (`\exp_not:N`), so the default follows a later redefinition of
   `\CJKsfdefault` as well.  `familydefault01` pins the chosen default,
   `familydefault02` the redefined `\familydefault`.
-- **A command that takes a family name expands it.**  `\CJKfamily`,
-  `\setCJKfamilyfont`, and `\setCJKfallbackfamilyfont` pass the name through
-  `\tl_set:Ne`, so a family is named by `\CJKrmdefault` and friends; the
-  property key is the expanded name, and a new entry point that skips the
-  expansion silently keeps the previous family and warns about the macro.
+- **An entry point that takes a family name expands it.**  `\CJKfamily`,
+  `\setCJKfamilyfont`, `\setCJKfallbackfamilyfont`, and the `PunctFamily` key
+  pass the name through `\tl_set:Ne`, so a family is named by `\CJKrmdefault`
+  and friends; the property key is the expanded name.  An entry point that
+  skips the expansion looks the macro up where the name belongs, which no
+  family carries: `\CJKfamily` then warns about the macro and keeps the
+  previous family, while a `PunctFamily` miss leaves the punctuation in the
+  text font and warns once per name from the end of `\begin{document}` on,
+  because the preamble may precede the `LoadLXGW` faces.
 - **`\CJKfontspec` takes its options before the font name.**  A third optional
   argument would read the bracket the text begins with as its option list and
   swallow it, and the command is used inside the text; the preamble commands

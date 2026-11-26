@@ -1,7 +1,9 @@
 ## [LuaCJK-v0.1.1](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.1.1)
 
 - A declared sub-block adds its ranges to the CJK character class, so a block declared outside the built-in CJK ranges (the circled numbers `U+2460` to `U+2473`, say) reaches the font the family gives it instead of staying in the Latin font.
+- `PunctFamily` expands the family name it is given, so a family can be named by `\CJKsfdefault` or another macro that holds the name.
 - Every `\LuaCJKnobreak` marks its argument as a span of its own, so two arguments beside each other keep the line break between them, while an argument written inside another one still belongs to the span around it.
+- A family that `PunctFamily` names but no declaration provides warns once, so the fallback of the punctuation to the text font is no longer silent.
 - The `Baseline` of a family lifts a CJK character that is already set in the family's own font, which is what a document that selects that font itself with `\fontspec` gets.
 - A source space between two long punctuation marks adds no advance and no stretch, so justification cannot pull a run of dashes or ellipses apart.
 - `CJLineBreak` reads the settings of the character that would start the line, so a group that selects `strict` no longer forbids a break in front of a small kana written outside it.

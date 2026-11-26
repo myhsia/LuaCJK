@@ -977,8 +977,10 @@ $ 天地玄黄 $ and 天地玄黄
 %   这样英文单词里的撇号就不会变成一个全角形式。破折号不受影响。
 %   \item[\keys{PunctFamily}]\val{family, false}: 为标点使用
 %   另一个 CJK 字族。
-%   该字族必须用 \cs{setCJKfamilyfont} 声明；\texttt{false}
-%   （初始值）让标点重新跟随文字。
+%   该字族必须用 \cs{setCJKfamilyfont} 声明，
+%   可以用 \cs{CJKsfdefault} 之类的名字给出；
+%   \texttt{false}（初始值）让标点重新跟随文字。
+%   字族尚未声明时，标点仍用正文字体，并给出一条警告。
 %   该字族的 \texttt{Baseline} 同样移动它排出的标点。
 %   \item[\keys{AllowBreakBetweenPuncts}]\val{\TFF}: 两个相邻的标点是否可以
 %   被断行分开。
@@ -2430,8 +2432,10 @@ $ 天地玄黄 $ and 天地玄黄
 %   a full-width form. The em dash is not affected.
 %   \item[\keys{PunctFamily}]\val{family, false}: Use a
 %   different CJK family for the punctuation marks.
-%   The family must be declared with \cs{setCJKfamilyfont}; \texttt{false}
-%   (the initial value) makes the marks follow the text again.
+%   The family must be declared with \cs{setCJKfamilyfont}, and may be given
+%   as \cs{CJKsfdefault} and friends;
+%   \texttt{false} (the initial value) makes the marks follow the text again.
+%   An undeclared family leaves the marks in the text font and warns once.
 %   The \texttt{Baseline} of that family moves the marks it sets as well.
 %   \item[\keys{AllowBreakBetweenPuncts}]\val{\TFF}: Whether two adjacent
 %   punctuation marks may be separated by a line break.
@@ -3996,6 +4000,9 @@ abc汉字abc
 %   take \texttt{0pt} as a length: the former gives every mark no advance and
 %   the latter hangs the whole of it, where a zero length used to act as
 %   \texttt{false} and return the mark to its style.}
+% \changes{v0.1.1}{2026/11/26}{\keys{PunctFamily} expands the family name it
+%   is given, so a family can be named by \cs{CJKsfdefault} or another macro
+%   that holds the name.}
 % The same key path serves \cs{LuaCJKsetup} and the package options.
 % The keys are defined here, but the package options are read at the end of the
 % package, once every helper a key code calls has been defined and the Lua
@@ -4166,7 +4173,7 @@ abc汉字abc
       {
         \str_if_eq:nnTF {#1} { false }
           { \tl_clear:N \l_@@_punct_family_tl }
-          { \tl_set:Nn \l_@@_punct_family_tl {#1} }
+          { \tl_set:Ne \l_@@_punct_family_tl {#1} }
         \@@_update_font:
       },
     PunctFamily         .default:n   = { false },
@@ -5217,9 +5224,66 @@ abc汉字abc
               {
                 \g_@@_punct_font_attr = \c_zero_int
                 \g_@@_punct_shift_attr = \c_zero_int
+                \@@_warn_punct_family:
               }
           }
         \bool_set_false:N \l_@@_selectfont_bool
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}[int]{\@@_warn_punct_family:}
+% \changes{v0.1.1}{2026/11/26}{A family that \keys{PunctFamily} names but no
+%   declaration provides warns once, so the fallback of the punctuation to the
+%   text font is no longer silent.}
+% Report the family \keys{PunctFamily} names when no declared family carries
+% that name, so the fallback to the text font is not silent.
+% \begin{variable}[int]
+%   {\g_@@_document_started_bool, \g_@@_punct_family_unknown_seq}
+% Whether the document has started, and the names already reported.
+% The warning waits for the start of the document, because the preamble may
+% select a font before the family exists — \keys{LoadLXGW} declares the LXGW
+% faces in the hook at |\begin{document}| — and the hook that sets the flag
+% runs after \cs{AtBeginDocument} material, so a family declared there counts
+% as declared; it tests the family once more, because a document that selects
+% no font after that would never reach the check in \cs{@@_update_font:}.
+% It is said once per name, because the update runs at every font selection.
+%    \begin{macrocode}
+\bool_new:N \g_@@_document_started_bool
+\seq_new:N \g_@@_punct_family_unknown_seq
+\hook_gput_code:nnn { begindocument / end } { LuaCJK }
+  {
+    \bool_gset_true:N \g_@@_document_started_bool
+    \@@_warn_punct_family:
+  }
+%    \end{macrocode}
+% \end{variable}
+%    \begin{macrocode}
+\msg_new:nnn { LuaCJK } { punct-family-unknown }
+  {
+    The ~ CJK ~ family ~ `#1' ~ that ~ the ~ PunctFamily ~ key ~ names ~
+    is ~ not ~ declared;\\
+    the ~ punctuation ~ follows ~ the ~ text ~ font.
+  }
+\cs_new_protected:Npn \@@_warn_punct_family:
+  {
+    \bool_if:NT \g_@@_document_started_bool
+      {
+        \tl_if_empty:NF \l_@@_punct_family_tl
+          {
+            \prop_if_in:NVF \g_@@_family_prop \l_@@_punct_family_tl
+              {
+                \exp_args:NNV \seq_if_in:NnF
+                  \g_@@_punct_family_unknown_seq \l_@@_punct_family_tl
+                  {
+                    \seq_gput_right:NV \g_@@_punct_family_unknown_seq
+                      \l_@@_punct_family_tl
+                    \msg_warning:nne { LuaCJK }
+                      { punct-family-unknown } { \l_@@_punct_family_tl }
+                  }
+              }
+          }
       }
   }
 %    \end{macrocode}

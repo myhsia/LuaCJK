@@ -1,5 +1,7 @@
 This is a generated file for the l3build validation system.
 Don't change this file in any respect.
+Package LuaCJK Warning: The CJK family `zhhei' that the PunctFamily key names is not declared;
+(LuaCJK)                the punctuation follows the text font.
 Package fontspec Info: 
 (fontspec)             Font family 'LXGWNeoXiHei.ttf(0)' created for font 'LXGWNeoXiHei.ttf' with options [Script=CJK].
 (fontspec)              
@@ -39,6 +41,7 @@ PS LXGWNeoZhiSong LXGWNeoZhiSong
 TEST 5: an unknown family falls back to the main font
 ============================================================
 PS LXGWNeoZhiSong LXGWNeoZhiSong
+PS LXGWNeoZhiSong LXGWNeoZhiSong
 ============================================================
 ============================================================
 TEST 6: the family is picked up once it is declared
@@ -49,4 +52,9 @@ PS LXGWNeoZhiSong LXGWNeoXiHei
 TEST 7: a PunctFamily does not stop \CJKfontspec from switching the text
 ============================================================
 PS ZhuqueFangsong-Regular LXGWNeoXiHei
+============================================================
+============================================================
+TEST 8: a family named by a macro is expanded
+============================================================
+PS LXGWNeoZhiSong LXGWNeoXiHei
 ============================================================

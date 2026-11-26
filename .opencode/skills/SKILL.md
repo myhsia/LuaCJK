@@ -356,12 +356,15 @@ twice. `cmd / rmfamily / after`, `cmd / sffamily / after`, and
 passes an unregistered name over in silence, because `\normalfont` also runs
 when the document starts, before any family need exist.
 
-`\CJKfamily` and `\setCJKfamilyfont` expand the name they are given, so a
-family is named by the macro that holds it — `\CJKfamily{\CJKsfdefault}`
-selects what `\sffamily` selects — and both agree with the hooks and with
-`\setCJKfallbackfamilyfont`, which expands the same way.  An undeclared name is
-therefore reported by its expansion.  The lookup itself stays textual: the prop
-key is the expanded name, not a canonical form of it.
+`\CJKfamily` and `\setCJKfamilyfont` expand the name they are given, as does
+the `PunctFamily` key, so a family is named by the macro that holds it —
+`\CJKfamily{\CJKsfdefault}` selects what `\sffamily` selects — and both agree
+with the hooks and with `\setCJKfallbackfamilyfont`, which expands the same
+way.  An undeclared name is therefore reported by its expansion, and a
+`PunctFamily` that names one warns once per name from the end of
+`\begin{document}` on; the preamble is exempt because the LXGW faces arrive in
+the hook at `\begin{document}`.  The lookup itself stays textual: the prop key
+is the expanded name, not a canonical form of it.
 
 The snapshot is also where state that used to be a Lua global now lives, so a
 group cannot leak it: `AutoFallBack` and the list of canceled sub-blocks are
