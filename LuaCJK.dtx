@@ -9022,24 +9022,32 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{next_visible}
-% The next node that carries text: a glyph, a formula, or a box.  A box that
-% occupies no advance is passed over, and an explicit break barrier ends the
-% search.
+% The next node that carries text, and the node in front of it.  A node that
+% carries text is a glyph, a formula, or a box; a box that occupies no advance
+% is passed over, and an explicit break barrier ends the search.
+% The node in front is returned because the rule that carries the hang of a
+% mark stands where the line begins and not at the break itself: \TeX\ drops
+% the glue and the kerns of a line's head, so a rule written in front of them
+% keeps the space the document put there, and the line starts the width of
+% that space further in.  A visible node that the search meets first has no
+% node of its own in front, which is what tells the caller to use the break
+% itself.
 %    \begin{macrocode}
 local function next_visible (n)
+  local before = nil
   while n do
     if n.id == GLYPH or n.id == MATH then
-      return n
+      return n, before
     elseif n.id == HLIST or n.id == VLIST then
       if box_visible(n) then
-        return n
+        return n, before
       end
     elseif n.id == PENALTY or n.id == DISC then
-      return nil
+      return nil, nil
     end
-    n = n.next
+    before, n = n, n.next
   end
-  return nil
+  return nil, nil
 end
 
 %    \end{macrocode}
@@ -10402,6 +10410,10 @@ end
 %   \tn{framebox} stop at the alignment edge instead of moving their whole
 %   frame past it, while \cs{mbox} around a mark keeps its blank in the
 %   margin.}
+% \changes{v0.1.1}{2026/11/26}{A space in front of a mark that begins a line
+%   the document broke keeps the discard of the line head: the rule that
+%   carries the hang stands where the line begins and not at the break, so the
+%   line is no longer set the width of that space further in.}
 % Bracket every break point that a mark ends or starts, so the line measures
 % the hang and the text inside a line does not move. A break that a preceding
 % penalty already forbids is left alone, so a fixed width does not carry a rule
@@ -10409,6 +10421,10 @@ end
 % are bracketed as well: the start of the paragraph, and the penalty that
 % holds a break the document forced, where the rule that shifts the line is
 % all there is to insert.
+% The rule stands where the line begins and not at the break itself: \TeX\
+% drops the glue and the kerns of a line's head, so a rule written in front of
+% them keeps the space the document put there, and the line starts the width of
+% that space further in.
 % Those two are left out when \tn{leftskip} reaches the line with a fill, which
 % is how a centered or a flush-right paragraph is set: the line then begins at
 % the centering position rather than at the edge of the measure, and the rule
@@ -10456,18 +10472,17 @@ local function hang_bounds (head)
        or ((cur.id == HLIST or cur.id == VLIST) and box_visible(cur)) then
       last = cur
     elseif cur.id == PENALTY and cur.penalty <= -10000 then
-      local nxt = next_visible(cur.next)
+      local nxt, before = next_visible(cur.next)
       local width, glyph = 0, nil
       if nxt and left then
         width, glyph = open_hang(nxt)
       end
       if width > 0 then
-        hang_rule(width, glyph, cur, cur.next)
-        cur = cur.next
+        hang_rule(width, glyph, before or cur, nxt)
       end
     elseif is_break_point(cur) and last and cur.id == GLUE
            and not (prev and prev.id == PENALTY and prev.penalty >= 10000) then
-      local nxt                           = next_visible(cur.next)
+      local nxt, before                   = next_visible(cur.next)
       local tail, _, tail_glyph, tail_ink = edge_mark(last, true)
       local w_end                         = 0
       local w_start, lead_glyph           = 0, nil
@@ -10502,8 +10517,9 @@ local function hang_bounds (head)
           r.height = 0
           r.depth  = 0
           inherit_attributes(r, lead_glyph)
-          r.next = cur.next
-          cur.next = r
+          local anchor = before or cur
+          r.next      = nxt
+          anchor.next = r
         end
       end
     end

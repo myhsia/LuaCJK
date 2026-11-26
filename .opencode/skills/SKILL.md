@@ -218,12 +218,17 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    boundaries that carry no glue: in front of the opening mark that begins a
    paragraph, after its indentation (which arrives as an empty box of the width
    of `\parindent`) or after the label box of a list item, and after the penalty
-   that holds a break the document forced. The label box is the box the list
-   writes in front of the item's text and follows with a penalty of zero, which
-   is how `head_lead` tells it from a box that carries text of the paragraph:
-   that one is the head itself, so a `\mbox` around the opening mark of a
-   paragraph hangs the mark inside it (`hang01`).  A mark inside a box hangs
-   only when nothing inked stands between it and the edge of that box:
+   that holds a break the document forced.  In both cases the rule goes
+   immediately in front of the mark and behind the material between the break
+   and it, because `\TeX` drops a line's head only while it is glue, kern or
+   penalty: a rule written in front of a leading `\hspace` keeps that space and
+   the line starts its width further in, which is why `next_visible` returns the
+   node in front of the one it finds (`hang01`).  The label box is the box the
+   list writes in front of the item's text and follows with a penalty of zero,
+   which is how `head_lead` tells it from a box that carries text of the
+   paragraph: that one is the head itself, so a `\mbox` around the opening mark
+   of a paragraph hangs the mark inside it (`hang01`).  A mark inside a box
+   hangs only when nothing inked stands between it and the edge of that box:
    `last_punct` and `first_punct` report that with the mark, and a frame rule
    or another character ends the line at the box's own edge, so `\fbox` keeps
    its frame on the alignment edge, while an `\mbox` that ends at the mark
@@ -483,7 +488,10 @@ before every one an opening mark starts, `hang_bounds` puts a zero-size rule of
 negative width and adds the same width to the glue. Inside a line the two
 cancel; at a break the glue is discarded and the rule alone shortens the line,
 so the mark's ink stands in the margin and the line can hold a mark its natural
-width would refuse. The last line of a paragraph has no break glue to widen, so
+width would refuse. The rule stands in front of the mark and not at the break,
+so the discard of the line head still happens: a `\hspace` in front of a mark
+that begins a broken line disappears, and the mark hangs as it does without it
+(`hang01`). The last line of a paragraph has no break glue to widen, so
 there the rule goes in alone, and it is the trailing fill of a justified or
 ragged-right line that absorbs it: only a line that starts at the centering
 position, or at the right edge, moves its ink (`hang01`). A kern would not do,
