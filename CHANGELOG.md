@@ -8,6 +8,7 @@
 - The `Baseline` of a family lifts a CJK character that is already set in the family's own font, which is what a document that selects that font itself with `\fontspec` gets.
 - A source space between two long punctuation marks adds no advance and no stretch, so justification cannot pull a run of dashes or ellipses apart.
 - `CJLineBreak` reads the settings of the character that would start the line, so a group that selects `strict` no longer forbids a break in front of a small kana written outside it.
+- A word space between two punctuation marks is a break point again: the two are not adjacent, so the rule that keeps two adjacent marks together does not read them as a pair.
 - A paragraph that begins with a box hangs the opening mark inside it as well, so `\mbox` around the mark leaves its blank in the indentation, as a line of plain text does.
 - A mark inside a box hangs only when nothing inked stands between it and the edge of that box, so `\fbox` and `\framebox` stop at the alignment edge instead of moving their whole frame past it, while `\mbox` around a mark keeps its blank in the margin.
 - Provide `\LuaCJKfntefsetup` with the key `commute`, which packs the inks of a group of nested decorations into the band their own positions make, so the nesting order decides which ink is below which instead of every ink keeping the height its keys give.
