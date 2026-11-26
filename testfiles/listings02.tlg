@@ -60,3 +60,17 @@ COLOR 61 black
 COLOR 49 black
 COLOR 59 black
 ============================================================
+============================================================
+TEST 6: a CJK word keeps its colour when a line breaks inside it
+============================================================
+COLOR 35 black
+COLOR 26816 red
+COLOR 26597 red
+COLOR 29992 red
+COLOR 25143 red
+COLOR 36755 red
+COLOR 20837 red
+COLOR 30340 red
+COLOR 25968 red
+COLOR 25454 red
+============================================================

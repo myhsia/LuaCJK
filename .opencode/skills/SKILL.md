@@ -756,6 +756,18 @@ through `tex.sprint(-2, …)`, the catcode table of other characters: the
 listing has made printable ASCII active by then, and a list printed with the
 current table would give active digits (`listings02`).
 
+`breaklines` works by putting a discretionary behind every chunk `listings`
+outputs, so a run that is output whole offers no break. With the option on the
+run is therefore set one character at a time, each a two-column chunk of its
+own: `\lst@Output` is wrapped, because the end of a line flushes the token
+through `\lst@PrintToken` and never reaches the two append wrappers. The style
+is resolved on the whole token first, and the pieces are set under it with
+`\lst@ifkeywords` off and `\lst@currstyle` pinned, so `emph` and `keywords`
+still match the word; the token and its length are local assignments, so
+`\lst@ResetToken` runs again after the group. `breakatwhitespace` keeps the run
+whole, because a break inside it would be suppressed anyway (`listings01`,
+`listings02`).
+
 ### The ctex adapter
 
 `ctex` inputs an engine file named `ctex-engine-<name>.def`, where `<name>` is

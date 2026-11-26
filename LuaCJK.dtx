@@ -271,6 +271,10 @@ The Current Maintainer of this work is **Mingyu Xia**.
 %   \env{lstlisting} block is one token of \pkg{listings}, so a
 %   \texttt{emph} or \texttt{keywords} entry that names a CJK word highlights
 %   it; a Latin character and a CJK mark both end the run.}
+% \changes{v0.1.1}{2026/11/26}{With \texttt{breaklines}, a run of CJK
+%   characters inside an \env{lstlisting} block is set one character at a time,
+%   so a line breaks between two of them; the run is still one token, so
+%   \texttt{emph} and \texttt{keywords} still highlight the whole word.}
 % \changes{v0.0.1}{2026/11/05}{Ship \file{ctex-engine-luacjk.def} as the
 %   \LuaTeX\ backend for \pkg{ctex}, selected with the option |engine =
 %   luacjk|; like \pkg{ctex}'s own backend it refuses \pkg{CJKfntef} and
@@ -1382,6 +1386,9 @@ abc汉字abc
 % 一串 CJK 字符对 \texttt{emph} 与 \texttt{keywords} 选项来说是一个词，
 % 所以可以给一个 CJK 变量名着色；
 % 拉丁字母、数字和 CJK 标点都会结束这个词。
+% 开启 \texttt{breaklines} 时，一串 CJK 字符逐字排出，
+% 所以一行可以在两个汉字之间断开；
+% 这一串仍然是一个词，\texttt{emph} 与 \texttt{keywords} 依旧把整个词着色。
 % 使用 \pkg{listings} 时 \pkg{LuaCJK} 自动加载它，所以不需要额外的命令。
 %
 % \tn{lstinline} 以改变了的类别码读取参数；
@@ -2865,6 +2872,10 @@ abc汉字abc
 % A run of CJK characters is one word for the \texttt{emph} and
 % \texttt{keywords} options, so a CJK variable name can be highlighted;
 % a Latin character, a digit, or a CJK mark ends the word.
+% With \texttt{breaklines} on, a run is set one character at a time,
+% so a line breaks between two CJK characters;
+% the run is still one word,
+% so \texttt{emph} and \texttt{keywords} still highlight it as a whole.
 % \pkg{LuaCJK} loads it automatically when \pkg{listings} is used,
 % so no extra command is needed.
 %
@@ -12649,6 +12660,19 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 % input as its argument, so a brace or the \tn{fi} of a conditional behind it
 % would be taken instead.
 %
+% With \texttt{breaklines} on, the run is set one character at a time, so that
+% \pkg{listings} has a break point after each of them: its break is the
+% discretionary it puts behind every chunk it outputs, and a chunk of the whole
+% run carries none inside it.
+% \tn{lst@Output} is the macro that decides, because the end of a line flushes
+% the token through \tn{lst@PrintToken} and never reaches the wrappers above.
+% The style is resolved once, on the whole token, and the pieces are set under
+% it with the word detection switched off, so \texttt{emph} and
+% \texttt{keywords} still name the whole word.
+% The token is a local assignment, so it is reset again after the group that
+% holds the pieces, and \texttt{breakatwhitespace} does not split the run at all,
+% since its break would be suppressed inside it.
+%
 % The marks arrive from Lua as a comma-separated list of code points, printed
 % with the catcode table of other characters: by the time the character table
 % is built, \pkg{listings} has made every printable ASCII character active, so
@@ -12666,6 +12690,7 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
 \makeatletter
 \newif\ifLuaCJK@listings@cjkrun
 \newif\ifLuaCJK@listings@defined
+\newif\ifLuaCJK@listings@breakrun
 \lst@AddToHook{InitVars}{\LuaCJK@listings@cjkrunfalse}
 \def\LuaCJK@listings@process#1{%
   \lst@whitespacefalse
@@ -12700,6 +12725,48 @@ luatexbase.add_to_callback("pre_append_to_vlist_filter",
     \lst@Output \lst@letterfalse \LuaCJK@listings@cjkrunfalse
   \fi
   \LuaCJK@listings@other}
+\let\LuaCJK@listings@output\lst@Output
+\def\lst@Output{%
+  \LuaCJK@listings@breakrunfalse
+  \ifLuaCJK@listings@cjkrun
+    \ifnum\lst@length>\tw@
+      \lst@ifbreaklines
+        \lst@ifbreakatwhitespace\else
+          \LuaCJK@listings@breakruntrue
+        \fi
+      \fi
+    \fi
+  \fi
+  \ifLuaCJK@listings@breakrun
+    \LuaCJK@listings@splitrun
+  \else
+    \LuaCJK@listings@output
+  \fi}
+\def\LuaCJK@listings@splitrun{%
+  \lst@CheckDelay
+  \ifnum\lst@length=\z@\else
+    \ifx\lst@currstyle\relax
+      \let\lst@thestyle\lst@identifierstyle
+    \else
+      \let\lst@thestyle\lst@currstyle
+    \fi
+    \lsthk@Output
+    \begingroup
+      \let\lst@currstyle\lst@thestyle
+      \let\lst@ifkeywords\iffalse
+      \edef\LuaCJK@listings@run{\the\lst@token}%
+      \expandafter\LuaCJK@listings@emit\LuaCJK@listings@run\@empty\@nil
+    \endgroup
+    \lst@ResetToken
+  \fi
+  \let\lst@lastother\relax}
+\def\LuaCJK@listings@emit#1#2\@nil{%
+  \lst@token{#1}%
+  \lst@length\tw@
+  \lst@OutputToken
+  \ifx\@empty#2\@empty\else
+    \expandafter\LuaCJK@listings@emit#2\@nil
+  \fi}
 \def\LuaCJK@listings@define#1#2{%
   \@tempcnta=#1\relax
   \loop

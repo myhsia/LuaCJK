@@ -56,6 +56,33 @@
     texio.write_nl("term and log", "CONTENT " .. tostring(total))
   }%
 }
+\def\listinglines#1{%
+  \directlua{
+    local function walk (n, out)
+      while n do
+        if n.id == node.id("glyph") then
+          out = out .. "," .. n.char
+        elseif n.id == node.id("hlist") or n.id == node.id("vlist") then
+          out = walk(n.head, out)
+        end
+        n = n.next
+      end
+      return out
+    end
+    local line = tex.box[#1].head
+    local index = 0
+    while line do
+      if line.id == node.id("hlist") then
+        local chars = walk(line.head, "")
+        if chars ~= "" then
+          index = index + 1
+          texio.write_nl("term and log", "LINE " .. index .. chars)
+        end
+      end
+      line = line.next
+    end
+  }%
+}
 \makeatother
 
 \begin{document}
@@ -78,6 +105,11 @@ aaab
 
 \setbox8=\vbox{\begin{lstlisting}
 中！文
+\end{lstlisting}}
+
+\newbox\breakbox
+\setbox\breakbox=\vbox{\begin{lstlisting}[breaklines,linewidth=8em]
+# 检查用户输入的数据
 \end{lstlisting}}
 
 \START
@@ -104,6 +136,10 @@ aaab
 \TEST{a CJK range includes its first code point}{
   \listingorder{8}
   \listingcontent{8}
+}
+
+\TEST{a run of CJK characters breaks between characters with breaklines}{
+  \listinglines{\number\breakbox}
 }
 
 \TEST{lstinline is left alone}{
