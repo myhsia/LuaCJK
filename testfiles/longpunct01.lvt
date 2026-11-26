@@ -74,6 +74,35 @@
   \ifdim\wd2=2\wd0 \TYPE{same width}\else\TYPE{different width}\fi
 }
 
+% Only the stretch tells the two cases apart: the glue that stands between the
+% marks of a run has no width, and the run is set as it is when the marks are
+% written together.
+\def\showgluespaces{%
+  \directlua{
+    local out, count = {}, 0
+    local n = tex.box[0].head
+    while n do
+      if n.id == node.id("glue") then
+        count = count + 1
+        out[count] = n.stretch .. "/" .. n.shrink
+      end
+      n = n.next
+    end
+    texio.write_nl("term and log", "GLUES " .. table.concat(out, " "))
+  }%
+}
+
+\TEST{a source space does not space a run apart}{
+  \begingroup
+    \LuaCJKsetup{CJKglue=0pt plus 1pt}
+    \setbox0=\hbox{中——文}\showgluespaces
+    \setbox0=\hbox{中—
+—文}\showgluespaces
+    \setbox0=\hbox{中…
+…文}\showgluespaces
+  \endgroup
+}
+
 \TEST{LongPunct adds a character to the run}{
   \setbox0=\hbox{中两文}\shownodes
   \setbox0=\hbox{中两两文}\shownodes
@@ -81,6 +110,19 @@
   \setbox0=\hbox{中两两文}\shownodes
   \LuaCJKsetup{LongPunct-={"4E24}}
   \setbox0=\hbox{中两两文}\shownodes
+}
+
+% The blank of the pair rides in the glue, so the source space takes it as its
+% width rather than dropping it: the run is spaced as the joined one is.
+\TEST{a source space keeps the blank of a user kern in a run}{
+  \begingroup
+    \LuaCJKsetup{CJKglue=0pt plus 1pt}
+    \LuaCJKsetkern{—}{—}{1em}
+    \setbox2=\hbox{中——文}
+    \setbox0=\hbox{中—
+—文}\showgluespaces
+    \ifdim\wd0=\wd2 \TYPE{same width}\else\TYPE{different width}\fi
+  \endgroup
 }
 
 \END

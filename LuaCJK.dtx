@@ -1212,6 +1212,8 @@ a’a\quad 不亦说乎！
 % 一串破折号或省略号（U+2013、U+2014、U+2015、U+FF0D、U+2026
 % 与 U+22EF）是一个整体：这些标点之间不加胶，所以两端对齐不会把一个
 % 两字宽的破折号拆开，它们之间也不提供断行机会。
+% 串中两个标点之间的源码空格同样不加胶，所以源文件里的换行不会把这一串
+% 标点拉开。
 % 这一串标点之前也不提供断行机会，所以一行不会以破折号或省略号开头。
 % 键 \keys{LongPunct} 替换这个集合。
 %
@@ -2674,7 +2676,9 @@ a’a\quad 不亦说乎！
 % A run of dashes or ellipses (U+2013, U+2014, U+2015, U+FF0D, U+2026,
 % and U+22EF) is one unit: the marks are joined without glue, so
 % justification cannot pull a two-em dash apart, and no break is offered
-% between them. No break is offered in front of the run either, so a line
+% between them. A source space between two marks of a run adds no glue
+% either, so a newline in the source cannot space the run apart.
+% No break is offered in front of the run either, so a line
 % does not begin with a dash or an ellipsis. The key \keys{LongPunct}
 % replaces the set.
 %
@@ -8304,6 +8308,9 @@ end
 %    \end{macrocode}
 % \end{macro}
 % \begin{macro}[int]{handle_source_space}
+% \changes{v0.1.1}{2026/11/26}{A source space between two long punctuation
+%   marks adds no advance and no stretch, so justification cannot pull a run
+%   of dashes or ellipses apart.}
 % Remove or retime a space typed in the source.
 % Only a space that came from the source is a candidate; an explicit
 % \tn{hskip} or \tn{hfill} has a different subtype and is left alone, and the
@@ -8319,6 +8326,11 @@ end
 % \cs{LuaCJKsetkern} gives them: the two marks are spaced as they are when no
 % space separates them, and a break at the boundary discards the blank with
 % the glue.
+% A run of long punctuation is the exception: \cs{boundary_spec} joins its
+% marks without glue, and a source space between two of them adds neither an
+% advance nor a stretch of its own, so a newline in the source cannot space the
+% run apart.  The node stays a break opportunity, and a blank
+% \cs{LuaCJKsetkern} sets between the two marks is kept as its width.
 % A space the document wrote with |\ | or \tn{nobreakspace} is not a source
 % space, and the attribute set around it is the only place that says so: the
 % two are the same \texttt{spaceskip} glue, with the same dimensions, until
@@ -8344,10 +8356,16 @@ local function handle_source_space (head, glue, prev_visible, prev_end, cur,
     local cjk_space = M.attr_cjk_space
       and (has_attribute(glue, M.attr_cjk_space) or 0) ~= 0
     if not cjk_space then
-      set_glue(glue, settings.ccglue)
       local kern = pair_kern(prev_visible, cur, settings, style_of(settings))
-      if kern then
-        glue.width = glue.width + kern
+      if long_punct(prev_visible) and long_punct(cur) then
+        glue.width   = kern or 0
+        glue.stretch = 0
+        glue.shrink  = 0
+      else
+        set_glue(glue, settings.ccglue)
+        if kern then
+          glue.width = glue.width + kern
+        end
       end
       if M.attr_inserted then
         set_attribute(glue, M.attr_inserted, 1)
