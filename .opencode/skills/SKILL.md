@@ -37,7 +37,13 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    if one applies, then in a fallback font when the target lacks the glyph
    (the chain is `target_font`); and let a character that attaches to the one
    in front of it — a joiner or a variation selector — follow that font,
-   marked with the `attached` attribute.  It runs before shaping because
+   marked with the `attached` attribute.  Which characters reach that chain is
+   `is_cjk`'s decision: the built-in `CJK_RANGES`, a `\LuaCJKDeclareCharClass`
+   declaration, or a declared sub-block.  A block adds its ranges to the CJK
+   class, which is what lets a range the table does not list (the circled
+   numbers U+2460 to U+2473) take the block font; cancelling the block drops
+   that font and keeps the class, so its characters stay CJK in the family's
+   main font.  It runs before shaping because
    shaping is what attaches a combining mark to its base and what a joiner
    and a selector act on: a glyph copied into another font afterwards keeps
    the form of the font it was shaped in, which is why `か` + U+3099 used to

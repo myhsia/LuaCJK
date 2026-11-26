@@ -22,7 +22,28 @@ PS LXGWNeoZhiSong LXGWNeoZhiSong
 PS LXGWNeoZhiSong LXGWWenKaiGBLite-Regular
 ============================================================
 ============================================================
-TEST 5: a family without the option keeps the main font
+TEST 5: a block outside the CJK ranges is CJK and takes its font
+============================================================
+PS LXGWNeoZhiSong LXGWWenKaiGBLite-Regular
+============================================================
+============================================================
+TEST 6: CancelSubCJKBlock keeps the class and the main font
+============================================================
+PS LXGWNeoZhiSong LXGWNeoZhiSong
+============================================================
+============================================================
+TEST 7: an explicit class declaration wins over the block
+============================================================
+Missing character: There is no ① (U+2460) in font [lmroman10-regular]:+tlig;!
+PS LXGWNeoZhiSong LMRoman10-Regular LMRoman10-Regular
+============================================================
+============================================================
+TEST 8: ResetCharClass brings the block class back
+============================================================
+PS LXGWNeoZhiSong LXGWWenKaiGBLite-Regular
+============================================================
+============================================================
+TEST 9: a family without the option keeps the main font
 ============================================================
 PS LXGWNeoZhiSong LXGWNeoZhiSong
 ============================================================

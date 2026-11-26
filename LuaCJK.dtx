@@ -535,6 +535,9 @@ English 中文字体\\
 %   这个名字随后成为一个字体选项，正如下例所示：
 %   设置了它的字族对该区块的字符使用第二个字体，
 %   没有设置它的字族则把这些字符留在主字体里。
+%   声明的范围同时并入 CJK 字符类别：
+%   字符即使不在内置的 CJK 范围内（例如带圈数字 \texttt{U+2460} 到
+%   \texttt{U+2473}），只要属于某个区块，就按 CJK 字符排版。
 %   重叠的区块按声明顺序解决。
 % \end{function}
 %
@@ -1945,7 +1948,10 @@ English 中文字体\\
 %   as \cs{LuaCJKDeclareCharClass}. The name becomes a font option,
 %   as the example below shows: a family that sets it uses the second font
 %   for the characters of the block, and a family that does not leaves them
-%   in the main font. Overlapping blocks are resolved in declaration order.
+%   in the main font. The declared range joins the CJK character class as
+%   well, so a character outside the built-in CJK ranges (the circled numbers
+%   \texttt{U+2460} to \texttt{U+2473}, say) is typeset as CJK once a block
+%   covers it. Overlapping blocks are resolved in declaration order.
 % \end{function}
 %
 % \iffalse
@@ -3576,6 +3582,10 @@ abc汉字abc
 % \changes{v0.0.1}{2026/11/05}{Provide \cs{LuaCJKDeclareSubCJKBlock} with
 %   \cs{LuaCJKCancelSubCJKBlock} and \cs{LuaCJKRestoreSubCJKBlock}, so a range
 %   of characters can use its own font inside a family.}
+% \changes{v0.1.1}{2026/11/26}{A declared sub-block adds its ranges to the CJK
+%   character class, so a block declared outside the built-in CJK ranges (the
+%   circled numbers \texttt{U+2460} to \texttt{U+2473}, say) reaches the font
+%   the family gives it instead of staying in the Latin font.}
 % \begin{variable}[int]
 %   {\g_@@_block_prop, \g_@@_block_names_clist}
 % The ranges of each block, and the declaration order that decides
@@ -6405,6 +6415,13 @@ end
 % script is Common, and the combining Bopomofo tone marks U+02EA and U+02EB
 % are left out on purpose, because they attach to the preceding letter and a
 % glue between the two would break the attachment.
+% The table is not the whole class: \cs{LuaCJKDeclareCharClass} declares a code
+% point CJK or default, and a declared sub-block adds its ranges to the class,
+% which is what lets a block outside the built-in ranges reach the font its
+% family gives it.  The explicit declaration is read first, so \texttt{Default}
+% takes a code point back out of a block, and a block is read before the shared
+% punctuation of \keys{LatinPunct}, because the block names the font that sets
+% it.
 % The third argument is the font of the glyph, and it decides the code points
 % below U+0100: a font that \pkg{luaotfload} did not load as Unicode holds an
 % encoding rather than characters, so the number that reaches the node is a
@@ -6414,6 +6431,10 @@ end
 % would be read the same way.  A code point above U+00FF cannot be a slot of
 % an 8-bit font, so a CJK character typed in a legacy encoding still takes the
 % CJK font, and a Unicode font is read as characters throughout.
+% The answer a block gives for a code point is remembered in a table of its
+% own, because the passes ask \cs{LuaCJK.is_cjk} once per glyph: the walk over
+% the declared blocks happens once per character, and a declaration empties the
+% table, since it can cover a code point the table has already answered for.
 % The script \file{scripts/check-charclass.lua} compares the table with
 % \file{Scripts.txt} and reports a code point whose script is Han, Hiragana,
 % Katakana, Bopomofo, or Hangul but which the table does not list.
@@ -6471,6 +6492,8 @@ local LATIN_PUNCT = {
 
 local SLOT_FONT = { }
 
+local BLOCK_CHARS = { }
+
 local function is_slot (c, f)
   if c > 0xFF or not f then
     return false
@@ -6488,6 +6511,25 @@ local function is_cjk (c, s, f)
   local override = M.class_override[c]
   if override ~= nil then
     return override
+  end
+  local block = BLOCK_CHARS[c]
+  if block == nil then
+    block = false
+    for _, name in ipairs(M.block_order) do
+      for _, range in ipairs(M.blocks[name].ranges) do
+        if c >= range[1] and c <= (range[2] or range[1]) then
+          block = true
+          break
+        end
+      end
+      if block then
+        break
+      end
+    end
+    BLOCK_CHARS[c] = block
+  end
+  if block then
+    return true
   end
   if s and s.latin_punct and LATIN_PUNCT[c] then
     return false
@@ -6936,6 +6978,12 @@ end
 % The declared sub-blocks in declaration order,
 % and the font identifier of each block for each family.
 % The order decides which block wins when two ranges overlap.
+% A declaration extends the CJK class and not only the fonts of a family: a
+% block may cover characters outside the built-in CJK ranges (the circled
+% numbers U+2460 to U+2473 are the case), and they are typeset as CJK from then
+% on, which is what lets the range reach a font at all.  Cancelling a block
+% removes its font and keeps the class, so its characters fall back to the main
+% font of the family.
 %    \begin{macrocode}
 M.blocks      = {}
 M.block_order = {}
@@ -6946,6 +6994,7 @@ function M.declare_block (name, ranges)
     table.insert(M.block_order, name)
   end
   M.blocks[name] = { ranges = ranges }
+  BLOCK_CHARS    = { }
 end
 
 function M.set_block_font (main, name, fid)
