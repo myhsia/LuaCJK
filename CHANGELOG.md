@@ -9,6 +9,7 @@
 - A source space between two long punctuation marks adds no advance and no stretch, so justification cannot pull a run of dashes or ellipses apart.
 - `CJLineBreak` reads the settings of the character that would start the line, so a group that selects `strict` no longer forbids a break in front of a small kana written outside it.
 - A paragraph that begins with a box hangs the opening mark inside it as well, so `\mbox` around the mark leaves its blank in the indentation, as a line of plain text does.
+- A mark inside a box hangs only when nothing inked stands between it and the edge of that box, so `\fbox` and `\framebox` stop at the alignment edge instead of moving their whole frame past it, while `\mbox` around a mark keeps its blank in the margin.
 
 ## [LuaCJK-v0.1.0](https://github.com/myhsia/LuaCJK/releases/tag/LuaCJK-v0.1.0)
 

@@ -222,7 +222,12 @@ substitution, which runs in luaotfload's `pre_shaping_filter`, before either:
    writes in front of the item's text and follows with a penalty of zero, which
    is how `head_lead` tells it from a box that carries text of the paragraph:
    that one is the head itself, so a `\mbox` around the opening mark of a
-   paragraph hangs the mark inside it (`hang01`).
+   paragraph hangs the mark inside it (`hang01`).  A mark inside a box hangs
+   only when nothing inked stands between it and the edge of that box:
+   `last_punct` and `first_punct` report that with the mark, and a frame rule
+   or another character ends the line at the box's own edge, so `\fbox` keeps
+   its frame on the alignment edge, while an `\mbox` that ends at the mark
+   hangs its blank exactly as plain text does.
    Only the `pre_linebreak_filter` path runs it: a box packed by `hpack_filter`
    cannot break a line, and a line box that is packed again would take the pair
    twice.  The two hand-bracketed boundaries are left out when `\leftskip`

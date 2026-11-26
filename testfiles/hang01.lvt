@@ -113,10 +113,25 @@
   \showlines
 }
 
+% The frame of \fbox is the ink the edge of the line meets, so the box keeps
+% its edge on the indentation and the mark inside it does not hang.
+\TEST{a paragraph that begins with a frame does not hang it}{
+  \setbox0=\vbox{\hsize=4em \fbox{“字字”}\par}
+  \showlines
+}
+
 \TEST{the indentation carries that blank as well}{
   \begingroup
     \parindent=1em
     \setbox0=\vbox{\hsize=4em \mbox{‘字字’}\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{the indentation does not take that blank either}{
+  \begingroup
+    \parindent=1em
+    \setbox0=\vbox{\hsize=4.5em \fbox{‘字字’}\par}
     \showlines
   \endgroup
 }
@@ -220,6 +235,49 @@
 \TEST{a justified paragraph leaves the last line alone}{
   \setbox0=\vbox{\hsize=4em 收到。收到。\par}
   \showlines
+}
+
+% The length of a mark's blank is its own, and a box that ends at the mark is
+% where that blank ends: the box hangs, the frame that ends the box does not.
+\TEST{a box that ends at the mark hangs by its blank}{
+  \begingroup
+    \leftskip=0pt plus 1fil \rightskip=0pt \parfillskip=0pt
+    \setbox0=\vbox{\hsize=4.5em \mbox{收到。}\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{a kern after the mark leaves that blank to hang as well}{
+  \begingroup
+    \leftskip=0pt plus 1fil \rightskip=0pt \parfillskip=0pt
+    \setbox0=\vbox{\hsize=4.5em \mbox{收到。\kern2pt}\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{a frame at the end of a flush-right line stops at the alignment edge}{
+  \begingroup
+    \leftskip=0pt plus 1fil \rightskip=0pt \parfillskip=0pt
+    \setbox0=\vbox{\hsize=4.5em \fbox{收到。}\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{the frame rule alone keeps the box at that edge}{
+  \begingroup
+    \fboxsep=0pt
+    \leftskip=0pt plus 1fil \rightskip=0pt \parfillskip=0pt
+    \setbox0=\vbox{\hsize=4.5em \fbox{收到。}\par}
+    \showlines
+  \endgroup
+}
+
+\TEST{a frame that ends a broken line stops at the margin}{
+  \begingroup
+    \raggedright
+    \setbox0=\vbox{\hsize=7.2em 中中中\fbox{收到。}中文中文\par}
+    \showlines
+  \endgroup
 }
 
 \END
