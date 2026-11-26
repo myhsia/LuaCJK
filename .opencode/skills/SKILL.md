@@ -451,7 +451,11 @@ long marks is one unit, and two adjacent marks are not separated.
 `PunctKinsoku` gates all four; `AllowBreakBetweenPuncts` lifts the
 last alone, because the other three are rules of the script, and the adjacent
 rule leaves a dash or an ellipsis out, since a run of them is governed by the
-`nobreak` set. An explicit `nobreak` attribute bypasses both keys. The pass
+`nobreak` set. A word space the document wrote between two marks separates
+them, so the adjacent rule is not read there and the space stays a break
+point; the glue the package retimes between two CJK characters is marked as
+inserted and keeps the prohibition through a space. An explicit `nobreak`
+attribute bypasses both keys. The pass
 reads a box at the edge that faces the break, so a mark inside a box is seen;
 `first_punct` and `last_punct` return the group, the glyph that carries it, and
 whether a character was found at all.

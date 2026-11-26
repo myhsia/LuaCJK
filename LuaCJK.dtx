@@ -1003,6 +1003,8 @@ $ 天地玄黄 $ and 天地玄黄
 %   半角的 ASCII 括号同样如此：开头的不能出现在行尾，
 %   收尾的不能出现在行首；
 %   两个相邻的标点不会被分开，一串连续的破折号或省略号保持在一起。
+%   以空格隔开的两个标点不算相邻，那个空格仍是断行点，
+%   所以 |Try again. (Why?)| 可以在句点之后断行。
 %   盒子边缘的标点同样参与判断。
 %   这些禁则与 \texttt{PunctStyle} 无关，
 %   所以 |PunctStyle = plain| 时它们仍然有效。
@@ -2483,6 +2485,8 @@ $ 天地玄黄 $ and 天地玄黄
 %   half-width ASCII bracket: an opening one cannot end a line and a closing
 %   one cannot start one; two adjacent marks are not
 %   separated, and a run of long punctuation is kept together.
+%   A word space between two marks separates them, so the break there stays,
+%   and |Try again. (Why?)| may break after the full stop.
 %   A mark at the edge of a box takes part as well.
 %   The prohibitions are independent of \texttt{PunctStyle},
 %   so they stay active with |PunctStyle = plain|.
@@ -8808,6 +8812,9 @@ end
 % \changes{v0.1.1}{2026/11/25}{\keys{CJLineBreak} reads the settings of the
 %   character that would start the line, so a group that selects \texttt{strict}
 %   no longer forbids a break in front of a small kana written outside it.}
+% \changes{v0.1.1}{2026/11/26}{A word space between two punctuation marks is a
+%   break point again: the two are not adjacent, so the rule that keeps two
+%   adjacent marks together does not read them as a pair.}
 % Add the prohibitions where the settings of the text ask for them.
 % The break points the pass reads are the glue \pkg{LuaCJK} inserts and the
 % source spaces, because the punctuation rules are about those places alone;
@@ -8929,9 +8936,15 @@ end
 % \keys{AllowBreakBetweenPuncts} lifts the last rule alone: a mark that may
 % not begin or end a line is a rule of the script, so the option cannot
 % permit one.
+% A word space the document wrote between two marks separates them, so the
+% break there stays the document's: the two are no longer adjacent, and the
+% rule above is not what governs the pair.
+% The space the package retimes between two CJK characters is not a word
+% space, and it is marked as inserted, so the boundary of a pair of CJK marks
+% keeps its prohibition through the space.
 %    \begin{macrocode}
 local function forbids_break (prev_mark, prev_char, next_mark, next_char,
-                              settings)
+                              settings, spaced)
   if next_mark == "close" or next_mark == "middle"
      or next_mark == "half-close" or next_mark == "latin-close" then
     return true
@@ -8945,7 +8958,7 @@ local function forbids_break (prev_mark, prev_char, next_mark, next_char,
   if M.charsets.nobreak[prev_char] and M.charsets.nobreak[next_char] then
     return true
   end
-  if adjacent_marks(prev_mark, next_mark)
+  if adjacent_marks(prev_mark, next_mark) and not spaced
      and not (settings and settings.allow_break) then
     return true
   end
@@ -9048,12 +9061,16 @@ local function apply_kinsoku (head)
                                               and next_char and M.cj[next_char]
       local cur_marked                      = no_break_mark(cur)
                                               and not is_inserted(cur)
+      local spaced                          = cur.id == GLUE
+                                              and cur.subtype == SPACESKIP
+                                              and not is_inserted(cur)
       if nxt and (cur_marked
                   or same_break_span(last, nxt) or cj
                   or (settings.kinsoku
                       and not disabled(last) and not disabled(nxt)
                       and forbids_break(prev_mark, prev_char,
-                                        next_mark, next_char, settings)))
+                                        next_mark, next_char, settings,
+                                        spaced)))
       then
         if not (prev and prev.id == PENALTY and prev.penalty >= 10000) then
           local p = new_node("penalty")

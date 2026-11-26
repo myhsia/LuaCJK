@@ -244,6 +244,26 @@
   \probe
 }
 
+\TEST{a word space between two marks offers a break}{
+  \setbox0=\hbox{字. (字}
+  \probe
+}
+
+\TEST{a CJK boundary keeps its prohibition through a space}{
+  \setbox0=\hbox{字。（字}
+  \probe
+  \setbox0=\hbox{字。  （字}
+  \probe
+}
+
+\TEST{a paragraph may break after a full stop}{
+  \begingroup
+    \parindent=0pt \raggedright
+    \setbox0=\vbox{\hsize=5em Try again. (Why?)\par}
+    \linefirsts{0}
+  \endgroup
+}
+
 \END
 
 \end{document}
