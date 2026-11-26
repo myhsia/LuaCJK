@@ -146,6 +146,25 @@
   \showlines
 }
 
+% A rule written in front of the space of a line's head keeps that space, so
+% the line the break starts is set the width of the space further in.  The
+% rule stands where the line begins instead, and the two lines are the same.
+
+\TEST{a space at the head of a forced line is discarded}{
+  \setbox0=\vbox{\hsize=6em 字字字字\\\hspace{2em}‘字字\par}
+  \showlines
+}
+
+\TEST{the starred space keeps its room and does not hang}{
+  \setbox0=\vbox{\hsize=6em 字字字字\\\hspace*{2em}‘字字\par}
+  \showlines
+}
+
+\TEST{a space at the head of a broken line is discarded as well}{
+  \setbox0=\vbox{\hsize=4em 中文中文 \hspace{2em}《字字》\par}
+  \showlines
+}
+
 \TEST{a centered paragraph does not hang the mark it begins with}{
   \begingroup
     \leftskip=0pt plus 1fil \rightskip=0pt plus 1fil

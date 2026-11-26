@@ -582,7 +582,12 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   at, which covers every wrapped line; the first line of a paragraph and a line
   that `\\` forces begin with no glue, so the rule that shifts the line goes in
   front of the opening mark itself, or after the `-10000` penalty of the forced
-  break.  The indentation in front of a paragraph is an empty box of the width
+  break.  The rule stands directly in front of the mark and behind everything
+  the break discards, never at the break itself: `next_visible` returns the node
+  in front of the one it finds, because `\TeX` drops a line's head only while it
+  is glue, kern or penalty, so a rule written in front of a leading `\hspace`
+  keeps that space and the line starts its width further in (`hang01`).
+  The indentation in front of a paragraph is an empty box of the width
   of `\parindent`, not a glue, and the first line of a list item begins with the
   label box, which the list follows with a penalty of zero, so `head_lead` walks
   over both with the whatsit and local-paragraph nodes and over a penalty that
