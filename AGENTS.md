@@ -245,6 +245,17 @@ standalone), `package`, `lua`, `lua-core`, `lua-fntef`, `fntef`, `listings`,
   table of other characters: `listings` has made printable ASCII active by
   then, so a digit printed with the current table would not be a number.
   `listings02` pins the colour of every character in each of those cases.
+- **`breaklines` needs a chunk per character.**  `listings` puts its
+  discretionary behind each chunk it outputs, so a run set whole has no break
+  inside it.  With `breaklines` on the run is therefore output one character at
+  a time through `\lst@OutputToken`, which is why `\lst@Output` itself is
+  wrapped: the end of a line flushes the token through `\lst@PrintToken` and
+  never reaches the append wrappers.  The style is resolved on the whole token
+  first, and the pieces are set under it with `\lst@ifkeywords` off and
+  `\lst@currstyle` pinned, so `emph` and `keywords` still match the word; the
+  token is a local assignment, so `\lst@ResetToken` runs again after the group.
+  `breakatwhitespace` keeps the run whole, since its break would be suppressed
+  inside it (`listings01`, `listings02`).
 - **The ASCII brackets and the Latin closing marks are marks, not Latin
   punctuation.**  `(`, `[`, and `{` are `half-open` and `)`, `]`, and `}` are
   `half-close`: they keep their advance (a compression style leaves them alone),

@@ -49,6 +49,7 @@
 \newbox\digitbox
 \newbox\markbox
 \newbox\keywordbox
+\newbox\breakbox
 
 \begin{document}
 
@@ -80,6 +81,10 @@ total = 单价 * 数量
 变量 = 1;
 \end{lstlisting}}
 
+\setbox\breakbox=\vbox{\begin{lstlisting}[breaklines,linewidth=8em,emph={检查用户输入的数据},emphstyle=\color{red}]
+# 检查用户输入的数据
+\end{lstlisting}}
+
 \START
 
 \TEST{a CJK word named by emph is one token of the listing}{
@@ -101,6 +106,10 @@ total = 单价 * 数量
 
 \TEST{keywords names a CJK word}{
   \listingcolors\keywordbox
+}
+
+\TEST{a CJK word keeps its colour when a line breaks inside it}{
+  \listingcolors\breakbox
 }
 
 \END
